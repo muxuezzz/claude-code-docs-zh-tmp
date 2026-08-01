@@ -98,9 +98,9 @@ def save_manifest(docs_dir: Path, manifest: dict) -> None:
 def url_to_safe_filename(url_path: str) -> str:
     """Convert a URL path to a safe filename that preserves hierarchy only when needed."""
     # Remove any known prefix patterns (support both old and new structures)
-    # Old: /en/docs/claude-code/hooks -> hooks
-    # New: /docs/en/hooks -> hooks
-    for prefix in ['/docs/en/', '/en/docs/claude-code/', '/docs/claude-code/', '/claude-code/']:
+    # Old: /zh-CN/docs/claude-code/hooks -> hooks
+    # New: /docs/zh-CN/hooks -> hooks
+    for prefix in ['/docs/zh-CN/', '/zh-CN/docs/claude-code/', '/docs/claude-code/', '/claude-code/']:
         if prefix in url_path:
             path = url_path.split(prefix)[-1]
             break
@@ -217,10 +217,10 @@ def discover_claude_code_pages(session: requests.Session, sitemap_url: str) -> L
         claude_code_pages = []
 
         # Only accept English documentation patterns
-        # NOTE: URL structure changed from /en/docs/claude-code/ to /docs/en/
+        # NOTE: URL structure changed from /zh-CN/docs/claude-code/ to /docs/zh-CN/
         english_patterns = [
-            '/docs/en/',  # New structure (code.claude.com)
-            '/en/docs/claude-code/',  # Legacy structure (docs.anthropic.com)
+            '/docs/zh-CN/',  # New structure (code.claude.com)
+            '/zh-CN/docs/claude-code/',  # Legacy structure (docs.anthropic.com)
         ]
         
         for url in urls:
@@ -259,23 +259,23 @@ def discover_claude_code_pages(session: requests.Session, sitemap_url: str) -> L
         logger.warning("Falling back to essential pages...")
 
         # More comprehensive fallback list (updated for new URL structure)
-        # NOTE: Changed from /en/docs/claude-code/ to /docs/en/
+        # NOTE: Changed from /zh-CN/docs/claude-code/ to /docs/zh-CN/
         return [
-            "/docs/en/overview",
-            "/docs/en/setup",
-            "/docs/en/quickstart",
-            "/docs/en/memory",
-            "/docs/en/common-workflows",
-            "/docs/en/ide-integrations",
-            "/docs/en/mcp",
-            "/docs/en/github-actions",
-            "/docs/en/sdk",
-            "/docs/en/troubleshooting",
-            "/docs/en/security",
-            "/docs/en/settings",
-            "/docs/en/hooks",
-            "/docs/en/costs",
-            "/docs/en/monitoring-usage",
+            "/docs/zh-CN/overview",
+            "/docs/zh-CN/setup",
+            "/docs/zh-CN/quickstart",
+            "/docs/zh-CN/memory",
+            "/docs/zh-CN/common-workflows",
+            "/docs/zh-CN/ide-integrations",
+            "/docs/zh-CN/mcp",
+            "/docs/zh-CN/github-actions",
+            "/docs/zh-CN/sdk",
+            "/docs/zh-CN/troubleshooting",
+            "/docs/zh-CN/security",
+            "/docs/zh-CN/settings",
+            "/docs/zh-CN/hooks",
+            "/docs/zh-CN/costs",
+            "/docs/zh-CN/monitoring-usage",
         ]
 
 
@@ -512,23 +512,23 @@ def main():
             documentation_pages = discover_claude_code_pages(session, sitemap_url)
         else:
             # Use fallback pages if sitemap discovery failed (updated for new URL structure)
-            # NOTE: Changed from /en/docs/claude-code/ to /docs/en/
+            # NOTE: Changed from /zh-CN/docs/claude-code/ to /docs/zh-CN/
             documentation_pages = [
-                "/docs/en/overview",
-                "/docs/en/setup",
-                "/docs/en/quickstart",
-                "/docs/en/memory",
-                "/docs/en/common-workflows",
-                "/docs/en/ide-integrations",
-                "/docs/en/mcp",
-                "/docs/en/github-actions",
-                "/docs/en/sdk",
-                "/docs/en/troubleshooting",
-                "/docs/en/security",
-                "/docs/en/settings",
-                "/docs/en/hooks",
-                "/docs/en/costs",
-                "/docs/en/monitoring-usage",
+                "/docs/zh-CN/overview",
+                "/docs/zh-CN/setup",
+                "/docs/zh-CN/quickstart",
+                "/docs/zh-CN/memory",
+                "/docs/zh-CN/common-workflows",
+                "/docs/zh-CN/ide-integrations",
+                "/docs/zh-CN/mcp",
+                "/docs/zh-CN/github-actions",
+                "/docs/zh-CN/sdk",
+                "/docs/zh-CN/troubleshooting",
+                "/docs/zh-CN/security",
+                "/docs/zh-CN/settings",
+                "/docs/zh-CN/hooks",
+                "/docs/zh-CN/costs",
+                "/docs/zh-CN/monitoring-usage",
             ]
         
         if not documentation_pages:
