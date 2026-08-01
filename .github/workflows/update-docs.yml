@@ -2,9 +2,9 @@ name: Update Claude Code Documentation
 
 on:
   schedule:
-    # Run every 3 hours (at 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 UTC)
-    - cron: '0 */3 * * *'
-  workflow_dispatch: # Allow manual trigger
+    # Run at 00:00 UTC on the 1st day of every month
+    - cron: '0 0 1 * *'
+  workflow_dispatch: # 保留手动触发
 
 permissions:
   contents: write
