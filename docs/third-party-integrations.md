@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Enterprise deployment overview
+# 企业部署概览
 
-> Learn how Claude Code can integrate with various third-party services and infrastructure to meet enterprise deployment requirements.
+> 了解 Claude Code 如何与各种第三方服务和基础设施集成，以满足企业部署需求。
 
 export const ContactSalesCard = ({surface}) => {
   const utm = content => `utm_source=claude_code&utm_medium=docs&utm_content=${surface}_${content}`;
@@ -76,90 +76,92 @@ export const ContactSalesCard = ({surface}) => {
     </div>;
 };
 
-Organizations can deploy Claude Code through Anthropic directly or through a cloud provider. This page helps you choose the right configuration.
+组织可以直接通过 Anthropic 或通过云提供商部署 Claude Code。本页面帮助您选择正确的配置。
 
 <ContactSalesCard surface="third_party_overview" />
 
-## Compare deployment options
+<h2 id="compare-deployment-options">
+  比较部署选项
+</h2>
 
-For most organizations, Claude for Teams or Claude for Enterprise provides the best experience. Team members get access to both Claude Code and Claude on the web with a single subscription, centralized billing, and no infrastructure setup required.
+对于大多数组织，Claude for Teams 或 Claude for Enterprise 提供最佳体验。团队成员可以通过单一订阅访问 Claude Code 和网页版 Claude，具有集中计费和无需基础设施设置的优势。
 
-**Claude for Teams** is self-service and includes collaboration features, admin tools, and billing management. Best for smaller teams that need to get started quickly.
+**Claude for Teams** 是自助服务，包括协作功能、管理工具和计费管理。最适合需要快速启动的小型团队。
 
-**Claude for Enterprise** adds SSO and domain capture, role-based permissions, compliance API access, and managed policy settings for deploying organization-wide Claude Code configurations. Best for larger organizations with security and compliance requirements.
+**Claude for Enterprise** 增加了 SSO 和域名捕获、基于角色的权限、合规性 API 访问以及用于部署组织范围内 Claude Code 配置的托管策略设置。最适合具有安全和合规性要求的大型组织。
 
-Learn more about [Team plans](https://support.claude.com/en/articles/9266767-what-is-the-team-plan) and [Enterprise plans](https://support.claude.com/en/articles/9797531-what-is-the-enterprise-plan).
+了解更多关于 [Team 计划](https://support.claude.com/en/articles/9266767-what-is-the-team-plan) 和 [Enterprise 计划](https://support.claude.com/en/articles/9797531-what-is-the-enterprise-plan)。
 
-If your organization has specific infrastructure requirements, compare the options below:
+如果您的组织有特定的基础设施要求，请比较以下选项：
 
 <table>
   <thead>
     <tr>
-      <th>Feature</th>
+      <th>功能</th>
       <th>Claude for Teams/Enterprise</th>
       <th>Anthropic Console</th>
       <th>Amazon Bedrock</th>
       <th>Claude Platform on AWS</th>
-      <th>Google Cloud's Agent Platform, formerly Vertex AI</th>
+      <th>Google Cloud's Agent Platform，原名 Vertex AI</th>
       <th>Microsoft Foundry</th>
     </tr>
   </thead>
 
   <tbody>
     <tr>
-      <td>Best for</td>
-      <td>Most organizations (recommended)</td>
-      <td>Individual developers</td>
-      <td>AWS-native deployments</td>
-      <td>AWS Marketplace billing with Claude API features</td>
-      <td>GCP-native deployments</td>
-      <td>Azure-native deployments</td>
+      <td>最适合</td>
+      <td>大多数组织（推荐）</td>
+      <td>个人开发者</td>
+      <td>AWS 原生部署</td>
+      <td>AWS Marketplace 计费与 Claude API 功能</td>
+      <td>GCP 原生部署</td>
+      <td>Azure 原生部署</td>
     </tr>
 
     <tr>
-      <td>Billing</td>
-      <td><strong>Teams:</strong> \$150/seat (Premium) with PAYG available<br /><strong>Enterprise:</strong> <a href="https://claude.com/contact-sales?utm_source=claude_code&utm_medium=docs&utm_content=third_party_enterprise">Contact Sales</a></td>
-      <td>PAYG</td>
-      <td>PAYG through AWS</td>
-      <td>PAYG through AWS Marketplace</td>
-      <td>PAYG through GCP</td>
-      <td>PAYG through Azure</td>
+      <td>计费</td>
+      <td><strong>Teams：</strong> \$150/座位（Premium）提供按使用量付费选项<br /><strong>Enterprise：</strong> <a href="https://claude.com/contact-sales?utm_source=claude_code&utm_medium=docs&utm_content=third_party_enterprise">联系销售</a></td>
+      <td>按使用量付费</td>
+      <td>通过 AWS 按使用量付费</td>
+      <td>通过 AWS Marketplace 按使用量付费</td>
+      <td>通过 GCP 按使用量付费</td>
+      <td>通过 Azure 按使用量付费</td>
     </tr>
 
     <tr>
-      <td>Regions</td>
-      <td>Supported [countries](https://www.anthropic.com/supported-countries)</td>
-      <td>Supported [countries](https://www.anthropic.com/supported-countries)</td>
-      <td>Multiple AWS [regions](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)</td>
-      <td>Multiple AWS regions</td>
-      <td>Multiple GCP [regions](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations)</td>
-      <td>Multiple Azure [regions](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/)</td>
+      <td>地区</td>
+      <td>支持的[国家/地区](https://www.anthropic.com/supported-countries)</td>
+      <td>支持的[国家/地区](https://www.anthropic.com/supported-countries)</td>
+      <td>多个 AWS [地区](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)</td>
+      <td>多个 AWS 地区</td>
+      <td>多个 GCP [地区](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations)</td>
+      <td>多个 Azure [地区](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/)</td>
     </tr>
 
     <tr>
-      <td>Prompt caching</td>
-      <td>Enabled by default</td>
-      <td>Enabled by default</td>
-      <td>Enabled by default</td>
-      <td>Enabled by default</td>
-      <td>Enabled by default</td>
-      <td>Enabled by default</td>
+      <td>prompt caching</td>
+      <td>默认启用</td>
+      <td>默认启用</td>
+      <td>默认启用</td>
+      <td>默认启用</td>
+      <td>默认启用</td>
+      <td>默认启用</td>
     </tr>
 
     <tr>
-      <td>Authentication</td>
-      <td>Claude.ai SSO or email</td>
-      <td>API key</td>
-      <td>API key or AWS credentials</td>
-      <td>API key or AWS credentials</td>
-      <td>GCP credentials</td>
-      <td>API key or Microsoft Entra ID</td>
+      <td>身份验证</td>
+      <td>Claude.ai SSO 或电子邮件</td>
+      <td>API 密钥</td>
+      <td>API 密钥或 AWS 凭证</td>
+      <td>API 密钥或 AWS 凭证</td>
+      <td>GCP 凭证</td>
+      <td>API 密钥或 Microsoft Entra ID</td>
     </tr>
 
     <tr>
-      <td>Cost tracking</td>
-      <td>Usage dashboard</td>
-      <td>Usage dashboard</td>
+      <td>成本跟踪</td>
+      <td>使用情况仪表板</td>
+      <td>使用情况仪表板</td>
       <td>AWS Cost Explorer</td>
       <td>AWS Cost Explorer</td>
       <td>GCP Billing</td>
@@ -167,138 +169,146 @@ If your organization has specific infrastructure requirements, compare the optio
     </tr>
 
     <tr>
-      <td>Includes Claude on web</td>
-      <td>Yes</td>
-      <td>No</td>
-      <td>No</td>
-      <td>No</td>
-      <td>No</td>
-      <td>No</td>
+      <td>包括网页版 Claude</td>
+      <td>是</td>
+      <td>否</td>
+      <td>否</td>
+      <td>否</td>
+      <td>否</td>
+      <td>否</td>
     </tr>
 
     <tr>
-      <td>Enterprise features</td>
-      <td>Team management, SSO, usage monitoring</td>
-      <td>None</td>
-      <td>IAM policies, CloudTrail</td>
-      <td>IAM policies, CloudTrail</td>
-      <td>IAM roles, Cloud Audit Logs</td>
-      <td>RBAC policies, Azure Monitor</td>
+      <td>企业功能</td>
+      <td>团队管理、SSO、使用情况监控</td>
+      <td>无</td>
+      <td>IAM 策略、CloudTrail</td>
+      <td>IAM 策略、CloudTrail</td>
+      <td>IAM 角色、Cloud Audit Logs</td>
+      <td>RBAC 策略、Azure Monitor</td>
     </tr>
   </tbody>
 </table>
 
-For a feature-by-feature breakdown of what's available on each option, see [Feature availability](/docs/en/feature-availability).
+有关每个选项上可用功能的逐项细分，请参阅[功能可用性](/docs/zh-CN/feature-availability)。
 
-Select a deployment option to view setup instructions:
+选择部署选项以查看设置说明：
 
-* [Claude for Teams or Enterprise](/docs/en/authentication#claude-for-teams-or-enterprise)
-* [Anthropic Console](/docs/en/authentication#claude-console-authentication)
-* [Claude apps gateway](/docs/en/claude-apps-gateway), a self-hosted gateway that adds IdP sign-in in front of Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, Microsoft Foundry, or the Anthropic API
-* [Amazon Bedrock](/docs/en/amazon-bedrock)
-* [Claude Platform on AWS](/docs/en/claude-platform-on-aws)
-* [Google Cloud's Agent Platform](/docs/en/google-vertex-ai)
-* [Microsoft Foundry](/docs/en/microsoft-foundry)
+* [Claude for Teams 或 Enterprise](/docs/zh-CN/authentication#claude-for-teams-or-enterprise)
+* [Anthropic Console](/docs/zh-CN/authentication#claude-console-authentication)
+* [Claude 应用网关](/docs/zh-CN/claude-apps-gateway)，一个自托管网关，在 Amazon Bedrock、Claude Platform on AWS、Google Cloud's Agent Platform、Microsoft Foundry 或 Anthropic API 前面添加 IdP 登录
+* [Amazon Bedrock](/docs/zh-CN/amazon-bedrock)
+* [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws)
+* [Google Cloud's Agent Platform](/docs/zh-CN/google-vertex-ai)
+* [Microsoft Foundry](/docs/zh-CN/microsoft-foundry)
 
-For Amazon Bedrock and Google Vertex AI, you can also run `claude` and select **3rd-party platform** at the login prompt to launch an interactive setup wizard.
+对于 Amazon Bedrock 和 Google Vertex AI，您也可以运行 `claude` 并在登录提示处选择 **3rd-party platform** 来启动交互式设置向导。
 
-## Configure proxies and gateways
+<h2 id="configure-proxies-and-gateways">
+  配置代理和网关
+</h2>
 
-Most organizations can use a cloud provider directly without additional configuration. However, you may need to configure a corporate proxy or LLM gateway if your organization has specific network or management requirements. These are different configurations that can be used together:
+大多数组织可以直接使用云提供商，无需额外配置。但是，如果您的组织有特定的网络或管理要求，您可能需要配置企业代理或 LLM 网关。这些是可以一起使用的不同配置：
 
-* **Corporate proxy**: Routes traffic through an HTTP/HTTPS proxy. Use this if your organization requires all outbound traffic to pass through a proxy server for security monitoring, compliance, or network policy enforcement. Configure with the `HTTPS_PROXY` or `HTTP_PROXY` environment variables. Learn more in [Enterprise network configuration](/docs/en/network-config).
-* **LLM Gateway**: A service that sits between Claude Code and the cloud provider to handle authentication and routing. Use this if you need centralized usage tracking across teams, custom rate limiting or budgets, or centralized authentication management. Configure with the `ANTHROPIC_BASE_URL`, `ANTHROPIC_BEDROCK_BASE_URL`, `ANTHROPIC_AWS_BASE_URL`, `ANTHROPIC_VERTEX_BASE_URL`, or `ANTHROPIC_FOUNDRY_BASE_URL` environment variables. Learn more in [LLM gateways](/docs/en/llm-gateway).
+* **企业代理**：通过 HTTP/HTTPS 代理路由流量。如果您的组织要求所有出站流量通过代理服务器以进行安全监控、合规性或网络策略执行，请使用此选项。使用 `HTTPS_PROXY` 或 `HTTP_PROXY` 环境变量进行配置。在[企业网络配置](/docs/zh-CN/network-config)中了解更多。
+* **LLM 网关**：位于 Claude Code 和云提供商之间的服务，用于处理身份验证和路由。如果您需要跨团队的集中使用情况跟踪、自定义速率限制或预算或集中身份验证管理，请使用此选项。使用 `ANTHROPIC_BASE_URL`、`ANTHROPIC_BEDROCK_BASE_URL`、`ANTHROPIC_AWS_BASE_URL`、`ANTHROPIC_VERTEX_BASE_URL` 或 `ANTHROPIC_FOUNDRY_BASE_URL` 环境变量进行配置。在[LLM 网关](/docs/zh-CN/llm-gateway)中了解更多。
 
-The following examples show the environment variables to set in your shell or shell profile (`.bashrc`, `.zshrc`). See [Settings](/docs/en/settings) for other configuration methods.
+以下示例显示在 shell 或 shell 配置文件（`.bashrc`、`.zshrc`）中设置的环境变量。有关其他配置方法，请参阅[设置](/docs/zh-CN/settings)。
 
-### Amazon Bedrock
+<h3 id="amazon-bedrock">
+  Amazon Bedrock
+</h3>
 
 <Tabs>
-  <Tab title="Corporate proxy">
-    Route Amazon Bedrock traffic through your corporate proxy by setting the following [environment variables](/docs/en/env-vars):
+  <Tab title="企业代理">
+    通过设置以下[环境变量](/docs/zh-CN/env-vars)，将 Amazon Bedrock 流量路由通过您的企业代理：
 
     ```bash theme={null}
-    # Enable Bedrock
+    # 启用 Bedrock
     export CLAUDE_CODE_USE_BEDROCK=1
     export AWS_REGION=us-east-1
 
-    # Configure corporate proxy
+    # 配置企业代理
     export HTTPS_PROXY='https://proxy.example.com:8080'
     ```
   </Tab>
 
-  <Tab title="LLM Gateway">
-    Route Amazon Bedrock traffic through your LLM gateway by setting the following [environment variables](/docs/en/env-vars):
+  <Tab title="LLM 网关">
+    通过设置以下[环境变量](/docs/zh-CN/env-vars)，将 Amazon Bedrock 流量路由通过您的 LLM 网关：
 
     ```bash theme={null}
-    # Enable Bedrock
+    # 启用 Bedrock
     export CLAUDE_CODE_USE_BEDROCK=1
 
-    # Configure LLM gateway
+    # 配置 LLM 网关
     export ANTHROPIC_BEDROCK_BASE_URL='https://your-llm-gateway.com/bedrock'
-    export CLAUDE_CODE_SKIP_BEDROCK_AUTH=1  # If gateway handles AWS auth
+    export CLAUDE_CODE_SKIP_BEDROCK_AUTH=1  # 如果网关处理 AWS 身份验证
     ```
   </Tab>
 </Tabs>
 
-### Microsoft Foundry
+<h3 id="microsoft-foundry">
+  Microsoft Foundry
+</h3>
 
 <Tabs>
-  <Tab title="Corporate proxy">
-    Route Microsoft Foundry traffic through your corporate proxy by setting the following [environment variables](/docs/en/env-vars):
+  <Tab title="企业代理">
+    通过设置以下[环境变量](/docs/zh-CN/env-vars)，将 Microsoft Foundry 流量路由通过您的企业代理：
 
     ```bash theme={null}
-    # Enable Microsoft Foundry
+    # 启用 Microsoft Foundry
     export CLAUDE_CODE_USE_FOUNDRY=1
     export ANTHROPIC_FOUNDRY_RESOURCE=your-resource
-    export ANTHROPIC_FOUNDRY_API_KEY=your-api-key  # Or omit for Entra ID auth
+    export ANTHROPIC_FOUNDRY_API_KEY=your-api-key  # 或省略以使用 Entra ID 身份验证
 
-    # Configure corporate proxy
+    # 配置企业代理
     export HTTPS_PROXY='https://proxy.example.com:8080'
     ```
   </Tab>
 
-  <Tab title="LLM Gateway">
-    Route Microsoft Foundry traffic through your LLM gateway by setting the following [environment variables](/docs/en/env-vars):
+  <Tab title="LLM 网关">
+    通过设置以下[环境变量](/docs/zh-CN/env-vars)，将 Microsoft Foundry 流量路由通过您的 LLM 网关：
 
     ```bash theme={null}
-    # Enable Microsoft Foundry
+    # 启用 Microsoft Foundry
     export CLAUDE_CODE_USE_FOUNDRY=1
 
-    # Configure LLM gateway
+    # 配置 LLM 网关
     export ANTHROPIC_FOUNDRY_BASE_URL='https://your-llm-gateway.com'
-    export ANTHROPIC_FOUNDRY_API_KEY=your-gateway-key  # Sent as x-api-key
+    export ANTHROPIC_FOUNDRY_API_KEY=your-gateway-key  # 作为 x-api-key 发送
     ```
   </Tab>
 </Tabs>
 
-### Google Cloud's Agent Platform
+<h3 id="google-cloud’s-agent-platform">
+  Google Cloud's Agent Platform
+</h3>
 
 <Tabs>
-  <Tab title="Corporate proxy">
-    Route Google Cloud's Agent Platform traffic through your corporate proxy by setting the following [environment variables](/docs/en/env-vars):
+  <Tab title="企业代理">
+    通过设置以下[环境变量](/docs/zh-CN/env-vars)，将 Google Cloud's Agent Platform 流量路由通过您的企业代理：
 
     ```bash theme={null}
-    # Enable Agent Platform
+    # 启用 Agent Platform
     export CLAUDE_CODE_USE_VERTEX=1
     export CLOUD_ML_REGION=us-east5
     export ANTHROPIC_VERTEX_PROJECT_ID=your-project-id
 
-    # Configure corporate proxy
+    # 配置企业代理
     export HTTPS_PROXY='https://proxy.example.com:8080'
     ```
   </Tab>
 
-  <Tab title="LLM Gateway">
-    Route Google Cloud's Agent Platform traffic through your LLM gateway by setting the following [environment variables](/docs/en/env-vars):
+  <Tab title="LLM 网关">
+    通过设置以下[环境变量](/docs/zh-CN/env-vars)，将 Google Cloud's Agent Platform 流量路由通过您的 LLM 网关：
 
     ```bash theme={null}
-    # Enable Agent Platform
+    # 启用 Agent Platform
     export CLAUDE_CODE_USE_VERTEX=1
 
-    # Configure LLM gateway
+    # 配置 LLM 网关
     export ANTHROPIC_VERTEX_BASE_URL='https://your-llm-gateway.com/vertex'
-    export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # If gateway handles GCP auth
+    export CLAUDE_CODE_SKIP_VERTEX_AUTH=1  # 如果网关处理 GCP 身份验证
     export ANTHROPIC_VERTEX_PROJECT_ID=your-gcp-project-id
     export CLOUD_ML_REGION=us-east5
     ```
@@ -306,7 +316,7 @@ The following examples show the environment variables to set in your shell or sh
 </Tabs>
 
 <Tip>
-  Use `/status` in Claude Code to verify your proxy and gateway configuration is applied correctly. For example, with the Bedrock gateway configuration above, the output includes lines like:
+  在 Claude Code 中使用 `/status` 来验证您的代理和网关配置是否正确应用。例如，使用上面的 Bedrock 网关配置，输出包括以下行：
 
   ```
   API provider: Amazon Bedrock
@@ -315,46 +325,62 @@ The following examples show the environment variables to set in your shell or sh
   AWS auth skipped
   ```
 
-  If you configured a corporate proxy, `/status` also shows a `Proxy` line with your proxy URL.
+  如果您配置了企业代理，`/status` 也会显示一条 `Proxy` 行，其中包含您的代理 URL。
 </Tip>
 
-## Best practices for organizations
+<h2 id="best-practices-for-organizations">
+  组织的最佳实践
+</h2>
 
-### Invest in documentation and memory
+<h3 id="invest-in-documentation-and-memory">
+  投资文档和内存
+</h3>
 
-We strongly recommend investing in documentation so that Claude Code understands your codebase. Organizations can deploy CLAUDE.md files at multiple levels:
+我们强烈建议投资文档，以便 Claude Code 理解您的代码库。组织可以在多个级别部署 CLAUDE.md 文件：
 
-* **Organization-wide**: Deploy to system directories such as `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS), `/etc/claude-code/CLAUDE.md` (Linux and WSL), or `C:\Program Files\ClaudeCode\CLAUDE.md` (Windows) for company-wide standards
-* **Repository-level**: Create `CLAUDE.md` files in repository roots containing project architecture, build commands, and contribution guidelines. Check these into source control so all users benefit
+* **组织范围**：部署到系统目录，如 `/Library/Application Support/ClaudeCode/CLAUDE.md`（macOS）、`/etc/claude-code/CLAUDE.md`（Linux 和 WSL）或 `C:\Program Files\ClaudeCode\CLAUDE.md`（Windows），用于公司范围的标准
+* **存储库级别**：在存储库根目录中创建 `CLAUDE.md` 文件，包含项目架构、构建命令和贡献指南。将这些检入源代码控制，以便所有用户受益
 
-Learn more in [Memory and CLAUDE.md files](/docs/en/memory).
+在[内存和 CLAUDE.md 文件](/docs/zh-CN/memory)中了解更多。
 
-### Simplify deployment
+<h3 id="simplify-deployment">
+  简化部署
+</h3>
 
-If you have a custom development environment, we find that creating a "one click" way to install Claude Code is key to growing adoption across an organization.
+如果您有自定义开发环境，我们发现创建一种"一键"安装 Claude Code 的方式是在组织中增加采用率的关键。
 
-### Start with guided usage
+<h3 id="start-with-guided-usage">
+  从引导式使用开始
+</h3>
 
-Encourage new users to try Claude Code for codebase Q\&A, or on smaller bug fixes or feature requests. Ask Claude Code to make a plan. Check Claude's suggestions and give feedback if it's off-track. Over time, as users understand this new paradigm better, then they'll be more effective at letting Claude Code run more agentically.
+鼓励新用户尝试使用 Claude Code 进行代码库问答，或在较小的错误修复或功能请求上使用。要求 Claude Code 制定计划。检查 Claude 的建议，如果偏离轨道，请提供反馈。随着时间的推移，当用户更好地理解这种新范式时，他们将更有效地让 Claude Code 更自主地运行。
 
-### Pin model versions for cloud providers
+<h3 id="pin-model-versions-for-cloud-providers">
+  为云提供商固定模型版本
+</h3>
 
-If you deploy through [Amazon Bedrock](/docs/en/amazon-bedrock), [Google Cloud's Agent Platform](/docs/en/google-vertex-ai), [Microsoft Foundry](/docs/en/microsoft-foundry), or [Claude Platform on AWS](/docs/en/claude-platform-on-aws), pin specific model versions using `ANTHROPIC_DEFAULT_FABLE_MODEL`, `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, and `ANTHROPIC_DEFAULT_HAIKU_MODEL`. Without pinning, model aliases resolve to Claude Code's built-in default for that provider, which can lag the newest release and may not yet be enabled in your account. Pinning lets you control when your users move to a new model. See [Model configuration](/docs/en/model-config#pin-models-for-third-party-deployments) for what each provider does when the default is unavailable.
+如果您通过 [Amazon Bedrock](/docs/zh-CN/amazon-bedrock)、[Google Cloud 的 Agent Platform](/docs/zh-CN/google-vertex-ai)、[Microsoft Foundry](/docs/zh-CN/microsoft-foundry) 或 [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws) 部署，请使用 `ANTHROPIC_DEFAULT_FABLE_MODEL`、`ANTHROPIC_DEFAULT_OPUS_MODEL`、`ANTHROPIC_DEFAULT_SONNET_MODEL` 和 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 固定特定模型版本。如果不固定，模型别名会解析为 Claude Code 为该提供商内置的默认值，这可能滞后于最新版本，并且可能尚未在您的账户中启用。固定让您可以控制用户何时迁移到新模型。有关每个提供商在默认值不可用时的行为，请参阅[模型配置](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
 
-### Configure security policies
+<h3 id="configure-security-policies">
+  配置安全策略
+</h3>
 
-Security teams can configure managed permissions for what Claude Code is and is not allowed to do, which cannot be overwritten by local configuration. [Learn more](/docs/en/security).
+安全团队可以配置托管权限，定义 Claude Code 允许和不允许做什么，这不能被本地配置覆盖。[了解更多](/docs/zh-CN/security)。
 
-### Leverage MCP for integrations
+<h3 id="leverage-mcp-for-integrations">
+  利用 MCP 进行集成
+</h3>
 
-MCP is a great way to give Claude Code more information, such as connecting to ticket management systems or error logs. We recommend that one central team configures MCP servers and checks a `.mcp.json` configuration into the codebase so that all users benefit. [Learn more](/docs/en/mcp).
+MCP 是为 Claude Code 提供更多信息的好方法，例如连接到票证管理系统或错误日志。我们建议一个中央团队配置 MCP servers 并将 `.mcp.json` 配置检入代码库，以便所有用户受益。[了解更多](/docs/zh-CN/mcp)。
 
-At Anthropic, we trust Claude Code to power development across every Anthropic codebase. We hope you enjoy using Claude Code as much as we do.
+在 Anthropic，我们信任 Claude Code 在每个 Anthropic 代码库中推动开发。我们希望您像我们一样享受使用 Claude Code。
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-Once you've chosen a deployment option and configured access for your team:
+选择部署选项并为您的团队配置访问权限后：
 
-1. **Roll out to your team**: Share installation instructions and have team members [install Claude Code](/docs/en/setup) and authenticate with their credentials.
-2. **Set up shared configuration**: Create a [CLAUDE.md file](/docs/en/memory) in your repositories to help Claude Code understand your codebase and coding standards.
-3. **Configure permissions**: Review [security settings](/docs/en/security) to define what Claude Code can and cannot do in your environment.
+1. **向您的团队推出**：分享安装说明，让团队成员[安装 Claude Code](/docs/zh-CN/setup) 并使用其凭证进行身份验证。
+2. **设置共享配置**：在您的存储库中创建 [CLAUDE.md 文件](/docs/zh-CN/memory)，以帮助 Claude Code 理解您的代码库和编码标准。
+3. **配置权限**：查看[安全设置](/docs/zh-CN/security)以定义 Claude Code 在您的环境中可以和不能做什么。

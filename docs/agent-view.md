@@ -2,85 +2,93 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Manage multiple agents with agent view
+# 使用 agent view 管理多个代理
 
-> Dispatch and manage many Claude Code sessions from one screen. Agent view shows what every session is doing and which ones need your input.
+> 从一个屏幕调度和管理多个 Claude Code 会话。Agent view 显示每个会话正在做什么以及哪些会话需要你的输入。
 
-Agent view, opened with `claude agents`, is one screen for all your background sessions: what's running, what needs your input, and what's done. Dispatch new sessions, watch their state at a glance instead of scrolling through transcripts, and step in only when one needs you. Each background session is a full Claude Code conversation that keeps running without a terminal attached, so you can open it, reply, and leave whenever you want.
+Agent view 通过 `claude agents` 打开，是所有后台会话的一个屏幕：什么正在运行、什么需要你的输入、什么已完成。调度新会话，一目了然地查看它们的状态而不是滚动浏览记录，只在需要时才介入。每个后台会话都是一个完整的 Claude Code 对话，在没有终端连接的情况下继续运行，所以你可以随时打开它、回复并离开。
 
-<img src="https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-light.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85&s=7a186c96ed47d6700d084d77e786be65" className="dark:hidden" alt="Agent view in a terminal: the header shows Claude Code v2.1.140, the model, the working directory, and a summary count. Sessions are grouped under Needs input, Working, and Completed, with a dispatch input at the bottom and a footer of keyboard hints." width="1772" height="780" data-path="images/agent-view-light.png" />
+<img src="https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-light.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85&s=7a186c96ed47d6700d084d77e786be65" className="dark:hidden" alt="终端中的 Agent view：标题显示 Claude Code v2.1.140、模型、工作目录和摘要计数。会话分组在'需要输入'、'正在工作'和'已完成'下，底部有调度输入和键盘提示页脚。" width="1772" height="780" data-path="images/agent-view-light.png" />
 
-<img src="https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-dark.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85&s=a5bed7434bae368faea3a8f023b52aa2" className="hidden dark:block" alt="Agent view in a terminal: the header shows Claude Code v2.1.140, the model, the working directory, and a summary count. Sessions are grouped under Needs input, Working, and Completed, with a dispatch input at the bottom and a footer of keyboard hints." width="1772" height="780" data-path="images/agent-view-dark.png" />
+<img src="https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-dark.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85&s=a5bed7434bae368faea3a8f023b52aa2" className="hidden dark:block" alt="终端中的 Agent view：标题显示 Claude Code v2.1.140、模型、工作目录和摘要计数。会话分组在'需要输入'、'正在工作'和'已完成'下，底部有调度输入和键盘提示页脚。" width="1772" height="780" data-path="images/agent-view-dark.png" />
 
-Use agent view when you have several independent tasks Claude can work on without you watching every step. Dispatch a bug fix, a pull request review, and a flaky-test investigation as three rows, keep working in another window, and check back when a row shows it needs you or has a result.
+当你有多个独立任务 Claude 可以在不需要你观看每一步的情况下处理时，使用 agent view。调度一个 bug 修复、一个拉取请求审查和一个不稳定测试调查作为三行，在另一个窗口中继续工作，当一行显示它需要你或有结果时检查回来。
 
-When you want to work more directly in any agent's session, attach to the row to enter the full conversation.
+当你想在任何代理的会话中更直接地工作时，附加到该行以进入完整对话。
 
-To compare agent view with subagents, agent teams, and worktrees, see [Run agents in parallel](/docs/en/agents).
+要比较 agent view 与 subagents、agent teams 和 worktrees，请参阅 [并行运行代理](/docs/zh-CN/agents)。
 
 <Note>
-  Agent view is in research preview and requires Claude Code v2.1.139 or later. Check your version with `claude --version`. The interface and keyboard shortcuts may change as the feature evolves.
+  Agent view 是研究预览版，需要 Claude Code v2.1.139 或更高版本。使用 `claude --version` 检查你的版本。随着功能的发展，界面和快捷键可能会改变。
 </Note>
 
-## Quick start
+本页涵盖：
 
-This walkthrough covers the core agent view loop: dispatch a task, watch its row update as Claude works, peek to check on it and reply, and attach for the full conversation. The session you dispatch keeps running after you close agent view, so you can leave and come back to it.
+* [快速开始](#quick-start)：给 Claude 一个在后台处理的任务，检查它，并在需要时介入
+* [使用 agent view 监控会话](#monitor-sessions-with-agent-view)，包括状态图标、窥视和回复、附加、组织和快捷键
+* [调度新代理](#dispatch-new-agents)，从 agent view、从会话内部或从 shell
+* [从 shell 管理会话](#manage-sessions-from-the-shell)，使用 `claude agents`、`claude attach` 和相关命令
+* [后台会话如何被托管](#how-background-sessions-are-hosted)，由监督进程
+
+<h2 id="quick-start">
+  快速开始
+</h2>
+
+本演练涵盖核心 agent view 循环：调度一个任务，观看其行在 Claude 工作时更新，窥视以检查它并回复，以及附加到完整对话。你调度的会话在关闭 agent view 后继续运行，所以你可以离开并稍后回到它。
 
 <Steps>
-  <Step title="Open agent view">
-    From your shell, run:
+  <Step title="打开 agent view">
+    从你的 shell，运行：
 
     ```bash theme={null}
     claude agents
     ```
 
-    Agent view opens with an input at the bottom and a table that fills in as sessions start. Press `Esc` at any time to return to your shell; if you opened agent view by backgrounding a session with `←`, `Esc` returns to that conversation instead. Your sessions keep running while you're away and reappear the next time you open agent view.
+    Agent view 打开，底部有一个输入框，当会话启动时表格会填充。随时按 `Esc` 返回你的 shell。你的会话在你离开时继续运行，下次打开 agent view 时会重新出现。
   </Step>
 
-  <Step title="Dispatch a session">
-    Type a prompt describing a task and press `Enter`. A new background session starts on that task and appears as a row showing whether it's working, waiting on you, or done. The new session uses the model shown in the agent view header and the same [permission mode](#permission-mode-model-and-effort) you'd get running `claude` in that directory.
+  <Step title="调度一个会话">
+    输入描述任务的提示并按 `Enter`。一个新的后台会话在该任务上启动并显示为一行，显示它是否正在工作、等待你或已完成。新会话使用 agent view 标题中显示的模型和在该目录中运行 `claude` 时会获得的相同[权限模式](#permission-mode-model-and-effort)。
 
-    Every prompt you enter here starts its own new session. Typing another prompt and pressing `Enter` launches a second session alongside the first rather than sending a follow-up to it. You can run several in parallel this way.
+    你在此输入的每个提示都会启动自己的新会话。输入另一个提示并按 `Enter` 会启动第二个会话，与第一个会话并行运行，而不是向其发送后续消息。你可以通过这种方式并行运行多个会话。
 
-    Each session uses your subscription quota independently, so see [Limitations](#limitations) before dispatching many at once.
+    每个会话独立使用你的订阅配额，所以在一次调度多个会话之前，请查看[限制](#limitations)。
   </Step>
 
-  <Step title="Peek and reply">
-    Select a row with the arrow keys and press `Space` to open the peek panel. It shows the session's most recent output, or the question it's waiting on, rather than the full transcript. Type a reply and press `Enter` to send it without leaving agent view.
+  <Step title="窥视和回复">
+    用箭头键选择一行并按 `Space` 打开窥视面板。它显示会话的最近输出，或它正在等待的问题，而不是完整的记录。输入回复并按 `Enter` 发送，无需离开 agent view。
   </Step>
 
-  <Step title="Attach and detach">
-    Press `Enter` or `→` on a row to attach when you want the full conversation. The session takes over the terminal as a full interactive Claude Code session. Press `←` on an empty prompt to detach and return to the table.
+  <Step title="附加和分离">
+    在一行上按 `Enter` 或 `→` 在你想要完整对话时附加。会话接管终端，就像一个完整的交互式 Claude Code 会话。在空提示上按 `←` 分离并返回表格。
   </Step>
 
-  <Step title="Bring an existing session in">
-    This step needs a running session. If you followed the earlier steps you don't have one open in this terminal, so open a regular `claude` session in another terminal and send it a message first.
-
-    To move a session you already have open into agent view, run `/bg` inside it, or press `←` on an empty prompt to background it and open agent view in one step. In a fresh session with no messages yet, `/bg` asks you to send a message first, while `←` works right away. The session keeps running and appears as a row alongside the ones you dispatched.
+  <Step title="将现有会话引入">
+    这一步需要一个运行中的会话。如果你遵循了之前的步骤，你在此终端中没有打开的会话，所以在另一个终端中打开一个常规 `claude` 会话并先向其发送一条消息。要将你已经打开的会话移入 agent view，在其中运行 `/bg`，或在空提示上按 `←` 以后台会话并在一步中打开 agent view。会话继续运行并显示为一行，与你调度的会话并排。
   </Step>
 </Steps>
 
-You can use `claude agents` as your primary entry point instead of `claude`: dispatch every task from agent view, attach when you want the full conversation, and press `←` to return to the table.
+你可以使用 `claude agents` 作为你的主要入口点而不是 `claude`：从 agent view 调度每个任务，当你想要完整对话时附加，按 `←` 返回表格。
 
-{/* min-version: 2.1.205 */}Inside a regular `claude` session, the prompt footer's `←` hint counts the background agents that are waiting on you, such as `← 2 agents`, and returns to `← for agents` when none need input. Counts above 99 show as `99+`. The count refreshes about every ten seconds while the terminal is focused and immediately when focus returns. It briefly changes color when it moves and when an agent completes, {/* min-version: 2.1.212 */}and when a background session finishes while none need your input it briefly shows the number completed, such as `← 2 done`. Both flashes are off when the [`prefersReducedMotion` setting](/docs/en/settings#available-settings) is on, and the hint is hidden in [screen reader mode](/docs/en/accessibility).
+{/* min-version: 2.1.205 */}在常规 `claude` 会话内，提示页脚的 `←` 提示计算正在等待你的后台 agent 数量，例如 `← 2 agents`，当没有 agent 需要输入时返回 `← for agents`。超过 99 的计数显示为 `99+`。当终端获得焦点时，计数大约每十秒刷新一次，当焦点返回时立即刷新。当计数移动和 agent 完成时，它会短暂改变颜色，除非启用了[`prefersReducedMotion` 设置](/docs/zh-CN/settings#available-settings)，并且在[屏幕阅读器模式](/docs/zh-CN/accessibility)中隐藏。在 [Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry](/docs/zh-CN/third-party-integrations) 上，提示保持其纯 `← for agents` 形式，没有计数。需要 Claude Code v2.1.205 或更高版本。
 
-{/* min-version: 2.1.210 */}The count appears on every provider, including [Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry](/docs/en/third-party-integrations).
+<h2 id="monitor-sessions-with-agent-view">
+  使用 agent view 监控会话
+</h2>
 
-## Monitor sessions with agent view
+运行 `claude agents` 打开 agent view。它接管整个终端并列出按状态分组的每个会话，固定的会话和需要你的会话在顶部。每行显示会话的名称、当前活动和其年龄，从会话创建时开始计算；已完成的会话的年龄冻结在运行花费的时间。
 
-Run `claude agents` to open agent view. It takes over the full terminal and lists every session grouped by state, with pinned sessions and the ones that need you at the top. Each row shows the session's name, current activity, and its age, counted from when the session was created; a finished session's age freezes at how long the run took.
+名称用该会话中由 [`/color`](/docs/zh-CN/commands) 设置的颜色着色。{/* min-version: 2.1.199 */}从 v2.1.199 开始，当你用 `←` 或 `/background` [后台会话](#from-inside-a-session)时，颜色会保留。
 
-The name is tinted with the color set by [`/color`](/docs/en/commands) in that session, {/* min-version: 2.1.199 */}including when you [background a session](#from-inside-a-session) with `←` or `/background`.
-
-By default the list shows every background session you've started, across all your projects. A session working in one repository and another in a different worktree both appear here, regardless of which directory you opened agent view from. To narrow the list to one project, pass `--cwd`:
+默认情况下，列表显示你启动的每个后台会话，跨越所有项目。在一个存储库中工作的会话和在不同 worktree 中工作的另一个会话都会出现在这里，无论你从哪个目录打开 agent view。要将列表限制到一个项目，请传递 `--cwd`：
 
 ```bash theme={null}
 claude agents --cwd ~/projects/my-app
 ```
 
-This shows only sessions started under that directory. It still lists a session that has [moved into a worktree](#how-file-edits-are-isolated) under `~/projects/my-app/.claude/worktrees/`.
+这只显示在该目录下启动的会话。已[移入 worktree](#how-file-edits-are-isolated) 到 `~/projects/my-app/.claude/worktrees/` 下的会话仍然算作属于 `~/projects/my-app`。
 
-Interactive sessions you have open in other terminals don't appear until you [background them](#from-inside-a-session). [Subagents](/docs/en/sub-agents) and [teammates](/docs/en/agent-teams) a session spawns aren't listed as separate rows.
+你在其他终端中打开的交互式会话不会出现，直到你[后台它们](#from-inside-a-session)。[Subagents](/docs/zh-CN/sub-agents) 和 [teammates](/docs/zh-CN/agent-teams) 会话生成的不会列为单独的行。
 
 ```text theme={null}
 Pinned
@@ -102,321 +110,310 @@ Completed
   … 6 more
 ```
 
-### Read session state
+<h3 id="read-session-state">
+  读取会话状态
+</h3>
 
-Each row starts with an icon whose color and animation show the session's state:
+每行以一个图标开头，其颜色和动画显示会话的状态：
 
-| State       | Icon shows as | What it means                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| :---------- | :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Working     | Animated      | Claude is actively running tools or generating a response                                                                                                                                                                                                                                                                                                                                                                      |
-| Needs input | Yellow        | Claude is waiting on something only you can provide: an answer to a question, a permission decision, {/* min-version: 2.1.212 */}a [sandbox](/docs/en/sandboxing) prompt to allow a network host, an MCP server's [request for input](/docs/en/mcp#respond-to-mcp-elicitation-requests), a managed-settings prompt, or {/* min-version: 2.1.216 */}an MCP authentication or settings request held by a session with no terminal attached |
-| Idle        | Dimmed        | The session has nothing to do and is ready for your next prompt                                                                                                                                                                                                                                                                                                                                                                |
-| Completed   | Green         | The task finished successfully                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Failed      | Red           | The task ended with an error                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Stopped     | Grey          | The session was stopped with `Ctrl+X` or `claude stop`, or [its process was ended from outside Claude Code](#the-supervisor-process)                                                                                                                                                                                                                                                                                           |
+| 状态   | 图标显示为 | 含义                              |
+| :--- | :---- | :------------------------------ |
+| 工作中  | 动画    | Claude 正在积极运行工具或生成响应            |
+| 需要输入 | 黄色    | Claude 等待你的特定问题或权限决定            |
+| 空闲   | 暗淡    | 会话没有任何事情要做，准备好接收你的下一个提示         |
+| 已完成  | 绿色    | 任务成功完成                          |
+| 失败   | 红色    | 任务以错误结束                         |
+| 已停止  | 灰色    | 会话被 `Ctrl+X` 或 `claude stop` 停止 |
 
-Separately, the icon's shape shows whether the underlying process is running:
+另外，图标的形状显示底层进程是否正在运行：
 
-| Shape               | What it means                                                                                                     |
-| :------------------ | :---------------------------------------------------------------------------------------------------------------- |
-| `✻` or animated `✽` | The session process is alive and replies immediately                                                              |
-| `∙`                 | The process has exited. You can still peek, reply, or attach, and Claude restarts from where it left off          |
-| `✢`                 | A [`/loop`](/docs/en/scheduled-tasks) session sleeping between iterations. The row shows its run count and a countdown |
+| 形状          | 含义                                                           |
+| :---------- | :----------------------------------------------------------- |
+| `✻` 或动画 `✽` | 会话进程处于活跃状态并立即回复                                              |
+| `∙`         | 进程已退出。你仍然可以窥视、回复或附加，Claude 从中断处重新启动                          |
+| `✢`         | 一个 [`/loop`](/docs/zh-CN/scheduled-tasks) 会话在迭代之间休眠。该行显示其运行计数和倒计时 |
 
-The `#N` label that can appear at the right edge of a row is a [pull request the session is linked to](#pull-request-status), not part of the state icon.
+行右边缘可能出现的 `#N` 标签是[会话打开的拉取请求](#pull-request-status)，不是状态图标的一部分。
 
-The terminal tab title shows the awaiting-input count while agent view is open: `2 awaiting input · claude agents` when sessions need input, or `claude agents` when none do.
+终端标签标题在 agent view 打开时显示等待输入的计数：当会话需要输入时显示 `2 awaiting input · claude agents`，或当没有会话需要输入时显示 `claude agents`。
 
-While agent view is open, Claude Code also sends a notification through your configured [terminal notification channel](/docs/en/terminal-config#get-a-terminal-bell-or-notification) when a local background session starts needing your input, finishes, or fails. Sessions that run on a schedule, such as [`/loop`](/docs/en/scheduled-tasks) sessions, notify only when they need your input. Notifications use the same [`preferredNotifChannel` setting](/docs/en/settings#available-settings) as the rest of Claude Code and fire the [`Notification` hook](/docs/en/hooks#notification) with the `agent_needs_input` or `agent_completed` type.
+从 v2.1.198 开始，当 agent view 打开时，Claude Code 还会通过你配置的[终端通知频道](/docs/zh-CN/terminal-config#get-a-terminal-bell-or-notification)发送通知，当本地后台会话开始需要你的输入、完成或失败时。在计划上运行的会话，例如 [`/loop`](/docs/zh-CN/scheduled-tasks) 会话，仅在需要你的输入时通知。通知使用与 Claude Code 其余部分相同的 [`preferredNotifChannel` 设置](/docs/zh-CN/settings#available-settings)，并使用 `agent_needs_input` 或 `agent_completed` 类型触发 [`Notification` hook](/docs/zh-CN/hooks#notification)。
 
-Background sessions don't need any terminal open to keep working. A separate [supervisor process](#the-supervisor-process) runs them, so you can close agent view, close your shell, or start a new interactive session and your dispatched work keeps going.
+后台会话不需要任何打开的终端来继续工作。一个单独的[监督进程](#the-supervisor-process)运行它们，所以你可以关闭 agent view、关闭你的 shell 或启动一个新的交互式会话，你的调度工作继续进行。
 
-Session state persists on disk through auto-updates and supervisor restarts. Sessions are also preserved when your machine sleeps. Their processes resume on wake and the supervisor reconnects to them instead of treating the time gap as idle. Shutting down still stops running sessions; see [Sessions show as failed after shutdown](#sessions-show-as-failed-after-shutdown) for how to recover them.
+会话状态通过自动更新和监督进程重启在磁盘上持久化。会话在你的机器休眠时也会被保留。它们的进程在唤醒时恢复，监督进程重新连接到它们，而不是将时间间隙视为空闲。关闭仍然会停止运行中的会话；请参阅[关闭后会话显示为失败](#sessions-show-as-failed-after-shutdown)了解如何恢复它们。
 
-A session that was mid-response when the machine slept can come back unresponsive. When you open a session that has stopped responding, the supervisor restarts its process and the session continues the interrupted response from where it left off.
+当你打开一个已停止响应的会话时，监督进程重启其进程，会话从中断处继续中断的响应。当机器在会话中途响应时休眠时，会话可能会陷入该状态。需要 Claude Code v2.1.200 或更高版本。
 
-### Row summaries
+<h3 id="row-summaries">
+  行摘要
+</h3>
 
-The one-line summary in each row is generated by a [Haiku-class model](/docs/en/model-config) so the row can tell you what the session is doing, what it needs, or what it produced without opening the transcript. While a session is actively working, the row text updates at most once every 15 seconds from the session's own recent output without sending a model request, and the model writes a fresh summary when each turn ends.
+每行中的单行摘要由 [Haiku-class 模型](/docs/zh-CN/model-config)生成，所以该行可以告诉你会话正在做什么、需要什么或生成了什么，无需打开记录。当会话正在积极工作时，摘要最多每 15 秒从会话自己的最近输出刷新一次，无需发送模型请求，每个回合结束时模型写入新摘要。
 
-A working row shows what the session says it's doing, and a blocked row shows the question it's asking. During a long turn, the model also rewrites the summary every few minutes so a busy row doesn't keep showing an outdated one. {/* min-version: 2.1.206 */}The summary text fills the row's remaining width; open the [peek panel](#peek-and-reply) to read a sentence the terminal edge clips.
+工作中的行显示会话说它正在做什么，被阻止的行显示它提出的问题。在长回合期间，模型也大约每分钟重写一次摘要，每次重写后等待时间加倍，最多四分钟，所以繁忙的行不会继续显示过时的摘要。在 v2.1.205 之前，工作中的行可能显示原始工具调用而不是报告，运行并行工作项的会话在文本之前显示 `done/total` 计数，例如 `2/5`。
 
-When the list is [grouped by directory](#organize-the-list), the summary opens with the session's state as a colored word, such as `Needs input · double jump or wall climb?`. In the default state grouping, the group header already names the state, so the row shows only the summary.
+摘要文本填充行的剩余宽度，仅在终端的右边缘截断；打开[窥视面板](#peek-and-reply)读取边缘裁剪的句子。在 v2.1.206 之前，文本在 64 列处被切割，无论终端宽度如何。
 
-The end-of-turn summary and each mid-turn rewrite are one short Haiku-class request through your normal provider, billed and handled under the same [data usage terms](/docs/en/data-usage) as the session itself. The 15-second updates between model rewrites reuse the session's own output and don't send a request. On third-party providers such as Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and custom gateways, the request falls back to the session's main model when no Haiku model is configured. Set [`ANTHROPIC_DEFAULT_HAIKU_MODEL`](/docs/en/model-config#environment-variables) to choose the model for these summaries on those providers.
+当列表[按目录分组](#organize-the-list)时，摘要以会话的状态作为彩色单词开头，例如 `Needs input · double jump or wall climb?`。在默认状态分组中，组标题已经命名了状态，所以行只显示摘要。在 v2.1.205 之前，按目录分组的行不带状态单词。
 
-### Pull request status
+整个输出不包含字母或数字的回合，例如打印单个符号的安静迭代的 [`/loop`](/docs/zh-CN/scheduled-tasks) 会话，保持行的前一个摘要和状态。在 v2.1.205 之前，该回合被重新分类，可能将等待你输入的会话翻转回 `Working`。
 
-When a session opens a pull request, a `#1234` label appears at the right edge of the row, linked to the pull request in terminals that support hyperlinks. The label persists when you send a follow-up to the session, so the pull request remains visible while the row reverts to live progress. Background sessions that isolated their changes in a worktree open these pull requests themselves; [How file edits are isolated](#how-file-edits-are-isolated) covers when that happens and what a session never does without asking.
+结束回合摘要和每次中途重写是通过你的正常提供商的一个短 Haiku-class 请求，按与会话本身相同的[数据使用条款](/docs/zh-CN/data-usage)计费和处理。15 秒的模型重写之间的更新重用会话自己的输出，不发送请求。在第三方提供商（如 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和自定义网关）上，当没有配置 Haiku 模型时，请求会回退到会话的主模型。设置 [`ANTHROPIC_DEFAULT_HAIKU_MODEL`](/docs/zh-CN/model-config#environment-variables) 以在这些提供商上为这些摘要选择模型。
 
-A session that works on an existing pull request is linked to it the same way. Editing, commenting on, closing, or marking a pull request ready with `gh` links the pull request that the command's own output names, so a `gh` command whose captured output names no pull request doesn't create a link; `gh pr merge` is the common case, because it prints its result only to an interactive terminal. Checking a pull request out with `gh pr checkout`, or pushing to a branch that has an open pull request, links it by looking up that branch with `gh pr view` instead.
+<h3 id="pull-request-status">
+  拉取请求状态
+</h3>
 
-When a session is linked to more than one pull request, the label shows a count instead, such as `3 PRs`, colored by the open pull request that most needs attention. Open the [peek panel](#peek-and-reply) to see them all.
+当会话打开拉取请求时，`#1234` 标签出现在行的右边缘，在支持超链接的终端中链接到拉取请求。当你向会话发送后续内容时标签保持，所以拉取请求在行恢复到实时进度时保持可见。在 worktree 中隔离其更改的后台会话自己打开这些拉取请求；[文件编辑如何隔离](#how-file-edits-are-isolated)涵盖何时发生以及会话在没有询问的情况下永远不会做什么。
 
-The pull request number is colored by its status:
+处理现有拉取请求的会话以相同方式链接到它。使用 `gh` 编辑、评论、关闭或标记拉取请求为就绪链接命令自己的输出命名的拉取请求，所以捕获的输出不命名拉取请求的 `gh` 命令不创建链接；`gh pr merge` 是常见情况，因为它仅将其结果打印到交互式终端。使用 `gh pr checkout` 检出拉取请求，或推送到有打开拉取请求的分支，通过改为使用 `gh pr view` 查找该分支来链接它。在 v2.1.205 之前，仅会话创建或检出的拉取请求被链接，推送仅在本地分支名称匹配时链接一个。
 
-| Color  | Pull request status                           |
-| :----- | :-------------------------------------------- |
-| Yellow | Waiting on checks or review, or checks failed |
-| Green  | Checks passed and no review is blocking       |
-| Purple | Merged                                        |
-| Grey   | Draft or closed                               |
+Claude Code 从完整命令输出读取拉取请求，包括当命令的输出超过内联限制时保存到文件的部分。在 v2.1.205 之前，在 Bash 调用中创建的拉取请求，其输出超过约 30,000 个字符，未被链接。
 
-For most tasks this column is where you pick up the result: review and merge the pull request when its number turns green.
+当会话链接到多个拉取请求时，标签显示计数，例如 `3 PRs`，按最需要关注的打开拉取请求着色。打开[窥视面板](#peek-and-reply)查看它们全部。
 
-### Peek and reply
+拉取请求编号由其状态着色：
 
-Press `Space` on a selected row to open the peek panel. It opens with the sentence the row truncates at the terminal edge, and which sentence that is depends on the session's state:
+| 颜色 | 拉取请求状态        |
+| :- | :------------ |
+| 黄色 | 等待检查或审查，或检查失败 |
+| 绿色 | 检查通过且没有审查阻止   |
+| 紫色 | 已合并           |
+| 灰色 | 草稿或已关闭        |
 
-* A session that's waiting on you: the exact question it's asking, above the reply input
-* A finished session: its result
-* A working session: its full status sentence
+对于大多数任务，这列是你收集结果的地方：当其编号变绿时审查和合并拉取请求。
 
-Any pull requests linked to the session are listed next. For a session that's waiting on you, a line such as `waiting 3m` below them shows how long it has been waiting, and it's the only time shown in the panel. The age at the right edge of the row is a different number: it counts from when the session started.
+<h3 id="peek-and-reply">
+  窥视和回复
+</h3>
 
-Most of the time the peek panel is enough and you don't need to open the full transcript.
+在选定的行上按 `Space` 打开窥视面板。它打开时显示行截断的句子，该句子是什么取决于会话的状态：
 
-Type a reply in the peek panel and press `Enter` to send it to that session. When the session asks a question with predefined choices, the peek panel shows them as a numbered list and you can press a number key to pick one. A permission prompt shows as text describing what the session wants to run, without numbered options. Type a reply to answer it, or attach to answer with the standard prompt. For other blocked sessions, press `Tab` to fill the input with a suggested reply you can edit before sending. Prefix a reply with `!` to send a Bash command instead.
+* 等待你的会话：它提出的确切问题，在回复输入上方
+* 已完成的会话：其结果
+* 工作中的会话：其完整状态句子
 
-A reply that can't be delivered, because the background service is unreachable or the send fails, is saved and sent to the session as its next prompt when its process starts again, and the error message says the reply was saved. A reply prefixed with `!` isn't saved, because the saved text would reach the session as a plain prompt rather than run as a Bash command.
+任何链接到会话的拉取请求都列在下面。对于等待你的会话，下面的一行，例如 `waiting 3m` 显示它已经等待多长时间，这是面板中唯一显示的时间。行右边缘的年龄是一个不同的数字：它从会话启动时开始计算。
 
-With [voice dictation](/docs/en/voice-dictation) enabled, hold or tap your push-to-talk key while the reply input is focused to dictate a reply instead of typing it. The same works in the dispatch input at the bottom of agent view.
+大多数时候窥视面板就足够了，你不需要打开完整的记录。
 
-Use `↑` and `↓` to peek at adjacent sessions without closing the panel, or `→` to attach.
+在 v2.1.207 之前，每次窥视都以状态句子和裸时间戳打开，被阻止的会话的问题出现在它们下方，前缀为相同的时间戳第二次。
 
-### Attach to a session
+在窥视面板中输入回复并按 `Enter` 将其发送到该会话。当会话提出多选问题时，窥视面板显示选项，你可以按数字键选择一个。对于其他被阻止的会话，按 `Tab` 用建议的回复填充输入，你可以在发送前编辑。用 `!` 前缀回复以发送 Bash 命令。
 
-Press `Enter` or `→` on a selected row to attach. Agent view is replaced by the full interactive session. When you attach, Claude posts a short recap of what happened while you were away.
+无法传递的回复，因为后台服务无法访问或发送失败，会被保存并在其进程再次启动时作为其下一个提示发送到会话，错误消息说回复已保存。前缀为 `!` 的回复不会被保存，因为保存的文本会作为纯提示而不是 Bash 命令到达会话。
 
-While attached, the session behaves like any other Claude Code session: [commands](/docs/en/commands), keyboard shortcuts, and features all work, with the exceptions below.
+启用[语音听写](/docs/zh-CN/voice-dictation)后，在回复输入获得焦点时按住或点击你的推送通话键以听写回复而不是输入。同样的功能在 agent view 底部的调度输入中也有效。
 
-While you're attached, `/install-github-app` and the [`/mcp`](/docs/en/mcp) settings list work normally, since a human at the terminal can complete their dialogs. When nobody is attached, these commands can't open their dialogs, so the session appears under `Needs input` in agent view with a row such as `open this session to manage MCP servers`, and the transcript reply says the same. Attach and run the command again to continue; the needs-input row clears when you attach. `/mcp reconnect <server>`, `/mcp enable`, and `/mcp disable` work without attaching either way.
+使用 `↑` 和 `↓` 窥视相邻会话而不关闭面板，或 `→` 附加。
 
-Attached sessions always render in [fullscreen mode](/docs/en/fullscreen), regardless of your `tui` setting, because a background session has no terminal scrollback to append to. Scroll with `PgUp`, `PgDn`, or the mouse wheel, and press `Ctrl+O` for transcript mode. Your terminal's native scroll and tmux copy mode show only the current viewport, the same as when you run any fullscreen application.
+<h3 id="attach-to-a-session">
+  附加到会话
+</h3>
 
-Press `←` on an empty prompt, or run `/exit`, to detach and return to agent view, whether you opened the session from agent view or with `claude attach <id>` from your shell.
+在选定的行上按 `Enter` 或 `→` 附加。Agent view 被完整的交互式会话替换。当你附加时，Claude 发布一个关于你离开时发生的事情的简短回顾。
 
-On Windows, if you press `←` within about half a second of attaching, Claude Code shows `Ambiguous ←, press again to detach`, because in that window the terminal can redeliver a press from before you attached. Press `←` again to detach.
+附加时，会话的行为像任何其他 Claude Code 会话：[命令](/docs/zh-CN/commands)、快捷键和功能都有效，除了下面的例外。
 
-`Ctrl+Z` also detaches but goes back to where you started instead: agent view if you attached from there, or your shell if you ran `claude attach`. Use `Ctrl+Z` when a dialog has focus and isn't responding to `←`.
+后台会话拒绝 `/install-github-app` 和 [`/mcp`](/docs/zh-CN/mcp) 设置列表，包括其身份验证操作，无论你是附加还是从窥视面板回复。消息指导你到常规 `claude` 会话，`/mcp reconnect <server>`、`/mcp enable` 和 `/mcp disable` 仍然有效。
 
-`Ctrl+C` keeps its standard interrupt behavior while attached: it cancels a running response or `!` shell command rather than detaching. Pressing `Ctrl+C` twice on an empty prompt detaches, the same as in any session.
+附加的会话始终以[全屏模式](/docs/zh-CN/fullscreen)呈现，无论你的 `tui` 设置如何，因为后台会话没有终端滚动历史可追加。使用 `PgUp`、`PgDn` 或鼠标滚轮滚动，按 `Ctrl+O` 进入记录模式。你的终端的原生滚动和 tmux 复制模式仅显示当前视口，与运行任何全屏应用程序时相同。
 
-Detaching never stops a background session: `←`, `Ctrl+Z`, `/exit`, and double `Ctrl+C` or double `Ctrl+D` all leave it running. To end a session from inside it, run `/stop`.
+在空提示上按 `←` 或运行 `/exit` 分离并返回 agent view。从 v2.1.198 开始，这的工作方式与你从 agent view 打开会话或从 shell 用 `claude attach <id>` 运行相同。
 
-In a session running in the foreground, one you started in the terminal rather than attached to from agent view, pressing `←` on an empty prompt backgrounds it and opens agent view with that row selected, so you can switch sessions without leaving the terminal. The same single press detaches an attached session.
+`Ctrl+Z` 也分离但返回到你开始的地方：如果你从那里附加则返回 agent view，或如果你运行了 `claude attach` 则返回你的 shell。当对话有焦点且不响应 `←` 时使用 `Ctrl+Z`。
 
-If you press `←` right after you delete the last of the prompt's text or move through prompt history, Claude Code asks you to confirm: the first press shows `Press ← again to open agents`, or `Press ← again to go back to agents` in an attached session, and the second press switches.
+`Ctrl+C` 在附加时保持其标准中断行为：它取消运行中的响应或 `!` shell 命令，而不是分离。在空提示上按两次 `Ctrl+C` 分离，与任何会话中的相同。
 
-When `←` backgrounds a foreground session, agent view shows `Your conversation moved to the background` above the list, with that session's row already selected. From there:
+分离永远不会停止后台会话：`←`、`Ctrl+Z`、`/exit` 和双 `Ctrl+C` 或双 `Ctrl+D` 都让它运行。要从内部结束会话，运行 `/stop`。
 
-* Press `Enter` to reopen the conversation.
-* Press `Esc` to undo the switch and return to the conversation. If `Esc` shows `Still starting — try again in a moment`, the background session isn't ready yet, so press `Esc` again in a moment.
-* Press `Ctrl+C` twice to exit to your shell.
+在前台运行的会话中，一个你在终端中启动的而不是从 agent view 附加的，在空提示上按 `←` 会后台它并打开 agent view，该行被选中，所以你可以在不离开终端的情况下切换会话。同样的单次按压分离附加的会话。
 
-When Claude Code can't reopen the conversation, it exits and prints a `claude --resume` command that resumes it.
+如果在你按 `←` 时工具正在运行，Claude Code 会等待大约十秒钟让它完成，然后后台，响应在后台会话中继续。再按一次 `←` 以立即后台而不是等待。当进行中的工作无法转移到后台会话时，`Background this session?` 对话首先出现，与 [`/background`](#from-inside-a-session) 相同。
 
-[Claude's task list](/docs/en/interactive-mode#task-list) moves to the background session with the conversation, so the checklist is intact when you return to that row.
+十秒限制在 [subagents](/docs/zh-CN/sub-agents) 运行时不适用。Claude Code 继续等待以便它们的工作转移，并在等待时显示 `Still backgrounding after the current tool` 通知；再按一次 `←` 以立即后台而不等待，这会从头重新启动 subagents。在 v2.1.203 之前，等待在十秒后结束，运行中的 subagents 在没有警告的情况下从头重新启动。
 
-The row you pressed `←` from also keeps a bold, undimmed name after you move the selection with the arrow keys or the mouse, so you can tell which session you came from.
+该行即使从没有对话历史的新会话也会被创建，所以 `→` 会返回到它。{/* max-version: 2.1.202 */}在 v2.1.203 之前，当该行是唯一的行时，agent view 在它下方显示一个入门提示。
 
-If a tool is running when you press `←`, Claude Code waits up to about ten seconds for it to finish before backgrounding, and the response continues in the background session. Press `←` again to background immediately instead of waiting. When in-flight work can't carry over to the background session, the `Background this session?` dialog appears first, the same as with [`/background`](#from-inside-a-session).
+你可以在 `/config` 中用 `leftArrowOpensAgents` 设置关闭此快捷键。
 
-The ten-second limit doesn't apply while [subagents](/docs/en/sub-agents) are running. Claude Code keeps waiting so their work carries over, and shows a `Still backgrounding after the current tool` notice while it waits; press `←` again to background without waiting, which restarts the subagents from the beginning.
+<h3 id="organize-the-list">
+  组织列表
+</h3>
 
-Pressing `←` creates the session's row even when the conversation has no messages yet, so `→` still returns to it.
+Agent view 按状态分组会话，需要输入的会话在顶部，`Ready for review` 和 `Needs input` 在 `Working` 和 `Completed` 上方。这些组名不与上面的[状态](#read-session-state)一一对应：当会话有打开的拉取请求时，它移动到 `Ready for review`，`Completed` 收集已完成、失败和已停止的会话。
 
-You can turn this shortcut off with the `leftArrowOpensAgents` setting in `/config`.
+按 `Ctrl+S` 改为按目录分组。你的选择在运行中保存。
 
-### Organize the list
+在一个组内：
 
-Agent view groups sessions so the ones that need input are at the top, with `Ready for review` and `Needs input` above `Working` and `Completed`. These group names don't map one-to-one to the [states](#read-session-state) above: a session moves to `Ready for review` when it has an open pull request, and `Completed` collects finished, failed, and stopped sessions together.
+* 按 `Ctrl+T` 将会话固定到顶部并[在空闲时保持其进程运行](#the-supervisor-process)
+* 按 `Shift+↑` 或 `Shift+↓` 重新排序会话
+* 按 `Ctrl+R` 重命名会话
+* 在组标题上按 `Enter` 折叠它
 
-Press `Ctrl+S` to group by directory instead. Your choice persists across runs.
+要从列表中删除会话，按 `Ctrl+X` 停止它，在两秒内再按 `Ctrl+X` 删除它。在组标题上按 `Ctrl+X` 在确认后删除该组中的每个会话。
 
-Within a group:
+删除会从 agent view 中删除会话。如果 Claude [为会话创建了 worktree](#how-file-edits-are-isolated)，删除会删除该 worktree，包括其中的任何未提交的更改，所以在删除前推送或提交你想保留的工作。你自己创建的 worktree 并在其中启动会话的会被保留。对话记录保留在你的本地机器上，并且仍然可以通过 `claude --resume` 访问。
 
-* Press `Ctrl+T` to pin a session to the top and [keep its process running](#the-supervisor-process) while idle
-* Press `Shift+↑` or `Shift+↓` to reorder sessions
-* Press `Ctrl+R` to rename a session
-* Press `Enter` on a group header to collapse it
+删除永远不会删除有未推送到任何地方的提交的 worktree，或另一个运行中的会话声称或已锁定的 worktree。Claude Code 保留 worktree 和会话，页脚命名保留的路径和原因。推送提交或关闭其他会话，然后再次删除。
 
-To remove a session from the list, press `Ctrl+X` to stop it and `Ctrl+X` again within two seconds to delete it. Pressing `Ctrl+X` on a group header deletes every session in that group after confirmation.
+删除也会从[监督进程](#the-supervisor-process)的会话列表中清除会话，无论你用 `Ctrl+X` 删除还是从 shell 用 [`claude rm`](#manage-sessions-from-the-shell) 删除，所以删除在监督进程重启中保持。在 v2.1.206 之前，在监督进程重启或无法访问时删除会话会将其留在该列表中，下一个监督进程重启其进程并再次显示该行。
 
-Deleting removes the session from agent view. If Claude [created a worktree](#how-file-edits-are-isolated) for the session, deleting removes that worktree too, including any uncommitted changes in it, so commit work you want to keep first. A worktree you created yourself and started the session inside is left in place. The conversation transcript stays on your local machine and remains available through `claude --resume`.
+不适合屏幕的已完成会话折叠成 `… N more` 行。失败和有打开拉取请求的会话始终保持可见。`Completed` 组填充活跃组之后剩余的垂直空间，在短终端上标题压缩为单个摘要行，以便正在工作或需要输入的会话保持可见。
 
-Deleting never removes a worktree with commits that aren't pushed anywhere, or one that another running session claims or has locked. Claude Code keeps the worktree and the session, and the footer names the kept path and the reason. Push the commits, or close the other session, then delete again.
+<h3 id="filter-sessions">
+  过滤会话
+</h3>
 
-When a delete is refused, the session's row shows `not deleted` with the reason, and a worktree that couldn't be removed is reported with the underlying git error. A worktree that git no longer recognizes, for example one removed from git's records by `git worktree prune`, doesn't block deletion: the session is deleted, the worktree directory is left untouched on disk, and the footer names its path.
+在调度输入中输入以过滤而不是调度：
 
-Deleting also clears the session from the [supervisor's](#the-supervisor-process) session list, whether you delete with `Ctrl+X` or with [`claude rm`](#manage-sessions-from-the-shell) from the shell, so the removal persists across supervisor restarts.
+| 过滤                   | 显示                                                |
+| :------------------- | :------------------------------------------------ |
+| `a:<name>`           | 运行命名代理的会话                                         |
+| `s:<state>`          | 给定状态的会话，例如 `s:working`。也接受 `s:blocked` 用于等待你的所有内容 |
+| `#<number>` 或 PR URL | 处理该拉取请求的会话                                        |
+| 任何其他 URL             | 其第一个提示包含该 URL 的会话                                 |
 
-To bring a session back on Claude Code v2.1.212 or later, type `/resume` in the dispatch input. A picker opens with past sessions of the repository you opened agent view from, newest first, including sessions you deleted from the list; sessions that already have a row aren't listed. `↑`/`↓` move the selection, `Enter` resumes the selected session as a background session so it rejoins the list as a row, and `Esc` closes the picker.
+<h3 id="keyboard-shortcuts">
+  快捷键
+</h3>
 
-The picker opens only for a bare `/resume`. A targeted, scoped, or restricted resume can't be served by the picker, so agent view shows the `attach to a session to run it` hint instead when:
+在 agent view 中按 `?` 查看每个快捷键的上下文。下表总结了它们。
 
-* `/resume` names an id or a search term
-* the view is scoped with `--cwd`
-* the view was started with [`--safe-mode`](/docs/en/cli-reference#cli-flags)
-* the view was opened with a flag such as `--permission-mode` or `--settings`
+| 快捷键                   | 操作                                |
+| :-------------------- | :-------------------------------- |
+| `↑` / `↓`             | 在行之间移动                            |
+| `Enter`               | 附加到选定的会话，或如果输入中有文本则调度             |
+| `Space`               | 打开或关闭选定会话的窥视面板                    |
+| `Shift+Enter`         | 调度并立即附加                           |
+| `→`                   | 附加到选定的会话                          |
+| `Alt+1`..`Alt+9`      | 附加到当前目录中的第 1–9 个会话                |
+| `Tab`                 | 在空输入上浏览所有 subagents。否则应用突出显示的建议   |
+| `Ctrl+S`              | 在状态和目录之间切换分组                      |
+| `Ctrl+T`              | 固定或取消固定选定的会话                      |
+| `Ctrl+R`              | 重命名选定的会话                          |
+| `Ctrl+G`              | 在你的 `$VISUAL` 或 `$EDITOR` 中打开调度提示 |
+| `Ctrl+X`              | 停止会话；在两秒内再按一次删除它                  |
+| `Shift+↑` / `Shift+↓` | 重新排序选定的会话                         |
+| `Esc`                 | 关闭窥视面板、清除输入或退出                    |
+| `Ctrl+C`              | 清除输入；按两次退出                        |
+| `?`                   | 显示所有快捷键                           |
 
-Completed sessions that don't fit on screen fold into a `… N more` row. Failures and sessions with an open pull request always stay visible. The `Completed` group fills the vertical space left after the live groups, and on a short terminal the header compacts to a single summary line so sessions that are working or need input stay visible.
+<h2 id="dispatch-new-agents">
+  调度新代理
+</h2>
 
-### Filter sessions
+你可以从 agent view 调度新的后台会话、将现有的交互式会话发送到后台，或直接从 shell 启动一个。
 
-Type in the dispatch input to filter instead of dispatching:
+<h3 id="from-agent-view">
+  从 agent view
+</h3>
 
-| Filter                  | Shows                                                                                                    |
-| :---------------------- | :------------------------------------------------------------------------------------------------------- |
-| `a:<name>`              | Sessions running the named agent                                                                         |
-| `s:<state>`             | Sessions in the given state, such as `s:working`. Also accepts `s:blocked` for everything waiting on you |
-| `#<number>` or a PR URL | The session working on that pull request                                                                 |
-| Any other URL           | The session whose first prompt contained that URL                                                        |
+在 agent view 底部的输入框中输入提示并按 `Enter` 启动新的后台会话。会话从提示自动命名；稍后可以用 `Ctrl+R` 重命名它。
 
-### Keyboard shortcuts
+会话稍后获得的名称也会出现在其行上，包括当你在该会话中 [接受计划](/docs/zh-CN/permission-modes#review-and-approve-a-plan) 时 Claude 推导的名称。在 v2.1.207 之前，通过接受计划命名的后台会话在 `/status` 中显示该名称，但在你自己重命名之前不会在其 agent-view 行上显示。
 
-Press `?` in agent view to see every shortcut in context. The table below summarizes them.
+将图像粘贴到提示中以包含任务的屏幕截图或图表。
 
-| Shortcut              | Action                                                                                                                                                                             |
-| :-------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `↑` / `↓`             | Move between rows                                                                                                                                                                  |
-| `Enter`               | Attach to the selected session, or dispatch if there's text in the input                                                                                                           |
-| `Space`               | Open or close the peek panel for the selected session                                                                                                                              |
-| `Shift+Enter`         | Dispatch and attach immediately                                                                                                                                                    |
-| `→`                   | Attach to the selected session                                                                                                                                                     |
-| `Alt+1`..`Alt+9`      | Attach to session 1–9 in the focused session's directory                                                                                                                           |
-| `Tab`                 | On an empty input, browse all subagents. Otherwise apply the highlighted suggestion                                                                                                |
-| `Ctrl+S`              | Switch grouping between state and directory                                                                                                                                        |
-| `Ctrl+T`              | Pin or unpin the selected session                                                                                                                                                  |
-| `Ctrl+R`              | Rename the selected session                                                                                                                                                        |
-| `Ctrl+G`              | Open the dispatch prompt in your `$VISUAL` or `$EDITOR`                                                                                                                            |
-| `Ctrl+J`              | Insert a newline in the dispatch input. {/* min-version: 2.1.212 */}Before v2.1.212, terminals with extended key reporting ignored the keypress                                    |
-| `Ctrl+X`              | Stop the session; press again within two seconds to delete it                                                                                                                      |
-| `Shift+↑` / `Shift+↓` | Reorder the selected session                                                                                                                                                       |
-| `Esc`                 | Close the peek panel, clear the input, or exit. When you opened agent view by backgrounding your session with `←`, the final `Esc` returns to that conversation instead of exiting |
-| `Ctrl+C`              | Clear the input; press twice to exit                                                                                                                                               |
-| `?`                   | Show all shortcuts                                                                                                                                                                 |
+粘贴的文本长度超过 800 个字符或超过两行会折叠为 `[Pasted text #N]` 占位符，以便输入保持在一行；完整文本在你调度时发送。{/* min-version: 2.1.207 */}要在调度前查看或编辑折叠的文本，再次粘贴相同的文本，占位符会展开回输入。在至少 90 列宽的终端上，粘贴后会在输入下方出现 `paste again to expand` 提醒几秒钟。在 v2.1.207 之前，再次粘贴相同的文本会添加第二个占位符而不是展开第一个。
 
-## Dispatch new agents
+前缀或提及提示的部分以控制会话如何启动：
 
-You can dispatch new background sessions from agent view, send or copy an existing interactive session to the background, or start one directly from the shell.
+| 输入                      | 效果                                                                                       |
+| :---------------------- | :--------------------------------------------------------------------------------------- |
+| `<agent-name> <prompt>` | 如果第一个单词匹配自定义 [subagent](/docs/zh-CN/sub-agents) 名称，该 subagent 作为会话的主代理运行，使用其 frontmatter 中的配置 |
+| `@<agent-name>`         | 在提示中的任何地方提及自定义 subagent 以作为主代理运行它                                                        |
+| `@<repo>`               | 提及一个存储库以在那里运行会话。参见 [调度到特定目录](#dispatch-to-a-specific-directory) 了解列出了哪些存储库               |
+| `/<command>`            | 建议 [skills](/docs/zh-CN/skills) 和 [commands](/docs/zh-CN/commands) 作为提示调度                          |
+| `! <command>`           | 运行 shell 命令作为后台作业而不是启动 Claude 会话。该作业显示为一行，你可以附加到、观看和分离                                   |
+| `#<number>` 或拉取请求 URL   | 如果会话已在处理该 PR，选择它而不是调度                                                                    |
+| `Shift+Enter`           | 调度并立即附加到新会话                                                                              |
 
-### From agent view
+一小组命令在 agent view 本身中运行而不是调度：
 
-Type a prompt in the input at the bottom of agent view and press `Enter` to start a new background session. The session is named automatically from the prompt; rename it later with `Ctrl+R`.
+* `/exit` 和 `/quit` 关闭 agent view
+* `/logout` 将你登出
+* `/model` 设置 [调度模型](#set-the-model)
+* {/* min-version: 2.1.198 */}从 v2.1.198 开始，`/login` 打开登录对话框，以便你可以在不附加到会话的情况下再次登录
 
-The automatic name is a short label written by a [Haiku-class model](/docs/en/model-config). {/* min-version: 2.1.207 */}A name the session gets later also appears on its row, including the name Claude derives when you [accept a plan](/docs/en/permission-modes#review-and-approve-a-plan) in that session.
+Skills、你自己的命令和提示扩展内置命令如 `/init` 作为其第一个提示发送到新的后台会话。其他内置命令显示 `attach to a session to run it` 提示。{/* min-version: 2.1.203 */}你输入的所有内容都保留在提示旁边的输入中，以便你可以编辑它。在 v2.1.203 之前，提示清除了输入，输入的文本丢失了。
 
-Paste an image into the prompt to include a screenshot or diagram with the task.
+将重复任务打包为 [skill](/docs/zh-CN/skills) 让你从 agent view 多次启动相同的工作流而无需重新输入提示。
 
-Pasted text longer than 800 characters or more than two lines collapses to a `[Pasted text #N]` placeholder so the input stays on one line; the full text is sent when you dispatch. {/* min-version: 2.1.207 */}To review or edit the collapsed text before dispatching, paste the same text again and the placeholder expands back into the input.
+当相同的 `@name` 同时匹配 subagent 和同级存储库时，subagent 优先。不带 `@` 的首字形式也适用，所以以匹配你的某个 subagent 名称的单词开头的提示会调度该 subagent 而不是将该单词视为纯文本。当你想要明确指定时，使用 `@` 形式，或以不同的单词开头提示以避免匹配。
 
-Prefix or mention parts of the prompt to control how the session starts:
+<h4 id="dispatch-to-a-specific-directory">
+  调度到特定目录
+</h4>
 
-| Input                             | Effect                                                                                                                                                         |
-| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<agent-name> <prompt>`           | If the first word matches a custom [subagent](/docs/en/sub-agents) name, that subagent runs as the session's main agent with the configuration from its frontmatter |
-| `@<agent-name>`                   | Mention a custom subagent anywhere in the prompt to run it as the main agent                                                                                   |
-| `@<repo>`                         | Mention a repository to run the session there. See [Dispatch to a specific directory](#dispatch-to-a-specific-directory) for which repositories are listed     |
-| `/<command>`                      | Suggest [skills](/docs/en/skills) and [commands](/docs/en/commands) to dispatch as the prompt                                                                            |
-| `! <command>`                     | Run a shell command as a background job instead of starting a Claude session. The job appears as a row you can attach to, watch, and detach from               |
-| `#<number>` or a pull request URL | If a session is already working on that PR, select it instead of dispatching                                                                                   |
-| `Shift+Enter`                     | Dispatch and immediately attach to the new session                                                                                                             |
+新会话在你打开 agent view 的目录中运行。要针对不同的目录，使用以下任何一种：
 
-A small set of commands run in agent view itself instead of dispatching:
+* 在该目录中打开 `claude agents`。
+* 在父目录中打开 `claude agents` 并在提示中用 `@<repo>` 提及一个子存储库。输入 `@` 会列出这些目标：
 
-* `/exit` and `/quit` close agent view
-* `/logout` signs you out
-* `/model` sets the [dispatch model](#set-the-model)
-* {/* min-version: 2.1.198 */}`/login` opens the sign-in dialog so you can sign in again without attaching to a session
-* {/* min-version: 2.1.212 */}A bare `/resume`, or its `/continue` alias, opens a picker of the repository's past sessions to [bring one back](#organize-the-list) as a background session. Requires Claude Code v2.1.212 or later
+  * 启动目录下一级的 Git 存储库
+  * 你启动的存储库的已注册 [git worktrees](/docs/zh-CN/worktrees)，这些 worktrees 位于其目录树内，例如 Claude 在 `.claude/worktrees/` 下创建的那些，标记有其检出的分支。在存储库外添加的 worktrees，例如用 `git worktree add ../feature` 添加的，不会被列出
+  * 任何已在列表中有会话的目录
 
-Skills, your own commands, and prompt-expanding built-ins such as `/init` are sent to a new background session as their first prompt. Other built-in commands show an `attach to a session to run it` hint instead. {/* min-version: 2.1.203 */}Everything you typed stays in the input next to the hint so you can edit it.
+  名称包含空格的目录不会被列出。{/* min-version: 2.1.203 */}在 v2.1.203 之前，已注册的 worktrees 不会被列出，所以调度到其中意味着从该 worktree 的目录运行 `claude --bg`。
+* 从 shell，`cd` 进入目录并运行 `claude --bg "<prompt>"`。
 
-Packaging a recurring task as a [skill](/docs/en/skills) lets you start the same workflow from agent view repeatedly without retyping the prompt.
+当 agent view 按目录分组时，突出显示的行的目录成为调度目标，所以你可以滚动到一个组并在不重新输入路径的情况下调度到它。
 
-When the same `@name` matches both a subagent and a sibling repository, the subagent takes precedence. The bare first-word match also applies, so a prompt that happens to begin with one of your subagent names dispatches that subagent rather than treating the word as plain text. Use the `@` form when you want to be explicit, or start the prompt with a different word to avoid the match.
+<h3 id="from-inside-a-session">
+  从会话内部
+</h3>
 
-#### Dispatch to a specific directory
+运行 `/background` 或其别名 `/bg` 将当前对话移动到后台会话。传递提示如 `/bg run the test suite and fix any failures` 以在后台化前先给出一个更多指令。如果 Claude 在你运行 `/bg` 时正在响应，响应会在后台会话中继续。
 
-A new session runs in the directory you opened agent view from. To target a different directory, use any of these:
+退出仍有后台工作运行的交互式会话，例如 subagents、后台 shell 命令、工作流或 [monitors](/docs/zh-CN/tools-reference#monitor-tool)，会显示 `Background work is running` 对话而不是立即退出。{/* min-version: 2.1.198 */}从 v2.1.198 开始，对话提供 `Move to background and exit` 以及 `Exit anyway` 和 `Stay`。选择它会以与 `/background` 相同的方式将会话移动到后台，然后返回你的 shell，所以可以继续的工作保持运行，会话出现在 agent view 中。当 agent view 被 [关闭](#turn-off-agent-view) 时，不显示该选项。
 
-* Open `claude agents` in that directory.
-* Open `claude agents` in a parent directory and mention a child repository with `@<repo>` in the prompt. Typing `@` lists these targets:
+从交互式会话后台化启动一个新的进程，该进程从保存的对话恢复，进行中的工作会转移到它：运行后台 shell 命令、后台 subagents、动态工作流和你用 [`/loop`](/docs/zh-CN/scheduled-tasks) 创建的计划任务会转移到后台会话并在那里继续运行。一个 subagent 与它启动的所有内容一起移动，所以它仅在所有工作都能转移时才转移，包括在 Windows 上。要停止进行中的工作而不是转移它，设置 [`CLAUDE_DISABLE_ADOPT=1`](/docs/zh-CN/env-vars#variables) 环境变量；Claude Code 随后会要求你在后台化前确认。
 
-  * Git repositories one level below the launch directory
-  * The registered [git worktrees](/docs/en/worktrees) of the repository you launched from that live inside its directory tree, such as the ones Claude creates under `.claude/worktrees/`, labeled with their checked-out branch. Worktrees added outside the repository, such as with `git worktree add ../feature`, aren't listed
-  * Any directory that already has a session in the list
+无法转移的工作，例如运行中的 [monitor](/docs/zh-CN/tools-reference#monitor-tool)，会被停止。拥有监视器的后台 subagent 会与它一起被停止。当任何此类工作正在运行时，Claude Code 显示 `Background this session?` 对话，以便你可以在它被停止前确认。
 
-  A directory whose name contains a space isn't listed.
-* From the shell, `cd` into the directory and run `claude --bg "<prompt>"`.
+一旦在后台，会话可以启动新的 subagents、monitors 和后台命令，这些会在后续的分离和重新附加中保持运行。
 
-When agent view is grouped by directory, the highlighted row's directory becomes the dispatch target, so you can scroll to a group and dispatch into it without retyping the path.
+来自原始启动的配置标志会传递到后台化的会话，所以其 MCP servers、settings 和备用模型保持有效：
 
-### From inside a session
-
-Two commands move work from the session you're in to the background: `/background` sends the current conversation there and frees your terminal, and `/fork` sends a copy while you keep working where you are.
-
-#### Send the session to the background
-
-Run `/background` or its alias `/bg` to move the current conversation into a background session. Pass a prompt such as `/bg run the test suite and fix any failures` to give one more instruction first. If Claude is responding when you run `/bg`, the response continues in the background session.
-
-Exiting a session that still has background work running, such as subagents, background shell commands, workflows, or [monitors](/docs/en/tools-reference#monitor-tool), shows a `Background work is running` dialog instead of quitting immediately. {/* min-version: 2.1.198 */}Choose `Move to background and exit` to background the session the same way `/background` does and return to your shell. The option isn't shown when agent view is [turned off](#turn-off-agent-view).
-
-#### Copy the session with /fork
-
-Run `/fork` to copy the current conversation into a new background session while the original keeps running. The copy starts with everything in the conversation up to that point, plus the working directory, model, permission mode, effort level, and any directories or "don't ask again" permission grants you added during the session, and appears as its own row in agent view. From that moment the two sessions are independent: what the copy does never reaches the original conversation. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211, `/fork` starts a [forked subagent](/docs/en/sub-agents#fork-the-current-conversation) instead, which is now `/subtask`. When [agent view is turned off](#turn-off-agent-view), `/fork` keeps the forked-subagent behavior and `/subtask` isn't available.
-
-Pass a prompt such as `/fork open a draft pull request with the work so far` and the copy starts working on it immediately. Without a prompt the copy waits for its first instruction: select its row in `claude agents` and press `Space` to send one, or run `claude attach <id>`. {/* min-version: 2.1.212 */}The selected row shows `space to send it a prompt` while it waits.
-
-Like any dispatched session, the copy [moves into its own worktree before editing files](#how-file-edits-are-isolated). When the current session is itself running inside a linked [worktree](/docs/en/worktrees) that has a main working tree to return to, the copy runs in that main working tree, so the two sessions don't edit the same checkout. In a bare-repository layout there is no main working tree, so the copy stays where it is and the `/fork` confirmation says it edits the same checkout.
-
-Sessions started with launch flags the copy wouldn't inherit, such as a replaced system prompt or a `--tools` allowlist, can't be forked; Claude Code says so instead of making a partial copy. A session dispatched from agent view forks normally: the copy is launched with the same [agent definition](/docs/en/sub-agents) and appended instructions as the session it came from.
-
-#### What carries over when you background
-
-Backgrounding starts a fresh process that resumes from the saved conversation, and in-flight work moves to it: running background shell commands, backgrounded subagents, dynamic workflows, and scheduled tasks you created with [`/loop`](/docs/en/scheduled-tasks) all carry over and keep running there. A subagent moves together with everything it started, so it carries over only when all of that work can move too. To stop in-flight work instead of carrying it over, set the [`CLAUDE_DISABLE_ADOPT=1`](/docs/en/env-vars#variables) environment variable; Claude Code then asks you to confirm before backgrounding.
-
-Work that can't carry over, such as a running [monitor](/docs/en/tools-reference#monitor-tool), is stopped, and a backgrounded subagent that owns a monitor is stopped along with it. When any such work is running, Claude Code shows a `Background this session?` dialog so you can confirm before it's stopped.
-
-Once in the background, the session can start new subagents, monitors, and background commands, and those keep running across later detach and reattach.
-
-Configuration flags from the original launch carry through to the backgrounded session, so its MCP servers, settings, and fallback model remain in effect:
-
-* `--mcp-config` and `--strict-mcp-config`
+* `--mcp-config` 和 `--strict-mcp-config`
 * `--settings`
 * `--add-dir`
 * `--plugin-dir`
 * `--fallback-model`
 * `--allow-dangerously-skip-permissions`
 
-Directories you added during the session with [`/add-dir`](/docs/en/permissions#additional-directories-grant-file-access-not-configuration) also carry through. Carrying `--allow-dangerously-skip-permissions` keeps `bypassPermissions` reachable in the backgrounded session, but it doesn't grant anything new: the mode still requires the one-time interactive acceptance described in [Permission mode, model, and effort](#permission-mode-model-and-effort).
+你在会话期间用 [`/add-dir`](/docs/zh-CN/permissions#additional-directories-grant-file-access-not-configuration) 添加的目录也会传递。
 
-### From your shell
+传递 `--allow-dangerously-skip-permissions` 会在后台化的会话中保持 `bypassPermissions` 可访问，但它不会授予任何新权限。该模式仍然需要在任何会话使用它之前进行相同的一次性交互式接受，如 [权限模式、模型和工作量](#permission-mode-model-and-effort) 中所述。
 
-Pass `--bg` or its long form `--background` to start a session that goes straight to the background:
+<h3 id="from-your-shell">
+  从你的 shell
+</h3>
+
+传递 `--bg` 或其长形式 `--background` 启动直接进入后台的会话：
 
 ```bash theme={null}
 claude --bg "investigate the flaky SettingsChangeDetector test"
 ```
 
-The prompt is the positional argument, not a `-p` value. {/* min-version: 2.1.198 */}Claude Code rejects `--bg` combined with `-p` or `--print` before any session is created, because `--print` never starts the interactive session that `claude agents` attaches to.
+提示是位置参数，不是 `-p` 值。{/* min-version: 2.1.198 */}从 v2.1.198 开始，将 `--bg` 与 `-p` 或 `--print` 结合会在创建任何会话前被拒绝并显示错误，因为 `--print` 永远不会启动 `claude agents` 附加到的交互式会话。
 
-To run a specific [subagent](/docs/en/sub-agents) you have defined, such as a `code-reviewer`, as the session's main agent, combine `--bg` with `--agent`:
+要运行特定的 subagent 作为会话的主代理，结合 `--bg` 和 `--agent`：
 
 ```bash theme={null}
 claude --agent code-reviewer --bg "address review comments on PR 1234"
 ```
 
-If the name doesn't match any of your subagents, the launch fails: Claude Code prints a `no agent named` warning and still reports the session as backgrounded, but the session exits immediately with an `--agent '<name>' not found` error. {/* min-version: 2.1.191 */}Before v2.1.191, Claude Code ran the session with the default agent instead.
-
-Pass `--name` to set the session's display name in agent view instead of the auto-generated one:
+传递 `--name` 以在 agent view 中设置会话的显示名称而不是自动生成的名称：
 
 ```bash theme={null}
 claude --bg --name "flaky-test-fix" "investigate the flaky SettingsChangeDetector test"
 ```
 
-After backgrounding, Claude prints the session's short ID and the commands for managing it. When the service that hosts background sessions isn't already running, `--bg` may first print `Starting background service…` above this output. When you pass `--name`, the name appears after the short ID:
+后台化后，Claude 打印会话的短 ID 和管理它的命令。当托管后台会话的服务尚未运行时，`--bg` 可能首先在此输出上方打印 `Starting background service…`。当你传递 `--name` 时，名称出现在短 ID 之后：
 
 ```text theme={null}
 backgrounded · 7c5dcf5d · flaky-test-fix
@@ -426,31 +423,39 @@ backgrounded · 7c5dcf5d · flaky-test-fix
   claude stop 7c5dcf5d      stop this session
 ```
 
-#### Run a shell command
+<h4 id="run-a-shell-command">
+  运行 shell 命令
+</h4>
 
-To run a shell command as a background job instead of a Claude session, pass `--exec`. The following example runs `pytest -x` as a background job:
+要运行 shell 命令作为后台作业而不是 Claude 会话，在 agent view 调度输入的第一个字符处输入 `!`。`!` 显示为前缀，你在它之后输入的所有内容都是命令。以下示例从 agent view 输入框调度 `pytest -x`：
+
+```text theme={null}
+! pytest -x
+```
+
+按 `Enter` 启动作业。同一作业也可以直接从你的 shell 用 `--exec` 启动：
 
 ```bash theme={null}
 claude --bg --exec 'pytest -x'
 ```
 
-From agent view, dispatch the same kind of job by typing `!` as the first character of the dispatch input: the `!` shows as a prefix, everything after it is the command, and `Enter` starts the job.
+该命令作为 PTY 支持的作业运行，并在 agent view 中显示为一行，最近的输出行作为其状态。shell 作业运行命令代替 Claude，所以不调用任何模型，输出也不发送到任何会话。
 
-The command runs as a PTY-backed job and appears as a row in agent view, with the most recent line of output as its status. A shell job runs the command in place of Claude, so no model is invoked and the output isn't sent to any session.
+要查看输出，附加到该行，按 `Space` 以在不附加的情况下查看，或从你的 shell 运行 `claude logs <id>`。捕获的输出保留在内存中，不写入磁盘。该行及其输出在命令退出后约五分钟自动清理，所以如果你需要结果，请在那之前读取它。
 
-To see the output, attach to the row, press `Space` to peek without attaching, or run `claude logs <id>` from your shell. The captured output stays in memory and isn't written to disk. The row and its output clean up automatically about five minutes after the command exits, so read it before then if you need the result.
+<h3 id="how-file-edits-are-isolated">
+  文件编辑如何隔离
+</h3>
 
-### How file edits are isolated
+每个后台会话，无论是从 agent view、`/bg` 还是 `claude --bg` 启动，都在你的工作目录中启动。在编辑文件前，Claude 将会话移动到 `.claude/worktrees/` 下的隔离 [git worktree](/docs/zh-CN/worktrees) 中，所以并行会话可以读取相同的检出但每个都写入自己的。
 
-Every background session, whether started from agent view, `/bg`, or `claude --bg`, starts in your working directory. Before editing files, Claude moves the session into an isolated [git worktree](/docs/en/worktrees) under `.claude/worktrees/`, so parallel sessions can read the same checkout but each writes to its own.
+Claude 在以下情况下跳过 worktree：
 
-Claude skips the worktree when:
+* 会话已经在链接的 git worktree 内，无论 Claude 是在 `.claude/worktrees/` 下创建的还是你用 `git worktree add` 在其他地方创建的
+* 工作目录不是 git 存储库且没有配置 [`WorktreeCreate` hook](/docs/zh-CN/hooks#worktreecreate)
+* 写入在工作目录外
 
-* The session is already inside a linked git worktree, whether Claude created it under `.claude/worktrees/` or you created it with `git worktree add` somewhere else
-* The working directory isn't a git repository and no [`WorktreeCreate` hook](/docs/en/hooks#worktreecreate) is configured
-* The write is outside the working directory
-
-To turn off worktree isolation for a repository where git worktrees are impractical, set [`worktree.bgIsolation`](/docs/en/settings#worktree-settings) to `"none"`. Background sessions then edit your working copy directly without moving into a worktree first. Add the setting to the project's `.claude/settings.json`:
+要为 git worktree 不实用的存储库关闭 worktree 隔离，将 [`worktree.bgIsolation`](/docs/zh-CN/settings#worktree-settings) 设置为 `"none"`。后台会话随后直接编辑你的工作副本而不先移动到 worktree。将设置添加到项目的 `.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -460,32 +465,34 @@ To turn off worktree isolation for a repository where git worktrees are impracti
 }
 ```
 
-Outside a git repository, sessions write to the working directory directly and aren't isolated from each other, so avoid dispatching parallel sessions that edit the same files. If you use a different version control system, configure a [`WorktreeCreate` hook](/docs/en/worktrees#non-git-version-control) and Claude isolates edits the same way it does for git.
+在 git 存储库外，会话直接写入工作目录且彼此不隔离，所以避免调度编辑相同文件的并行会话。如果你使用不同的版本控制系统，配置一个 [`WorktreeCreate` hook](/docs/zh-CN/worktrees#non-git-version-control)，Claude 会以与 git 相同的方式隔离编辑。
 
-When the hook fails in a directory that isn't a git repository, the session skips isolation for that directory and edits the working directory in place. Inside a git repository, writes stay blocked until the session isolates.
+当 hook 在不是 git 存储库的目录中失败时，会话跳过该目录的隔离并就地编辑工作目录。在 git 存储库内，写入保持被阻止，直到会话隔离。在 v2.1.203 之前，处于该状态的后台会话无法编辑任何文件：每次写入都被拒绝，直到它隔离，hook 永远无法隔离该目录。
 
-Deleting a session removes or keeps the worktree Claude created for it, depending on how you delete it and what the worktree holds:
+删除会话会删除或保留 Claude 为其创建的 worktree，取决于你如何删除它以及 worktree 包含的内容：
 
-* Deleting in agent view with `Ctrl+X` twice removes the worktree, including any uncommitted changes, so commit the changes you want to keep first.
-* Deleting from the shell with [`claude rm`](#manage-sessions-from-the-shell) keeps a worktree that has uncommitted changes, along with its session row.
-* Neither path removes a worktree with commits that aren't pushed anywhere: the worktree is [kept together with its session](#organize-the-list) and the output names the kept path and the reason.
-* A worktree you created yourself and started the session inside is left in place either way.
+* 在 agent view 中用 `Ctrl+X` 两次删除会删除 worktree，包括任何未提交的更改，所以先提交你想保留的更改。
+* 从 shell 用 [`claude rm`](#manage-sessions-from-the-shell) 删除会保留有未提交更改的 worktree，以及其会话行。
+* 两种方式都不会删除有未推送到任何地方的提交的 worktree：worktree 会 [与其会话一起保留](#organize-the-list)，输出会命名保留的路径和原因。
+* 你自己创建的 worktree 并在其中启动会话的，无论哪种方式都会保留在原地。
 
-To find a session's worktree path, peek the session or attach and check its working directory.
+要找到会话的 worktree 路径，查看会话或附加并检查其工作目录。
 
-A [subagent](/docs/en/sub-agents) the background session spawns inherits the session's working directory, so its file edits land in the session's worktree rather than your working copy. To give a subagent its own separate worktree instead, set [`isolation: worktree`](/docs/en/sub-agents#supported-frontmatter-fields) in its frontmatter or pass `isolation: "worktree"` when spawning it.
+[subagent](/docs/zh-CN/sub-agents) 后台会话生成的继承会话的工作目录，所以其文件编辑落在会话的 worktree 中而不是你的工作副本。要给 subagent 其自己的单独 worktree，在其 frontmatter 中设置 [`isolation: worktree`](/docs/zh-CN/sub-agents#supported-frontmatter-fields) 或在生成它时传递 `isolation: "worktree"`。
 
-A background session that isolated its code changes in a worktree also commits, pushes its own branch, and opens a draft pull request without stopping to ask. The [`#N` label](#pull-request-status) appears on its row when the pull request opens. It never pushes to `main` or `master`, never force-pushes or merges, and it skips the pull request when you told it not to open one or the repository has no remote.
+从 v2.1.198 开始，隔离其代码更改在 worktree 中的后台会话也会提交、推送其自己的分支，并打开草稿拉取请求而不停止询问。当拉取请求打开时，[`#N` 标签](#pull-request-status) 出现在其行上。它永远不会推送到 `main` 或 `master`，永远不会强制推送或合并，当你告诉它不要打开拉取请求或存储库没有远程时，它会跳过拉取请求。
 
-A session editing a checkout it didn't isolate itself still asks before committing or switching branches. This applies when isolation is set to `"none"`, when the worktree move failed, or when the session started inside a worktree that already existed.
+编辑未自行隔离的检出的会话仍然会在提交或切换分支前询问。这适用于隔离设置为 `"none"` 时、worktree 移动失败时，或会话在已存在的 worktree 内启动时。
 
-### Set the model
+<h3 id="set-the-model">
+  设置模型
+</h3>
 
-The model name shown in the agent view header is the dispatch default. New sessions you start from the input use this model, which comes from the [`model` setting](/docs/en/settings#available-settings) in your user settings. Set it by selecting a model in the [`/model` picker](/docs/en/model-config), or edit the setting directly.
+agent view 标题中显示的模型名称是调度默认值。你从输入启动的新会话使用此模型，这来自你的用户设置中的 [`model` 设置](/docs/zh-CN/settings#available-settings)。通过在 [`/model` 选择器](/docs/zh-CN/model-config) 中选择模型来设置它，或直接编辑设置。
 
-To override the dispatch default for the whole agent view session, pass `--model` when opening agent view. See [Permission mode, model, and effort](#permission-mode-model-and-effort).
+要为整个 agent view 会话覆盖调度默认值，在打开 agent view 时传递 `--model`。参见 [权限模式、模型和工作量](#permission-mode-model-and-effort)。
 
-To change the dispatch default from inside agent view, type `/model` followed by a model name in the dispatch input and press `Enter`. The header updates to show that model with a `(session)` marker, and sessions you dispatch afterward use it. Type `/model default` to clear the override and return to the dispatch default. This override lasts for the rest of the current `claude agents` run and doesn't write to your settings file. The following example dispatches one session on Opus and the next on Sonnet:
+要从 agent view 内部更改调度默认值，在调度输入中输入 `/model` 后跟模型名称并按 `Enter`。标题更新以显示该模型，带有 `(session)` 标记，之后调度的会话使用它。输入 `/model default` 以清除覆盖并返回调度默认值。此覆盖持续当前 `claude agents` 运行的其余部分，不写入你的设置文件。以下示例在 Opus 上调度一个会话，在 Sonnet 上调度下一个：
 
 ```text theme={null}
 /model opus
@@ -494,331 +501,334 @@ refactor auth
 run the test suite
 ```
 
-Each background session can run on a different model. To override it for one session:
+每个后台会话可以在不同的模型上运行。要为一个会话覆盖它：
 
-* From the shell, pass `--model` with `claude --bg`.
-* Attach to a running session and run `/model` to switch: a pick from the picker, or a typed `/model <name>`, saves as your default for new sessions unless you press `s` in the picker for a session-only switch. A session-only switch persists if the session is respawned.
-* Dispatch a [subagent](/docs/en/sub-agents) whose frontmatter sets a `model` field.
+* 从 shell，用 `claude --bg` 传递 `--model`。
+* 附加到运行中的会话并运行 `/model` 以切换：从选择器中选择，或输入 `/model <name>`，保存为你的新会话默认值，除非你在选择器中按 `s` 进行仅会话切换。如果会话被重新生成，仅会话切换会持续。
+* 调度一个 [subagent](/docs/zh-CN/sub-agents)，其 frontmatter 设置 `model` 字段。
 
-### Permission mode, model, and effort
+<h3 id="permission-mode-model-and-effort">
+  权限模式、模型和工作量
+</h3>
 
-A background session reads its [settings](/docs/en/settings) from the directory it runs in, the same as if you had started `claude` there. This includes [`env` values](/docs/en/settings#available-settings) in project settings, so an `ANTHROPIC_MODEL` or provider variable set there applies to background sessions in that directory.
+后台会话从它运行的目录读取其 [settings](/docs/zh-CN/settings)，就像你在那里启动了 `claude` 一样。这包括项目设置中的 [`env` 值](/docs/zh-CN/settings#available-settings)，所以在那里设置的 `ANTHROPIC_MODEL` 或提供商变量适用于该目录中的后台会话。
 
-Cloud provider selection, such as `CLAUDE_CODE_USE_BEDROCK` or `CLAUDE_CODE_USE_VERTEX`, and `ANTHROPIC_DEFAULT_*_MODEL` aliases follow the shell that dispatched the session. {/* min-version: 2.1.206 */}If you export a [`CLAUDE_CODE_EXTRA_BODY`](/docs/en/env-vars) request-body override in that shell, it reaches the session the same way. A gateway `ANTHROPIC_BASE_URL` exported in that shell can reach the session too; see [the supervisor process](#the-supervisor-process) for the conditions and for how background sessions source provider settings and credentials.
+云提供商选择，如 `CLAUDE_CODE_USE_BEDROCK` 或 `CLAUDE_CODE_USE_VERTEX`，以及 `ANTHROPIC_DEFAULT_*_MODEL` 别名遵循调度会话的 shell。{/* min-version: 2.1.206 */}如果你在该 shell 中导出 [`CLAUDE_CODE_EXTRA_BODY`](/docs/zh-CN/env-vars) 请求体覆盖，它会以相同的方式到达会话。在 v2.1.206 之前，后台工作进程忽略了 shell 导出的 `CLAUDE_CODE_EXTRA_BODY`。
 
-The [permission mode](/docs/en/permissions) depends on how you started the session. Backgrounding an existing session with `/bg` or `←` keeps the current permission mode, so a session you switched to `acceptEdits` or `auto` stays in that mode after detaching. Dispatching from the agent view input or running `claude --bg` from your shell uses the `defaultMode` from that directory's settings, or the `permissionMode` from the dispatched [subagent's frontmatter](/docs/en/sub-agents#supported-frontmatter-fields).
+如果你在调度 shell 中导出网关 `ANTHROPIC_BASE_URL`，它也会到达会话，以及 `ANTHROPIC_CUSTOM_HEADERS`，当监督者使用相同的网关环境运行且会话在你调度的目录中运行或是你自己的会话用 `←` 或 `/background` 后台化时。这是第一个 shell 打开 agent view 或调度后台会话时的正常情况，是网关 shell。用 `@repo` 或 `--cwd` 调度到不同目录不会携带 shell 的网关；该项目的 [settings](/docs/zh-CN/settings) 提供端点。参见 [监督者进程](#the-supervisor-process) 了解后台会话如何获取提供商设置和凭证。
 
-The permission mode, model, and effort you chose for a background session, along with the [configuration flags it carries](#what-carries-over-when-you-background), all persist when the supervisor later [stops and restarts](#the-supervisor-process) its process. A session you launched with `claude --bg --dangerously-skip-permissions` or `claude --bg --permission-mode bypassPermissions` stays in `bypassPermissions` after that restart instead of falling back to the directory's `defaultMode`, and a model or effort you changed mid-session with `/model` or `/effort` is kept.
+[permission mode](/docs/zh-CN/permissions) 取决于你如何启动会话。用 `/bg` 或 `←` 后台化现有会话会保持当前权限模式，所以你切换到 `acceptEdits` 或 `auto` 的会话在分离后仍保持该模式。从 agent view 输入调度或从你的 shell 运行 `claude --bg` 使用该目录设置中的 `defaultMode`，或调度的 [subagent 的 frontmatter](/docs/zh-CN/sub-agents#supported-frontmatter-fields) 中的 `permissionMode`。
 
-An effort the session took from the [`effortLevel` setting](/docs/en/settings#available-settings) rather than from `--effort` or `/effort` isn't fixed at dispatch: each process started for the session reads the setting again, so editing `effortLevel` in `settings.json` reaches sessions you background with `←` or `/bg` and their later restarts.
+后台会话启动时的权限模式、模型和工作量，以及它携带的 [配置标志](#from-inside-a-session)，在监督者稍后 [停止并重新启动](#the-supervisor-process) 其进程时都会持续。你用 `claude --bg --dangerously-skip-permissions` 或 `claude --bg --permission-mode bypassPermissions` 启动的会话在该重新启动后仍保持 `bypassPermissions` 而不是回退到目录的 `defaultMode`，以及你在会话中期用 `/model` 或 `/effort` 更改的模型或工作量会被保留。
 
-A name you set with [`/rename`](/docs/en/commands) or `Ctrl+R` also persists across that restart, so [`claude --resume <name>`](/docs/en/sessions#name-your-sessions) still resolves the session.
+会话从 [`effortLevel` 设置](/docs/zh-CN/settings#available-settings) 而不是从 `--effort` 或 `/effort` 获取的工作量不会在调度时固定：为会话启动的每个进程都会再次读取设置，所以在 `settings.json` 中编辑 `effortLevel` 会到达你用 `←` 或 `/bg` 后台化的会话及其后续重新启动。在 v2.1.203 之前，后台化会话会记录其设置派生的工作量，就像你传递了 `--effort` 一样，所以后续的 `effortLevel` 编辑永远无法到达它。
 
-To set defaults for every session you dispatch from agent view, pass any of `--permission-mode`, `--model`, `--effort`, or `--agent` when opening it:
+你用 [`/rename`](/docs/zh-CN/commands) 或 `Ctrl+R` 设置的名称也会在该重新启动中持续，所以 [`claude --resume <name>`](/docs/zh-CN/sessions#name-your-sessions) 仍然解析会话。在 v2.1.202 之前，重新启动会将会话恢复为调度时的名称，新名称停止解析。
+
+要为从 agent view 调度的每个会话设置默认值，在打开它时传递 `--permission-mode`、`--model`、`--effort` 或 `--agent` 中的任何一个：
 
 ```bash theme={null}
 claude agents --permission-mode plan --model opus --effort high
 ```
 
-`--effort` here accepts the same values as the [top-level `--effort` flag](/docs/en/cli-reference#cli-flags), including `ultracode`.
+`--agent` 设置当调度提示未命名一个时使用的 [subagent](/docs/zh-CN/sub-agents)，无论是用 `@name` 还是作为第一个单词。如果设置了一个，它默认为 [`agent` 设置](/docs/zh-CN/settings#available-settings)，否则为内置的全能 `claude` 代理。在调度输入中命名 subagent 会覆盖两者。
 
-`--agent` sets the [subagent](/docs/en/sub-agents) used when a dispatch prompt doesn't name one, either with `@name` or as the first word. It defaults to the [`agent` setting](/docs/en/settings#available-settings) if one is set, otherwise the built-in catch-all `claude` agent. Naming a subagent in the dispatch input overrides both.
+`claude agents` 也接受 `--dangerously-skip-permissions` 作为 `--permission-mode bypassPermissions` 的简写，以及 `--allow-dangerously-skip-permissions` 以在每个调度会话的 `Shift+Tab` 循环中使 `bypassPermissions` 可用而不带权限模式启动。两者都匹配 [顶级 CLI 标志](/docs/zh-CN/cli-reference)。
 
-`claude agents` also accepts `--dangerously-skip-permissions` as shorthand for `--permission-mode bypassPermissions`, and `--allow-dangerously-skip-permissions` to make `bypassPermissions` available in each dispatched session's `Shift+Tab` cycle without starting in that mode. Both match the [top-level CLI flags](/docs/en/cli-reference).
+活跃的默认值出现在调度输入下方的页脚中。
 
-The active defaults appear in the footer below the dispatch input.
+没有这些标志，会话使用该目录设置中的 `defaultMode` 或调度的 [subagent 的 frontmatter](/docs/zh-CN/sub-agents#supported-frontmatter-fields) 中的 `permissionMode`，以及 agent view 标题中显示的模型。
 
-Claude Code refuses `claude --bg --permission-mode bypassPermissions` until you've accepted the bypass disclaimer by running `claude --dangerously-skip-permissions` once interactively, since that mode lets a session you aren't watching act without approval. Passing `--dangerously-skip-permissions` or `--permission-mode bypassPermissions` to `claude agents` shows the same disclaimer when you haven't accepted it before, and accepting applies `bypassPermissions` to the sessions you launch from the view. Passing `--allow-dangerously-skip-permissions` shows the same disclaimer too, and accepting makes `bypassPermissions` available in the `Shift+Tab` cycle of those sessions without starting them in it.
+使用 `bypassPermissions` 与 `claude --bg --permission-mode` 被拒绝，直到你通过交互式运行 `claude --dangerously-skip-permissions` 一次接受了绕过免责声明，因为该模式让你没有看到的会话无需批准就能行动。传递 `--dangerously-skip-permissions` 或 `--permission-mode bypassPermissions` 到 `claude agents` 在你之前没有接受它时显示相同的免责声明，接受会将 `bypassPermissions` 应用到你从视图启动的会话。传递 `--allow-dangerously-skip-permissions` 也显示相同的免责声明，接受会在这些会话的 `Shift+Tab` 循环中使 `bypassPermissions` 可用而不在其中启动它们。
 
-### Settings, plugins, and MCP servers
+<h3 id="settings-plugins-and-mcp-servers">
+  Settings、plugins 和 MCP servers
+</h3>
 
-Agent view accepts the same configuration flags as `claude` for loading settings, plugins, MCP servers, and additional directories. Agent view applies `--settings` and `--plugin-dir` to itself and passes every configuration flag through to the sessions you dispatch from it, so a plugin or MCP server you load this way is available in those sessions.
+Agent view 接受与 `claude` 相同的配置标志以加载 settings、plugins、MCP servers 和额外目录。每个标志适用于 agent view 本身，并传递给你从它调度的每个会话，所以以这种方式加载的 plugin 或 MCP server 在这些会话中也可用。
 
-| Flag                                                                                             | Effect                                                                         |
-| :----------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- |
-| [`--settings <file-or-json>`](/docs/en/settings)                                                      | Override settings for agent view and dispatched sessions                       |
-| [`--add-dir <path>`](/docs/en/permissions#additional-directories-grant-file-access-not-configuration) | Grant file access to an additional directory                                   |
-| [`--plugin-dir <path>`](/docs/en/plugins)                                                             | Load a plugin from a local directory                                           |
-| [`--mcp-config <file-or-json>`](/docs/en/mcp)                                                         | Load MCP servers from a config file or JSON string                             |
-| `--strict-mcp-config`                                                                            | Use only the MCP servers from `--mcp-config`, ignoring other MCP configuration |
+| 标志                                                                                                  | 效果                                             |
+| :-------------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| [`--settings <file-or-json>`](/docs/zh-CN/settings)                                                      | 覆盖 agent view 和调度会话的 settings                  |
+| [`--add-dir <path>`](/docs/zh-CN/permissions#additional-directories-grant-file-access-not-configuration) | 授予对额外目录的文件访问权限                                 |
+| [`--plugin-dir <path>`](/docs/zh-CN/plugins)                                                             | 从本地目录加载 plugin                                 |
+| [`--mcp-config <file-or-json>`](/docs/zh-CN/mcp)                                                         | 从配置文件或 JSON 字符串加载 MCP servers                  |
+| `--strict-mcp-config`                                                                               | 仅使用来自 `--mcp-config` 的 MCP servers，忽略其他 MCP 配置 |
 
-Repeat `--add-dir`, `--plugin-dir`, or `--mcp-config` once per value. `claude agents` doesn't support the space-separated form, such as `--add-dir a b c`.
+对每个值重复 `--add-dir`、`--plugin-dir` 或 `--mcp-config`。空格分隔的形式，如 `--add-dir a b c`，不支持与 `claude agents` 一起使用。
 
-You can place `--settings` and `--plugin-dir` before or after `agents`. Keep `--add-dir` and `--mcp-config` after `agents`: if you place either before `agents`, [`claude agents --json`](#manage-sessions-from-the-shell) fails with an `unknown option` error. Before v2.1.200, place `--plugin-dir` before `agents`: after `agents`, it reached dispatched sessions but didn't load the plugin's agents and skills into agent view's own [subagent and skill autocomplete](#dispatch-new-agents).
-
-The following example opens agent view with a settings override and one extra directory:
+以下示例使用 settings 覆盖和一个额外目录打开 agent view：
 
 ```bash theme={null}
 claude agents --settings ./ci-settings.json --add-dir ../shared-lib
 ```
 
-`--settings` accepts a file path or an inline JSON string. A file path must point to an existing file; Claude Code exits with a `Settings file not found` error if it doesn't.
+<h2 id="manage-sessions-from-the-shell">
+  从 shell 管理会话
+</h2>
 
-## Manage sessions from the shell
+每个后台会话有一个短 ID，你可以从 shell 使用。当你使用 `claude --bg` 启动会话时会打印该 ID，每个会话的 ID 是其在 `~/.claude/jobs/` 下的目录名。这些命令对于脚本编写或当你不想打开 agent view 时很有用。
 
-Every background session has a short ID you can use from the shell. The ID is printed when you start a session with `claude --bg`, and each session's ID is its directory name under `~/.claude/jobs/`. These commands are useful for scripting or when you don't want to open agent view.
+| 命令                           | 目的                                                                                                                                                                                                                                                                                                                                                                                                       |
+| :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `claude agents`              | 打开 agent view                                                                                                                                                                                                                                                                                                                                                                                            |
+| `claude agents --cwd <path>` | 打开 agent view，范围限定为在 `<path>` 下启动的会话                                                                                                                                                                                                                                                                                                                                                                     |
+| `claude agents --json`       | 将活跃会话打印为 JSON 数组并退出：每个活跃会话，加上仍在工作或被阻止的后台会话，即使其进程已退出。添加 `--all` 以也包括已完成的后台会话。每个条目都有 `cwd`、`kind` 和 `startedAt`。后台条目还有 `id`，可与 `claude attach`/`logs`/`stop` 一起使用，以及 `state`：`working`、`blocked`、`done`、`failed` 或 `stopped` 之一。`pid` 和 `status` 仅在进程活跃时出现，当 status 为 `waiting` 时出现 `waitingFor`，说明会话被阻止的原因，例如 `permission prompt` 或 `input needed`；当设置时出现 `sessionId` 和 `name`。与 `--cwd <path>` 结合使用以进行过滤 |
+| `claude attach <id>`         | 在此终端附加到会话                                                                                                                                                                                                                                                                                                                                                                                                |
+| `claude logs <id>`           | 打印会话的最近输出                                                                                                                                                                                                                                                                                                                                                                                                |
+| `claude stop <id>`           | 停止会话。也接受 `claude kill`                                                                                                                                                                                                                                                                                                                                                                                   |
+| `claude respawn <id>`        | 重新启动会话，运行中或已停止，保持其对话完整，例如用于获取更新的 Claude Code 二进制文件                                                                                                                                                                                                                                                                                                                                                       |
+| `claude respawn --all`       | 重新启动每个运行中的会话，例如一次性将所有会话移至更新的 Claude Code 二进制文件                                                                                                                                                                                                                                                                                                                                                           |
+| `claude rm <id>`             | 从列表中删除会话。如果没有未提交的更改和没有未推送的提交，会删除 Claude 为会话创建的 worktree；否则会话也会被保留，命令会打印 worktree 路径和原因，以便你可以解决它并再次运行 `claude rm`。保留你自己创建的 worktree。对话记录保存在你的本地机器上，并且仍然可以通过 `claude --resume` 访问                                                                                                                                                                                                                          |
+| `claude daemon status`       | 打印 [supervisor](#the-supervisor-process) 的状态、版本、socket 目录和 worker 数量                                                                                                                                                                                                                                                                                                                                     |
+| `claude daemon stop --any`   | 停止 supervisor 进程及其托管的后台会话。传递 `--keep-workers` 以保持后台会话运行，以便下一个 supervisor 重新连接到它们。下一个 `claude agents` 或 `claude --bg` 启动一个新的 supervisor                                                                                                                                                                                                                                                                   |
 
-| Command                      | Purpose                                                                                                                                                                                                                                                                             |
-| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `claude agents`              | Open agent view                                                                                                                                                                                                                                                                     |
-| `claude agents --cwd <path>` | Open agent view scoped to sessions started under `<path>`                                                                                                                                                                                                                           |
-| `claude agents --json`       | Print sessions as a JSON array and exit. See [List sessions as JSON](#list-sessions-as-json)                                                                                                                                                                                        |
-| `claude attach <id>`         | Attach to a session in this terminal                                                                                                                                                                                                                                                |
-| `claude logs <id>`           | Print the session's recent output                                                                                                                                                                                                                                                   |
-| `claude stop <id>`           | Stop a session. Also accepts `claude kill`                                                                                                                                                                                                                                          |
-| `claude respawn <id>`        | Restart a session, running or stopped, with its conversation intact, e.g. to pick up an updated Claude Code binary                                                                                                                                                                  |
-| `claude respawn --all`       | Restart every running session, e.g. to move all sessions onto an updated Claude Code binary at once                                                                                                                                                                                 |
-| `claude rm <id>`             | Remove a session from the list, along with a worktree Claude created for it when that's safe to delete; see [how deleting handles worktrees](#how-file-edits-are-isolated). The conversation transcript stays on your local machine and remains available through `claude --resume` |
-| `claude daemon status`       | Print the [supervisor's](#the-supervisor-process) state, version, socket directory, and worker count                                                                                                                                                                                |
-| `claude daemon stop --any`   | Stop the supervisor process and the background sessions it hosts. Pass `--keep-workers` to leave background sessions running so the next supervisor reconnects to them. The next `claude agents` or `claude --bg` starts a fresh supervisor                                         |
+<h2 id="how-background-sessions-are-hosted">
+  后台会话如何被托管
+</h2>
 
-### List sessions as JSON
+agent view 中列出的每个会话都被视为后台会话，无论你当前是否连接到它。相比之下，通过直接运行 `claude` 启动的会话与该终端绑定，并在终端关闭时结束，除非你[将其发送到后台](#from-inside-a-session)。
 
-`claude agents --json` prints active sessions as a JSON array and exits: every live session, plus background sessions that are still working or blocked even when their process has exited. Add `--all` to also include completed background sessions, and `--cwd <path>` to limit the list to sessions started under that directory.
+<h3 id="the-supervisor-process">
+  监督进程
+</h3>
 
-Each entry describes one session:
+后台会话由每用户监督进程托管，与你的终端和 agent view 分离。监督进程在你第一次后台会话或打开 agent view 时自动启动，你不直接管理它。
 
-| Field                      | Present                    | Description                                                                                                                                                                                                                                   |
-| :------------------------- | :------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cwd`, `kind`, `startedAt` | Always                     | The working directory, `interactive` or `background`, and the start time in Unix milliseconds                                                                                                                                                 |
-| `id`                       | Background sessions        | Short ID, usable with `claude attach`, `claude logs`, and `claude stop`                                                                                                                                                                       |
-| `state`                    | Background sessions        | One of `working`, `blocked`, `done`, `failed`, or `stopped`                                                                                                                                                                                   |
-| `pid`, `status`            | While the process is alive | Process ID and current status                                                                                                                                                                                                                 |
-| `waitingFor`               | When `status` is `waiting` | What the session is blocked on: {/* min-version: 2.1.212 */}`permission prompt` for an approval, `input needed` for a question from Claude or an MCP server's input request, `sandbox request`, `worker request`, or `dialog open`            |
-| `sessionId`, `name`        | When set                   | `sessionId` is the full session UUID, usable with [`claude --resume`](/docs/en/sessions). An interactive session you never named carries a default `name` built from its working directory's name plus a two-character suffix, such as `my-app-3f` |
+当更新替换或移除了运行中的 Claude Code 进程启动时所用的二进制文件时，该进程会从另一个已安装的副本（如已安装的 `claude` 启动器或磁盘上的最新版本）启动监督进程。
 
-## How background sessions are hosted
+监督进程保持一个预热的工作进程就绪，以便从 agent view 或 `claude --bg` 的调度启动时不会有冷启动的延迟。当你调度时，监督进程将预热的工作进程分配给你的会话，将该会话的目录、设置和凭证应用到它，然后为下一次调度启动一个替代进程。如果没有可用的健康预热工作进程，监督进程会改为启动一个新进程。
 
-Claude Code treats every session listed in agent view as a background session, whether or not you're currently attached to it. By contrast, a session started by running `claude` directly is tied to that terminal and ends when it closes, unless you [send it to the background](#from-inside-a-session).
+监督进程及其会话使用与你的交互式会话相同的凭证进行身份验证，并且除了模型 API 外不进行额外的网络连接。提供商选择变量如 `CLAUDE_CODE_USE_BEDROCK` 和 `ANTHROPIC_DEFAULT_*_MODEL` 别名从调度每个会话的 shell 中读取，并应用到其工作进程。
 
-### The supervisor process
+调度 shell 的 `PATH` 以相同的方式应用到工作进程，因此会话运行的 shell 命令会找到你的终端所拥有的相同工具。在 v2.1.203 之前，后台会话保持启动监督进程的 shell 的 `PATH`，因此自那时以来添加到你的 `PATH` 的工具可能会丢失，最常见的是在 Windows 上。
 
-Background sessions are hosted by a per-user supervisor process, separate from your terminal and from agent view. The supervisor starts automatically the first time you background a session or open agent view, and you don't manage it directly.
+后台会话不继承网关端点变量如 `ANTHROPIC_BASE_URL` 或等效的 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 基础 URL 变量，这些变量来自启动监督进程的 shell。如果没有在你调度的 shell 中导出网关，会话会使用你的存储凭证和项目目录的[设置](/docs/zh-CN/settings)中 `env` 块中的任何 `env` 值。要在项目中指向[LLM 网关](/docs/zh-CN/llm-gateway)的每个会话，在该项目的 `.claude/settings.json` `env` 块中设置 `ANTHROPIC_BASE_URL`。
 
-When an update has replaced or removed the binary a running Claude Code process was launched from, that process starts the supervisor from another installed copy, such as the installed `claude` launcher or the newest version on disk.
+{/* min-version: 2.1.203 */}如果你在调度的 shell 中导出网关 `ANTHROPIC_BASE_URL`，它会到达该会话的工作进程。`ANTHROPIC_CUSTOM_HEADERS` 和与它们一起导出的凭证会随之转发。这发生在监督进程从具有相同网关的环境启动时。监督进程从打开 agent view 或调度后台会话的第一个 shell 中捕获其环境，因此从网关 shell 启动会给它该环境。转发也仅适用于调度到你调度的目录中的会话，或从你自己的会话用 `←` 或 `/background` 后台化的会话：用 `@repo` 或 `--cwd` 调度到不同目录不会携带 shell 的网关，该项目的 `settings.json` `env` 块会改为提供端点。当监督进程的环境携带不同的网关或没有网关时，工作进程会针对默认端点保持你的存储凭证，而不是混合一个环境的凭证与另一个环境的端点。在 v2.1.203 之前，调度 shell 的 `ANTHROPIC_BASE_URL` 被丢弃，而与它一起导出的 `ANTHROPIC_API_KEY` 被保留，因此网关的密钥被发送到默认端点，每个请求都以 401 失败。
 
-The supervisor keeps one pre-warmed worker process ready so a dispatch from agent view or `claude --bg` starts without the delay of a cold launch. When you dispatch, the supervisor assigns the pre-warmed worker to your session, applies that session's directory, settings, and credentials to it, and then starts a replacement for the next dispatch. If no healthy pre-warmed worker is available, the supervisor launches a fresh process instead.
+转发的端点仅适用于该活跃进程，永远不会写入磁盘。当监督进程停止空闲会话并稍后重新启动它时，重新启动的进程会从你的设置中再次读取其端点：使用网关 `ANTHROPIC_AUTH_TOKEN` 它会回退到你的存储凭证，使用网关颁发的 `ANTHROPIC_API_KEY` 它可能会失败进行身份验证，直到网关在设置中设置。
 
-The supervisor and its sessions authenticate with the same stored credentials as your interactive sessions and make no additional network connections beyond the model API. Provider selection variables such as `CLAUDE_CODE_USE_BEDROCK` and `ANTHROPIC_DEFAULT_*_MODEL` aliases are read from the shell that dispatched each session and are applied to its worker.
+每个后台会话是其自己的 Claude Code 进程，由监督进程管理而不是与你的终端绑定。积极工作、等待你的输入或有终端连接的会话保持其进程运行。运行中的后台 shell 命令、子代理、动态工作流或监视器计为活跃工作，因此长时间运行的进程（如开发服务器）会保持会话活跃。
 
-The dispatching shell's `PATH` is applied to the worker the same way, so shell commands the session runs find the same tools your terminal does.
+一旦会话完成并未连接地坐了大约一小时，监督进程停止其进程以释放资源。你用 `Ctrl+T` [固定](#organize-the-list)的会话是例外，在空闲时保持其进程运行。无论哪种方式，记录和状态都保留在磁盘上，下次你附加、窥视或回复停止的会话时，监督进程从中断处启动一个新进程。当每个会话都完成且没有终端连接时，监督进程本身退出，下次你需要它时再次启动。
 
-A background session doesn't inherit gateway endpoint variables such as `ANTHROPIC_BASE_URL` or the equivalent Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry base URL variables from the shell that started the supervisor. Without a gateway exported in the shell you dispatch from, the session uses your stored credentials and any `env` values in the project directory's [settings](/docs/en/settings). To point every session in a project at an [LLM gateway](/docs/en/llm-gateway), set `ANTHROPIC_BASE_URL` in that project's `.claude/settings.json` `env` block.
+会话在其进程被停止、重新启动或更新时启动的后台工作会被交付，包括在 Windows 上。为该会话启动的下一个进程会接管这项工作：
 
-{/* min-version: 2.1.203 */}If you export a gateway `ANTHROPIC_BASE_URL` in the shell you dispatch from, it reaches that session's worker, along with `ANTHROPIC_CUSTOM_HEADERS` and the credential exported alongside them, when both conditions hold:
+* 在此期间完成的后台 shell 命令会报告为已完成及其输出
+* 动态工作流从中断处恢复
+* [后台子代理](/docs/zh-CN/sub-agents#run-subagents-in-foreground-or-background)从其自己的记录恢复
 
-* The supervisor was started from an environment with the same gateway. The supervisor captures its environment from the first shell that opens agent view or dispatches a background session, so starting from the gateway shell gives it that environment.
-* The session is dispatched into the directory you're dispatching from, or is your own session backgrounded with `←` or `/background`. Dispatching into a different directory with `@repo` or `--cwd` doesn't carry the shell's gateway; that project's `settings.json` `env` block supplies the endpoint instead.
+{/* min-version: 2.1.198 */}从 v2.1.198 起，交付涵盖所有三项。在 v2.1.198 之前，它仅涵盖 shell 命令和工作流，因此后台子代理会随进程停止，并在下次唤醒时报告为失败。
 
-When the supervisor's environment carries a different gateway or none, the worker keeps your stored credentials against the default endpoint instead of mixing one environment's credential with another's endpoint. The forwarded endpoint applies only to that live process and is never written to disk.
+其状态仅存在于进程内部的工作会随之停止而不是被交付。那是子代理启动的 shell 命令，恢复的子代理可以再次启动，以及运行中的[监视器](/docs/zh-CN/tools-reference#monitor-tool)，其事件流无法移动到另一个进程。
 
-When the supervisor stops an idle session and you later wake it by attaching, peeking, or replying, your environment's gateway is forwarded again under the same conditions as a fresh dispatch. Waking a session from a shell without the gateway restarts it against your settings and stored credentials instead.
+删除会话会停止它交付的所有内容。要让会话的所有后台工作随进程停止而不是被交付，将 [`CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF`](/docs/zh-CN/env-vars#variables) 环境变量设置为 `1`。
 
-Each background session is its own Claude Code process, managed by the supervisor rather than tied to your terminal. A session that's actively working, waiting for your input, or has a terminal attached keeps its process running. The supervisor counts a running background shell command, subagent, dynamic workflow, or monitor as active work, so a long-running process such as a dev server keeps the session alive.
+重新启动的进程会找到[移入 worktree](#how-file-edits-are-isolated) 的会话的对话，该会话在任务中途移动：当记录不在会话启动的位置时，Claude Code 也会在存储库的已注册 worktree 下查找。在 v2.1.207 之前，在其进程停止后从 agent view 重新打开该会话可能会显示仅包含其原始提示的空对话，记录仍完整地保留在磁盘上；在 v2.1.207 或更高版本上再次打开会话会恢复它。
 
-Once a session finishes and sits unattached for about an hour, the supervisor stops its process to free resources. A session you have [pinned](#organize-the-list) with `Ctrl+T` is exempt and keeps its process running while idle. The transcript and state stay on disk either way, and the next time you attach, peek, or reply to a stopped session, the supervisor starts a fresh process from where it left off. When every session has finished and no terminal is connected, the supervisor itself exits and starts again the next time you need it.
+如果重新启动的会话回来时仅显示其原始提示，因为 Claude Code 误读了其记录为空，对话记录会被重命名为 `.orphaned-` 后缀而不是删除，所以它保留在你的机器上。
 
-The supervisor also restarts a session whose process exits unexpectedly, with three safeguards so a restart never overrides a stop or acts on stale input:
+从按 `←` 留下的空行从未给出提示符会在大约五分钟后被完全删除，以便列表自动清理。使用 `claude --bg` 启动的会话和等待设置提示符（如信任对话）的会话不会以这种方式被删除。
 
-* A session whose state on disk already shows it as done, failed, or stopped isn't restarted, unless a reply you sent is still waiting to be delivered.
-* Ending the process of a session you backgrounded with `←` or [`/background`](#from-inside-a-session) yourself, for example with `kill`, marks the session stopped instead of restarting it. A session dispatched with a task, from the agent view input or `claude --bg`, is still restarted so the dispatched work completes.
-* A session the supervisor restarts is told it was restarted and that you haven't sent a new message since, so it can re-verify time-sensitive context such as branch state before continuing. A restarted `←` or `/background` session also doesn't resume an interrupted response older than about an hour; it waits for your next message instead.
+当主机内存不足时，监督进程首先停止空闲的非固定会话，仅在释放任何内容时才停止空闲的固定会话。
 
-Background work the session itself started at the top level is handed off when its process is stopped, restarted, or updated, including on Windows. The next process started for that session picks the work back up:
+监督进程监视磁盘上安装的 Claude Code 二进制文件，在常规[自动更新程序](/docs/zh-CN/setup#auto-updates)替换它后重新启动到新版本。这是本地文件监视，不是网络检查。后台会话是分离的进程，所以它们在重新启动期间继续运行，新的监督进程重新连接到它们。空闲的固定会话也会在原地重新启动到新版本，以便它获取更新而无需你重新附加。
 
-* A background shell command that finished in the meantime is reported as completed with its output
-* A dynamic workflow resumes from where it left off
-* {/* min-version: 2.1.198 */}A [background subagent](/docs/en/sub-agents#run-subagents-in-foreground-or-background) resumes from its own transcript
+一旦新的监督进程接管，它也会将剩余的空闲会话重新启动到新版本，在后台一次几个，在短暂延迟后，让在重新启动期间连接的终端首先重新连接。积极工作、等待你的输入或有终端连接的会话不会被中断；它在其进程下次重新启动时移动到新版本。在 v2.1.206 之前，监督进程每分钟仅将几个空闲会话移动到新版本，因此会话可能在更新后继续运行旧版本一段时间。
 
-Work whose state lives only inside the process itself stops with it instead of being handed off. That's shell commands a subagent started, which the resumed subagent can start again, and running [monitors](/docs/en/tools-reference#monitor-tool), whose event stream can't be moved to another process.
+这些重新启动仅将会话移动到较新版本。运行比会话进程启动时所用版本更旧的 Claude Code 版本的监督进程会单独保留该进程；会话继续运行较新版本，直到较新的监督进程接管。
 
-Deleting the session stops everything it handed off. To stop all of the session's background work with the process instead of handing it off, set the [`CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF`](/docs/en/env-vars#variables) environment variable to `1`.
+在监督进程重新启动会话时运行 `claude attach`，无论是为了更新、停滞还是迁移，会等待替换进程而不是失败。状态行如 `Agent is updating to the new Claude Code…` 会命名它正在等待的内容并计算经过的秒数，命令在会话准备好后立即连接。大约 60 秒后它停止等待并报告错误。在 v2.1.205 之前，`claude attach` 在几秒后停止重试并在会话仍在重新启动时打印错误。
 
-A restarted process finds the conversation of a session that [moved into a worktree](#how-file-edits-are-isolated) mid-task: when the transcript isn't where the session started, Claude Code also looks under the repository's registered worktrees. {/* min-version: 2.1.212 */}When neither the session's own directory nor those worktrees has the transcript, Claude Code scans all your saved session transcripts as a last resort and resumes from the one that matches the session.
+<h3 id="where-state-is-stored">
+  状态存储位置
+</h3>
 
-If a restarted session comes back showing only its original prompt because Claude Code misread its transcript as empty, the conversation transcript is renamed with an `.orphaned-` suffix instead of deleted, so it stays on your machine.
+会话状态存储在你的 Claude Code 配置目录下。如果你设置了 [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars)，监督进程使用该目录而不是 `~/.claude` 并作为单独的实例运行，具有其自己的会话。
 
-An empty row left over from pressing `←` that was never given a prompt is removed entirely after about five minutes so the list clears on its own. Sessions started with `claude --bg` and sessions waiting on a setup prompt such as a trust dialog aren't removed this way.
+| 路径                               | 内容                         |
+| :------------------------------- | :------------------------- |
+| `~/.claude/daemon.log`           | 监督进程日志                     |
+| `~/.claude/daemon/roster.json`   | 运行中的后台会话列表，用于在重新启动后重新连接    |
+| `~/.claude/jobs/<id>/state.json` | 在 agent view 中显示的每会话状态     |
+| `~/.claude/jobs/<id>/tmp/`       | 每会话临时目录。写入此处不会提示权限。会话删除时移除 |
 
-When the host runs low on memory, the supervisor stops idle non-pinned sessions first and stops idle pinned ones only if that freed nothing.
+每个后台会话都设置了 `CLAUDE_JOB_DIR` 环境变量指向其 `~/.claude/jobs/<id>` 目录，因此会话运行的 shell 命令可以将临时文件写入 `$CLAUDE_JOB_DIR/tmp` 而不会与并行会话冲突。
 
-The supervisor watches the installed Claude Code binary on disk and restarts into the new version after the regular [auto-updater](/docs/en/setup#auto-updates) replaces it. This is a local file watch, not a network check. Background sessions are detached processes, so they keep running through the restart and the new supervisor reconnects to them. An idle pinned session is also restarted in place onto the new version so it picks up the update without you reattaching.
+要在不直接读取文件的情况下检查此状态，请运行 `claude daemon status`。它报告监督进程是否可达、其进程 ID 和版本、套接字目录以及有多少后台会话处于活跃状态。
 
-Once the new supervisor takes over, it also restarts the remaining idle sessions onto the new version, a few at a time in the background, after a short delay that lets terminals attached across the restart reconnect first. A session that is working, waiting on your input, or has a terminal attached isn't interrupted; it moves to the new version the next time its process restarts.
+该命令还会在运行的监督进程版本与你调用的 `claude` 版本不同时发出警告，这发生在监督进程尚未重新启动到新版本的更新之后。警告显示两个版本，并告诉你运行 `claude daemon stop --any` 以获取新版本。当 Claude Code 作为操作系统服务安装时，建议的命令是 `claude daemon stop` 不带该标志。
 
-These restarts only ever move a session onto a newer version. A supervisor running an older Claude Code version than the one a session's process was started with leaves that process alone; the session keeps running the newer version until a newer supervisor takes over.
+会话完整地保留该版本不匹配：更新会话 `state.json` 的较旧 Claude Code 版本会保留它不识别的字段并保持会话列出。{/* min-version: 2.1.200 */}`roster.json` 中的会话列表遵循相同的规则：重写它的较旧版本会保留较新版本写入的字段，因此由较新版本启动的会话保持可达并在监督进程重新启动后继续接受输入。在 v2.1.200 之前，较旧版本可能会在重写时删除这些字段。
 
-Running `claude attach` while the supervisor is restarting a session, whether for an update, a stall, or a migration, waits for the replacement process instead of failing. A status line such as `Agent is updating to the new Claude Code…` names what it's waiting for and counts the elapsed seconds, and the command connects as soon as the session is ready. After about 60 seconds it stops waiting and reports an error.
+在 Windows 上，当守护进程的管道密钥文件被锁定或无法读取时，`claude daemon status` 会显示底层文件错误，而不是报告通用连接失败。
 
-`claude attach` also waits while the background service itself is starting or reconnecting, and a session that finished during that wait is reported as exited rather than as an error. A terminal resize you make during a slow attach is applied when the attach completes.
+<h3 id="turn-off-agent-view">
+  关闭 agent view
+</h3>
 
-### Where state is stored
+要完全关闭后台代理和 agent view，将 `disableAgentView` [设置](/docs/zh-CN/settings)设为 `true` 或设置 `CLAUDE_CODE_DISABLE_AGENT_VIEW` 环境变量。管理员可以通过[托管设置](/docs/zh-CN/permissions#managed-settings)强制执行这个。
 
-Session state is stored under your Claude Code config directory. If you set [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars), the supervisor uses that directory instead of `~/.claude` and runs as a separate instance with its own sessions.
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-| Path                             | Contents                                                                                                    |
-| :------------------------------- | :---------------------------------------------------------------------------------------------------------- |
-| `~/.claude/daemon.log`           | Supervisor log                                                                                              |
-| `~/.claude/daemon/roster.json`   | List of running background sessions, used to reconnect after a restart                                      |
-| `~/.claude/jobs/<id>/state.json` | Per-session state shown in agent view                                                                       |
-| `~/.claude/jobs/<id>/tmp/`       | Per-session scratch directory. Writes here don't prompt for permission. Removed when the session is deleted |
+<h3 id="claude-agents-lists-subagents-instead-of-opening-agent-view">
+  `claude agents` 列出子代理而不是打开代理视图
+</h3>
 
-Each background session has the `CLAUDE_JOB_DIR` environment variable set to its `~/.claude/jobs/<id>` directory, so shell commands the session runs can write temporary files to `$CLAUDE_JOB_DIR/tmp` without colliding with parallel sessions.
+如果 `claude agents` 打印一个计数，然后是你配置的子代理，然后退出，说明代理视图在你的环境中不可用。运行 `claude update` 来安装最新版本。
 
-To inspect this state without reading the files directly, run `claude daemon status`. It reports whether the supervisor is reachable, its process ID and version, the socket directory, and how many background sessions are live.
+如果更新后代理视图仍然没有打开，检查它是否已被设置或环境变量[关闭](#turn-off-agent-view)。
 
-The command also warns when the running supervisor is on a different version than the `claude` you invoked, which happens after an update the supervisor hasn't restarted into yet. The warning shows both versions and tells you to run `claude daemon stop --any` to pick up the new version. When Claude Code is installed as an OS service, the suggested command is `claude daemon stop` without the flag.
+<h3 id="agent-view-opens-with-no-sessions">
+  Agent view 打开时没有会话
+</h3>
 
-Sessions survive that version mismatch intact: an older Claude Code version that updates a session's `state.json` preserves fields it doesn't recognize and keeps the session listed. {/* min-version: 2.1.200 */}The session list in `roster.json` follows the same rule, so sessions started by the newer version stay reachable and keep accepting input after the supervisor restarts.
+在你调度你的第一个会话之前，agent view 显示空的部分标题，每个标题下有一个描述，以及输入上方的单行说明，代替会话列表。在底部的输入框中输入提示并按 `Enter` 来调度你的第一个会话。
 
-On Windows, `claude daemon status` surfaces the underlying file error when the daemon's pipe-key file is locked or unreadable instead of reporting a generic connection failure.
+<h3 id="backgrounding-shows-a-background-this-session-dialog">
+  后台化显示 `Background this session?` 对话
+</h3>
 
-### Turn off agent view
+如果按 `←` 来后台当前会话显示 `Background this session?` 对话，会话有进行中的工作无法转移到后台会话，例如运行中的 [monitor](/docs/zh-CN/tools-reference#monitor-tool)，Claude Code 不会默默停止它。对话命名将被停止的工作，并分别计算转移的任务。运行 `/tasks` 查看正在运行的内容，然后确认无论如何后台或选择 `Stay` 让工作先完成。参见[从会话内部](#from-inside-a-session)了解哪些任务类型转移，哪些被停止。
 
-To turn off background agents and agent view entirely, set the `disableAgentView` [setting](/docs/en/settings) to `true` or set the `CLAUDE_CODE_DISABLE_AGENT_VIEW` environment variable. Administrators can enforce this through [managed settings](/docs/en/permissions#managed-settings).
+<h3 id="prompt-rejected-as-too-short">
+  提示被拒绝，因为太短
+</h3>
 
-## Troubleshooting
+调度输入期望一个任务描述，而不是对话开场白。少于四个字符的提示会被拒绝，并显示 `Too short` 提示，这样随意的按键就不会启动会话。描述你希望会话执行的操作，例如 `investigate the flaky checkout test`。
 
-### `claude agents` lists subagents instead of opening agent view
+<h3 id="sessions-show-as-failed-after-shutdown">
+  会话在关闭后显示为已失败
+</h3>
 
-If `claude agents` prints a count followed by your configured subagents and then exits, agent view is unavailable in your environment. Run `claude update` to install the latest version.
+关闭或重启你的机器会停止运行中的后台会话，所以当你下次打开 agent view 时，它们显示为已失败。附加、窥视或回复任何已失败的会话，会话从中断处重新启动。
 
-If agent view still doesn't open after updating, check whether it has been [turned off](#turn-off-agent-view) by a setting or environment variable.
+睡眠单独不会导致这种情况。会话在睡眠期间被保留，监督进程在唤醒时重新连接到它们。
 
-### Agent view opens with no sessions
+<h3 id="opening-a-session-says-the-conversation-is-already-open">
+  打开会话说对话已经打开
+</h3>
 
-Before you dispatch your first session, agent view shows the empty section headers with a description under each, plus a one-line explanation above the input, in place of the session list. Type a prompt in the input at the bottom and press `Enter` to dispatch your first session.
+打开一个已停止的行，其对话也由另一个运行中的非交互式 Claude Code 进程持有，例如同一对话的后台工作进程仍在关闭中，会显示 `This conversation is already open in another running Claude session` 而不是启动该行的进程，因为两个进程无法写入同一个记录。在已经持有对话的会话中回复，或退出它并再次打开该行。你在拒绝尝试中输入的回复不会丢失；它会在会话下次启动时发送。
 
-### Backgrounding shows a `Background this session?` dialog
+在 v2.1.203 之前，这种状态会启动第二个进程。该进程会以 `currently running as a background agent` 错误退出，该行显示为已失败。
 
-If pressing `←` to background the current session shows a `Background this session?` dialog, the session has in-flight work that can't move to the background session, such as a running [monitor](/docs/en/tools-reference#monitor-tool), and Claude Code won't silently stop it. The dialog names the work that will be stopped and, separately, counts the tasks that carry over. Run `/tasks` to see everything that's running, then confirm to background anyway or choose `Stay` to let the work finish first. See [What carries over when you background](#what-carries-over-when-you-background) for which task kinds carry over and which are stopped.
+<h3 id="a-session-fails-before-starting-with-a-possibly-low-memory-note">
+  会话在启动前失败，并显示 `possibly low memory` 注记
+</h3>
 
-### Prompt rejected as too short
+从 v2.1.199 开始，当后台会话的进程在完成启动前退出，且主机内存不足时，该行的状态会命名退出并添加 `possibly low memory — free some up and retry`。早期版本仅显示此失败的原始退出原因。
 
-The dispatch input expects a task description, not a conversational opener. A prompt shorter than four characters is rejected with a `Too short` hint so a stray keystroke doesn't start a session. Describe what you want the session to do, such as `investigate the flaky checkout test`.
+该注记是一个假设，而不是确认的原因。Claude Code 仅在进程无声退出（未写入错误且未被信号停止）且主机在该时刻报告内存不足时才添加它。当进程在退出前确实写入了错误时，该行显示该错误。
 
-### Sessions show as failed after shutdown
+释放机器上的内存，然后附加、窥视或回复该行，监督进程为会话启动一个新进程。当内存保持不足时，监督进程也会[停止空闲会话](#the-supervisor-process)来自行释放资源。
 
-Shutting down or restarting your machine stops running background sessions, so they show as failed when you next open agent view. Attach, peek, or reply to any of them and the session restarts from where it left off.
+<h3 id="agent-view-says-the-background-service-did-not-respond">
+  Agent view 说后台服务没有响应
+</h3>
 
-Sleep alone doesn't cause this. Sessions are preserved across sleep and the supervisor reconnects to them on wake.
-
-### Opening a session says the conversation is already open
-
-Opening a stopped row whose conversation is also held open by another running non-interactive Claude Code process, for example a background worker for the same conversation that is still winding down, shows `This conversation is already open in another running Claude session` instead of starting the row's process, because two processes can't write to the same transcript. Reply in the session that already has the conversation open, or exit it and open the row again. A reply you typed with the refused attempt isn't lost; it's sent the next time the session starts.
-
-### Opening a session says it has no saved transcript
-
-A stopped session that was [backgrounded from another conversation](#from-inside-a-session) and stopped before its first response finished has nothing to resume: until that first response finishes, the conversation still lives only in the session it was backgrounded from. `claude attach` refuses to open it with `This session has no saved transcript`.
-
-In agent view, opening that row shows `Press enter again to restart this session fresh` below the list. Press `Enter` on the same row again to restart the session with an empty conversation, or run `claude respawn <id>` from the shell.
-
-The original conversation is intact; resume it with `claude --resume` or keep working in it. See the [error reference](/docs/en/errors#this-session-has-no-saved-transcript) for details.
-
-### A session fails before starting with a `possibly low memory` note
-
-When a background session's process exits before it finishes starting and the host is low on memory, the row's status names the exit and adds `possibly low memory — free some up and retry`.
-
-The note is a hypothesis, not a confirmed cause. Claude Code adds it only when the process exited silently, without writing an error and without being stopped by a signal, and the host reported low memory at that moment. When the process did write an error before exiting, the row shows that error instead.
-
-Free up memory on the machine, then attach, peek, or reply to the row and the supervisor starts a fresh process for the session. When memory stays low, the supervisor also [stops idle sessions](#the-supervisor-process) to free resources on its own.
-
-### Agent view says the background service did not respond
-
-If attaching, peeking, or `claude logs` reports that the background service did not respond, the supervisor process has likely stalled. Stop it and let the next `claude agents` start a fresh one. To keep your background sessions running through the restart, pass `--keep-workers`:
+如果附加、窥视或 `claude logs` 报告后台服务没有响应，监督进程可能已经停滞。停止它并让下一个 `claude agents` 启动一个新的。要在重启期间保持你的后台会话运行，请传递 `--keep-workers`：
 
 ```bash theme={null}
 claude daemon stop --any --keep-workers
 ```
 
-The new supervisor reconnects to the running sessions. Without `--keep-workers`, the command ends the background sessions too. The `--any` flag confirms you want to stop a supervisor that started on demand rather than as an installed service, which is the default.
+新的监督进程重新连接到运行中的会话。没有 `--keep-workers`，该命令也会结束后台会话。`--any` 标志确认你想停止一个按需启动的监督进程，而不是作为已安装的服务启动的，这是默认的。
 
-A supervisor that starts but can't accept connections exits and releases its lock on its own, so the next `claude agents` starts a fresh one without this manual stop. The steps above apply when a running supervisor stalls.
+一个启动但无法接受连接的监督进程会自行退出并释放其锁，所以下一个 `claude agents` 会启动一个新的，无需此手动停止。上述步骤适用于运行中的监督进程停滞的情况。
 
-On Windows, if the supervisor doesn't respond to the stop request, the command prints its process ID. End that process with `taskkill /PID <pid>` to finish the recovery. Background sessions are still preserved when you passed `--keep-workers`.
+在 Windows 上，如果监督进程没有响应停止请求，该命令会打印其进程 ID。用 `taskkill /PID <pid>` 结束该进程以完成恢复。当你传递了 `--keep-workers` 时，后台会话仍然被保留。
 
-### Dispatch fails with `Could not resolve authentication method`
+<h3 id="dispatch-fails-with-could-not-resolve-authentication-method">
+  后台调度失败，出现 `Could not resolve authentication method`
+</h3>
 
-If a background dispatch fails with `Could not resolve authentication method` while interactive sessions authenticate normally, the worker that received the dispatch didn't pick up credentials. The supervisor supplies a fresh credential snapshot when it assigns a [pre-warmed worker](#the-supervisor-process), so this error means no stored credential was available to the supervisor process itself. Confirm you have run `/login` or configured an API key, then stop the supervisor:
+如果后台调度失败，出现 `Could not resolve authentication method`，而交互式会话正常进行身份验证，则接收调度的工作进程没有获取凭证。监督进程在将[预热工作进程](#the-supervisor-process)分配给调度时提供新的凭证快照，所以这个错误意味着监督进程本身没有可用的存储凭证。确认你已运行 `/login` 或配置了 API 密钥，然后停止监督进程：
 
 ```bash theme={null}
 claude daemon stop --any --keep-workers
 ```
 
-The next `claude agents` or `claude --bg` starts a fresh supervisor that reads your stored credentials. If you authenticate with an environment variable such as `ANTHROPIC_API_KEY` rather than `/login`, run that next command from a shell where the variable is set.
+下一个 `claude agents` 或 `claude --bg` 启动一个新的监督进程，该进程读取你存储的凭证。如果你使用环境变量（如 `ANTHROPIC_API_KEY`）而不是 `/login` 进行身份验证，请从设置了该变量的 shell 运行下一个命令。
 
-See the [error reference](/docs/en/errors#could-not-resolve-authentication-method) for the full list of causes and fixes.
+参见[错误参考](/docs/zh-CN/errors#could-not-resolve-authentication-method)了解完整的原因和修复列表。
 
-### Background sessions can't read Desktop, Documents, or Downloads on macOS
+<h3 id="background-sessions-can’t-read-desktop-documents-or-downloads-on-macos">
+  后台会话无法在 macOS 上读取 Desktop、Documents 或 Downloads
+</h3>
 
-On macOS, the background session host runs as its own process and requests access to protected folders separately from your terminal. If a background session reports `Operation not permitted` when reading `~/Desktop`, `~/Documents`, `~/Downloads`, or another protected location, grant access in System Settings under Privacy & Security > Files and Folders, or enable Full Disk Access for the entry.
+在 macOS 上，后台会话主机作为其自己的进程运行，并与你的终端分开请求对受保护文件夹的访问。如果后台会话在读取 `~/Desktop`、`~/Documents`、`~/Downloads` 或其他受保护位置时报告 `Operation not permitted`，请在系统设置中的隐私与安全 > 文件和文件夹下授予访问权限，或为该条目启用完全磁盘访问。
 
-With the native installer, the entry appears as Claude Code and the grant persists across updates. With other install methods such as Homebrew or npm, the entry shows the binary path and may need to be granted again after updating.
+使用原生安装程序，该条目显示为 Claude Code，授予在更新中持续。使用其他安装方法（如 Homebrew 或 npm），该条目显示二进制路径，在更新后可能需要再次授予。
 
-### Background sessions can't reach local-network hosts on macOS
+<h3 id="background-sessions-can’t-reach-local-network-hosts-on-macos">
+  后台会话无法在 macOS 上访问本地网络主机
+</h3>
 
-On macOS 15 and later, the system blocks a process from reaching devices on your local network until you grant Local Network permission, so a command targeting a LAN address can fail with `connect: no route to host` in a background session even though it works in a foreground terminal. {/* min-version: 2.1.198 */}The first command in a background session that connects to a local-network address triggers the macOS Local Network permission prompt for Claude Code. Grant it once and those commands reach LAN hosts the same way they do in a foreground terminal.
+在 macOS 15 及更高版本上，系统会阻止进程访问你本地网络上的设备，直到你授予本地网络权限。在 v2.1.198 之前，后台会话主机从未请求该权限，所以针对 LAN 地址的命令失败，出现 `connect: no route to host`，即使相同的命令在前台终端中有效。{/* min-version: 2.1.198 */}从 v2.1.198 开始，后台会话中连接到本地网络地址的第一个命令会触发 Claude Code 的 macOS 本地网络权限提示。授予一次，这些命令就能像在前台终端中一样访问 LAN 主机。
 
-### A session is slow to respond after attaching
+<h3 id="a-session-is-slow-to-respond-after-attaching">
+  附加后会话响应缓慢
+</h3>
 
-Once a session has finished and sat unattached for about an hour, the supervisor stops its process to free resources. Attaching starts a fresh process from where it left off and switches to the session immediately while the process restarts. Sessions that are working, waiting on you, or [pinned](#organize-the-list) aren't stopped this way, so pin a session with `Ctrl+T` to keep it responsive.
+一旦会话完成并未连接地坐了大约一小时，监督进程停止其进程以释放资源。附加启动一个从中断处的新进程并立即切换到会话，而进程重新启动。工作或等待你的会话，或[固定](#organize-the-list)的会话永远不会以这种方式停止，所以用 `Ctrl+T` 固定一个会话来保持它的响应性。
 
-While the process starts, Claude Code shows the tail of the session's transcript formatted the way the live session renders it, with markdown, highlighted code blocks, and tool calls as dimmed rows, above a dimmed prompt area with a `Session is starting` note. The live session replaces it as soon as it's ready.
+当进程启动时，会话记录的最后一屏会显示，下面有一个 `Session is starting` 注记，当会话准备好时，实时会话会立即替换它。
 
-### `.claude/worktrees/` is filling up
+<h3 id="claude/worktrees/-is-filling-up">
+  `.claude/worktrees/` 填满了
+</h3>
 
-Deleting a session in agent view removes the worktree Claude created for it, and a worktree that can't be removed safely [keeps its session row](#organize-the-list) so it isn't orphaned. {/* min-version: 2.1.211 */}A worktree directory that git no longer recognizes is left on disk when its session is deleted, so remove leftover directories you don't need by hand.
+在 agent view 中删除会话会删除 Claude 为其创建的 worktree，无法安全删除的 worktree [保持其会话行](#organize-the-list)，这样它就不会被孤立。`claude rm` 保留具有未提交更改的 worktree 及其会话行，并打印保留的路径。在项目目录中用 `git worktree list` 列出剩余条目，并用 `git worktree remove <path>` 删除每个。参见[清理 worktrees](/docs/zh-CN/worktrees#clean-up-worktrees)。
 
-`claude rm` keeps a worktree that has uncommitted changes, and its session row, and prints the kept path.
+<h2 id="limitations">
+  限制
+</h2>
 
-List leftover entries with `git worktree list` in the project directory and remove each with `git worktree remove <path>`. See [Clean up worktrees](/docs/en/worktrees#clean-up-worktrees).
+Agent view 处于研究预览阶段，存在以下限制：
 
-## Limitations
+* **速率限制适用**：后台会话消耗你的订阅使用量，与交互式会话相同，因此并行运行十个代理的配额消耗速度大约是运行一个代理的十倍。
+* **会话是本地的**：后台会话在你的机器上运行。它们在机器睡眠时保留，但在机器关闭时停止。
+* **Claude 创建的 worktrees 在 agent view 中随会话删除**：在删除在其自己的 worktree 中编辑文件的会话之前，请提交更改。具有未推送任何地方的提交的 worktree 与会话一起保留。`claude rm` 也会将具有未提交更改的 worktree 与其会话一起保留，而你自己创建的 worktree 保持原位。
 
-Agent view is in research preview with the following limitations:
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* **Rate limits apply**: background sessions consume your subscription usage the same as interactive sessions, so running ten agents in parallel uses quota roughly ten times as fast as running one.
-* **Sessions are local**: background sessions run on your machine. They are preserved across sleep but stop if the machine shuts down.
-* **Claude-created worktrees are deleted with the session in agent view**: commit changes before deleting a session that edited files in its own worktree. A worktree with commits that aren't pushed anywhere is kept along with the session. `claude rm` also keeps a worktree that has uncommitted changes together with its session, and a worktree you created yourself is left in place.
+有关以并行方式运行 Claude 的其他方法，请参阅：
 
-## Related resources
+* [并行运行代理](/docs/zh-CN/agents)：比较 agent view 与 subagents、agent teams 和 worktrees
+* [Agent teams](/docs/zh-CN/agent-teams)：协调相互发送消息的多个会话
+* [Claude Code on the web](/docs/zh-CN/claude-code-on-the-web)：在托管的云环境中运行会话而不是本地
 
-For other ways to run Claude in parallel, see:
+<h2 id="version-history">
+  版本历史
+</h2>
 
-* [Run agents in parallel](/docs/en/agents): compare agent view with subagents, agent teams, and worktrees
-* [Agent teams](/docs/en/agent-teams): coordinate multiple sessions that message each other
-* [Claude Code on the web](/docs/en/claude-code-on-the-web): run sessions in a managed cloud environment instead of locally
+Agent view 在研究预览期间发展迅速。如果你使用较旧的 Claude Code 版本，本页上的某些行为可能会有所不同；特别是，`claude agents` 拒绝它尚不支持的标志，出现 `unknown option` 错误。下表列出了何时添加每个标志和行为。
 
-## Version history
-
-Agent view has evolved quickly during research preview. If you are on an older Claude Code version, some behavior on this page may differ; in particular, `claude agents` rejects flags it doesn't yet support with an `unknown option` error. The table below lists when each flag and behavior was added.
-
-| Version  | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v2.1.218 | {/* min-version: 2.1.218 */}Pressing `←` within two seconds of a deletion that emptied the prompt, or of moving through prompt history, shows `Press ← again to open agents`, or `Press ← again to go back to agents` in an attached session, and switches only on a second press at least a second later; before this release the press switched immediately. A `←` that arrives inside pasted or scripted input no longer triggers the switch. Backgrounding a foreground session with `←` shows `Your conversation moved to the background` above the list, and `Esc` at the root of agent view returns to that conversation instead of exiting to the shell, with double `Ctrl+C` remaining the exit; if the conversation can't be reopened, Claude Code exits and prints a `claude --resume` command for it. On Windows, a `←` pressed within about half a second of attaching shows `Ambiguous ←, press again to detach` and detaches on the second press.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| v2.1.216 | {/* min-version: 2.1.216 */}A background session where `/install-github-app`, the [`/mcp`](/docs/en/mcp) settings list, or an MCP authentication action needs a terminal appears under `Needs input` with a row such as `open this session to manage MCP servers` until you attach; run the command again to continue. From v2.1.208 through v2.1.215 the command was refused with a message and no `Needs input` row.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| v2.1.213 | {/* min-version: 2.1.213 */}`/install-github-app`, the [`/mcp`](/docs/en/mcp) settings list, and MCP authentication actions work in a background session while a terminal is attached, and are refused only when nobody is attached, with a message telling you to attach and run the command again; from v2.1.208 through v2.1.212 they were refused even with a terminal attached.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| v2.1.212 | {/* min-version: 2.1.212 */}[`/fork` in an interactive session](#from-inside-a-session) copies the conversation into a new background session that appears as its own row, named after the session it came from or, for a prompted fork of an unnamed session, after the fork prompt, while the original keeps running; the earlier forked-subagent behavior of `/fork` moved to `/subtask`. With [agent view turned off](#turn-off-agent-view), `/fork` keeps the forked-subagent behavior. A focused row that is waiting for its first prompt shows `space to send it a prompt`. `Ctrl+J` inserts a newline in the dispatch input on terminals with extended key reporting, where the keypress was previously ignored, and the `?` overlay lists the shortcut. The `←` footer hint in an interactive session briefly shows `N done` when a background session finishes while none need your input. Typing a bare `/resume` in agent view opens a picker of past sessions of the repository you opened agent view from, including sessions deleted from the list, and picking one resumes it as a background session; before this release `/resume` wasn't available in agent view and deleted sessions were reachable only with `claude --resume` or `/resume` from an interactive session. Targeted, scoped, and restricted forms keep the `attach to a session to run it` hint that earlier versions showed for every form. Sessions waiting on a sandbox network-host prompt, an MCP input request, or a managed-settings prompt show as `Needs input` instead of `Working`, in agent view and in `claude agents --json`, and a question from Claude reports `waitingFor: input needed` instead of `permission prompt`. Attaching to a session whose process has stopped shows its transcript formatted the way the live session renders it, instead of as raw text. A stopped session whose transcript is in an unexpected place resumes from it via a last-resort scan of your saved transcripts, and opening a row that has no saved transcript shows `Press enter again to restart this session fresh`, restarting it fresh on the second press; v2.1.211 showed the refusal with no way to restart from agent view. |
-| v2.1.211 | {/* min-version: 2.1.211 */}Waking a stopped session by attaching, peeking, or replying from the directory it runs in forwards your shell's gateway `ANTHROPIC_BASE_URL` again, under the same conditions as a fresh dispatch, so a session authenticated through a gateway `ANTHROPIC_AUTH_TOKEN` resumes on the gateway instead of reporting `Not logged in`. Attaching to a stopped session that was backgrounded from another conversation before its first response finished is refused with `This session has no saved transcript` instead of silently starting a blank conversation under the same session id; opening the same row from agent view showed the refusal in the footer. Ending the process of a `←` or `/background` session from outside Claude Code marks it stopped instead of the supervisor restarting it, a stop already recorded on disk is honored unless a reply you sent is still waiting to be delivered, a session restarted after a crash is told it was restarted, and a restarted `←` or `/background` session doesn't resume an interrupted response older than about an hour. A session-naming reply that answers or refuses the prompt instead of labeling it, such as for a prompt that's mostly a link, is discarded and the row keeps a name taken from the prompt text. Deleting a session whose worktree git no longer recognizes succeeds, leaving the worktree directory on disk and naming its path, instead of every attempt being refused. A refused delete shows the reason on the session's row, including the underlying git error when the worktree couldn't be removed, instead of the row silently reappearing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| v2.1.210 | {/* min-version: 2.1.210 */}`claude attach` waits while the background service is starting or reconnecting instead of failing with a `job not found` or `still starting` error, reports a session that finished during the attach as exited, and applies a terminal resize made during a slow attach when the attach completes. The prompt footer's `←` needs-input count appears on every provider, including third-party providers that previously showed the plain `← for agents` form. Backgrounding a session with `←` carries Claude's task list to the background session instead of dropping it. The row you pressed `←` from keeps a bold, undimmed name after the selection moves. `claude agents --effort` accepts `ultracode` instead of silently dropping it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| v2.1.208 | {/* min-version: 2.1.208 */}Attaching to a session whose process has stopped shows the last screenful of its transcript while the process starts, instead of only a `Session is starting` note. A reply that can't be delivered because the background service is unreachable or the send fails is saved and sent as the session's next prompt when its process starts again; before this release, a reply lost while the background service was unreachable was discarded. A process whose own binary was replaced by an update can still start the supervisor, from the installed `claude` launcher or the newest version on disk, instead of failing until Claude Code was restarted. A supervisor running an older version never restarts an idle session started by a newer version onto its own older binary. Deleting a session removes its worktree even after the session moved the worktree onto a different branch, and keeps the worktree together with the session row when the worktree has commits that aren't pushed anywhere or another session claims it, instead of destroying the commits or orphaning the worktree. `/install-github-app` and the `/mcp` settings list and its authentication actions are refused in a background session with a message naming the alternative; in v2.1.208 only, the `/model` picker was refused the same way and a typed `/model <name>` switched that session only instead of also saving your default model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| v2.1.207 | {/* min-version: 2.1.207 */}The peek panel opens with the sentence the row truncates, such as the exact question for a session that's waiting on you, and shows how long a blocked session has been waiting as a single `waiting 3m` line instead of prefixing the same timestamp to the status sentence and the question. Pasting the same text again in the dispatch input expands the collapsed `[Pasted text #N]` placeholder instead of adding a second one. A background session named by accepting a plan shows that name on its row. A background session that moved into a worktree keeps its conversation when its process is restarted from agent view.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| v2.1.206 | {/* min-version: 2.1.206 */}Row summaries fill the row's remaining width and truncate only at the terminal's right edge instead of at 64 columns. After the supervisor restarts into a new Claude Code version, it restarts the remaining idle background sessions onto that version in the background instead of a few per minute. Deleting a session with `Ctrl+X` or `claude rm` also clears it from the supervisor's session list, so the row no longer reappears after a supervisor restart. A `CLAUDE_CODE_EXTRA_BODY` request-body override exported in the dispatching shell reaches background sessions instead of being ignored.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| v2.1.205 | {/* min-version: 2.1.205 */}The prompt footer's `←` hint in a regular `claude` session counts the background agents waiting on you, such as `← 2 agents`. Row summaries show the session's own one-line report, truncated at 64 columns, instead of a raw tool invocation or a `done/total` count; directory-grouped rows open with a colored state word. The peek panel opens with the full status sentence and, for a session waiting on you, its exact question above the reply input. Sessions that edit, comment on, close, or mark a pull request ready with `gh` are linked to it, not only ones that create or check out a pull request, a push links a pull request even when the local branch name doesn't match, and a pull request whose creating command's output exceeded the inline limit is linked too. A turn with no readable text keeps the session's previous state instead of flipping it back to `Working`. `claude attach` waits up to about 60 seconds for a session that's restarting, with a status line naming why, instead of failing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| v2.1.203 | {/* min-version: 2.1.203 */}A gateway `ANTHROPIC_BASE_URL` exported in the dispatching shell reaches the sessions dispatched from it into that same directory when the supervisor shares that gateway environment, instead of being dropped while the API key exported alongside it was kept. The dispatching shell's `PATH` is applied to each session's worker. Pressing `←` while subagents are running waits for them instead of restarting them after ten seconds. The empty list always shows the section headers with a description under each. Typing `@` in the dispatch input also lists the launch repository's registered git worktrees that live inside its directory tree. An effort inherited from the `effortLevel` setting follows later edits to that setting instead of being fixed at dispatch. Opening a stopped session whose conversation is already open in another running session is refused with a message instead of failing the row. A command that isn't available in agent view leaves the typed text in the input. A `WorktreeCreate` hook that fails outside a git repository no longer blocks the session from editing files.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| v2.1.202 | {/* min-version: 2.1.202 */}A name set with `/rename` or `Ctrl+R` on a background session persists when the supervisor stops and restarts its process, instead of reverting to the name the session was dispatched with.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| v2.1.200 | {/* min-version: 2.1.200 */}An older Claude Code version that rewrites the session list in `roster.json` preserves fields written by a newer version, matching the existing `state.json` guarantee, so sessions started by the newer version keep accepting input after the supervisor restarts. When you open a session that has stopped responding, the supervisor restarts its process and the session continues the interrupted response from where it left off. Agent view applies a `--plugin-dir` flag placed after `agents` to its own subagent and skill autocomplete in the dispatch input as well as dispatched sessions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| v2.1.199 | {/* min-version: 2.1.199 */}A background session whose process exits before it finishes starting on a low-memory host shows `possibly low memory — free some up and retry` in its row status instead of only the bare exit reason. Backgrounding a session with `←` or `/background` carries its `/color` over to the new row.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| v2.1.198 | {/* min-version: 2.1.198 */}Agent view sends a notification through `preferredNotifChannel` when a background session needs input, finishes, or fails, and fires the `Notification` hook with the `agent_needs_input` or `agent_completed` type. `←` and `/exit` inside `claude attach <id>` return to agent view instead of exiting to the shell; `Ctrl+Z` returns to the shell. A background session that isolated its work in a worktree commits, pushes its own isolated branch, never `main` or `master`, and opens a draft pull request when it finishes instead of asking first. `/login` runs in agent view and opens the sign-in dialog. The `Background work is running` exit dialog offers `Move to background and exit`. The exit handoff also covers background subagents, which resume from their transcript on the next wake instead of being reported as failed. `claude --bg` combined with `-p` or `--print` is rejected with an error. The background session host requests macOS Local Network permission on first LAN access instead of failing with `connect: no route to host`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| v2.1.196 | {/* min-version: 2.1.196 */}A single `←` press backgrounds a foreground session; earlier versions required two presses, with a footer hint and a confirm. `--dangerously-skip-permissions` passed to `claude agents` shows the bypass disclaimer instead of being silently dropped. Interactive sessions you never named carry a default name such as `my-app-3f` in session listings and `claude agents --json`. Background shell commands and dynamic workflows survive the session's process being stopped, restarted, or updated, including on Windows; set `CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF=1` to turn the handoff off. A transcript misread as empty on restart is renamed with an `.orphaned-` suffix instead of deleted.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| v2.1.195 | {/* min-version: 2.1.195 */}In-flight work carries over when you background a session on Windows too; set `CLAUDE_DISABLE_ADOPT=1` to stop it instead. The `Completed` group fills the remaining vertical space and the header compacts on short terminals. An older Claude Code version no longer drops newer sessions' `state.json` fields or hides those sessions from `claude agents`. Attaching to a stopped session switches immediately instead of showing a blank screen for up to five seconds. A supervisor that can't accept connections exits and releases its lock on its own.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| v2.1.191 | {/* min-version: 2.1.191 */}`claude --bg` with an `--agent` name that doesn't match any of your subagents fails the launch: the session exits immediately with an `--agent '<name>' not found` error instead of running with the default agent.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| v2.1.174 | {/* min-version: 2.1.174 */}Background sessions no longer inherit gateway endpoint variables such as `ANTHROPIC_BASE_URL` from the supervisor's launch shell; the supervisor supplies a fresh credential snapshot to pre-warmed workers, fixing spurious `Could not resolve authentication method` errors.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| v2.1.172 | {/* min-version: 2.1.172 */}`/model` in the dispatch input sets a session-scoped dispatch model override.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| v2.1.161 | {/* min-version: 2.1.161 */}Row summaries show a `done/total` count for parallel work items; the peek panel names the longest-running parallel work item.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| v2.1.157 | {/* min-version: 2.1.157 */}`claude agents` accepts `--agent`; dispatched sessions honor the `agent` setting.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| v2.1.145 | {/* min-version: 2.1.145 */}Voice dictation supported in the peek-panel reply input and the dispatch input.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| v2.1.143 | {/* min-version: 2.1.143 */}`worktree.bgIsolation` setting added; `claude agents` accepts `--allow-dangerously-skip-permissions`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| v2.1.142 | {/* min-version: 2.1.142 */}`claude agents` accepts `--permission-mode`, `--model`, `--effort`, `--dangerously-skip-permissions`, `--settings`, `--add-dir`, `--plugin-dir`, `--mcp-config`, and `--strict-mcp-config`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| v2.1.141 | {/* min-version: 2.1.141 */}`claude agents` accepts `--cwd` to scope the list to one project.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| v2.1.139 | {/* min-version: 2.1.139 */}Agent view introduced as a research preview.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 版本       | 更改                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v2.1.208 | {/* min-version: 2.1.208 */}附加到一个进程已停止的会话会显示其记录的最后一屏，而进程启动，而不是仅显示 `Session is starting` 注记。无法传递的回复（因为后台服务无法访问或发送失败）会被保存，并在会话的进程再次启动时作为会话的下一个提示发送；在此版本之前，后台服务无法访问时丢失的回复会被丢弃。其自身二进制文件被更新替换的进程仍然可以从已安装的 `claude` 启动器或磁盘上的最新版本启动监督进程，而不是在 Claude Code 重新启动之前失败。运行较旧版本的监督进程永远不会将由较新版本启动的空闲会话重新启动到其自身的较旧二进制文件上。删除会话会删除其 worktree，即使会话将 worktree 移到了不同的分支，并在 worktree 有未推送到任何地方的提交或另一个会话声称它时将 worktree 与会话行保持在一起，而不是销毁提交或孤立 worktree。`/install-github-app` 和 `/mcp` 设置列表及其身份验证操作在后台会话中被拒绝，并显示替代方案的消息；仅在 v2.1.208 中，`/model` 选择器以相同方式被拒绝，键入的 `/model <name>` 仅切换该会话，而不是也保存你的默认模型。 |
+| v2.1.207 | {/* min-version: 2.1.207 */}窥视面板以行截断的句子打开，例如等待你的会话的确切问题，并显示被阻止的会话已等待多长时间作为单个 `waiting 3m` 行，而不是将相同的时间戳前缀添加到状态句子和问题。在调度输入中再次粘贴相同的文本会展开折叠的 `[Pasted text #N]` 占位符，而不是添加第二个。按名称接受计划的后台会话在其行上显示该名称。移入 worktree 的后台会话在其进程从 agent view 重新启动时保持其对话。                                                                                                                                                                                                                                                                                                                              |
+| v2.1.206 | {/* min-version: 2.1.206 */}行摘要填充行的剩余宽度，仅在终端的右边缘截断，而不是在 64 列处。监督进程重新启动到新的 Claude Code 版本后，它在后台将剩余的空闲后台会话重新启动到该版本，而不是每分钟几个。使用 `Ctrl+X` 或 `claude rm` 删除会话也会将其从监督进程的会话列表中清除，因此行在监督进程重新启动后不再重新出现。                                                                                                                                                                                                                                                                                                                                                                            |
+| v2.1.205 | {/* min-version: 2.1.205 */}行摘要显示会话自己的单行报告，在 64 列处截断，而不是原始工具调用或 `done/total` 计数；按目录分组的行以彩色状态词打开。窥视面板以完整状态句子打开，对于等待你的会话，其精确问题显示在回复输入上方。编辑、评论、关闭或使用 `gh` 标记拉取请求为就绪的会话与其关联，不仅仅是创建或检出拉取请求的会话，推送即使本地分支名称不匹配也会关联拉取请求，创建命令的输出超过内联限制的拉取请求也会关联。没有可读文本的转向保持会话的前一个状态，而不是将其翻转回 `Working`。`claude attach` 等待重新启动的会话长达约 60 秒，带有命名原因的状态行，而不是失败。                                                                                                                                                                                                                                          |
+| v2.1.203 | {/* min-version: 2.1.203 */}在调度 shell 中导出的网关 `ANTHROPIC_BASE_URL` 当监督进程共享该网关环境时，会到达从它调度的会话进入同一目录，而不是在保留随之导出的 API 密钥时被丢弃。调度 shell 的 `PATH` 应用于每个会话的工作进程。在子代理运行时按 `←` 会等待它们，而不是在十秒后重新启动它们。空列表始终显示部分标题及其下方的描述。在调度输入中键入 `@` 也会列出启动存储库内其目录树中的已注册 git worktrees。从 `effortLevel` 设置继承的工作量在该设置的后续编辑后跟随，而不是在调度时固定。打开一个已停止的会话（其对话已在另一个运行中的会话中打开）会被拒绝并显示消息，而不是导致行失败。在 agent view 中不可用的命令会在输入中保留已键入的文本。在 git 存储库外失败的 `WorktreeCreate` hook 不再阻止会话编辑文件。                                                                                                                                |
+| v2.1.202 | {/* min-version: 2.1.202 */}使用 `/rename` 或 `Ctrl+R` 在后台会话上设置的名称在监督进程停止并重新启动时保持不变，而不是恢复为会话调度时的名称。                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| v2.1.200 | {/* min-version: 2.1.200 */}重写 `roster.json` 中会话列表的较旧 Claude Code 版本保留由较新版本写入的字段，与现有的 `state.json` 保证相匹配，因此由较新版本启动的会话在监督进程重新启动后继续接受输入。当你打开已停止响应的会话时，监督进程重新启动其进程，会话从中断处继续响应。                                                                                                                                                                                                                                                                                                                                                                                               |
+| v2.1.199 | {/* min-version: 2.1.199 */}后台会话的进程在低内存主机上完成启动前退出时，其行状态显示 `possibly low memory — free some up and retry` 而不仅仅是裸退出原因。使用 `←` 或 `/background` 后台会话时将其 `/color` 转移到新行。                                                                                                                                                                                                                                                                                                                                                                                                        |
+| v2.1.198 | {/* min-version: 2.1.198 */}Agent view 在后台会话需要输入、完成或失败时通过 `preferredNotifChannel` 发送通知，并使用 `agent_needs_input` 或 `agent_completed` 类型触发 `Notification` hook。`←` 和 `/exit` 在 `claude attach <id>` 内返回 agent view 而不是退出到 shell；`Ctrl+Z` 返回到 shell。后台会话在 worktree 中隔离其工作，提交、推送其自己的隔离分支，从不 `main` 或 `master`，并在完成时打开草稿拉取请求而不是先询问。`/login` 在 agent view 中运行并打开登录对话框。`Background work is running` 退出对话框提供 `Move to background and exit`。退出交付也涵盖后台子代理，它们在下次唤醒时从其记录恢复，而不是被报告为失败。`claude --bg` 与 `-p` 或 `--print` 结合被拒绝并出现错误。                                                      |
+| v2.1.196 | {/* min-version: 2.1.196 */}单次 `←` 按压后台前台会话；早期版本需要两次按压，带有页脚提示和确认。`--dangerously-skip-permissions` 传递给 `claude agents` 显示绕过免责声明而不是被默默丢弃。你从未命名的交互式会话在会话列表和 `claude agents --json` 中携带默认名称，例如 `my-app-3f`。后台 shell 命令和动态工作流在会话的进程被停止、重新启动或更新时存活，包括在 Windows 上；设置 `CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF=1` 关闭交付。在重新启动时误读为空的记录被重命名为 `.orphaned-` 后缀而不是删除。                                                                                                                                                                                                                       |
+| v2.1.195 | {/* min-version: 2.1.195 */}进行中的工作在 Windows 上后台会话时也转移；设置 `CLAUDE_DISABLE_ADOPT=1` 改为停止它。`Completed` 组填充剩余的垂直空间，标题在短终端上压缩。较旧的 Claude Code 版本不再丢弃较新会话的 `state.json` 字段或从 `claude agents` 隐藏这些会话。附加到停止的会话立即切换而不是显示空白屏幕长达五秒。无法接受连接的监督进程自行退出并释放其锁。                                                                                                                                                                                                                                                                                                                             |
+| v2.1.174 | {/* min-version: 2.1.174 */}后台会话不再从监督进程的启动 shell 继承网关端点变量如 `ANTHROPIC_BASE_URL`；监督进程向预热工作进程提供新的凭证快照，修复虚假的 `Could not resolve authentication method` 错误。                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| v2.1.172 | {/* min-version: 2.1.172 */}调度输入中的 `/model` 设置会话范围的调度模型覆盖。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| v2.1.161 | {/* min-version: 2.1.161 */}行摘要显示并行工作项的 `done/total` 计数；窥视面板命名最长运行的并行工作项。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| v2.1.157 | {/* min-version: 2.1.157 */}`claude agents` 接受 `--agent`；调度的会话尊重 `agent` 设置。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| v2.1.145 | {/* min-version: 2.1.145 */}窥视面板回复输入和调度输入中支持语音听写。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| v2.1.143 | {/* min-version: 2.1.143 */}添加 `worktree.bgIsolation` 设置；`claude agents` 接受 `--allow-dangerously-skip-permissions`。                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| v2.1.142 | {/* min-version: 2.1.142 */}`claude agents` 接受 `--permission-mode`、`--model`、`--effort`、`--dangerously-skip-permissions`、`--settings`、`--add-dir`、`--plugin-dir`、`--mcp-config` 和 `--strict-mcp-config`。                                                                                                                                                                                                                                                                                                                                                                  |
+| v2.1.141 | {/* min-version: 2.1.141 */}`claude agents` 接受 `--cwd` 以将列表范围限定到一个项目。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| v2.1.139 | {/* min-version: 2.1.139 */}Agent view 作为研究预览版引入。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |

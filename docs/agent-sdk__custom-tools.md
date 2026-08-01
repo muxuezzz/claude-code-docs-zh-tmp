@@ -2,45 +2,51 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Give Claude custom tools
+# 为 Claude 提供自定义工具
 
-> Define custom tools with the Claude Agent SDK's in-process MCP server so Claude can call your functions, hit your APIs, and perform domain-specific operations.
+> 使用 Claude Agent SDK 的进程内 MCP 服务器定义自定义工具，以便 Claude 可以调用您的函数、访问您的 API 并执行特定领域的操作。
 
-Custom tools extend the Agent SDK by letting you define your own functions that Claude can call during a conversation. Using the SDK's in-process MCP server, you can give Claude access to databases, external APIs, domain-specific logic, or any other capability your application needs.
+自定义工具通过让您定义 Claude 在对话期间可以调用的自己的函数来扩展 Agent SDK。使用 SDK 的进程内 MCP 服务器，您可以让 Claude 访问数据库、外部 API、特定领域的逻辑或应用程序需要的任何其他功能。
 
-This guide covers how to define tools with input schemas and handlers, bundle them into an MCP server, pass them to `query`, and control which tools Claude can access. It also covers error handling, tool annotations, and returning non-text content like images.
+本指南涵盖如何使用输入架构和处理程序定义工具、将它们捆绑到 MCP 服务器中、将它们传递给 `query`，以及控制 Claude 可以访问哪些工具。它还涵盖错误处理、工具注释和返回非文本内容（如图像）。
 
-## Quick reference
+<h2 id="quick-reference">
+  快速参考
+</h2>
 
-| If you want to...                            | Do this                                                                                                                                                                                                       |
-| :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Define a tool                                | Use [`@tool`](/docs/en/agent-sdk/python#tool) (Python) or [`tool()`](/docs/en/agent-sdk/typescript#tool) (TypeScript) with a name, description, schema, and handler. See [Create a custom tool](#create-a-custom-tool). |
-| Register a tool with Claude                  | Wrap in `create_sdk_mcp_server` / `createSdkMcpServer` and pass to `mcpServers` in `query()`. See [Call a custom tool](#call-a-custom-tool).                                                                  |
-| Pre-approve a tool                           | Add to your allowed tools. See [Configure allowed tools](#configure-allowed-tools).                                                                                                                           |
-| Remove a built-in tool from Claude's context | Pass a `tools` array listing only the built-ins you want. See [Configure allowed tools](#configure-allowed-tools).                                                                                            |
-| Let Claude call tools in parallel            | Set `readOnlyHint: true` on tools with no side effects. See [Add tool annotations](#add-tool-annotations).                                                                                                    |
-| Control the error message Claude reads       | Return `isError: true` to compose the message instead of surfacing the raw exception. See [Handle errors](#handle-errors).                                                                                    |
-| Return images or files                       | Use `image` or `resource` blocks in the content array. See [Return images and resources](#return-images-and-resources).                                                                                       |
-| Return a machine-readable JSON result        | Set `structuredContent` on the result. See [Return structured data](#return-structured-data).                                                                                                                 |
-| Scale to many tools                          | Use [tool search](/docs/en/agent-sdk/tool-search) to load tools on demand.                                                                                                                                         |
+| 如果您想...              | 执行此操作                                                                                                                                                             |
+| :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 定义工具                 | 使用 [`@tool`](/docs/zh-CN/agent-sdk/python#tool)（Python）或 [`tool()`](/docs/zh-CN/agent-sdk/typescript#tool)（TypeScript），包含名称、描述、架构和处理程序。请参阅[创建自定义工具](#create-a-custom-tool)。 |
+| 向 Claude 注册工具        | 在 `create_sdk_mcp_server` / `createSdkMcpServer` 中包装并传递给 `query()` 中的 `mcpServers`。请参阅[调用自定义工具](#call-a-custom-tool)。                                             |
+| 预先批准工具               | 添加到您的允许工具列表。请参阅[配置允许的工具](#configure-allowed-tools)。                                                                                                               |
+| 从 Claude 的上下文中删除内置工具 | 传递仅列出您想要的内置工具的 `tools` 数组。请参阅[配置允许的工具](#configure-allowed-tools)。                                                                                                 |
+| 让 Claude 并行调用工具      | 在没有副作用的工具上设置 `readOnlyHint: true`。请参阅[添加工具注释](#add-tool-annotations)。                                                                                             |
+| 控制 Claude 读取的错误消息    | 返回 `isError: true` 来组合消息，而不是显示原始异常。请参阅[处理错误](#handle-errors)。                                                                                                     |
+| 返回图像或文件              | 在内容数组中使用 `image` 或 `resource` 块。请参阅[返回图像和资源](#return-images-and-resources)。                                                                                       |
+| 返回机器可读的 JSON 结果      | 在结果上设置 `structuredContent`。请参阅[返回结构化数据](#return-structured-data)。                                                                                                 |
+| 扩展到许多工具              | 使用[工具搜索](/docs/zh-CN/agent-sdk/tool-search)按需加载工具。                                                                                                                     |
 
-## Create a custom tool
+<h2 id="create-a-custom-tool">
+  创建自定义工具
+</h2>
 
-A tool is defined by four parts, passed as arguments to the [`tool()`](/docs/en/agent-sdk/typescript#tool) helper in TypeScript or the [`@tool`](/docs/en/agent-sdk/python#tool) decorator in Python:
+工具由四个部分定义，作为参数传递给 TypeScript 中的 [`tool()`](/docs/zh-CN/agent-sdk/typescript#tool) 助手或 Python 中的 [`@tool`](/docs/zh-CN/agent-sdk/python#tool) 装饰器：
 
-* **Name:** a unique identifier Claude uses to call the tool.
-* **Description:** what the tool does. Claude reads this to decide when to call it.
-* **Input schema:** the arguments Claude must provide. In TypeScript this is always a [Zod schema](https://zod.dev/), and the handler's `args` are typed from it automatically. In Python this is a dict mapping names to types, like `{"latitude": float}`, which the SDK converts to JSON Schema for you. The Python decorator also accepts a full [JSON Schema](https://json-schema.org/understanding-json-schema/about) dict directly when you need enums, ranges, optional fields, or nested objects.
-* **Handler:** the async function that runs when Claude calls the tool. It receives the validated arguments and must return an object with:
-  * `content` (required): an array of result blocks, each with a `type` of `"text"`, `"image"`, `"audio"`, `"resource"`, or `"resource_link"`. See [Return images and resources](#return-images-and-resources) for non-text blocks.
-  * `structuredContent` (optional): a JSON object holding the result as machine-readable data, returned alongside `content`. See [Return structured data](#return-structured-data).
-  * `isError` (optional): set to `true` to signal a tool failure so Claude can react to it. See [Handle errors](#handle-errors).
+* **名称：** Claude 用来调用工具的唯一标识符。
+* **描述：** 工具的功能。Claude 读取此内容以决定何时调用它。
+* **输入架构：** Claude 必须提供的参数。在 TypeScript 中，这始终是 [Zod 架构](https://zod.dev/)，处理程序的 `args` 会自动从中获得类型。在 Python 中，这是一个将名称映射到类型的字典，如 `{"latitude": float}`，SDK 会为您将其转换为 JSON Schema。Python 装饰器还接受完整的 [JSON Schema](https://json-schema.org/understanding-json-schema/about) 字典，当您需要枚举、范围、可选字段或嵌套对象时。
+* **处理程序：** 当 Claude 调用工具时运行的异步函数。它接收验证的参数，必须返回一个对象，包含：
+  * `content`（必需）：结果块的数组，每个块的 `type` 为 `"text"`、`"image"`、`"audio"`、`"resource"` 或 `"resource_link"`。有关非文本块，请参阅[返回图像和资源](#return-images-and-resources)。
+  * `structuredContent`（可选）：保存结果作为机器可读数据的 JSON 对象，与 `content` 一起返回。请参阅[返回结构化数据](#return-structured-data)。
+  * `isError`（可选）：设置为 `true` 以表示工具失败，以便 Claude 可以对其做出反应。请参阅[处理错误](#handle-errors)。
 
-After defining a tool, wrap it in a server with [`createSdkMcpServer`](/docs/en/agent-sdk/typescript#createsdkmcpserver) (TypeScript) or [`create_sdk_mcp_server`](/docs/en/agent-sdk/python#create_sdk_mcp_server) (Python). The server runs in-process inside your application, not as a separate process.
+定义工具后，使用 [`createSdkMcpServer`](/docs/zh-CN/agent-sdk/typescript#createsdkmcpserver)（TypeScript）或 [`create_sdk_mcp_server`](/docs/zh-CN/agent-sdk/python#create_sdk_mcp_server)（Python）将其包装在服务器中。服务器在应用程序内进程内运行，而不是作为单独的进程。
 
-### Weather tool example
+<h3 id="weather-tool-example">
+  天气工具示例
+</h3>
 
-This example defines a `get_temperature` tool and wraps it in an MCP server. It only sets up the tool; to pass it to `query` and run it, see [Call a custom tool](#call-a-custom-tool) below.
+此示例定义了一个 `get_temperature` 工具并将其包装在 MCP 服务器中。它仅设置工具；要将其传递给 `query` 并运行它，请参阅下面的[调用自定义工具](#call-a-custom-tool)。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -122,17 +128,19 @@ This example defines a `get_temperature` tool and wraps it in an MCP server. It 
   ```
 </CodeGroup>
 
-See the [`tool()`](/docs/en/agent-sdk/typescript#tool) TypeScript reference or the [`@tool`](/docs/en/agent-sdk/python#tool) Python reference for full parameter details, including JSON Schema input formats and return value structure.
+有关完整的参数详细信息，包括 JSON Schema 输入格式和返回值结构，请参阅 [`tool()`](/docs/zh-CN/agent-sdk/typescript#tool) TypeScript 参考或 [`@tool`](/docs/zh-CN/agent-sdk/python#tool) Python 参考。
 
 <Tip>
-  To make a parameter optional: in TypeScript, add `.default()` to the Zod field. In Python, the dict schema treats every key as required, so leave the parameter out of the schema, mention it in the description string, and read it with `args.get()` in the handler. The [`get_precipitation_chance` tool below](#add-more-tools) shows both patterns.
+  要使参数可选：在 TypeScript 中，向 Zod 字段添加 `.default()`。在 Python 中，字典架构将每个键视为必需的，因此将参数从架构中省略，在描述字符串中提及它，并在处理程序中使用 `args.get()` 读取它。下面的 [`get_precipitation_chance` 工具](#add-more-tools)展示了两种模式。
 </Tip>
 
-### Call a custom tool
+<h3 id="call-a-custom-tool">
+  调用自定义工具
+</h3>
 
-Pass the MCP server you created to `query` via the `mcpServers` option. The key in `mcpServers` becomes the `{server_name}` segment in each tool's fully qualified name: `mcp__{server_name}__{tool_name}`. List that name in `allowedTools` so the tool runs without a permission prompt.
+通过 `mcpServers` 选项将您创建的 MCP 服务器传递给 `query`。`mcpServers` 中的键成为每个工具的完全限定名称中的 `{server_name}` 段：`mcp__{server_name}__{tool_name}`。在 `allowedTools` 中列出该名称，以便工具运行而无需权限提示。
 
-These snippets reuse the `weatherServer` from the [example above](#weather-tool-example) to ask Claude what the weather is in a specific location.
+这些代码片段重用上面[示例](#weather-tool-example)中的 `weatherServer` 来询问 Claude 特定位置的天气。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -176,13 +184,13 @@ These snippets reuse the `weatherServer` from the [example above](#weather-tool-
   ```
 </CodeGroup>
 
-Combine this snippet with the tool and server definitions from the [weather tool example](#weather-tool-example) in one file, then run it with `python weather.py` for Python or `npx tsx weather.ts` for TypeScript. Claude calls `get_temperature` and the script prints a one-line answer with the current temperature in San Francisco.
+<h3 id="add-more-tools">
+  添加更多工具
+</h3>
 
-### Add more tools
+一个服务器在其 `tools` 数组中列出的工具数量不限。如果有多个工具在一个服务器上，您可以在 `allowedTools` 中单独列出每个工具，或使用通配符 `mcp__weather__*` 来覆盖服务器公开的每个工具。
 
-A server holds as many tools as you list in its `tools` array. With more than one tool on a server, you can list each one in `allowedTools` individually or use the wildcard `mcp__weather__*` to cover every tool the server exposes.
-
-The example below defines a second tool, `get_precipitation_chance`, and replaces the `weatherServer` definition from the [weather tool example](#weather-tool-example) with one that lists both tools in the array.
+下面的示例向[天气工具示例](#weather-tool-example)中的 `weatherServer` 添加第二个工具 `get_precipitation_chance`，并使用数组中的两个工具重建它。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -265,22 +273,24 @@ The example below defines a second tool, `get_precipitation_chance`, and replace
   ```
 </CodeGroup>
 
-[Tool search](/docs/en/agent-sdk/tool-search) is on by default and defers SDK MCP tools: Claude sees each tool's name in a compact list and loads its full schema on demand. With tool search disabled, every tool in this array consumes context window space on every turn. In TypeScript, pass `alwaysLoad: true` in the `extras` argument of [`tool()`](/docs/en/agent-sdk/typescript#tool) or in the options of [`createSdkMcpServer()`](/docs/en/agent-sdk/typescript#createsdkmcpserver) to keep a tool's full schema in the initial prompt.
+此数组中的每个工具在每个回合都会消耗上下文窗口空间。如果您定义了数十个工具，请参阅[工具搜索](/docs/zh-CN/agent-sdk/tool-search)以按需加载它们。
 
-### Add tool annotations
+<h3 id="add-tool-annotations">
+  添加工具注释
+</h3>
 
-[Tool annotations](https://modelcontextprotocol.io/docs/concepts/tools#tool-annotations) are optional metadata describing how a tool behaves. Pass them as the fifth argument to `tool()` helper in TypeScript or via the `annotations` keyword argument for the `@tool` decorator in Python. All hint fields are Booleans.
+[工具注释](https://modelcontextprotocol.io/docs/concepts/tools#tool-annotations)是描述工具行为方式的可选元数据。在 TypeScript 中作为 `tool()` 助手的第五个参数传递，或在 Python 中通过 `@tool` 装饰器的 `annotations` 关键字参数传递。所有提示字段都是布尔值。
 
-| Field             | Default | Meaning                                                                                                               |
-| :---------------- | :------ | :-------------------------------------------------------------------------------------------------------------------- |
-| `readOnlyHint`    | `false` | Tool does not modify its environment. Controls whether the tool can be called in parallel with other read-only tools. |
-| `destructiveHint` | `true`  | Tool may perform destructive updates. Informational only.                                                             |
-| `idempotentHint`  | `false` | Repeated calls with the same arguments have no additional effect. Informational only.                                 |
-| `openWorldHint`   | `true`  | Tool reaches systems outside your process. Informational only.                                                        |
+| 字段                | 默认值     | 含义                            |
+| :---------------- | :------ | :---------------------------- |
+| `readOnlyHint`    | `false` | 工具不修改其环境。控制工具是否可以与其他只读工具并行调用。 |
+| `destructiveHint` | `true`  | 工具可能执行破坏性更新。仅供参考。             |
+| `idempotentHint`  | `false` | 使用相同参数的重复调用没有额外效果。仅供参考。       |
+| `openWorldHint`   | `true`  | 工具到达流程外的系统。仅供参考。              |
 
-Annotations are metadata, not enforcement. A tool marked `readOnlyHint: true` can still write to disk if that's what the handler does. Keep the annotation accurate to the handler.
+注释是元数据，不是强制执行。标记为 `readOnlyHint: true` 的工具如果处理程序这样做，仍然可以写入磁盘。保持注释与处理程序准确。
 
-This example adds `readOnlyHint` to the `get_temperature` tool from the [weather tool example](#weather-tool-example).
+此示例向[天气工具示例](#weather-tool-example)中的 `get_temperature` 工具添加 `readOnlyHint`。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -300,9 +310,6 @@ This example adds `readOnlyHint` to the `get_temperature` tool from the [weather
   ```
 
   ```typescript TypeScript theme={null}
-  import { tool } from "@anthropic-ai/claude-agent-sdk";
-  import { z } from "zod";
-
   tool(
     "get_temperature",
     "Get the current temperature at a location",
@@ -313,53 +320,58 @@ This example adds `readOnlyHint` to the `get_temperature` tool from the [weather
   ```
 </CodeGroup>
 
-See `ToolAnnotations` in the [TypeScript](/docs/en/agent-sdk/typescript#toolannotations) or [Python](/docs/en/agent-sdk/python#toolannotations) reference.
+请参阅 [TypeScript](/docs/zh-CN/agent-sdk/typescript#toolannotations) 或 [Python](/docs/zh-CN/agent-sdk/python#toolannotations) 参考中的 `ToolAnnotations`。
 
-## Control tool access
+<h2 id="control-tool-access">
+  控制工具访问
+</h2>
 
-The [weather tool example](#weather-tool-example) registered a server and listed tools in `allowedTools`. This section covers how tool names are constructed and how to scope access when you have multiple tools or want to restrict built-ins.
+[天气工具示例](#weather-tool-example)注册了一个服务器并在 `allowedTools` 中列出了工具。本部分涵盖工具名称的构造方式以及当您有多个工具或想要限制内置工具时如何限制访问。
 
-### Tool name format
+<h3 id="tool-name-format">
+  工具名称格式
+</h3>
 
-When MCP tools are exposed to Claude, their names follow a specific format:
+当 MCP 工具暴露给 Claude 时，它们的名称遵循特定格式：
 
-* Pattern: `mcp__{server_name}__{tool_name}`
-* Example: A tool named `get_temperature` in server `weather` becomes `mcp__weather__get_temperature`
+* 模式：`mcp__{server_name}__{tool_name}`
+* 示例：服务器 `weather` 中名为 `get_temperature` 的工具变成 `mcp__weather__get_temperature`
 
-### Configure allowed tools
+<h3 id="configure-allowed-tools">
+  配置允许的工具
+</h3>
 
-The `tools` option and the allowed/disallowed lists affect two layers: availability, which controls whether a tool appears in Claude's context, and permission, which controls whether a call is approved once Claude attempts it. `tools` and bare-name `disallowedTools` entries change availability. `allowedTools` and scoped `disallowedTools` rules change permission only.
+`tools` 选项和允许/不允许列表影响两个层：可用性（控制工具是否出现在 Claude 的上下文中）和权限（控制 Claude 尝试调用后是否批准调用）。`tools` 和裸名称 `disallowedTools` 条目改变可用性。`allowedTools` 和作用域 `disallowedTools` 规则仅改变权限。
 
-| Option                    | Layer        | Effect                                                                                                                                                                                                          |
-| :------------------------ | :----------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tools: ["Read", "Grep"]` | Availability | Only the listed built-ins are in Claude's context. Unlisted built-ins are removed. MCP tools are unaffected.                                                                                                    |
-| `tools: []`               | Availability | All built-ins are removed. Claude can only use your MCP tools.                                                                                                                                                  |
-| allowed tools             | Permission   | Listed tools run without a permission prompt. Unlisted tools remain available; calls go through the [permission flow](/docs/en/agent-sdk/permissions).                                                               |
-| disallowed tools          | Both         | A bare tool name such as `"Bash"` removes the tool from Claude's context, the same as omitting it from `tools`. A scoped rule such as `"Bash(rm *)"` leaves the tool in context and denies only matching calls. |
+| 选项                        | 层   | 效果                                                                                                 |
+| :------------------------ | :-- | :------------------------------------------------------------------------------------------------- |
+| `tools: ["Read", "Grep"]` | 可用性 | 仅列出的内置工具在 Claude 的上下文中。未列出的内置工具被删除。MCP 工具不受影响。                                                     |
+| `tools: []`               | 可用性 | 所有内置工具都被删除。Claude 只能使用您的 MCP 工具。                                                                   |
+| 允许的工具                     | 权限  | 列出的工具运行而无需权限提示。未列出的工具保持可用；调用通过[权限流](/docs/zh-CN/agent-sdk/permissions)进行。                               |
+| 不允许的工具                    | 两者  | 裸工具名称（如 `"Bash"`）将工具从 Claude 的上下文中删除，与从 `tools` 中省略它相同。作用域规则（如 `"Bash(rm *)"`）将工具保留在上下文中，仅拒绝匹配的调用。 |
 
-To remove a built-in entirely, omit it from `tools` or list its bare name in `disallowedTools` (Python: `disallowed_tools`); both keep the tool out of context so Claude never attempts it. A scoped `disallowedTools` rule blocks matching calls but leaves the tool visible, so Claude may waste a turn trying it. See [Configure permissions](/docs/en/agent-sdk/permissions) for the full evaluation order.
+要完全删除内置工具，请从 `tools` 中省略它或在 `disallowedTools` 中列出其裸名称（Python：`disallowed_tools`）；两者都将工具保留在上下文之外，以便 Claude 永远不会尝试它。作用域 `disallowedTools` 规则会阻止匹配的调用但保留工具可见，因此 Claude 可能会浪费一个回合尝试它。有关完整的评估顺序，请参阅[配置权限](/docs/zh-CN/agent-sdk/permissions)。
 
-## Handle errors
+<h2 id="handle-errors">
+  处理错误
+</h2>
 
-A handler error doesn't stop the agent loop. The SDK's in-process MCP server catches uncaught exceptions and returns them as error results, so how you report an error determines what Claude reads, not whether the query fails:
+处理程序错误不会停止代理循环。SDK 的进程内 MCP 服务器捕获未捕获的异常并将其作为错误结果返回，因此您报告错误的方式决定了 Claude 读取的内容，而不是查询是否失败：
 
-| What happens                                                                             | Result                                                                                                                                    |
-| :--------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| Handler throws an uncaught exception                                                     | The MCP server converts it to an error result carrying the raw exception message. Claude sees that message, and the agent loop continues. |
-| Handler catches the error and returns `isError: true` (TS) / `"is_error": True` (Python) | Claude sees the message you compose. You can add context the raw exception lacks, such as which request failed or what to try instead.    |
+| 发生的情况                                                       | 结果                                              |
+| :---------------------------------------------------------- | :---------------------------------------------- |
+| 处理程序抛出未捕获的异常                                                | MCP 服务器将其转换为错误结果，携带原始异常消息。Claude 看到该消息，代理循环继续。  |
+| 处理程序捕获错误并返回 `isError: true`（TS）/ `"is_error": True`（Python） | Claude 看到您编写的消息。您可以添加原始异常缺乏的上下文，例如哪个请求失败或要尝试什么。 |
 
-In both cases Claude can retry, try a different tool, or explain the failure. Catch errors yourself when the raw exception message isn't enough for Claude to act on.
+在这两种情况下，Claude 都可以重试、尝试不同的工具或解释失败。当原始异常消息不足以让 Claude 采取行动时，请自己捕获错误。
 
-The example below catches two kinds of failures inside the handler and composes the error message Claude reads. A non-200 HTTP status is caught from the response and returned as an error result. A network error or invalid JSON is caught by the surrounding `try/except` (Python) or `try/catch` (TypeScript) and also returned as an error result. In both cases Claude receives a message that describes the failure instead of a bare exception string.
+下面的示例在处理程序内部捕获两种失败并编写 Claude 读取的错误消息。非 200 HTTP 状态从响应中捕获并作为错误结果返回。网络错误或无效 JSON 由周围的 `try/except`（Python）或 `try/catch`（TypeScript）捕获，也作为错误结果返回。在这两种情况下，Claude 都会收到描述失败的消息，而不是裸露的异常字符串。
 
 <CodeGroup>
   ```python Python theme={null}
   import json
   import httpx
   from typing import Any
-  from claude_agent_sdk import tool
-
-  from claude_agent_sdk import tool
 
 
   @tool(
@@ -396,9 +408,6 @@ The example below catches two kinds of failures inside the handler and composes 
   ```
 
   ```typescript TypeScript theme={null}
-  import { tool } from "@anthropic-ai/claude-agent-sdk";
-  import { z } from "zod";
-
   tool(
     "fetch_data",
     "Fetch data from an API",
@@ -450,27 +459,28 @@ The example below catches two kinds of failures inside the handler and composes 
   ```
 </CodeGroup>
 
-## Return images and resources
+<h2 id="return-images-and-resources">
+  返回图像和资源
+</h2>
 
-The `content` array in a tool result accepts `text`, `image`, `audio`, `resource`, and `resource_link` blocks. You can mix them in the same response. In TypeScript, the SDK saves audio blocks to disk and Claude receives a text block with the saved file path; in Python, the SDK drops audio blocks from the tool result and logs a warning. The SDK converts resource link blocks to a text block containing the link's name, URI, and description.
+工具结果中的 `content` 数组接受 `text`、`image`、`audio`、`resource` 和 `resource_link` 块。您可以在同一响应中混合它们。在 TypeScript 中，音频块被保存到磁盘，Claude 接收一个包含保存文件路径的文本块；在 Python 中，SDK 从工具结果中删除音频块并记录警告。资源链接块被转换为包含链接名称、URI 和描述的文本块。
 
-### Images
+<h3 id="images">
+  图像
+</h3>
 
-An image block carries the image bytes inline, encoded as base64. There is no URL field. To return an image that lives at a URL, fetch it in the handler, read the response bytes, and base64-encode them before returning. The result is processed as visual input.
+图像块以 base64 编码的方式内联携带图像字节。没有 URL 字段。要返回位于 URL 的图像，在处理程序中获取它，读取响应字节，并在返回之前进行 base64 编码。结果作为视觉输入处理。
 
-| Field      | Type      | Notes                                                                      |
-| :--------- | :-------- | :------------------------------------------------------------------------- |
-| `type`     | `"image"` |                                                                            |
-| `data`     | `string`  | Base64-encoded bytes. Raw base64 only, no `data:image/...;base64,` prefix  |
-| `mimeType` | `string`  | Required. For example `image/png`, `image/jpeg`, `image/webp`, `image/gif` |
+| 字段         | 类型        | 注释                                                      |
+| :--------- | :-------- | :------------------------------------------------------ |
+| `type`     | `"image"` |                                                         |
+| `data`     | `string`  | Base64 编码的字节。仅原始 base64，没有 `data:image/...;base64,` 前缀  |
+| `mimeType` | `string`  | 必需。例如 `image/png`、`image/jpeg`、`image/webp`、`image/gif` |
 
 <CodeGroup>
   ```python Python theme={null}
   import base64
   import httpx
-  from claude_agent_sdk import tool
-
-  from claude_agent_sdk import tool
 
 
   # Define a tool that fetches an image from a URL and returns it to Claude
@@ -495,9 +505,6 @@ An image block carries the image bytes inline, encoded as base64. There is no UR
   ```
 
   ```typescript TypeScript theme={null}
-  import { tool } from "@anthropic-ai/claude-agent-sdk";
-  import { z } from "zod";
-
   tool(
     "fetch_image",
     "Fetch an image from a URL and return it to Claude",
@@ -523,19 +530,21 @@ An image block carries the image bytes inline, encoded as base64. There is no UR
   ```
 </CodeGroup>
 
-### Resources
+<h3 id="resources">
+  资源
+</h3>
 
-A resource block embeds a piece of content identified by a URI. The URI is a label for Claude to reference; the actual content rides in the block's `text` or `blob` field. Use this when your tool produces something that makes sense to address by name later, such as a generated file or a record from an external system.
+资源块嵌入由 URI 标识的内容片段。URI 是 Claude 引用的标签；实际内容位于块的 `text` 或 `blob` 字段中。当您的工具生成稍后按名称寻址有意义的内容时使用此功能，例如生成的文件或来自外部系统的记录。
 
-| Field               | Type         | Notes                                                                                                                                      |
-| :------------------ | :----------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`              | `"resource"` |                                                                                                                                            |
-| `resource.uri`      | `string`     | Identifier for the content. Any URI scheme                                                                                                 |
-| `resource.text`     | `string`     | The content, if it's text. Provide this or `blob`, not both                                                                                |
-| `resource.blob`     | `string`     | The content base64-encoded, if it's binary. TypeScript only: the Python SDK drops binary resources from the tool result and logs a warning |
-| `resource.mimeType` | `string`     | Optional                                                                                                                                   |
+| 字段                  | 类型           | 注释                                                             |
+| :------------------ | :----------- | :------------------------------------------------------------- |
+| `type`              | `"resource"` |                                                                |
+| `resource.uri`      | `string`     | 内容的标识符。任何 URI 方案                                               |
+| `resource.text`     | `string`     | 内容，如果是文本。提供此项或 `blob`，不能两者都提供                                  |
+| `resource.blob`     | `string`     | 内容 base64 编码，如果是二进制。仅 TypeScript：Python SDK 从工具结果中删除二进制资源并记录警告 |
+| `resource.mimeType` | `string`     | 可选                                                             |
 
-This example shows a resource block returned from inside a tool handler. The URI `file:///tmp/report.md` is a label that Claude can reference later; the SDK does not read from that path.
+此示例显示从工具处理程序内部返回的资源块。URI `file:///tmp/report.md` 是 Claude 可以稍后引用的标签；SDK 不从该路径读取。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -569,13 +578,15 @@ This example shows a resource block returned from inside a tool handler. The URI
   ```
 </CodeGroup>
 
-These block shapes come from the MCP `CallToolResult` type. See the [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result) for the full definition.
+这些块形状来自 MCP `CallToolResult` 类型。有关完整定义，请参阅 [MCP 规范](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result)。
 
-## Return structured data
+<h2 id="return-structured-data">
+  返回结构化数据
+</h2>
 
-`structuredContent` is an optional JSON object on the result, separate from the `content` array. Use it to return raw values that Claude can read as exact fields instead of parsing them out of a text string or image.
+`structuredContent` 是结果上的可选 JSON 对象，与 `content` 数组分开。使用它返回原始值，Claude 可以将其作为精确字段读取，而不是从文本字符串或图像中解析它们。
 
-When `structuredContent` is set, Claude receives the JSON plus any image or resource blocks from `content`. Text blocks in `content` are not forwarded, since they are assumed to duplicate the structured data. The example below renders a chart as an image block and returns the data points behind it in `structuredContent` from the same handler. In the snippet, `chartPngBuffer` is a `Buffer` holding the rendered PNG bytes.
+当设置 `structuredContent` 时，Claude 接收 JSON 加上来自 `content` 的任何图像或资源块。来自 `content` 的文本块不被转发，因为假设它们复制结构化数据。下面的示例将图表呈现为图像块，并从同一处理程序的 `structuredContent` 中返回其后面的数据点。
 
 ```typescript TypeScript theme={null}
 return {
@@ -595,17 +606,19 @@ return {
 ```
 
 <Note>
-  The Python `@tool` decorator forwards only `content` and `is_error` from the handler's return dict. To return `structuredContent` from Python, run a [standalone MCP server](/docs/en/agent-sdk/mcp) instead of an in-process SDK server.
+  Python `@tool` 装饰器仅从处理程序的返回字典转发 `content` 和 `is_error`。要从 Python 返回 `structuredContent`，请运行[独立 MCP 服务器](/docs/zh-CN/agent-sdk/mcp)而不是进程内 SDK 服务器。
 </Note>
 
-## Example: unit converter
+<h2 id="example-unit-converter">
+  示例：单位转换器
+</h2>
 
-This tool converts values between units of length, temperature, and weight. A user can ask "convert 100 kilometers to miles" or "what is 72°F in Celsius," and Claude picks the right unit type and units from the request.
+此工具在长度、温度和重量的单位之间转换值。用户可以询问"将 100 公里转换为英里"或"72°F 是多少摄氏度"，Claude 从请求中选择正确的单位类型和单位。
 
-It demonstrates two patterns:
+它演示了两种模式：
 
-* **Enum schemas:** `unit_type` is constrained to a fixed set of values. In TypeScript, use `z.enum()`. In Python, the dict schema doesn't support enums, so the full JSON Schema dict is required.
-* **Unsupported input handling:** when a conversion pair isn't found, the handler returns `isError: true` so Claude can tell the user what went wrong rather than treating a failure as a normal result.
+* **枚举架构：** `unit_type` 被限制为一组固定值。在 TypeScript 中，使用 `z.enum()`。在 Python 中，字典架构不支持枚举，因此需要完整的 JSON Schema 字典。
+* **不支持的输入处理：** 当找不到转换对时，处理程序返回 `isError: true`，以便 Claude 可以告诉用户出了什么问题，而不是将失败视为正常结果。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -764,9 +777,7 @@ It demonstrates two patterns:
   ```
 </CodeGroup>
 
-Once the server is defined, pass it to `query` the same way as the weather example. This example sends three different prompts in a loop to show the same tool handling different unit types. For each response, it inspects `AssistantMessage` objects (which contain the tool calls Claude made during that turn) and prints each `ToolUseBlock` before printing the final `ResultMessage` text. This lets you see when Claude is using the tool versus answering from its own knowledge.
-
-Because [tool search](/docs/en/agent-sdk/tool-search) is on by default, the output may also include a `ToolSearch` call as Claude loads the deferred tool schema.
+定义服务器后，以与天气示例相同的方式将其传递给 `query`。此示例在循环中发送三个不同的提示，以显示同一工具处理不同的单位类型。对于每个响应，它检查 `AssistantMessage` 对象（包含 Claude 在该回合中进行的工具调用）并在打印最终 `ResultMessage` 文本之前打印每个 `ToolUseBlock`。这让您看到 Claude 何时使用工具与从其自己的知识中回答。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -793,19 +804,13 @@ Because [tool search](/docs/en/agent-sdk/tool-search) is on by default, the outp
       ]
 
       for prompt in prompts:
-          try:
-              async for message in query(prompt=prompt, options=options):
-                  if isinstance(message, AssistantMessage):
-                      for block in message.content:
-                          if isinstance(block, ToolUseBlock):
-                              print(f"[tool call] {block.name}({block.input})")
-                  elif isinstance(message, ResultMessage) and message.subtype == "success":
-                      print(f"Q: {prompt}\nA: {message.result}\n")
-          except Exception as error:
-              # A single-shot query() raises after yielding an error result. Only success
-              # results are printed above, so handle the failure here and continue with
-              # the next prompt.
-              print(f"Call failed: {error}")
+          async for message in query(prompt=prompt, options=options):
+              if isinstance(message, AssistantMessage):
+                  for block in message.content:
+                      if isinstance(block, ToolUseBlock):
+                          print(f"[tool call] {block.name}({block.input})")
+              elif isinstance(message, ResultMessage) and message.subtype == "success":
+                  print(f"Q: {prompt}\nA: {message.result}\n")
 
 
   asyncio.run(main())
@@ -821,47 +826,44 @@ Because [tool search](/docs/en/agent-sdk/tool-search) is on by default, the outp
   ];
 
   for (const prompt of prompts) {
-    try {
-      for await (const message of query({
-        prompt,
-        options: {
-          mcpServers: { converter: converterServer },
-          allowedTools: ["mcp__converter__convert_units"]
-        }
-      })) {
-        if (message.type === "assistant") {
-          for (const block of message.message.content) {
-            if (block.type === "tool_use") {
-              console.log(`[tool call] ${block.name}`, block.input);
-            }
-          }
-        } else if (message.type === "result" && message.subtype === "success") {
-          console.log(`Q: ${prompt}\nA: ${message.result}\n`);
-        }
+    for await (const message of query({
+      prompt,
+      options: {
+        mcpServers: { converter: converterServer },
+        allowedTools: ["mcp__converter__convert_units"]
       }
-    } catch (error) {
-      // A single-shot query() throws after yielding an error result. Only success
-      // results are logged above, so handle the failure here and continue with
-      // the next prompt.
-      console.error(`Call failed: ${error}`);
+    })) {
+      if (message.type === "assistant") {
+        for (const block of message.message.content) {
+          if (block.type === "tool_use") {
+            console.log(`[tool call] ${block.name}`, block.input);
+          }
+        }
+      } else if (message.type === "result" && message.subtype === "success") {
+        console.log(`Q: ${prompt}\nA: ${message.result}\n`);
+      }
     }
   }
   ```
 </CodeGroup>
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-Custom tools wrap async functions in a standard interface. You can mix the patterns on this page in the same server: a single server can hold a database tool, an API gateway tool, and an image renderer alongside each other.
+自定义工具在标准接口中包装异步函数。您可以在同一服务器中混合本页上的模式：单个服务器可以在彼此旁边保存数据库工具、API 网关工具和图像渲染器。
 
-From here:
+从这里：
 
-* If your server grows to dozens of tools, see [tool search](/docs/en/agent-sdk/tool-search) to defer loading them until Claude needs them.
-* To connect to external MCP servers (filesystem, GitHub, Slack) instead of building your own, see [Connect MCP servers](/docs/en/agent-sdk/mcp).
-* To control which tools run automatically versus requiring approval, see [Configure permissions](/docs/en/agent-sdk/permissions).
+* 如果您的服务器增长到数十个工具，请参阅[工具搜索](/docs/zh-CN/agent-sdk/tool-search)以延迟加载它们，直到 Claude 需要它们。
+* 要连接到外部 MCP 服务器（文件系统、GitHub、Slack）而不是构建自己的，请参阅[连接 MCP 服务器](/docs/zh-CN/agent-sdk/mcp)。
+* 要控制哪些工具自动运行与需要批准，请参阅[配置权限](/docs/zh-CN/agent-sdk/permissions)。
 
-## Related documentation
+<h2 id="related-documentation">
+  相关文档
+</h2>
 
-* [TypeScript SDK Reference](/docs/en/agent-sdk/typescript)
-* [Python SDK Reference](/docs/en/agent-sdk/python)
-* [MCP Documentation](https://modelcontextprotocol.io)
-* [SDK Overview](/docs/en/agent-sdk/overview)
+* [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript)
+* [Python SDK 参考](/docs/zh-CN/agent-sdk/python)
+* [MCP 文档](https://modelcontextprotocol.io)
+* [SDK 概述](/docs/zh-CN/agent-sdk/overview)

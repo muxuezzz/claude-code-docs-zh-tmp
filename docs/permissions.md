@@ -2,119 +2,131 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Configure permissions
+# 配置权限
 
-> Control what Claude Code can access and do with fine-grained permission rules, modes, and managed policies.
+> 通过细粒度权限规则、模式和托管策略来控制 Claude Code 可以访问和执行的操作。
 
-Claude Code supports fine-grained permissions so that you can specify exactly what the agent is allowed to do and what it can't. You can check permission settings into version control to share them with every developer in your organization, and each developer can customize their own.
+Claude Code 支持细粒度权限，因此您可以精确指定代理允许执行的操作和不允许执行的操作。权限设置可以检入版本控制并分发给组织中的所有开发人员，也可以由个别开发人员自定义。
 
-## Permission system
+<h2 id="permission-system">
+  权限系统
+</h2>
 
-Claude Code uses a tiered permission system to balance power and safety:
+Claude Code 使用分层权限系统来平衡功能和安全性：
 
-| Tool type         | Example          | Approval required                                                                   | "Yes, don't ask again" behavior        |
-| :---------------- | :--------------- | :---------------------------------------------------------------------------------- | :------------------------------------- |
-| Read-only         | File reads, Grep | No, within the [working directory and additional directories](#working-directories) | N/A                                    |
-| Bash commands     | Shell execution  | Yes, except a built-in set of [read-only commands](#read-only-commands)             | Permanently per repository and command |
-| File modification | Edit/write files | Yes                                                                                 | Until session end                      |
+| 工具类型    | 示例            | 需要批准                                  | "是，不再询问"行为    |
+| :------ | :------------ | :------------------------------------ | :------------ |
+| 只读      | 文件读取、Grep     | 否，在[工作目录和其他目录](#working-directories)内 | 不适用           |
+| Bash 命令 | Shell 执行      | 是，除了内置的[只读命令](#read-only-commands)集合  | 每个项目目录和命令永久有效 |
+| 文件修改    | Edit/Write 文件 | 是                                     | 直到会话结束        |
 
-When you choose "Yes, don't ask again" and the approval saves permanently, such as for a Bash command, Claude Code saves the rule to `.claude/settings.local.json` at the root of the git repository, resolved through [worktrees](/docs/en/worktrees) to the main checkout. The rule applies to future sessions anywhere in that repository, including sessions started in subdirectories and in worktrees. A file-modification approval isn't saved to the file: as the table shows, it lasts until the session ends. Outside a git repository, and when the repository root is your home directory, Claude Code saves the rule in the directory you started it from.
+在 Bash 或 PowerShell 权限提示上，按 `Ctrl+E` 显示命令的说明：它的作用、Claude 为什么运行它，以及可能出现的问题，标记为**低风险**、**中风险**或**高风险**。Claude Code 仅在您按 `Ctrl+E` 时将命令和 Claude 自己对调用的描述发送给模型以生成说明，而不是在每个提示上都发送。显示说明不会运行命令；再次按 `Ctrl+E` 隐藏它。
 
-Before v2.1.211, Claude Code always saved the rule in the starting directory, so an approval granted in a worktree or subdirectory didn't apply to the rest of the repository. Rules that earlier versions saved in a subdirectory or worktree still apply to sessions started there.
+要关闭快捷键，请在 `~/.claude.json` 中将 [`permissionExplainerEnabled`](/docs/zh-CN/settings#global-config-settings) 设置为 `false`。
 
-On a Bash or PowerShell permission prompt, press `Ctrl+E` to show an explanation of the command: what it does, why Claude is running it, and what could go wrong, labeled **Low risk**, **Med risk**, or **High risk**. Claude Code sends the command and Claude's own description of the call to the model to generate the explanation only when you press `Ctrl+E`, not on every prompt. Showing the explanation doesn't run the command; press `Ctrl+E` again to hide it.
+<h2 id="manage-permissions">
+  管理权限
+</h2>
 
-To turn the shortcut off, set [`permissionExplainerEnabled`](/docs/en/settings#global-config-settings) to `false` in `~/.claude.json`.
+您可以使用 `/permissions` 查看和管理 Claude Code 的工具权限。此 UI 列出所有权限规则和它们来自的 `settings.json` 文件。
 
-## Manage permissions
+* **Allow** 规则让 Claude Code 使用指定的工具而无需手动批准。
+* **Ask** 规则在 Claude Code 尝试使用指定工具时提示确认。
+* **Deny** 规则防止 Claude Code 使用指定的工具。
 
-You can view and manage Claude Code's tool permissions with `/permissions`. This UI lists all permission rules and the `settings.json` file each rule comes from.
+规则按顺序评估：deny、ask，然后 allow。该顺序中的第一个匹配项决定结果，规则特异性不会改变顺序。
 
-* **Allow** rules let Claude Code use the specified tool without manual approval.
-* **Ask** rules prompt for confirmation whenever Claude Code tries to use the specified tool.
-* **Deny** rules prevent Claude Code from using the specified tool.
+一个宽泛的 deny 规则（如 `Bash(aws *)`）会阻止每个匹配的调用，包括也匹配更具体的 allow 规则（如 `Bash(aws s3 ls)`）的调用，因此 deny 规则不能包含允许列表例外。ask 和 allow 之间也适用相同的优先级：匹配的 ask 规则即使更具体的 allow 规则也匹配同一调用，也会提示。
 
-Rules are evaluated in order: deny, then ask, then allow. The first match in that order determines the outcome, and rule specificity doesn't change the order.
-
-A broad deny rule like `Bash(aws *)` blocks every matching call, including calls that also match a narrower allow rule like `Bash(aws s3 ls)`, so a deny rule can't carry allowlist exceptions. The same precedence applies between ask and allow: a matching ask rule prompts even when a more specific allow rule also matches the same call.
-
-Deny rules behave differently depending on whether they name a tool or scope a pattern within one. A bare tool name like `Bash` removes the tool from Claude's context entirely, so Claude never sees it. Bare-name removal applies to every tool except [`EndConversation`](/docs/en/tools-reference#endconversation-tool-behavior): a deny rule can't remove it while any other tool remains, and an ask rule never prompts for it. A scoped rule like `Bash(rm *)` leaves the tool available and blocks matching calls when Claude attempts them.
+Deny 规则的行为取决于它们是命名工具还是在工具内范围化模式。像 `Bash` 这样的裸工具名称会将工具从 Claude 的上下文中完全移除，因此 Claude 永远看不到它。像 `Bash(rm *)` 这样的范围化规则会保留工具的可用性，并在 Claude 尝试时阻止匹配的调用。
 
 <Note>
-  Permission rules are enforced by Claude Code, not by the model. Instructions in your prompt or `CLAUDE.md` shape what Claude tries to do, but they don't change what Claude Code allows. To grant or revoke access, use `/permissions`, the rules described here, a [permission mode](/docs/en/permission-modes), or a [PreToolUse hook](#extend-permissions-with-hooks).
+  权限规则由 Claude Code 强制执行，而不是由模型强制执行。您的提示或 `CLAUDE.md` 中的说明会影响 Claude 尝试执行的操作，但它们不会改变 Claude Code 允许的操作。要授予或撤销访问权限，请使用 `/permissions`、此处描述的规则、[权限模式](/docs/zh-CN/permission-modes) 或 [PreToolUse hook](#extend-permissions-with-hooks)。
 </Note>
 
-## Permission modes
+<h2 id="permission-modes">
+  权限模式
+</h2>
 
-Claude Code supports several permission modes that control how it approves tool calls. See [Permission modes](/docs/en/permission-modes) for when to use each one. Set the `defaultMode` in your [settings files](/docs/en/settings#settings-files):
+Claude Code 支持多种权限模式来控制工具的批准方式。请参阅[权限模式](/docs/zh-CN/permission-modes)了解何时使用每种模式。在您的[设置文件](/docs/zh-CN/settings#settings-files)中设置 `defaultMode`：
 
-| Mode                | Description                                                                                                                                                                                                                                                                                                                                                           |
-| :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `default`           | Standard behavior: prompts for permission on first use of each tool. {/* min-version: 2.1.200 */}Labeled Manual in the CLI, the VS Code and JetBrains extensions, and the desktop app, and Claude Code accepts `manual` as an alias. The label and alias require Claude Code v2.1.200 or later. The desktop app's label doesn't depend on your CLI version            |
-| `acceptEdits`       | Automatically accepts file edits and common filesystem commands such as `mkdir`, `touch`, `mv`, and `cp` for paths in the working directory or `additionalDirectories`                                                                                                                                                                                                |
-| `plan`              | Claude reads files and runs read-only shell commands to explore but doesn't edit your source files; with [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) available, classifier-approved commands also run. Labeled Plan in the CLI and the VS Code extension                                                                                       |
-| `auto`              | Auto-approves tool calls with background safety checks that verify actions align with your request                                                                                                                                                                                                                                                                    |
-| `dontAsk`           | Auto-denies tools unless pre-approved via `/permissions` or `permissions.allow` rules. `AskUserQuestion`, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) are denied even if you've allowed them                   |
-| `bypassPermissions` | Skips permission prompts, except those forced by explicit `ask` rules, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool). Root and home directory removals such as `rm -rf /` also still prompt as a circuit breaker |
+| 模式                  | 描述                                                                                                                                                                                                                                                         |
+| :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default`           | 标准行为：在首次使用每个工具时提示权限。{/* min-version: 2.1.200 */}在 CLI、VS Code 和 JetBrains 扩展以及桌面应用中标记为 Manual，Claude Code 接受 `manual` 作为别名。标签和别名需要 Claude Code v2.1.200 或更高版本。桌面应用的标签不依赖于您的 CLI 版本                                                                         |
+| `acceptEdits`       | 自动接受工作目录或 `additionalDirectories` 中路径的文件编辑和常见文件系统命令（`mkdir`、`touch`、`mv`、`cp` 等）                                                                                                                                                                           |
+| `plan`              | Claude 读取文件并运行只读 shell 命令来探索，但不编辑您的源文件。在 CLI 和 VS Code 扩展中标记为 Plan                                                                                                                                                                                         |
+| `auto`              | 自动批准工具调用，并进行后台安全检查以验证操作与您的请求一致                                                                                                                                                                                                                             |
+| `dontAsk`           | 自动拒绝工具，除非通过 `/permissions` 或 `permissions.allow` 规则预先批准。`AskUserQuestion`、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具即使您已允许它们也会被拒绝 |
+| `bypassPermissions` | 跳过权限提示，除了由显式 `ask` 规则强制的提示、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具。根目录和主目录删除操作（如 `rm -rf /`）仍会作为断路器提示                          |
 
 <Warning>
-  `bypassPermissions` mode skips permission prompts, including for writes to `.git`, `.config/git`, `.claude`, `.vscode`, `.idea`, `.husky`, `.cargo`, `.devcontainer`, `.yarn`, and `.mvn`. Only use this mode in isolated environments like containers or VMs where Claude Code can't cause damage.
+  `bypassPermissions` 模式跳过权限提示，包括对 `.git`、`.config/git`、`.claude`、`.vscode`、`.idea`、`.husky`、`.cargo`、`.devcontainer`、`.yarn` 和 `.mvn` 的写入。仅在隔离环境（如容器或虚拟机）中使用此模式，其中 Claude Code 无法造成损害。
 
-  A few prompts still fire in this mode. Explicit `ask` rules, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) still prompt. Removals targeting the filesystem root or home directory, such as `rm -rf /` and `rm -rf ~`, also prompt as a circuit breaker against model error, {/* min-version: 2.1.208 */}including when the command contains command substitution with `$(...)` or backticks, or process substitution with `<(...)`. Before v2.1.208, only the plain form, such as `rm -rf ~` typed as its own command, prompted; commands that reached the removal through a substitution didn't.
+  此模式中仍会触发一些提示。显式 `ask` 规则、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具仍会提示。针对文件系统根目录或主目录的删除操作（如 `rm -rf /` 和 `rm -rf ~`）也会作为断路器提示以防止模型错误，{/* min-version: 2.1.208 */}包括当命令包含带 `$(...)` 或反引号的命令替换或带 `<(...)` 的进程替换时。在 v2.1.208 之前，仅当以纯形式（如 `rm -rf ~` 作为其自己的命令输入）时才会提示；通过替换到达删除操作的命令不会提示。
 </Warning>
 
-To prevent `bypassPermissions` or `auto` mode from being used, set `permissions.disableBypassPermissionsMode` or `permissions.disableAutoMode` to `"disable"` in any [settings file](/docs/en/settings#settings-files). These are most useful in [managed settings](#managed-settings) where they can't be overridden.
+为了防止 `bypassPermissions` 或 `auto` 模式被使用，在任何[设置文件](/docs/zh-CN/settings#settings-files)中将 `permissions.disableBypassPermissionsMode` 或 `permissions.disableAutoMode` 设置为 `"disable"`。这些在[托管设置](#managed-settings)中最有用，因为它们无法被覆盖。
 
-## Permission rule syntax
+<h2 id="permission-rule-syntax">
+  权限规则语法
+</h2>
 
-Permission rules follow the format `Tool` or `Tool(specifier)`.
+权限规则遵循格式 `Tool` 或 `Tool(specifier)`。
 
-### Match all uses of a tool
+<h3 id="match-all-uses-of-a-tool">
+  匹配工具的所有使用
+</h3>
 
-To match all uses of a tool, use only the tool name without parentheses:
+要匹配工具的所有使用，只需使用工具名称而不带括号：
 
-| Rule       | Effect                         |
-| :--------- | :----------------------------- |
-| `Bash`     | Matches all Bash commands      |
-| `WebFetch` | Matches all web fetch requests |
-| `Read`     | Matches all file reads         |
+| 规则         | 效果           |
+| :--------- | :----------- |
+| `Bash`     | 匹配所有 Bash 命令 |
+| `WebFetch` | 匹配所有网络获取请求   |
+| `Read`     | 匹配所有文件读取     |
 
-`Bash(*)` is equivalent to `Bash` and matches all Bash commands. As a deny rule, both forms remove the tool from Claude's context.
+`Bash(*)` 等同于 `Bash` 并匹配所有 Bash 命令。作为拒绝规则，两种形式都会从 Claude 的上下文中移除该工具。
 
-### Use specifiers for fine-grained control
+<h3 id="use-specifiers-for-fine-grained-control">
+  使用说明符进行细粒度控制
+</h3>
 
-Add a specifier in parentheses to match specific tool uses:
+在括号中添加说明符以匹配特定的工具使用：
 
-| Rule                           | Effect                                                   |
-| :----------------------------- | :------------------------------------------------------- |
-| `Bash(npm run build)`          | Matches the exact command `npm run build`                |
-| `Read(./.env)`                 | Matches reading the `.env` file in the current directory |
-| `WebFetch(domain:example.com)` | Matches fetch requests to example.com                    |
+| 规则                             | 效果                      |
+| :----------------------------- | :---------------------- |
+| `Bash(npm run build)`          | 匹配确切的命令 `npm run build` |
+| `Read(./.env)`                 | 匹配读取当前目录中的 `.env` 文件    |
+| `WebFetch(domain:example.com)` | 匹配对 example.com 的获取请求   |
 
-### Match by input parameter
+<h3 id="match-by-input-parameter">
+  按输入参数匹配
+</h3>
 
-Deny and ask rules can match a top-level input parameter on any tool with `Tool(param:value)`. The rule matches when Claude calls the tool with that parameter set to that exact value. An allow rule for one parameter value wouldn't establish that the call is safe overall, so allow rules continue to use each tool's own specifier syntax. This works for any scalar parameter the tool accepts:
+拒绝和询问规则可以使用 `Tool(param:value)` 匹配任何工具上的顶级输入参数。当 Claude 调用该工具且该参数设置为该确切值时，规则匹配。一个参数值的允许规则不会确立该调用总体上是安全的，因此允许规则继续使用每个工具自己的说明符语法。这适用于工具接受的任何标量参数：
 
-| Rule                           | Matches                                      |
-| :----------------------------- | :------------------------------------------- |
-| `Agent(model:opus)`            | Agent calls that request the Opus model tier |
-| `Agent(isolation:worktree)`    | Agent calls that request a git worktree      |
-| `Bash(run_in_background:true)` | Bash calls that run in the background        |
+| 规则                             | 匹配                         |
+| :----------------------------- | :------------------------- |
+| `Agent(model:opus)`            | 请求 Opus 模型层级的 Agent 调用     |
+| `Agent(isolation:worktree)`    | 请求 git worktree 的 Agent 调用 |
+| `Bash(run_in_background:true)` | 在后台运行的 Bash 调用             |
 
-Parameter matching follows these rules:
+参数匹配遵循以下规则：
 
-* The parameter name must be a direct field of the tool's input, such as `model` on the Agent tool. Fields nested inside an object or array are not matchable
-* Each rule names one parameter. To gate on both `model` and `isolation`, write two rules, `Agent(model:opus)` and `Agent(isolation:worktree)`, rather than combining them in one rule
-* The value supports `*` as a wildcard that matches any sequence of characters, so `Agent(isolation:*)` matches any explicit isolation value. Without `*` the match is exact
-* A parameter the model omits is never matched, so `Agent(model:*)` doesn't match a call that leaves `model` unset
-* The value is compared against the literal input Claude sends, before any normalization. `Agent(model:opus)` matches the alias `opus` but not a full model ID. Run with [`--verbose`](/docs/en/cli-reference) to see the exact parameter names and values in each tool call
-* Whitespace around the colon is ignored
+* 参数名称必须是工具输入的直接字段，例如 Agent 工具上的 `model`。嵌套在对象或数组内的字段不可匹配
+* 每个规则命名一个参数。要对 `model` 和 `isolation` 进行门控，请编写两个规则 `Agent(model:opus)` 和 `Agent(isolation:worktree)`，而不是在一个规则中组合它们
+* 该值支持 `*` 作为通配符，匹配任何字符序列，因此 `Agent(isolation:*)` 匹配任何显式隔离值。没有 `*` 时匹配是精确的
+* 模型省略的参数永远不会被匹配，因此 `Agent(model:*)` 不匹配留下 `model` 未设置的调用
+* 该值与 Claude 发送的文字输入进行比较，在任何规范化之前。`Agent(model:opus)` 匹配别名 `opus` 但不匹配完整模型 ID。使用 [`--verbose`](/docs/zh-CN/cli-reference) 运行以查看每个工具调用中的确切参数名称和值
+* 冒号周围的空格被忽略
 
-You can't match a tool's primary content field this way: `command` for Bash and PowerShell, `file_path` for Read, Edit, and Write, `path` for Grep and Glob, `notebook_path` for NotebookEdit, and `url` for WebFetch. A rule like `Bash(command:rm *)` would be bypassable by a compound command, so Claude Code ignores it and emits a startup warning. Use `Bash(rm *)`, `Read(./path)`, or `WebFetch(domain:host)` instead.
+工具已经用自己的规范化规则匹配的字段不能以这种方式匹配：Bash 和 PowerShell 的 `command`、Read、Edit 和 Write 的 `file_path`、Grep 和 Glob 的 `path`、NotebookEdit 的 `notebook_path` 和 WebFetch 的 `url`。像 `Bash(command:rm *)` 这样的规则可以通过复合命令绕过，因此 Claude Code 会忽略它并在启动时发出警告。改用 `Bash(rm *)`、`Read(./path)` 或 `WebFetch(domain:host)`。
 
-### Wildcard patterns
+<h3 id="wildcard-patterns">
+  通配符模式
+</h3>
 
-Bash rules support glob patterns with `*`. Wildcards can appear at any position in the command. This configuration allows npm and git commit commands while blocking git push:
+Bash 规则支持带有 `*` 的 glob 模式。通配符可以出现在命令中的任何位置。此配置允许 npm 和 git commit 命令，同时阻止 git push：
 
 ```json theme={null}
 {
@@ -133,13 +145,15 @@ Bash rules support glob patterns with `*`. Wildcards can appear at any position 
 }
 ```
 
-The space before `*` matters: `Bash(ls *)` matches `ls -la` but not `lsof`, while `Bash(ls*)` matches both. The `:*` suffix is an equivalent way to write a trailing wildcard, so `Bash(ls:*)` matches the same commands as `Bash(ls *)`.
+`*` 前的空格很重要：`Bash(ls *)` 匹配 `ls -la` 但不匹配 `lsof`，而 `Bash(ls*)` 匹配两者。`:*` 后缀是编写尾部通配符的等效方式，因此 `Bash(ls:*)` 匹配与 `Bash(ls *)` 相同的命令。
 
-The permission dialog writes the space-separated form when you select "Yes, don't ask again" for a command prefix. The `:*` form is only recognized at the end of a pattern. In a pattern like `Bash(git:* push)`, the colon is treated as a literal character and won't match git commands.
+当您为命令前缀选择"是，不再询问"时，权限对话框会写入空格分隔的形式。`:*` 形式仅在模式末尾被识别。在像 `Bash(git:* push)` 这样的模式中，冒号被视为文字字符，不会匹配 git 命令。
 
-### Tool name wildcards
+<h3 id="tool-name-wildcards">
+  工具名称通配符
+</h3>
 
-Deny and ask rules also accept glob patterns in the tool-name position. The pattern must match the full tool name: `"*"` matches every tool, and `"mcp__*"` matches every MCP tool across all servers. A tool matched by a bare-name glob deny rule is removed from Claude's context, the same as a bare tool name, including the [`EndConversation`](/docs/en/tools-reference#endconversation-tool-behavior) exception: a glob deny can't remove it while any other tool remains, and a glob ask never prompts for it. This configuration denies every MCP tool:
+拒绝和询问规则也接受工具名称位置中的 glob 模式。该模式必须匹配完整的工具名称：`"*"` 匹配每个工具，`"mcp__*"` 匹配所有服务器中的每个 MCP 工具。由裸名称 glob 拒绝规则匹配的工具会从 Claude 的上下文中移除，与裸工具名称相同。此配置拒绝每个 MCP 工具：
 
 ```json theme={null}
 {
@@ -151,90 +165,89 @@ Deny and ask rules also accept glob patterns in the tool-name position. The patt
 }
 ```
 
-Allow rules accept tool-name globs only after a literal `mcp__<server>__` prefix. The server segment must be glob-free so the rule names a specific server you configured. `mcp__puppeteer__*` matches every tool from the `puppeteer` server, and `mcp__github__get_*` matches its `get_` tools. An unanchored allow glob such as `"*"`, `"B*"`, or `"mcp__*"` is skipped with a warning and doesn't auto-approve anything.
+允许规则仅在文字 `mcp__<server>__` 前缀之后接受工具名称 glob。服务器段必须不含 glob，以便规则命名您配置的特定服务器。`mcp__puppeteer__*` 匹配来自 `puppeteer` 服务器的每个工具，`mcp__github__get_*` 匹配其 `get_` 工具。未锚定的允许 glob（如 `"*"`、`"B*"` 或 `"mcp__*"`）会被跳过并显示警告，不会自动批准任何内容。
 
-A deny or ask rule whose tool name matches no known tool produces a startup warning to catch typos. Tool names containing `_` or `*` are exempt from the check.
+工具名称不匹配任何已知工具的拒绝或询问规则会在启动时产生警告以捕获拼写错误。包含 `_` 或 `*` 的工具名称不受此检查的约束。
 
-The label shown for a tool in the transcript and permission dialog can differ from its canonical name. For example, the tool labeled `Stop Task` in the transcript has the canonical name `TaskStop`. Permission rules and [hook matchers](/docs/en/hooks) match the canonical name only, so a rule written as `Stop Task` doesn't match. For deny and ask rules, the startup warning above catches the mismatch. Use the canonical names listed in the [tools reference](/docs/en/tools-reference).
+转录本和权限对话框中为工具显示的标签可能与其规范名称不同。例如，转录本中标记为 `Stop Task` 的工具具有规范名称 `TaskStop`。权限规则和 [hook 匹配器](/docs/zh-CN/hooks) 仅匹配规范名称，因此写作为 `Stop Task` 的规则不匹配。对于拒绝和询问规则，上面的启动警告会捕获不匹配。使用 [工具参考](/docs/zh-CN/tools-reference) 中列出的规范名称。
 
-## Tool-specific permission rules
+<h2 id="tool-specific-permission-rules">
+  工具特定的权限规则
+</h2>
 
-### Bash
+<h3 id="bash">
+  Bash
+</h3>
 
-Bash permission rules support wildcard matching with `*`. Wildcards can appear at any position in the command, including at the beginning, middle, or end:
+Bash 权限规则支持带有 `*` 的通配符匹配。通配符可以出现在命令中的任何位置，包括开头、中间或结尾：
 
-* `Bash(npm run build)` matches the exact Bash command `npm run build`
-* `Bash(npm run test *)` matches Bash commands starting with `npm run test`
-* `Bash(npm *)` matches any command starting with `npm `
-* `Bash(* install)` matches any command ending with ` install`
-* `Bash(git * main)` matches commands like `git checkout main` and `git log --oneline main`
+* `Bash(npm run build)` 匹配确切的 Bash 命令 `npm run build`
+* `Bash(npm run test *)` 匹配以 `npm run test` 开头的 Bash 命令
+* `Bash(npm *)` 匹配任何以 `npm ` 开头的命令
+* `Bash(* install)` 匹配任何以 ` install` 结尾的命令
+* `Bash(git * main)` 匹配 `git checkout main` 和 `git log --oneline main` 等命令
 
-A single `*` matches any sequence of characters including spaces, so one wildcard can span multiple arguments. `Bash(git *)` matches `git log --oneline --all`, and `Bash(git * main)` matches `git push origin main` as well as `git merge main`.
+单个 `*` 匹配任何字符序列，包括空格，因此一个通配符可以跨越多个参数。`Bash(git *)` 匹配 `git log --oneline --all`，`Bash(git * main)` 匹配 `git push origin main` 以及 `git merge main`。
 
-When `*` appears at the end with a space before it (like `Bash(ls *)`), it enforces a word boundary, requiring the prefix to be followed by a space or end-of-string. For example, `Bash(ls *)` matches `ls -la` but not `lsof`. In contrast, `Bash(ls*)` without a space matches both `ls -la` and `lsof` because there's no word boundary constraint.
+当 `*` 出现在末尾且前面有空格时（如 `Bash(ls *)`），它强制执行单词边界，要求前缀后跟空格或字符串结尾。例如，`Bash(ls *)` 匹配 `ls -la` 但不匹配 `lsof`。相比之下，`Bash(ls*)` 没有空格匹配 `ls -la` 和 `lsof` 两者，因为没有单词边界约束。
 
-#### Compound commands
-
-<Tip>
-  Claude Code is aware of shell operators, so a rule like `Bash(safe-cmd *)` won't give it permission to run the command `safe-cmd && other-cmd`. The recognized command separators are `&&`, `||`, `;`, `|`, `|&`, `&`, and newlines. A rule must match each subcommand independently.
-</Tip>
-
-When you approve a compound command with "Yes, don't ask again", Claude Code saves a separate rule for each subcommand that requires approval, rather than a single rule for the full compound string. For example, approving `git status && npm test` saves a rule for `npm test`, so future `npm test` invocations are recognized regardless of what precedes the `&&`. Subcommands like `cd` into a subdirectory generate their own Read rule for that path. Up to 5 rules may be saved for a single compound command.
-
-<h4 id="process-wrappers">
-  Wrappers
+<h4 id="compound-commands">
+  复合命令
 </h4>
 
-Before matching Bash rules, Claude Code strips a fixed set of wrappers, so a rule like `Bash(npm test *)` also matches `timeout 30 npm test`. The stripped wrappers are `timeout`, `time`, `nice`, `nohup`, and `stdbuf`, plus the shell builtins `command` and `builtin`, and zsh's `noglob`. Each runs its argument as the actual command. Two related forms aren't stripped: the query form `command -v`, which looks up a command rather than running one, and zsh's `nocorrect`.
+<Tip>
+  Claude Code 知道 shell 运算符，所以像 `Bash(safe-cmd *)` 这样的规则不会给它权限运行命令 `safe-cmd && other-cmd`。识别的命令分隔符是 `&&`、`||`、`;`、`|`、`|&`、`&` 和换行符。规则必须独立匹配每个子命令。
+</Tip>
 
-Claude Code also strips a leading assignment of certain known-safe environment variables, so `Bash(npm test *)` matches `NODE_ENV=test npm test`. An allow rule won't match past an assignment of any other variable. A deny or ask rule matches past any leading assignment, so `Bash(rm *)` in deny still matches `FOO=bar rm -rf tmp/`.
+当您使用"是，不再询问"批准复合命令时，Claude Code 会为需要批准的每个子命令保存一个单独的规则，而不是为完整的复合字符串保存单个规则。例如，批准 `git status && npm test` 会为 `npm test` 保存一个规则，因此将来的 `npm test` 调用被识别，无论 `&&` 前面是什么。诸如 `cd` 进入子目录之类的子命令会为该路径生成自己的 Read 规则。单个复合命令最多可能保存 5 个规则。
 
-Bare `xargs` is also stripped, so `Bash(grep *)` matches `xargs grep pattern`. Stripping applies only when `xargs` has no flags: an invocation like `xargs -n1 grep pattern` is matched as an `xargs` command, so rules written for the inner command do not cover it.
+<h4 id="process-wrappers">
+  进程包装器
+</h4>
 
-This wrapper list is built in and is not configurable. Development environment runners such as `direnv exec`, `devbox run`, `mise exec`, `npx`, and `docker exec` are not in the list. Because these tools execute their arguments as a command, a rule like `Bash(devbox run *)` matches whatever comes after `run`, including `devbox run rm -rf .`. To approve work inside an environment runner, write a specific rule that includes both the runner and the inner command, such as `Bash(devbox run npm test)`. Add one rule per inner command you want to allow.
+在匹配 Bash 规则之前，Claude Code 会剥离一组固定的进程包装器，因此像 `Bash(npm test *)` 这样的规则也匹配 `timeout 30 npm test`。识别的包装器是 `timeout`、`time`、`nice`、`nohup` 和 `stdbuf`。
 
-Exec wrappers such as `watch`, `setsid`, `ionice`, and `flock` always prompt and can't be auto-approved by a prefix rule like `Bash(watch *)`. The same applies to `find` with `-exec` or `-delete`: a `Bash(find *)` rule doesn't cover these forms. To approve a specific invocation, write an exact-match rule for the full command string.
+裸 `xargs` 也被剥离，所以 `Bash(grep *)` 匹配 `xargs grep pattern`。剥离仅在 `xargs` 没有标志时适用：像 `xargs -n1 grep pattern` 这样的调用被匹配为 `xargs` 命令，因此为内部命令编写的规则不涵盖它。
 
-#### Read-only commands
+此包装器列表是内置的，不可配置。开发环境运行器，如 `direnv exec`、`devbox run`、`mise exec`、`npx` 和 `docker exec` 不在列表中。因为这些工具将其参数作为命令执行，像 `Bash(devbox run *)` 这样的规则匹配 `run` 之后的任何内容，包括 `devbox run rm -rf .`。要批准环境运行器内的工作，请编写一个包含运行器和内部命令的特定规则，如 `Bash(devbox run npm test)`。为您想要允许的每个内部命令添加一个规则。
 
-Claude Code recognizes a built-in set of Bash commands as read-only and runs them without a permission prompt in every mode. These include `ls`, `cat`, `echo`, `pwd`, `head`, `tail`, `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, and read-only forms of `git`. The set is not configurable; to require a prompt for one of these commands, add an `ask` or `deny` rule for it.
+Exec 包装器，如 `watch`、`setsid`、`ionice` 和 `flock` 总是提示，无法通过像 `Bash(watch *)` 这样的前缀规则自动批准。同样适用于带有 `-exec` 或 `-delete` 的 `find`：`Bash(find *)` 规则不涵盖这些形式。要批准特定调用，请为完整命令字符串编写精确匹配规则。
 
-Unquoted glob patterns are permitted for commands whose every flag is read-only, so `ls *.ts` and `wc -l src/*.py` run without a prompt.
+<h4 id="read-only-commands">
+  只读命令
+</h4>
 
-Commands from this set still prompt in these cases:
+Claude Code 将一组内置 Bash 命令识别为只读，并在每种模式下无需权限提示即可运行它们。这些包括 `ls`、`cat`、`echo`、`pwd`、`head`、`tail`、`grep`、`find`、`wc`、`which`、`diff`、`stat`、`du`、`cd` 和 `git` 的只读形式。该集合不可配置；要对其中一个命令要求提示，请为其添加 `ask` 或 `deny` 规则。
 
-* **Unquoted globs for commands with write-capable flags**: commands with write-capable or exec-capable flags, such as `find`, `sort`, `sed`, and `git`, prompt when an unquoted glob is present, because the glob could expand to a flag like `-delete`.
-* **`docker` pointed at another daemon**: read-only forms of `docker` prompt when the command carries a flag that selects a different daemon, such as `-H`, `--context`, or Podman's `--url` and `--connection`.
-* **`file` with path-opening flags**: `file` prompts when it passes `-m`/`--magic-file` or `-f`/`--files-from`, because those flags make `file` open the paths named in the flag's value.
-* **Network paths on Windows**: a command whose arguments include a network (UNC) path, such as `\\server\share\file`, prompts because accessing a network path can send your Windows credentials to the host it names. The same check applies to [PowerShell tool](/docs/en/tools-reference#powershell-tool) commands.
-* **Commands the analysis can't parse**: when Claude Code can't fully parse a command, it asks for approval instead of treating the command as read-only. Commands longer than 10,000 characters always prompt because they exceed what the analysis parses.
+对于每个标志都是只读的命令，允许未引用的 glob 模式，因此 `ls *.ts` 和 `wc -l src/*.py` 无需提示即可运行。带有写入能力或执行能力标志的命令，如 `find`、`sort`、`sed` 和 `git`，在存在未引用的 glob 时仍然提示，因为 glob 可能扩展为像 `-delete` 这样的标志。
 
-A `cd` into a path inside your working directory or an [additional directory](#working-directories) is also read-only, and a compound command like `cd packages/api && ls` runs without a prompt when each part qualifies on its own. Two combinations prompt even when each part is read-only:
+`cd` 进入工作目录或[其他目录](#working-directories)内的路径也是只读的。像 `cd packages/api && ls` 这样的复合命令在每个部分都符合条件时无需提示即可运行。在一个复合命令中组合 `cd` 和 `git` 时，当 `cd` 改变到不同目录时会提示，因为在新目录中运行 `git` 可以执行该目录的钩子。`cd` 的目标解析到当前工作目录是无操作的，不会触发此提示。
 
-* **`cd` with `git`**: prompts when the `cd` changes into a different directory, since running `git` in a new directory can execute that directory's hooks. A `cd` whose target resolves to the current working directory is a no-op and doesn't trigger the prompt.
-* **`cd` with an output redirect**: prompts when Claude Code can't determine which directory the redirect target resolves against after the `cd` runs. A command whose only redirect target is `/dev/null`, such as `cd app; grep -r pattern . 2>/dev/null`, doesn't prompt, because `/dev/null` doesn't depend on the working directory.
+在一个复合命令中组合 `cd` 和输出重定向时，当 Claude Code 无法确定在 `cd` 运行后重定向目标解析到哪个目录时也会提示。仅重定向目标为 `/dev/null` 的命令，如 `cd app; grep -r pattern . 2>/dev/null`，不会触发此提示，因为 `/dev/null` 不依赖于工作目录。{/* min-version: 2.1.207 */}在 v2.1.207 之前，包含 `cd` 的复合命令会对任何输出重定向提示，包括仅重定向目标为 `/dev/null` 的重定向。
 
 <Warning>
-  Bash permission patterns that try to constrain command arguments are fragile. For example, `Bash(curl http://github.com/ *)` intends to restrict curl to GitHub URLs, but won't match variations like:
+  尝试约束命令参数的 Bash 权限模式很脆弱。例如，`Bash(curl http://github.com/ *)` 旨在将 curl 限制为 GitHub URL，但不会匹配以下变体：
 
-  * Options before URL: `curl -X GET http://github.com/...`
-  * Different protocol: `curl https://github.com/...`
-  * Redirects: `curl -L http://short.example.com/xyz`, which redirects to GitHub
-  * Variables: `URL=http://github.com && curl $URL`
-  * Extra spaces: `curl  http://github.com`
+  * URL 前的选项：`curl -X GET http://github.com/...`
+  * 不同的协议：`curl https://github.com/...`
+  * 重定向：`curl -L http://bit.ly/xyz`，重定向到 GitHub
+  * 变量：`URL=http://github.com && curl $URL`
+  * 额外空格：`curl  http://github.com`
 
-  For more reliable URL filtering, consider:
+  为了更可靠的 URL 过滤，请考虑：
 
-  * **Restrict Bash network tools**: use deny rules to block `curl`, `wget`, and similar commands, then use the WebFetch tool with `WebFetch(domain:github.com)` permission for allowed domains
-  * **Use PreToolUse hooks**: implement a hook that validates URLs in Bash commands and blocks disallowed domains
-  * **Add CLAUDE.md guidance**: describe your allowed curl patterns in `CLAUDE.md`. This shapes what Claude tries but doesn't enforce a boundary, so pair it with one of the options above
+  * **限制 Bash 网络工具**：使用 deny 规则阻止 `curl`、`wget` 和类似命令，然后对允许的域使用带有 `WebFetch(domain:github.com)` 权限的 WebFetch 工具
+  * **使用 PreToolUse hooks**：实现一个 hook 来验证 Bash 命令中的 URL 并阻止不允许的域
+  * **添加 CLAUDE.md 指导**：在 `CLAUDE.md` 中描述您允许的 curl 模式。这会影响 Claude 尝试的内容，但不会强制执行边界，因此请将其与上述选项之一配对
 
-  Note that using WebFetch alone doesn't prevent network access. If Bash is allowed, Claude can still use `curl`, `wget`, or other tools to reach any URL.
+  请注意，仅使用 WebFetch 不会阻止网络访问。如果允许 Bash，Claude 仍然可以使用 `curl`、`wget` 或其他工具来访问任何 URL。
 </Warning>
 
-### PowerShell
+<h3 id="powershell">
+  PowerShell
+</h3>
 
-PowerShell permission rules use the same shape as Bash rules. Wildcards with `*` match at any position, the `:*` suffix is equivalent to a trailing ` *`, and a bare `PowerShell` or `PowerShell(*)` matches every command. This configuration allows `Get-ChildItem` and `git commit` commands while blocking `Remove-Item`:
+PowerShell 权限规则使用与 Bash 规则相同的形式。带有 `*` 的通配符可以在任何位置匹配，`:*` 后缀等同于尾部 ` *`，而裸 `PowerShell` 或 `PowerShell(*)` 匹配每个命令。此配置允许 `Get-ChildItem` 和 `git commit` 命令，同时阻止 `Remove-Item`：
 
 ```json theme={null}
 {
@@ -250,139 +263,110 @@ PowerShell permission rules use the same shape as Bash rules. Wildcards with `*`
 }
 ```
 
-Common aliases are canonicalized before matching. A rule written for the cmdlet name also matches its aliases, so `PowerShell(Get-ChildItem *)` matches `gci`, `ls`, and `dir` as well. Matching is case-insensitive.
+常见别名在匹配前被规范化。为 cmdlet 名称编写的规则也匹配其别名，因此 `PowerShell(Get-ChildItem *)` 匹配 `gci`、`ls` 和 `dir`。匹配不区分大小写。
 
-Claude Code parses the PowerShell AST and checks each command in a compound command independently. Pipeline operators `|`, statement separators `;`, and on PowerShell 7+ the chain operators `&&` and `||` split a compound command into subcommands. A rule must match every subcommand for the compound command to be allowed.
+Claude Code 解析 PowerShell AST 并独立检查复合命令中的每个命令。管道运算符 `|`、语句分隔符 `;` 和 PowerShell 7+ 上的链运算符 `&&` 和 `||` 将复合命令分割为子命令。规则必须匹配每个子命令才能允许复合命令。
 
-### Read and Edit
+<h3 id="read-and-edit">
+  Read 和 Edit
+</h3>
 
-`Edit` rules apply to all built-in tools that edit files. Claude makes a best-effort attempt to apply `Read` rules to all built-in tools that read files like Grep and Glob, to `@file` mentions in your prompts, and to the selection and open-file context that a connected [IDE](/docs/en/vs-code#the-built-in-ide-mcp-server) shares with Claude.
+`Edit` 规则适用于所有编辑文件的内置工具。Claude 尽力将 `Read` 规则应用于所有读取文件的内置工具，如 Grep 和 Glob，以及您提示中的 `@file` 提及，以及连接的 [IDE](/docs/zh-CN/vs-code#the-built-in-ide-mcp-server) 与 Claude 共享的选择和打开文件上下文。
 
-{/* min-version: 2.1.208 */}A `Read` deny rule also blocks the [Edit tool](/docs/en/errors#file-is-covered-by-a-read-deny-rule) on the same path, including creating a new file there. Write and NotebookEdit aren't covered, so add an `Edit` deny rule for paths no tool may change. Requires Claude Code v2.1.208 or later.
-
-{/* min-version: 2.1.210 */}Claude Code checks file permissions against `Edit(path)` and `Read(path)` rules only. If you write a path rule for `Write`, `NotebookEdit`, `Glob`, or the legacy `MultiEdit` tool instead, Claude Code accepts the rule but never consults it, and [warns at startup](/docs/en/errors#is-not-matched-by-file-permission-checks), except for a `Glob` rule passed in `--allowedTools`. Use `Edit(docs/**)` in place of `Write(docs/**)`, `NotebookEdit(docs/**)`, or `MultiEdit(docs/**)`, and `Read(docs/**)` in place of `Glob(docs/**)`. Claude Code doesn't warn about a tool-name rule with no path, such as a deny rule for `Write`; it matches that rule at the tool level everywhere. Requires Claude Code v2.1.210 or later.
-
-If you put a deny rule `Write(docs/**)` in project settings, Claude Code prints this startup warning:
-
-```text theme={null}
-Permission deny rule (.claude/settings.json): Write(docs/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(docs/**) instead (Edit rules cover all file-editing tools).
-```
+{/* min-version: 2.1.208 */}`Read` deny 规则也会阻止[同一路径上的 Edit 工具](/docs/zh-CN/errors#file-is-covered-by-a-read-deny-rule)，包括在那里创建新文件。Write 和 NotebookEdit 不被覆盖，因此为任何工具都不能更改的路径添加 `Edit` deny 规则。需要 Claude Code v2.1.208 或更高版本。
 
 <Warning>
-  Read and Edit deny rules apply to Claude's built-in file tools and to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`. They don't apply to arbitrary subprocesses that read or write files indirectly, like a Python or Node script that opens files itself. For OS-level enforcement that blocks all processes from accessing a path, [enable the sandbox](/docs/en/sandboxing).
+  Read 和 Edit deny 规则适用于 Claude 的内置文件工具和 Claude Code 在 Bash 中识别的文件命令，如 `cat`、`head`、`tail` 和 `sed`。它们不适用于间接读取或写入文件的任意子进程，如打开文件本身的 Python 或 Node 脚本。为了获得阻止所有进程访问路径的 OS 级别强制执行，请[启用沙箱](/docs/zh-CN/sandboxing)。
 </Warning>
 
-Read and Edit rules both use [gitignore](https://git-scm.com/docs/gitignore) pattern syntax with four distinct pattern types; for single-segment directory patterns, the matching depth also depends on the rule type, described later in this section:
+Read 和 Edit 规则都遵循 [gitignore](https://git-scm.com/docs/gitignore) 规范，具有四种不同的模式类型：
 
-| Pattern            | Meaning                              | Example                          | Matches                                          |
-| ------------------ | ------------------------------------ | -------------------------------- | ------------------------------------------------ |
-| `//path`           | Absolute path from filesystem root   | `Read(//Users/alice/secrets/**)` | `/Users/alice/secrets/**`                        |
-| `~/path`           | Path from home directory             | `Read(~/Documents/*.pdf)`        | `/Users/alice/Documents/*.pdf`                   |
-| `/path`            | Path relative to the settings source | `Edit(/src/**/*.ts)`             | `<project root>/src/**/*.ts` in project settings |
-| `path` or `./path` | Path relative to current directory   | `Read(*.env)`                    | `<cwd>/*.env`                                    |
+| 模式                | 含义             | 示例                               | 匹配                                  |
+| ----------------- | -------------- | -------------------------------- | ----------------------------------- |
+| `//path`          | 来自文件系统根目录的绝对路径 | `Read(//Users/alice/secrets/**)` | `/Users/alice/secrets/**`           |
+| `~/path`          | 来自主目录的路径       | `Read(~/Documents/*.pdf)`        | `/Users/alice/Documents/*.pdf`      |
+| `/path`           | 相对于设置源的路径      | `Edit(/src/**/*.ts)`             | `<project root>/src/**/*.ts` 在项目设置中 |
+| `path` 或 `./path` | 相对于当前目录的路径     | `Read(*.env)`                    | `<cwd>/*.env`                       |
 
 <Warning>
-  A pattern like `/Users/alice/file` isn't an absolute path. The single leading slash anchors at the settings source, not the filesystem root. Use `//Users/alice/file` for absolute paths.
+  像 `/Users/alice/file` 这样的模式不是绝对路径。单个前导斜杠锚定在设置源，而不是文件系统根目录。对于绝对路径，使用 `//Users/alice/file`。
 </Warning>
 
-A `/path` pattern anchors at a directory associated with the settings source that defines it, so the same rule matches different locations depending on where you put it:
+`/path` 模式锚定在与定义它的设置文件关联的目录，因此相同的规则根据您放置它的位置匹配不同的位置：
 
-| Rule defined in                                 | `/path` resolves to        |
-| :---------------------------------------------- | :------------------------- |
-| Project settings at `.claude/settings.json`     | `<project root>/path`      |
-| Local settings at `.claude/settings.local.json` | `<original cwd>/path`      |
-| User settings at `~/.claude/settings.json`      | `~/.claude/path`           |
-| A file passed with `--settings <file>`          | `<directory of file>/path` |
-| CLI flags, `/permissions`, or session rules     | `<original cwd>/path`      |
+| 规则定义在                             | `/path` 解析为                |
+| :-------------------------------- | :------------------------- |
+| 项目或本地设置，如 `.claude/settings.json` | `<project root>/path`      |
+| 用户设置在 `~/.claude/settings.json`   | `~/.claude/path`           |
+| 使用 `--settings <file>` 传递的文件      | `<directory of file>/path` |
+| CLI 标志、`/permissions` 或会话规则       | `<original cwd>/path`      |
 
-Local settings rules anchor at the directory you started Claude Code from, not at the repository root where Claude Code [stores the file](#permission-system) in v2.1.211 and later. In a session started at the repository root, the two directories are the same; in a [worktree](/docs/en/worktrees) session, a shared rule such as `Edit(/src/**)` matches that worktree's own `src/` directory.
+像 `Read(/secrets/**)` 这样的 deny 规则在用户设置中阻止 `~/.claude/secrets/**`，而不是您项目中的 `secrets` 目录。要在用户设置中编写适用于每个项目内部的规则，请改用 `//` 绝对路径或 `~/` 主目录相对路径。
 
-A deny rule such as `Read(/secrets/**)` in user settings blocks `~/.claude/secrets/**`, not a `secrets` directory in your project. To write a rule in user settings that applies inside every project, use a `//` absolute path or a `~/` home-relative path instead.
+在 Windows 上，路径在匹配前被规范化为 POSIX 形式。`C:\Users\alice` 变成 `/c/Users/alice`，因此使用 `//c/**/.env` 来匹配该驱动器上的 `.env` 文件。要在所有驱动器上匹配，使用 `//**/.env`。
 
-On Windows, paths are normalized to POSIX form before matching. `C:\Users\alice` becomes `/c/Users/alice`, so use `//c/**/.env` to match `.env` files anywhere on that drive. To match across all drives, use `//**/.env`.
+示例：
 
-Examples:
+* `Edit(/docs/**)`：编辑 `<project>/docs/` 中的文件（不是 `/docs/` 也不是 `<project>/.claude/docs/`）
+* `Read(~/.zshrc)`：读取您主目录的 `.zshrc`
+* `Edit(//tmp/scratch.txt)`：编辑绝对路径 `/tmp/scratch.txt`
+* `Read(src/**)`：从 `<current-directory>/src/` 读取
 
-* `Edit(/docs/**)`: edits in `<project>/docs/`, not `/docs/` or `<project>/.claude/docs/`
-* `Read(~/.zshrc)`: reads your home directory's `.zshrc`
-* `Edit(//tmp/scratch.txt)`: edits the absolute path `/tmp/scratch.txt`
-* `Read(src/**)`: as an allow rule, reads from `<current-directory>/src/` only; as a deny or ask rule, matches a `src` directory at any depth under the current directory
+一个规则只匹配其锚点下的文件，因此锚点决定了 deny 规则的范围。裸文件名遵循 gitignore 语义并在任何深度匹配，因此 `Read(.env)` 和 `Read(**/.env)` 是等价的：
 
-A rule only matches files under its anchor; within that bound, matching depth depends on the pattern shape and, for single-segment directory patterns, the rule type, described below. Bare filenames follow gitignore semantics and match at any depth, so `Read(.env)` and `Read(**/.env)` are equivalent:
-
-| Deny rule                       | Blocks                                       | Does not block                                       |
-| ------------------------------- | -------------------------------------------- | ---------------------------------------------------- |
-| `Read(.env)` or `Read(**/.env)` | any `.env` at or under the current directory | `.env` in a parent directory or another project      |
-| `Read(//**/.env)`               | any `.env` anywhere on the filesystem        | nothing; the rule is anchored at the filesystem root |
-
-A relative pattern with a single directory segment, such as `src/**`, matches at different depths depending on the rule type:
-
-* **Allow rules**: `Edit(src/**)` matches only `<cwd>/src` and the files under it. To allow a directory name at any depth, write `Edit(**/src/**)`.
-* **Deny and ask rules**: `Read(secrets/**)` matches a directory named `secrets` at any depth under the current directory, so the rule also applies to nested copies.
-
-Every other pattern shape matches at the same depth in every rule type: `Edit(/src/**)` and `Edit(src/components/**)` match only at their anchored location, while `Edit(**/src/**)` matches at any depth.
-
-The following example shows each pattern shape against a project with a top-level `src/` directory and a nested copy under `vendor/`:
-
-```text theme={null}
-<current-directory>/
-├── src/
-│   └── app.ts
-└── vendor/
-    └── pkg/
-        └── src/
-            └── lib.js
-```
-
-| Rule                                 | Matches `src/app.ts` | Matches `vendor/pkg/src/lib.js` |
-| :----------------------------------- | :------------------- | :------------------------------ |
-| `Edit(src/**)` as an allow rule      | Yes                  | No                              |
-| `Edit(src/**)` as a deny or ask rule | Yes                  | Yes                             |
-| `Edit(/src/**)` in any rule type     | Yes                  | No                              |
-| `Edit(**/src/**)` in any rule type   | Yes                  | Yes                             |
+| Deny 规则                        | 阻止                  | 不阻止                |
+| ------------------------------ | ------------------- | ------------------ |
+| `Read(.env)` 或 `Read(**/.env)` | 当前目录或其下的任何 `.env`   | 父目录或另一个项目中的 `.env` |
+| `Read(//**/.env)`              | 文件系统上任何地方的任何 `.env` | 无；规则锚定在文件系统根目录     |
 
 <Note>
-  In gitignore patterns, `*` matches within a single path segment and can appear at any position in the pattern, while `**` matches across directories. To allow all file access, use only the tool name without parentheses: `Read`, `Edit`, or `Write`.
+  在 gitignore 模式中，`*` 匹配单个路径段内的文本，可以出现在模式中的任何位置，而 `**` 匹配跨目录。要允许所有文件访问，只需使用工具名称而不带括号：`Read`、`Edit` 或 `Write`。
 </Note>
 
-When you approve a file path with "Yes, don't ask again", Claude Code escapes gitignore pattern characters in that path, such as `[`, `]`, and `*`, so the generated rule matches only the literal path you approved. Rules you write yourself aren't escaped. Before v2.1.202, Claude Code saved the path unescaped, so a generated rule for a directory named `[2024-06] Reports` could fail to match its own path or match unintended sibling directories.
+当您使用"是，不再询问"批准文件路径时，Claude Code 会转义该路径中的 gitignore 模式字符，如 `[`、`]` 和 `*`，因此生成的规则仅匹配您批准的字面路径。您自己编写的规则不会被转义。在 v2.1.202 之前，Claude Code 保存未转义的路径，因此为名为 `[2024-06] Reports` 的目录生成的规则可能无法匹配其自己的路径或匹配意外的兄弟目录。
 
-When Claude accesses a symlink, permission rules check two paths: the symlink itself and the file it resolves to. Allow and deny rules treat that pair differently: allow rules fall back to prompting you, while deny rules block outright.
+当 Claude 访问符号链接时，权限规则检查两个路径：符号链接本身和它解析到的文件。Allow 和 deny 规则对该对的处理方式不同：allow 规则回退到提示您，而 deny 规则直接阻止。
 
-* **Allow rules**: apply only when both the symlink path and its target match. A symlink inside an allowed directory that points outside it still prompts you.
-* **Deny rules**: apply when either the symlink path or its target matches. A symlink that points to a denied file is itself denied.
+* **Allow 规则**：仅在符号链接路径及其目标都匹配时适用。允许目录内的符号链接指向其外部仍然会提示您。
+* **Deny 规则**：当符号链接路径或其目标匹配时适用。指向被拒绝文件的符号链接本身被拒绝。
 
-For example, with `Read(./project/**)` allowed and `Read(~/.ssh/**)` denied, a symlink at `./project/key` pointing to `~/.ssh/id_rsa` is blocked: the target fails the allow rule and matches the deny rule.
+例如，使用 `Read(./project/**)` 允许和 `Read(~/.ssh/**)` 拒绝，`./project/key` 处的符号链接指向 `~/.ssh/id_rsa` 被阻止：目标未通过 allow 规则，并匹配 deny 规则。
 
-### WebFetch
+<h3 id="webfetch">
+  WebFetch
+</h3>
 
-WebFetch rules use a `domain:` prefix and match against the hostname of the requested URL. Matching is case-insensitive, supports `*` wildcards, and strips a trailing `.` from both the rule and the hostname so `example.com.` and `example.com` are treated the same.
+WebFetch 规则使用 `domain:` 前缀并针对请求的 URL 的主机名进行匹配。匹配不区分大小写，支持 `*` 通配符，并从规则和主机名中剥离尾部 `.`，因此 `example.com.` 和 `example.com` 被视为相同。
 
-* `WebFetch(domain:example.com)` matches requests to `example.com`
-* `WebFetch(domain:*.example.com)` matches any subdomain at any depth, such as `api.example.com` or `a.b.example.com`, but not `example.com` itself
-* `WebFetch(domain:*)` matches every domain and is equivalent to a bare `WebFetch` rule
+* `WebFetch(domain:example.com)` 匹配对 `example.com` 的请求
+* `WebFetch(domain:*.example.com)` 匹配任何深度的任何子域，如 `api.example.com` 或 `a.b.example.com`，但不匹配 `example.com` 本身
+* `WebFetch(domain:*)` 匹配每个域，等同于裸 `WebFetch` 规则
 
-In any position other than a leading `*.` or a bare `*`, the wildcard matches only the text between two dots. `WebFetch(domain:example.*)` matches `example.org`, where `*` becomes `org`, but not `example.evil.com`, where `*` would have to become `evil.com` and cross a dot. This keeps a trailing wildcard from matching domains an attacker could register.
+在前导 `*.` 或裸 `*` 以外的任何位置，通配符仅匹配两个点之间的文本。`WebFetch(domain:example.*)` 匹配 `example.org`，其中 `*` 变成 `org`，但不匹配 `example.evil.com`，其中 `*` 必须变成 `evil.com` 并跨越一个点。这防止尾部通配符匹配攻击者可以注册的域。
 
-### MCP
+<h3 id="mcp">
+  MCP
+</h3>
 
-MCP rules use the server name as configured in Claude Code, optionally followed by the name of a tool from that server.
+MCP 规则使用在 Claude Code 中配置的服务器名称，可选地后跟该服务器提供的工具的名称。
 
-* `mcp__puppeteer` matches any tool provided by the `puppeteer` server
-* `mcp__puppeteer__*` uses wildcard syntax and also matches all tools from the `puppeteer` server
-* `mcp__puppeteer__puppeteer_navigate` matches the `puppeteer_navigate` tool provided by the `puppeteer` server
+* `mcp__puppeteer` 匹配由 `puppeteer` 服务器提供的任何工具
+* `mcp__puppeteer__*` 使用通配符语法，也匹配来自 `puppeteer` 服务器的所有工具
+* `mcp__puppeteer__puppeteer_navigate` 匹配由 `puppeteer` 服务器提供的 `puppeteer_navigate` 工具
 
-If your organization has set a [claude.ai connector](/docs/en/mcp#organization-controls-on-connector-tools) tool to `ask`, allow rules for that tool don't take effect: Claude Code prompts on every call, even in `auto` and `bypassPermissions` modes. In `dontAsk` mode, which never prompts, Claude Code denies the call instead. Connector tools appear as `mcp__claude_ai_<server>__<tool>`.
+如果您的组织已设置[claude.ai 连接器](/docs/zh-CN/mcp#organization-controls-on-connector-tools)工具为 `ask`，该工具的 allow 规则不会生效：Claude Code 在每次调用时都会提示，即使在 `auto` 和 `bypassPermissions` 模式下。在 `dontAsk` 模式下（从不提示），Claude Code 会拒绝调用。连接器工具显示为 `mcp__claude_ai_<server>__<tool>`。
 
-### Agent (subagents)
+<h3 id="agent-subagents">
+  Agent（subagents）
+</h3>
 
-Use `Agent(AgentName)` rules to control which [subagents](/docs/en/sub-agents) Claude can use:
+使用 `Agent(AgentName)` 规则来控制 Claude 可以使用哪些[子代理](/docs/zh-CN/sub-agents)：
 
-* `Agent(Explore)` matches the Explore subagent
-* `Agent(Plan)` matches the Plan subagent
-* `Agent(my-custom-agent)` matches a custom subagent named `my-custom-agent`
+* `Agent(Explore)` 匹配 Explore 子代理
+* `Agent(Plan)` 匹配 Plan 子代理
+* `Agent(my-custom-agent)` 匹配名为 `my-custom-agent` 的自定义子代理
 
-Add these rules to the `deny` array in your settings or use the `--disallowedTools` CLI flag to disable specific agents. To disable the Explore agent:
+将这些规则添加到您的设置中的 `deny` 数组，或使用 `--disallowedTools` CLI 标志来禁用特定代理。要禁用 Explore 代理：
 
 ```json theme={null}
 {
@@ -392,176 +376,192 @@ Add these rules to the `deny` array in your settings or use the `--disallowedToo
 }
 ```
 
-### Cd
+<h3 id="cd">
+  Cd
+</h3>
 
-`Cd` rules control which directories the [`/cd` command](/docs/en/commands) can move the session to. `Cd` is not a model-invocable tool: Claude can't call it, and the rules apply only when you run `/cd` yourself.
+`Cd` 规则控制 [`/cd` 命令](/docs/zh-CN/commands)可以将会话移动到哪些目录。`Cd` 不是模型可调用的工具：Claude 无法调用它，规则仅在您自己运行 `/cd` 时适用。
 
-A bare `Cd` deny rule disables `/cd` entirely. A `Cd(<path-pattern>)` deny rule blocks matching targets. Deny rules check every spelling of the target, including each symlink hop it resolves through, so a rule written for one path also blocks targets that resolve to it.
+裸 `Cd` deny 规则完全禁用 `/cd`。`Cd(<path-pattern>)` deny 规则阻止匹配的目标。Deny 规则检查目标的每个拼写，包括它解析的每个符号链接跳跃，因此为一个路径编写的规则也会阻止解析到它的目标。
 
-Adding any `Cd` allow rule switches `/cd` to allowlist mode: the resolved target directory must match one of your allow rules, or `/cd` refuses. With no `Cd` rules configured, `/cd` keeps its default behavior and prompts you to trust an unfamiliar directory.
+添加任何 `Cd` allow 规则会将 `/cd` 切换到允许列表模式：解析的目标目录必须匹配您的一个 allow 规则，否则 `/cd` 拒绝。如果没有配置 `Cd` 规则，`/cd` 保持其默认行为并提示您信任不熟悉的目录。
 
-Path patterns share the `//`, `~/`, and `/` anchors from [Read and Edit rules](#read-and-edit), but matching is anchored to the whole directory path rather than gitignore-style. `*` matches exactly one path segment and `**` matches across segments. A trailing `/**` also matches its named root.
+路径模式共享来自 [Read 和 Edit 规则](#read-and-edit)的 `//`、`~/` 和 `/` 锚点，但匹配锚定到整个目录路径而不是 gitignore 风格。`*` 匹配恰好一个路径段，`**` 匹配跨段。尾部 `/**` 也匹配其命名的根。
 
-| Rule                  | Matches                                   | Does not match               |
-| --------------------- | ----------------------------------------- | ---------------------------- |
-| `Cd(~/code/*)`        | `~/code/app`                              | `~/code/app/src`, `~/code`   |
-| `Cd(~/code/**)`       | `~/code` and any directory under it       | directories outside `~/code` |
-| `Cd(**/node_modules)` | any `node_modules` directory at any depth | `node_modules/pkg`           |
+| 规则                    | 匹配                        | 不匹配                       |
+| --------------------- | ------------------------- | ------------------------- |
+| `Cd(~/code/*)`        | `~/code/app`              | `~/code/app/src`、`~/code` |
+| `Cd(~/code/**)`       | `~/code` 和其下的任何目录         | `~/code` 外的目录             |
+| `Cd(**/node_modules)` | 任何深度的任何 `node_modules` 目录 | `node_modules/pkg`        |
 
-## Extend permissions with hooks
+<h2 id="extend-permissions-with-hooks">
+  使用 hooks 扩展权限
+</h2>
 
-[Claude Code hooks](/docs/en/hooks-guide) let you register custom shell commands that evaluate permissions at runtime. When Claude Code makes a tool call, PreToolUse hooks run before the permission prompt, for every tool except [`EndConversation`](/docs/en/tools-reference#endconversation-tool-behavior). The hook output can deny the tool call, force a prompt, or skip the prompt to let the call proceed.
+[Claude Code hooks](/docs/zh-CN/hooks-guide) 提供了一种方法来注册自定义 shell 命令以在运行时执行权限评估。当 Claude Code 进行工具调用时，PreToolUse hooks 在权限提示之前运行。hook 输出可以拒绝工具调用、强制提示或跳过提示以让调用继续。
 
-Hook decisions don't bypass permission rules. Claude Code evaluates deny and ask rules regardless of what a PreToolUse hook returns: a matching deny rule blocks the call, and a matching ask rule still prompts even when the hook returned `"allow"` or `"ask"`. This preserves the deny-first precedence described in [Manage permissions](#manage-permissions), including deny rules set in managed settings.
+Hook 决定不会绕过权限规则。Claude Code 评估 deny 和 ask 规则，无论 PreToolUse hook 返回什么：匹配的 deny 规则会阻止调用，匹配的 ask 规则即使在 hook 返回 `"allow"` 或 `"ask"` 时仍然会提示。这保留了[管理权限](#manage-permissions)中描述的 deny 优先级，包括在托管设置中设置的 deny 规则。
 
-Connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools) and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) also still prompt when a hook returns `"allow"`.
+连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具在 hook 返回 `"allow"` 时仍然会提示。
 
-A blocking hook also takes precedence over allow rules. A hook that exits with code 2 stops the tool call before permission rules are evaluated, so the block applies even when an allow rule would otherwise let the call proceed. To run all Bash commands without prompts except for a few you want blocked, add `"Bash"` to your allow list and register a PreToolUse hook that rejects those specific commands. See [Block edits to protected files](/docs/en/hooks-guide#block-edits-to-protected-files) for a hook script you can adapt.
+阻止 hook 也优先于 allow 规则。以退出代码 2 退出的 hook 在权限规则被评估之前停止工具调用，因此即使 allow 规则会让调用继续，阻止也适用。要运行所有 Bash 命令而无需提示，除了您想要阻止的少数几个，将 `"Bash"` 添加到您的 allow 列表，并注册一个 PreToolUse hook 来拒绝那些特定命令。请参见[阻止对受保护文件的编辑](/docs/zh-CN/hooks-guide#block-edits-to-protected-files)以获取您可以调整的 hook 脚本。
 
-## Working directories
+<h2 id="working-directories">
+  工作目录
+</h2>
 
-By default, Claude has access to files in the directory where you launched it. You can extend this access:
+默认情况下，Claude 可以访问启动它的目录中的文件。您可以扩展此访问：
 
-* **During startup**: use `--add-dir <path>` CLI argument
-* **During session**: use `/add-dir` command
-* **Persistent configuration**: add to `additionalDirectories` in [settings files](/docs/en/settings#settings-files)
+* **启动期间**：使用 `--add-dir <path>` CLI 参数
+* **会话期间**：使用 `/add-dir` 命令
+* **持久配置**：添加到[设置文件](/docs/zh-CN/settings#settings-files)中的 `additionalDirectories`
 
-Files in additional directories follow the same permission rules as the original working directory: they become readable without prompts, and file editing permissions follow the current permission mode.
+其他目录中的文件遵循与原始工作目录相同的权限规则：它们变为可读的而无需提示，文件编辑权限遵循当前权限模式。
 
-In background sessions on macOS, the session host requests access to protected folders such as `~/Desktop`, `~/Documents`, and `~/Downloads` separately from your terminal when Claude needs to read or write files there; if reads there fail with `Operation not permitted`, see [how to grant folder access to background sessions](/docs/en/agent-view#background-sessions-can’t-read-desktop-documents-or-downloads-on-macos).
+在 macOS 上的后台会话中，会话主机会单独从您的终端请求访问受保护的文件夹（如 `~/Desktop`、`~/Documents` 和 `~/Downloads`），当 Claude 需要在那里读取或写入文件时；如果读取失败并显示 `Operation not permitted`，请参阅[如何向后台会话授予文件夹访问权限](/docs/zh-CN/agent-view#background-sessions-can't-read-desktop-documents-or-downloads-on-macos)。
 
-To change the session's primary working directory instead of adding another, use [`/cd`](/docs/en/commands). The `/cd` command requires Claude Code v2.1.169 or later. Unlike `/add-dir`, it relocates the session: the new directory's `CLAUDE.md` is loaded and `--resume` finds the session from there.
+要改变会话的主工作目录而不是添加另一个目录，请使用 [`/cd`](/docs/zh-CN/commands)。`/cd` 命令需要 Claude Code v2.1.169 或更高版本。与 `/add-dir` 不同，它重新定位会话：新目录的 `CLAUDE.md` 被加载，`--resume` 从那里找到会话。
 
-### Additional directories grant file access, not configuration
+<h3 id="additional-directories-grant-file-access-not-configuration">
+  其他目录授予文件访问权限，而不是配置
+</h3>
 
-Adding a directory extends where Claude can read and edit files. It doesn't make that directory a full configuration root: most `.claude/` configuration is not discovered from additional directories, though a few types are loaded as exceptions.
+添加目录扩展 Claude 可以读取和编辑文件的位置。它不会使该目录成为完整的配置根目录：大多数 `.claude/` 配置不是从其他目录发现的，尽管有几种类型作为例外被加载。
 
-These exceptions apply only to directories added with the `--add-dir` flag or the `/add-dir` command. Directories listed in `permissions.additionalDirectories` in a settings file grant file access only and don't load any of the configuration below.
+这些例外仅适用于使用 `--add-dir` 标志或 `/add-dir` 命令添加的目录。在设置文件中的 `permissions.additionalDirectories` 中列出的目录仅授予文件访问权限，不加载以下任何配置。
 
-The following configuration types are loaded from `--add-dir` directories:
+以下配置类型从 `--add-dir` 目录加载：
 
-| Configuration                                                                         | Loaded from `--add-dir`                                                                                                                                            |
-| :------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Skills](/docs/en/skills) in `.claude/skills/`                                             | Yes, with live reload                                                                                                                                              |
-| [Subagents](/docs/en/sub-agents) in `.claude/agents/`                                      | Yes                                                                                                                                                                |
-| [Settings](/docs/en/settings) in `.claude/settings.json` and `.claude/settings.local.json` | `enabledPlugins` and `extraKnownMarketplaces` keys only                                                                                                            |
-| [CLAUDE.md](/docs/en/memory) files, `.claude/rules/`, and `CLAUDE.local.md`                | Only when `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` is set. `CLAUDE.local.md` additionally requires the `local` setting source, which is enabled by default |
+| 配置                                                                              | 从 `--add-dir` 加载                                                                                |
+| :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- |
+| `.claude/skills/` 中的 [Skills](/docs/zh-CN/skills)                                    | 是，带有实时重新加载                                                                                      |
+| `.claude/agents/` 中的 [Subagents](/docs/zh-CN/sub-agents)                             | 是                                                                                               |
+| `.claude/settings.json` 和 `.claude/settings.local.json` 中的[设置](/docs/zh-CN/settings) | 仅 `enabledPlugins` 和 `extraKnownMarketplaces` 键                                                 |
+| [CLAUDE.md](/docs/zh-CN/memory) 文件、`.claude/rules/` 和 `CLAUDE.local.md`              | 仅当设置 `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` 时。`CLAUDE.local.md` 另外需要 `local` 设置源，默认启用 |
 
-Claude Code discovers commands and output styles from the current working directory and its parents, your user directory at `~/.claude/`, and managed settings. Hooks and other `.claude/settings.json` keys load from the current working directory's `.claude/` folder with no parent-directory fallback, alongside your user `~/.claude/settings.json` and managed settings. {/* min-version: 2.1.211 */}`.claude/settings.local.json` loads from the git repository root instead, even when you start Claude Code in a subdirectory; before v2.1.211, it too loaded only from the current working directory. [Agent SDK](/docs/en/agent-sdk/claude-code-features#control-filesystem-settings-with-settingsources) sessions load it from the working directory in all versions.
+命令和输出样式从当前工作目录及其父目录、您在 `~/.claude/` 的用户目录和托管设置中发现。Hooks 和其他 `settings.json` 键从当前工作目录的 `.claude/` 文件夹加载，没有父目录回退，同时从您的用户 `~/.claude/settings.json` 和托管设置加载。要在项目间共享该配置，请使用以下方法之一：
 
-To share that configuration across projects, use one of these approaches:
+* **用户级配置**：将文件放在 `~/.claude/agents/`、`~/.claude/output-styles/` 或 `~/.claude/settings.json` 中，使其在每个项目中可用
+* **插件**：将配置打包并分发为[插件](/docs/zh-CN/plugins)，团队可以安装
+* **从配置目录启动**：从包含您想要的 `.claude/` 配置的目录运行 Claude Code
 
-* **User-level configuration**: place files in `~/.claude/agents/`, `~/.claude/output-styles/`, or `~/.claude/settings.json` to make them available in every project
-* **Plugins**: package and distribute configuration as a [plugin](/docs/en/plugins) that teams can install
-* **Launch from the config directory**: run Claude Code from the directory containing the `.claude/` configuration you want
+<h2 id="how-permissions-interact-with-sandboxing">
+  权限如何与沙箱交互
+</h2>
 
-## How permissions interact with sandboxing
+权限和[沙箱](/docs/zh-CN/sandboxing)是互补的安全层：
 
-Permissions and [sandboxing](/docs/en/sandboxing) are complementary security layers:
+* **权限**控制 Claude Code 可以使用哪些工具以及它可以访问哪些文件或域。它们适用于所有工具，包括 Bash、Read、Edit、WebFetch 和 MCP。
+* **沙箱**提供 OS 级别的强制执行，限制 Bash 工具的文件系统和网络访问。它仅适用于 Bash 命令及其子进程。
 
-* **Permissions** control which tools Claude Code can use and which files or domains it can access. They apply to Bash, Read, Edit, WebFetch, MCP, and every other tool, except that a deny or ask rule can't block [`EndConversation`](/docs/en/tools-reference#endconversation-tool-behavior) while any other tool remains.
-* **Sandboxing** provides OS-level enforcement that restricts the Bash tool's filesystem and network access. It applies only to Bash commands and their child processes.
+使用两者进行深度防御：
 
-Use both for defense-in-depth:
+* 权限 deny 规则阻止 Claude 甚至尝试访问受限资源
+* 沙箱限制防止 Bash 命令到达定义边界之外的资源，即使提示注入绕过 Claude 的决策制定
+* 沙箱中的文件系统限制结合 [`sandbox.filesystem`](/docs/zh-CN/sandboxing) 设置与 Read 和 Edit deny 规则；两者都合并到最终的沙箱边界中
+* 网络限制结合 WebFetch 权限规则与沙箱的 `allowedDomains` 和 `deniedDomains` 列表
 
-* Permission deny rules block Claude from even attempting to access restricted resources
-* Sandbox restrictions prevent Bash commands from reaching resources outside defined boundaries, even if a prompt injection bypasses Claude's decision-making
-* Filesystem restrictions in the sandbox combine the [`sandbox.filesystem`](/docs/en/sandboxing) settings with Read and Edit deny rules; both are merged into the final sandbox boundary
-* Network restrictions combine WebFetch permission rules with the sandbox's `allowedDomains` and `deniedDomains` lists
+当沙箱启用 `autoAllowBashIfSandboxed: true`（这是默认值）时，沙箱化的 Bash 命令无需提示即可运行，即使您的权限包括裸 `Bash` ask 规则，或[等效的 `Bash(*)` 形式](#match-all-uses-of-a-tool)：沙箱边界替代了该整体工具提示。这些检查仍然适用：
 
-When you enable sandboxing and leave `autoAllowBashIfSandboxed` at its default of `true`, sandboxed Bash commands run without prompting even if your permissions include a bare `Bash` ask rule, or the [equivalent `Bash(*)` form](#match-all-uses-of-a-tool): the sandbox boundary substitutes for that whole-tool prompt.
+* 内容范围的 ask 规则（如 `Bash(git push *)`）仍然强制提示
+* 显式 deny 规则仍然适用
+* 针对 `/`、您的主目录或其他关键系统路径的 `rm` 或 `rmdir` 命令仍然会触发提示
 
-In [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode), Claude Code skips this substitution. Without an ask rule, the built-in read-only commands still run without prompting, and any other shell command prompts for approval while you are still planning{/* min-version: 2.1.218 */}, or goes to the classifier when [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) is available and `useAutoModeDuringPlan` is on. With a bare `Bash` ask rule, every Bash command prompts, including sandboxed read-only commands, the same as outside sandboxing. Before v2.1.212, the substitution applied in plan mode as well. In v2.1.212 through v2.1.217, those commands prompted even when auto mode was available.
+不会在沙箱中运行的命令（如排除的命令）按照通常的方式遵守裸 `Bash` ask 规则。请参见[沙箱模式](/docs/zh-CN/sandboxing#sandbox-modes)以更改此行为。
 
-These checks still apply:
+<h2 id="managed-settings">
+  托管设置
+</h2>
 
-* Content-scoped ask rules like `Bash(git push *)` still force a prompt
-* Explicit deny rules still apply
-* `rm` or `rmdir` commands that target `/`, your home directory, or other critical system paths still trigger a prompt{/* min-version: 2.1.218 */}, or a classifier check in [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode); the classifier routing requires Claude Code v2.1.218 or later
+对于需要对 Claude Code 配置进行集中控制的组织，管理员可以部署无法被用户或项目设置覆盖的托管设置。这些策略设置遵循与常规设置文件相同的格式，可以通过 MDM/OS 级别策略、托管设置文件、[服务器托管设置](/docs/zh-CN/server-managed-settings)或自托管的 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway) 传递。有关传递机制和文件位置，请参见[设置文件](/docs/zh-CN/settings#settings-files)。
 
-Commands that won't run sandboxed, such as excluded commands, respect the bare `Bash` ask rule as usual. See [sandbox modes](/docs/en/sandboxing#sandbox-modes) to change this behavior.
+<h3 id="managed-only-settings">
+  仅托管设置
+</h3>
 
-## Managed settings
+以下设置仅在托管设置中有效。将它们放在用户或项目设置文件中无效。
 
-For organizations that need centralized control over Claude Code configuration, administrators can deploy managed settings that can't be overridden by user or project settings. These policy settings follow the same format as regular settings files and can be delivered through MDM/OS-level policies, managed settings files, [server-managed settings](/docs/en/server-managed-settings), or a self-hosted [Claude apps gateway](/docs/en/claude-apps-gateway). See [settings files](/docs/en/settings#settings-files) for delivery mechanisms and file locations.
+| 设置                                             | 描述                                                                                                                                                                                                                                                      |
+| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `allowAllClaudeAiMcps`                         | 当为 `true` 时，claude.ai 连接器与已部署的 `managed-mcp.json` 一起加载，而不是被其独占控制所抑制。请参见[托管 MCP 配置](/docs/zh-CN/managed-mcp)                                                                                                                                                  |
+| `allowedChannelPlugins`                        | 可能推送消息的频道插件的允许列表。设置时替换默认 Anthropic 允许列表。需要 `channelsEnabled: true`。请参见[限制哪些频道插件可以运行](/docs/zh-CN/channels#restrict-which-channel-plugins-can-run)                                                                                                            |
+| `allowManagedHooksOnly`                        | 当为 `true` 时，仅加载托管 hooks、SDK hooks 和托管设置 `enabledPlugins` 中强制启用的插件中的 hooks。用户、项目和所有其他插件 hooks 被阻止                                                                                                                                                        |
+| `allowManagedMcpServersOnly`                   | 当为 `true` 时，仅尊重来自托管设置的 `allowedMcpServers`。`deniedMcpServers` 仍然从所有来源合并。请参见[托管 MCP 配置](/docs/zh-CN/managed-mcp)                                                                                                                                              |
+| `allowManagedPermissionRulesOnly`              | 当为 `true` 时，防止用户和项目设置定义 `allow`、`ask` 或 `deny` 权限规则。仅应用托管设置中的规则。不影响 MCP 服务器允许列表；对于此，请设置 `allowManagedMcpServersOnly`                                                                                                                                    |
+| `blockedMarketplaces`                          | 市场来源的黑名单。在下载前检查被阻止的来源，因此它们永远不会接触文件系统。请参见[托管市场限制](/docs/zh-CN/plugin-marketplaces#managed-marketplace-restrictions)                                                                                                                                           |
+| `channelsEnabled`                              | 允许为组织启用[频道](/docs/zh-CN/channels)。请参见[企业控制](/docs/zh-CN/channels#enterprise-controls)了解每个计划的默认设置                                                                                                                                                                  |
+| `disableSideloadFlags`                         | {/* min-version: 2.1.193 */}在启动时拒绝 `--plugin-dir`、`--plugin-url`、`--agents` 和 `--mcp-config` CLI 标志。没有这个，用户可以通过传递这些标志来绕过 `strictKnownMarketplaces` 进行单次运行。请参见[`disableSideloadFlags`](/docs/zh-CN/settings#available-settings)。需要 Claude Code v2.1.193 或更高版本 |
+| `forceRemoteSettingsRefresh`                   | 当为 `true` 时，阻止 CLI 启动直到远程托管设置被新鲜获取，如果获取失败则退出。请参见[故障关闭强制执行](/docs/zh-CN/server-managed-settings#enforce-fail-closed-startup)                                                                                                                                  |
+| `pluginTrustMessage`                           | 自定义消息，附加到安装前显示的插件信任警告                                                                                                                                                                                                                                   |
+| `sandbox.filesystem.allowManagedReadPathsOnly` | 当为 `true` 时，仅尊重来自托管设置的 `filesystem.allowRead` 路径。`denyRead` 仍然从所有来源合并                                                                                                                                                                                   |
+| `sandbox.network.allowManagedDomainsOnly`      | 当为 `true` 时，仅尊重来自托管设置的 `allowedDomains` 和 `WebFetch(domain:...)` allow 规则。非允许的域被自动阻止，不提示用户。被拒绝的域仍然从所有来源合并                                                                                                                                               |
+| `strictKnownMarketplaces`                      | 控制用户可以添加和安装插件的插件市场来源。请参见[托管市场限制](/docs/zh-CN/plugin-marketplaces#managed-marketplace-restrictions)                                                                                                                                                           |
+| `strictPluginOnlyCustomization`                | 阻止 skills、agents、hooks 和 MCP servers 来自用户和项目来源，因此它们只能来自插件或托管设置。`true` 锁定所有四个表面；数组如 `["skills", "hooks"]` 仅锁定命名的表面。请参见[`strictPluginOnlyCustomization`](/docs/zh-CN/settings#strictpluginonlycustomization)                                                   |
+| `wslInheritsWindowsSettings`                   | 当在 Windows HKLM 注册表项或 `C:\Program Files\ClaudeCode\managed-settings.json` 中为 `true` 时，WSL 除了从 `/etc/claude-code` 读取托管设置外，还从 Windows 策略链读取托管设置。请参见[设置文件](/docs/zh-CN/settings#settings-files)                                                                 |
 
-### Managed-only settings
-
-The following settings are only read from managed settings. Placing them in user or project settings files has no effect.
-
-| Setting                                        | Description                                                                                                                                                                                                                                                                                                                         |
-| :--------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allowAllClaudeAiMcps`                         | When `true`, claude.ai connectors load alongside a deployed `managed-mcp.json` instead of being suppressed by its exclusive control. See [Managed MCP configuration](/docs/en/managed-mcp)                                                                                                                                               |
-| `allowedChannelPlugins`                        | Allowlist of channel plugins that may push messages. Replaces the default Anthropic allowlist when set. Requires `channelsEnabled: true`. See [Restrict which channel plugins can run](/docs/en/channels#restrict-which-channel-plugins-can-run)                                                                                         |
-| `allowManagedHooksOnly`                        | When `true`, only managed hooks, SDK hooks, and hooks from plugins force-enabled in managed settings `enabledPlugins` are loaded. User, project, and all other plugin hooks are blocked                                                                                                                                             |
-| `allowManagedMcpServersOnly`                   | When `true`, only `allowedMcpServers` from managed settings are respected. `deniedMcpServers` still merges from all sources. See [Managed MCP configuration](/docs/en/managed-mcp)                                                                                                                                                       |
-| `allowManagedPermissionRulesOnly`              | When `true`, prevents user and project settings from defining `allow`, `ask`, or `deny` permission rules. Only rules in managed settings apply. Doesn't affect the MCP server allowlist; for that, set `allowManagedMcpServersOnly`                                                                                                 |
-| `blockedMarketplaces`                          | Blocklist of marketplace sources. Blocked sources are checked before downloading, so they never touch the filesystem. See [managed marketplace restrictions](/docs/en/plugin-marketplaces#managed-marketplace-restrictions)                                                                                                              |
-| `channelsEnabled`                              | Allow [channels](/docs/en/channels) for the organization. See [enterprise controls](/docs/en/channels#enterprise-controls) for the default on each plan                                                                                                                                                                                       |
-| `disableSideloadFlags`                         | {/* min-version: 2.1.193 */}Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup. Without this, users can bypass `strictKnownMarketplaces` for a single run by passing these flags. See [`disableSideloadFlags`](/docs/en/settings#available-settings). Requires Claude Code v2.1.193 or later |
-| `forceRemoteSettingsRefresh`                   | When `true`, blocks CLI startup until remote managed settings are freshly fetched and exits if the fetch fails. See [fail-closed enforcement](/docs/en/server-managed-settings#enforce-fail-closed-startup)                                                                                                                              |
-| `pluginTrustMessage`                           | Custom message appended to the plugin trust warning shown before installation                                                                                                                                                                                                                                                       |
-| `sandbox.filesystem.allowManagedReadPathsOnly` | When `true`, only `filesystem.allowRead` paths from managed settings are respected. `denyRead` still merges from all sources                                                                                                                                                                                                        |
-| `sandbox.network.allowManagedDomainsOnly`      | When `true`, only `allowedDomains` and `WebFetch(domain:...)` allow rules from managed settings are respected. Non-allowed domains are blocked automatically without prompting the user. Denied domains still merge from all sources                                                                                                |
-| `strictKnownMarketplaces`                      | Controls which plugin marketplace sources users can add and install plugins from. See [managed marketplace restrictions](/docs/en/plugin-marketplaces#managed-marketplace-restrictions)                                                                                                                                                  |
-| `strictPluginOnlyCustomization`                | Block skills, agents, hooks, and MCP servers from user and project sources, so they can only come from plugins or managed settings. `true` locks all four surfaces; an array such as `["skills", "hooks"]` locks only the named ones. See [`strictPluginOnlyCustomization`](/docs/en/settings#strictpluginonlycustomization)             |
-| `wslInheritsWindowsSettings`                   | When `true` in the Windows HKLM registry key or `C:\Program Files\ClaudeCode\managed-settings.json`, WSL reads managed settings from the Windows policy chain in addition to `/etc/claude-code`. See [Settings files](/docs/en/settings#settings-files)                                                                                  |
-
-`disableBypassPermissionsMode` is typically placed in managed settings to enforce organizational policy, but it works from any scope. A user can set it in their own settings to lock themselves out of bypass mode.
+`disableBypassPermissionsMode` 通常放在托管设置中以强制执行组织策略，但它可以从任何范围工作。用户可以在自己的设置中设置它以将自己锁定在绕过模式之外。
 
 <Note>
-  On Team and Enterprise plans, an Owner enables or disables [Remote Control](/docs/en/remote-control) and [web sessions](/docs/en/claude-code-on-the-web) organization-wide in [Claude Code admin settings](https://claude.ai/admin-settings/claude-code). Remote Control can additionally be disabled per device with the [`disableRemoteControl`](/docs/en/settings#available-settings) setting. Web sessions have no per-device managed settings key.
+  在 Team 和 Enterprise 计划上，Owner 在[Claude Code 管理设置](https://claude.ai/admin-settings/claude-code)中启用或禁用[远程控制](/docs/zh-CN/remote-control)和[网络会话](/docs/zh-CN/claude-code-on-the-web)组织范围内的设置。远程控制还可以通过 [`disableRemoteControl`](/docs/zh-CN/settings#available-settings) 设置按设备禁用。网络会话没有按设备托管设置密钥。
 </Note>
 
-## Settings precedence
+<h2 id="settings-precedence">
+  设置优先级
+</h2>
 
-Permission rules follow the same [settings precedence](/docs/en/settings#settings-precedence) as all other Claude Code settings:
+权限规则遵循与所有其他 Claude Code 设置相同的[设置优先级](/docs/zh-CN/settings#settings-precedence)：
 
-1. **Managed settings**: can't be overridden by any other level, including command line arguments
-2. **Command line arguments**: temporary session overrides
-3. **Local project settings** (`.claude/settings.local.json`)
-4. **Shared project settings** (`.claude/settings.json`)
-5. **User settings** (`~/.claude/settings.json`)
+1. **托管设置**：无法被任何其他级别覆盖，包括命令行参数
+2. **命令行参数**：临时会话覆盖
+3. **本地项目设置**（`.claude/settings.local.json`）
+4. **共享项目设置**（`.claude/settings.json`）
+5. **用户设置**（`~/.claude/settings.json`）
 
-If a tool is denied at any level, no other level can allow it. For example, a managed settings deny can't be overridden by `--allowedTools`, and `--disallowedTools` can add restrictions beyond what managed settings define.
+如果工具在任何级别被拒绝，没有其他级别可以允许它。例如，托管设置 deny 无法被 `--allowedTools` 覆盖，`--disallowedTools` 可以添加超出托管设置定义的限制。
 
-The same holds across settings scopes: if user settings allow a permission and project settings deny it, the deny rule blocks it. The reverse is also true: a user-level deny blocks a project-level allow, because deny rules from any scope are evaluated before allow rules.
+同样的规则也适用于设置范围：如果用户设置允许某个权限而项目设置拒绝它，deny 规则会阻止它。反之亦然：用户级别的 deny 会阻止项目级别的 allow，因为来自任何范围的 deny 规则在 allow 规则之前被评估。
 
-Embedding hosts can supply additional managed policy via the SDK `managedSettings` option, including permission allow rules unless the admin sets the `allowManaged*Only` locks; [Deliver policy to Claude Desktop sessions](/docs/en/claude-apps-gateway#deliver-policy-to-claude-desktop-sessions) covers when embedder policy applies at all.
+嵌入主机可以在 [`parentSettingsBehavior`](/docs/zh-CN/settings#settings-precedence) 设置为 `"merge"` 时，通过 SDK `managedSettings` 选项提供额外的托管策略；嵌入器值可以收紧策略但不能放松它。
 
-## Project allow rules and workspace trust
+<h2 id="project-allow-rules-and-workspace-trust">
+  项目允许规则和工作区信任
+</h2>
 
-`permissions.allow` rules and `permissions.additionalDirectories` entries in a project's `.claude/settings.json` grant capability, so Claude Code applies them only after you accept the [workspace trust dialog](/docs/en/security#additional-safeguards) for that workspace. Until then, Claude Code reads the rules but doesn't apply them. The trust dialog lists the allow rules and additional directories the folder would grant so you can review them before accepting. `deny` and `ask` rules aren't affected, since they only restrict.
+项目的 `.claude/settings.json` 中的 `permissions.allow` 规则和 `permissions.additionalDirectories` 条目授予功能，因此 Claude Code 仅在您接受该工作区的[工作区信任对话框](/docs/zh-CN/security#additional-safeguards)后才应用它们。在此之前，Claude Code 会读取规则但不应用它们。信任对话框列出了该文件夹将授予的允许规则和其他目录，以便您可以在接受前查看它们。`deny` 和 `ask` 规则不受影响，因为它们仅限制。
 
-Claude Code saves trust per workspace, keyed on the git repository root or, outside a repository, the directory you started Claude Code from. When you start in your home directory, trust is held for the current session only and isn't written to disk; see the [additional safeguards](/docs/en/security#additional-safeguards) note. Trusting a parent directory doesn't apply a nested project's allow rules.
+Claude Code 按工作区保存信任，以 git 存储库根目录为键，或在存储库外，以您启动 Claude Code 的目录为键。当您从主目录启动时，信任仅在当前会话期间保持，不会写入磁盘；请参阅[其他保护措施](/docs/zh-CN/security#additional-safeguards)说明。信任父目录不会应用嵌套项目的允许规则。
 
-`.claude/settings.local.json` is your own file, so the workspace trust check usually doesn't apply to it. When a repository could have supplied the file, such as when it is committed to git or `.claude` is a symlink, its allow rules and additional directories go through the trust check like project settings.
+`.claude/settings.local.json` 是您自己的文件，因此工作区信任检查通常不适用于它。当存储库可能提供了该文件时，例如当它提交到 git 或 `.claude` 是符号链接时，其允许规则和其他目录会像项目设置一样通过信任检查。
 
-Claude Code runs git to check whether the repository supplied the file, and it runs that check only in a folder covered by an accepted trust dialog, for that folder or for one of its parent directories. In an interactive session in a folder you haven't trusted yet, allow rules and additional directories in `.claude/settings.local.json` go through the trust check like project settings until you accept the dialog, unless the session runs in your own configuration home as described below. Of the two exceptions below, only the configuration-home exception applies before the dialog, because it doesn't need to run git. Determining that a directory isn't inside a git repository uses the same git check, so the not-inside-a-repository exception takes effect once a trust dialog covering the folder is accepted. Before v2.1.207, an untracked `.claude/settings.local.json` applied its allow rules in that folder before you accepted the dialog.
+Claude Code 运行 git 来检查存储库是否提供了该文件，并且仅在被接受的信任对话框覆盖的文件夹中运行该检查，对于该文件夹或其父目录之一。在您尚未信任的文件夹中的交互式会话中，`.claude/settings.local.json` 中的允许规则和其他目录会像项目设置一样通过信任检查，直到您接受对话框，除非会话在您自己的配置主目录中运行，如下所述。在以下两个例外中，只有配置主目录例外在对话框之前适用，因为它不需要运行 git。确定目录不在 git 存储库内使用相同的 git 检查，因此不在存储库内的例外在接受覆盖该文件夹的信任对话框后生效。在 v2.1.207 之前，未跟踪的 `.claude/settings.local.json` 在您接受对话框之前在该文件夹中应用其允许规则。
 
-Allow rules and additional directories in `.claude/settings.local.json` also apply without workspace trust in two cases:
+`.claude/settings.local.json` 中的允许规则和其他目录在两种情况下也可以在没有工作区信任的情况下应用：
 
-* The directory you started Claude Code from isn't inside a git repository.
-* The session runs in your own configuration home: your home directory or any directory whose `.claude` subdirectory you've set as [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars).
+* 您启动 Claude Code 的目录不在 git 存储库内。
+* 会话在您自己的配置主目录中运行：您的主目录或任何您已将其 `.claude` 子目录设置为 [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars) 的目录。
 
-In both cases the file is one you created rather than one a repository could have supplied, and a repository-committed `.claude/settings.local.json` still requires workspace trust. Versions 2.1.196 through 2.1.199 treated the file as repository-supplied in those workspaces, ignored its allow rules, and printed a [`this workspace has not been trusted`](/docs/en/errors#workspace-has-not-been-trusted) warning to stderr. The two exceptions above match v2.1.195 and earlier and were restored in v2.1.200.
+在这两种情况下，该文件都是您创建的，而不是存储库可能提供的文件，并且存储库提交的 `.claude/settings.local.json` 仍然需要工作区信任。版本 2.1.196 至 2.1.199 在这些工作区中将该文件视为存储库提供的文件，忽略其允许规则，并向 stderr 打印 [`this workspace has not been trusted`](/docs/zh-CN/errors#workspace-has-not-been-trusted) 警告。上述两个例外与 v2.1.195 及更早版本相匹配，并在 v2.1.200 中恢复。
 
-Also as of v2.1.200, a workspace whose allow rules or additional directories still aren't applied, but that never showed the trust dialog because a parent directory was already trusted, shows the dialog the next time you start Claude Code there interactively. The dialog offers two choices:
+同样从 v2.1.200 开始，一个工作区的允许规则或其他目录仍未被应用，但由于父目录已被信任而从未显示信任对话框，会在您下次在那里交互式启动 Claude Code 时显示对话框。对话框提供两个选择：
 
-* **Yes, I trust this folder**: saves trust for that workspace and applies the rules in the same session.
-* **No, continue without these permissions**: keeps working with those rules ignored. The dialog appears again in the next session.
+* **Yes, I trust this folder**：保存该工作区的信任并在同一会话中应用规则。
+* **No, continue without these permissions**：继续工作，忽略这些规则。对话框将在下一个会话中再次出现。
 
-In [non-interactive mode](/docs/en/headless) with `-p`, no dialog appears and the rules stay ignored.
+在[非交互模式](/docs/zh-CN/headless)中使用 `-p`，不会出现对话框，规则保持被忽略。
 
-## Example configurations
+<h2 id="example-configurations">
+  示例配置
+</h2>
 
-This [repository](https://github.com/anthropics/claude-code/tree/main/examples/settings) includes starter settings configurations for common deployment scenarios. Use these as starting points and adjust them to fit your needs.
+此[存储库](https://github.com/anthropics/claude-code/tree/main/examples/settings)包括常见部署场景的启动设置配置。将这些用作起点并根据您的需要调整它们。
 
-## See also
+<h2 id="see-also">
+  另请参见
+</h2>
 
-* [Settings](/docs/en/settings): complete configuration reference including the permission settings table
-* [Configure auto mode](/docs/en/auto-mode-config): tell the auto mode classifier which infrastructure your organization trusts
-* [Sandboxing](/docs/en/sandboxing): OS-level filesystem and network isolation for Bash commands
-* [Authentication](/docs/en/authentication): set up user access to Claude Code
-* [Security](/docs/en/security): security safeguards and best practices
-* [Hooks](/docs/en/hooks-guide): automate workflows and extend permission evaluation
+* [Settings](/docs/zh-CN/settings)：完整的配置参考，包括权限设置表
+* [Configure auto mode](/docs/zh-CN/auto-mode-config)：告诉自动模式分类器您的组织信任哪些基础设施
+* [Sandboxing](/docs/zh-CN/sandboxing)：Bash 命令的 OS 级文件系统和网络隔离
+* [Authentication](/docs/zh-CN/authentication)：设置用户对 Claude Code 的访问
+* [Security](/docs/zh-CN/security)：安全保障和最佳实践
+* [Hooks](/docs/zh-CN/hooks-guide)：自动化工作流并扩展权限评估

@@ -2,15 +2,17 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Slash Commands in the SDK
+# SDK 中的 slash commands
 
-> Learn how to use slash commands to control Claude Code sessions through the SDK
+> 学习如何通过 SDK 使用 slash commands 来控制 Claude Code 会话
 
-Slash commands provide a way to control Claude Code sessions with special commands that start with `/`. These commands can be sent through the SDK to perform actions like compacting context, listing context usage, or invoking custom commands. Only commands that work without an interactive terminal are dispatchable through the SDK; the `system/init` message lists the ones available in your session.
+Slash commands 提供了一种方式来控制 Claude Code 会话，使用以 `/` 开头的特殊命令。这些命令可以通过 SDK 发送，以执行诸如压缩上下文、列出上下文使用情况或调用自定义命令等操作。只有在不需要交互式终端的情况下工作的命令才能通过 SDK 分派；`system/init` 消息列出了在您的会话中可用的命令。
 
-## Discovering Available Slash Commands
+<h2 id="discovering-available-slash-commands">
+  发现可用的 Slash Commands
+</h2>
 
-The Claude Agent SDK provides information about available slash commands in the system initialization message. Access this information when your session starts:
+Claude Agent SDK 在系统初始化消息中提供有关可用 slash commands 的信息。在您的会话开始时访问此信息：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -22,7 +24,7 @@ The Claude Agent SDK provides information about available slash commands in the 
   })) {
     if (message.type === "system" && message.subtype === "init") {
       console.log("Available slash commands:", message.slash_commands);
-      // Includes built-in commands plus bundled skills, for example:
+      // 包括内置命令加上捆绑的 skills，例如：
       // ["clear", "compact", "context", "usage", "code-review", "verify", ...]
     }
   }
@@ -37,7 +39,7 @@ The Claude Agent SDK provides information about available slash commands in the 
       async for message in query(prompt="Hello Claude", options=ClaudeAgentOptions(max_turns=1)):
           if isinstance(message, SystemMessage) and message.subtype == "init":
               print("Available slash commands:", message.data["slash_commands"])
-              # Includes built-in commands plus bundled skills, for example:
+              # 包括内置命令加上捆绑的 skills，例如：
               # ["clear", "compact", "context", "usage", "code-review", "verify", ...]
 
 
@@ -45,9 +47,11 @@ The Claude Agent SDK provides information about available slash commands in the 
   ```
 </CodeGroup>
 
-## Sending Slash Commands
+<h2 id="sending-slash-commands">
+  发送 Slash Commands
+</h2>
 
-Send slash commands by including them in your prompt string, just like regular text. Commands that act on conversation history, such as `/compact`, need prior messages to work with, so the examples below ask a question first and then send the command as a follow-up to the same conversation:
+通过在您的提示字符串中包含 slash commands 来发送它们，就像常规文本一样。作用于对话历史的命令，例如 `/compact`，需要先前的消息来处理，因此下面的示例首先提出一个问题，然后将命令作为后续发送到同一对话：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -115,18 +119,22 @@ Send slash commands by including them in your prompt string, just like regular t
 </CodeGroup>
 
 <Note>
-  A query can end with an error result, for example when the `maxTurns` / `max_turns` limit is reached before the work completes. The final result message then has `is_error: true` and an error subtype such as `error_max_turns` instead of `success`.
+  查询可能以错误结果结束，例如当 `maxTurns` / `max_turns` 限制在工作完成前被达到时。最终结果消息随后具有 `is_error: true` 和错误子类型（例如 `error_max_turns`）而不是 `success`。
 
-  After yielding that final result message, the SDK raises an error, because the CLI process exits with a non-zero code.
+  在产生该最终结果消息后，SDK 会抛出错误，因为 CLI 进程以非零代码退出。
 
-  Wrap the loop in a `try`/`catch` in TypeScript or `try`/`except` in Python if your command might hit the limit, as shown in [Single Message Input](/docs/en/agent-sdk/streaming-vs-single-mode#single-message-input), or set `maxTurns` high enough for the work to complete. In Python, catch `Exception`: the SDK surfaces error results as a plain `Exception`.
+  如果您的命令可能达到限制，请在 TypeScript 中将循环包装在 `try`/`catch` 中或在 Python 中使用 `try`/`except`，如 [Single Message Input](/docs/zh-CN/agent-sdk/streaming-vs-single-mode#single-message-input) 中所示，或设置 `maxTurns` 足够高以完成工作。在 Python 中，捕获 `Exception`：SDK 将错误结果作为普通 `Exception` 呈现。
 </Note>
 
-## Common Slash Commands
+<h2 id="common-slash-commands">
+  常见的 Slash Commands
+</h2>
 
-### `/compact` - Compact conversation history
+<h3 id="/compact-compact-conversation-history">
+  `/compact` - 压缩对话历史
+</h3>
 
-The `/compact` command reduces the size of your conversation history by summarizing older messages while preserving important context. Compaction needs an existing conversation with at least two prior exchanges to summarize. This example has a conversation first, then compacts it and reads the `compact_boundary` system message that reports the result:
+`/compact` 命令通过总结较早的消息同时保留重要上下文来减少您的对话历史的大小。压缩需要至少有两次先前交互的现有对话来进行总结。此示例首先进行对话，然后压缩它并读取报告结果的 `compact_boundary` 系统消息：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -204,56 +212,68 @@ The `/compact` command reduces the size of your conversation history by summariz
 </CodeGroup>
 
 <Note>
-  A `compact_boundary` message only arrives when compaction ran. With nothing to summarize, `/compact` reports the reason instead of raising: the run still ends with a `success` result, no `compact_boundary` message is emitted, and the result text carries the message, for example `Not enough messages to compact.` after a single short exchange. A fresh one-shot `query()` call starts with empty context, so use this pattern in a session with prior turns, for example in [streaming input mode](/docs/en/agent-sdk/streaming-vs-single-mode) or when resuming a session.
+  `compact_boundary` 消息仅在压缩运行时到达。如果没有要总结的内容，`/compact` 会报告原因而不是抛出异常：运行仍然以 `success` 结果结束，不会发出 `compact_boundary` 消息，结果文本会携带消息，例如在单次简短交互后显示 `Not enough messages to compact.`。全新的一次性 `query()` 调用以空上下文开始，因此请在具有先前轮次的会话中使用此模式，例如在[流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)中或恢复会话时。
 </Note>
 
-### `/clear` - Reset conversation context
+<h3 id="/clear-reset-conversation-context">
+  `/clear` - 重置对话上下文
+</h3>
 
-The `/clear` command resets the conversation to an empty context, so subsequent prompts start with no prior conversation history. The previous conversation remains on disk and can be returned to by passing its session ID to the [`resume` option](/docs/en/agent-sdk/sessions#resume-by-id).
+`/clear` 命令将对话重置为空上下文，因此后续提示将从没有先前对话历史的状态开始。之前的对话保留在磁盘上，可以通过将其会话 ID 传递给 [`resume` 选项](/docs/zh-CN/agent-sdk/sessions#resume-by-id) 来返回。
 
-This is useful in [streaming input mode](/docs/en/agent-sdk/streaming-vs-single-mode), where you send multiple prompts over a single connection. For one-shot `query()` calls, each call already starts with empty context, so sending `/clear` has no practical effect; start a new `query()` instead.
+这在[流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)中很有用，在该模式下您通过单个连接发送多个提示。对于一次性 `query()` 调用，每个调用已经以空上下文开始，因此发送 `/clear` 没有实际效果；请改为启动一个新的 `query()`。
 
 <Note>
-  `/clear` in the SDK requires Claude Code v2.1.117 or later. In earlier versions it is omitted from `slash_commands`.
+  SDK 中的 `/clear` 需要 Claude Code v2.1.117 或更高版本。在早期版本中，它从 `slash_commands` 中被省略。
 </Note>
 
-## Creating Custom Slash Commands
+<h2 id="creating-custom-slash-commands">
+  创建自定义 Slash Commands
+</h2>
 
-In addition to using built-in slash commands, you can create your own custom commands that are available through the SDK. You define custom commands as markdown files in specific directories, the same way you configure subagents.
+除了使用内置 slash commands 外，您还可以创建自己的自定义命令，这些命令可通过 SDK 使用。自定义命令定义为特定目录中的 markdown 文件，类似于 subagents 的配置方式。
 
 <Note>
-  The `.claude/commands/` directory is the legacy format. The recommended format is `.claude/skills/<name>/SKILL.md`, which supports the same slash-command invocation (`/name`) plus autonomous invocation by Claude. See [Skills](/docs/en/agent-sdk/skills) for the current format. The CLI continues to support both formats, and the examples below remain accurate for `.claude/commands/`.
+  `.claude/commands/` 目录是旧版格式。推荐的格式是 `.claude/skills/<name>/SKILL.md`，它支持相同的 slash command 调用（`/name`）加上 Claude 的自主调用。有关当前格式，请参阅 [Skills](/docs/zh-CN/agent-sdk/skills)。CLI 继续支持两种格式，下面的示例对于 `.claude/commands/` 仍然准确。
 </Note>
 
-### File Locations
+<h3 id="file-locations">
+  文件位置
+</h3>
 
-Save custom slash commands in one of these directories, depending on their scope:
+自定义 slash commands 根据其范围存储在指定的目录中：
 
-* **Project commands**: `.claude/commands/` - Available only in the current project (legacy; prefer `.claude/skills/`)
-* **Personal commands**: `~/.claude/commands/` - Available across all your projects (legacy; prefer `~/.claude/skills/`)
+* **项目命令**：`.claude/commands/` - 仅在当前项目中可用（旧版；优先使用 `.claude/skills/`）
+* **个人命令**：`~/.claude/commands/` - 在您的所有项目中可用（旧版；优先使用 `~/.claude/skills/`）
 
-### File Format
+<h3 id="file-format">
+  文件格式
+</h3>
 
-Each custom command is a markdown file where:
+每个自定义命令都是一个 markdown 文件，其中：
 
-* The filename (without `.md` extension) becomes the command name
-* The file content defines what the command does
-* Optional YAML frontmatter provides configuration
+* 文件名（不带 `.md` 扩展名）成为命令名称
+* 文件内容定义命令的功能
+* 可选的 YAML frontmatter 提供配置
 
-#### Basic Example
+<h4 id="basic-example">
+  基本示例
+</h4>
 
-Create the `.claude/commands` directory in your project if it doesn't exist, then create `.claude/commands/refactor.md`:
+在您的项目中创建 `.claude/commands` 目录（如果不存在），然后创建 `.claude/commands/refactor.md`：
 
 ```markdown theme={null}
 Refactor the selected code to improve readability and maintainability.
 Focus on clean code principles and best practices.
 ```
 
-This creates the `/refactor` command that you can use through the SDK.
+这创建了 `/refactor` 命令，您可以通过 SDK 使用它。
 
-#### With Frontmatter
+<h4 id="with-frontmatter">
+  带有 Frontmatter
+</h4>
 
-Create `.claude/commands/security-check.md`:
+创建 `.claude/commands/security-check.md`：
 
 ```markdown theme={null}
 ---
@@ -269,9 +289,11 @@ Analyze the codebase for security vulnerabilities including:
 - Insecure configurations
 ```
 
-### Using Custom Commands in the SDK
+<h3 id="using-custom-commands-in-the-sdk">
+  在 SDK 中使用自定义命令
+</h3>
 
-Once defined in the filesystem, custom commands are automatically available through the SDK:
+一旦在文件系统中定义，自定义命令就会自动通过 SDK 可用：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -338,13 +360,17 @@ Once defined in the filesystem, custom commands are automatically available thro
   ```
 </CodeGroup>
 
-### Advanced Features
+<h3 id="advanced-features">
+  高级功能
+</h3>
 
-#### Arguments and Placeholders
+<h4 id="arguments-and-placeholders">
+  参数和占位符
+</h4>
 
-Custom commands support dynamic arguments using placeholders:
+自定义命令支持使用占位符的动态参数：
 
-Create `.claude/commands/fix-issue.md`:
+创建 `.claude/commands/fix-issue.md`：
 
 ```markdown theme={null}
 ---
@@ -356,26 +382,21 @@ Fix issue #$0 with priority $1.
 Check the issue description and implement the necessary changes.
 ```
 
-Use in SDK:
+在 SDK 中使用：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
   // Pass arguments to custom command
-  try {
-    for await (const message of query({
-      prompt: "/fix-issue 123 high",
-      options: { maxTurns: 5 }
-    })) {
-      // Command will process with $0="123" and $1="high"
-      if (message.type === "result" && message.subtype === "success") {
-        console.log("Issue fixed:", message.result);
-      }
+  for await (const message of query({
+    prompt: "/fix-issue 123 high",
+    options: { maxTurns: 5 }
+  })) {
+    // Command will process with $0="123" and $1="high"
+    if (message.type === "result" && message.subtype === "success") {
+      console.log("Issue fixed:", message.result);
     }
-  } catch (err) {
-    // The run ends with an error when it reaches the maxTurns limit
-    console.error("Session ended with an error:", err);
   }
   ```
 
@@ -386,27 +407,23 @@ Use in SDK:
 
   async def main():
       # Pass arguments to custom command
-      try:
-          async for message in query(prompt="/fix-issue 123 high", options=ClaudeAgentOptions(max_turns=5)):
-              # Command will process with $0="123" and $1="high"
-              if isinstance(message, ResultMessage):
-                  print("Issue fixed:", message.result)
-      except Exception as error:
-          # The run ends with an error when it reaches the max_turns limit
-          print(f"Session ended with an error: {error}")
+      async for message in query(prompt="/fix-issue 123 high", options=ClaudeAgentOptions(max_turns=5)):
+          # Command will process with $0="123" and $1="high"
+          if isinstance(message, ResultMessage):
+              print("Issue fixed:", message.result)
 
 
   asyncio.run(main())
   ```
 </CodeGroup>
 
-If the prompt passes fewer arguments than the placeholders reference, unmatched indexed placeholders such as `$1` stay in the command text verbatim. For the full substitution behavior, including named arguments, see [available string substitutions](/docs/en/skills#available-string-substitutions).
+<h4 id="bash-command-execution">
+  Bash 命令执行
+</h4>
 
-#### Bash Command Execution
+自定义命令可以执行 bash 命令并包含其输出：
 
-Custom commands can execute bash commands and include their output:
-
-Create `.claude/commands/git-commit.md`:
+创建 `.claude/commands/git-commit.md`：
 
 ```markdown theme={null}
 ---
@@ -424,11 +441,13 @@ description: Create a git commit
 Create a git commit with appropriate message based on the changes.
 ```
 
-#### File References
+<h4 id="file-references">
+  文件引用
+</h4>
 
-Include file contents using the `@` prefix:
+使用 `@` 前缀包含文件内容：
 
-Create `.claude/commands/review-config.md`:
+创建 `.claude/commands/review-config.md`：
 
 ```markdown theme={null}
 ---
@@ -443,9 +462,11 @@ Review the following configuration files for issues:
 Check for security issues, outdated dependencies, and misconfigurations.
 ```
 
-### Organization with Namespacing
+<h3 id="organization-with-namespacing">
+  使用命名空间进行组织
+</h3>
 
-Organize commands in subdirectories for better structure:
+在子目录中组织命令以获得更好的结构：
 
 ```bash theme={null}
 .claude/commands/
@@ -458,13 +479,17 @@ Organize commands in subdirectories for better structure:
 └── review.md              # Creates /review (project)
 ```
 
-The subdirectory appears in the command description but doesn't affect the command name itself.
+子目录出现在命令描述中，但不影响命令名称本身。
 
-### Practical Examples
+<h3 id="practical-examples">
+  实际示例
+</h3>
 
-#### Pull Request Review Command
+<h4 id="pull-request-review-command">
+  Pull Request 审查命令
+</h4>
 
-Create `.claude/commands/review-pr.md`:
+创建 `.claude/commands/review-pr.md`：
 
 ```markdown theme={null}
 ---
@@ -491,12 +516,14 @@ Provide specific, actionable feedback organized by priority.
 ```
 
 <Note>
-  Claude Code includes bundled `code-review` and `verify` skills. If you name a custom command after one of them, for example `.claude/commands/code-review.md`, your command shadows the bundled skill and `slash_commands` lists the name once.
+  Claude Code 包含捆绑的 `code-review` 和 `verify` skills。如果您以其中之一的名称命名自定义命令，例如 `.claude/commands/code-review.md`，您的命令会覆盖捆绑的 skill，`slash_commands` 列表中该名称仅出现一次。
 </Note>
 
-#### Test Runner Command
+<h4 id="test-runner-command">
+  测试运行器命令
+</h4>
 
-Create `.claude/commands/test.md`:
+创建 `.claude/commands/test.md`：
 
 ```markdown theme={null}
 ---
@@ -513,7 +540,7 @@ Run tests matching pattern: $ARGUMENTS
 4. Re-run to verify fixes
 ```
 
-Use these commands through the SDK:
+通过 SDK 使用这些命令：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -568,10 +595,12 @@ Use these commands through the SDK:
   ```
 </CodeGroup>
 
-## See Also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Slash Commands](/docs/en/skills) - Complete slash command documentation
-* [Subagents in the SDK](/docs/en/agent-sdk/subagents) - Similar filesystem-based configuration for subagents
-* [TypeScript SDK reference](/docs/en/agent-sdk/typescript) - Complete API documentation
-* [SDK overview](/docs/en/agent-sdk/overview) - General SDK concepts
-* [CLI reference](/docs/en/cli-reference) - Command-line interface
+* [Slash Commands](/docs/zh-CN/skills) - 完整的 slash command 文档
+* [SDK 中的 Subagents](/docs/zh-CN/agent-sdk/subagents) - 类似的基于文件系统的 subagents 配置
+* [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript) - 完整的 API 文档
+* [SDK 概述](/docs/zh-CN/agent-sdk/overview) - 一般 SDK 概念
+* [CLI 参考](/docs/zh-CN/cli-reference) - 命令行界面

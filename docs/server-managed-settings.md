@@ -2,50 +2,56 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Configure server-managed settings
+# 配置服务器管理的设置
 
-> Centrally configure Claude Code for your organization through server-delivered settings, without requiring device management infrastructure.
+> 通过 Claude.ai 上基于网络的界面为您的组织集中配置 Claude Code，无需设备管理基础设施。
 
-Server-managed settings let organization Owners centrally configure Claude Code from [**Admin Settings > Claude Code > Managed settings**](https://claude.ai/admin-settings/claude-code) in the claude.ai console. Claude Code clients fetch these settings automatically when users authenticate with an organization OAuth login or a directly configured API key, on platforms where server-managed delivery is supported. See [Platform availability](#platform-availability).
+服务器管理的设置允许组织所有者通过 claude.ai 控制台中的 [**Admin Settings > Claude Code > Managed settings**](https://claude.ai/admin-settings/claude-code) 集中配置 Claude Code。Claude Code 客户端在用户使用组织 OAuth 登录或直接配置的 API 密钥进行身份验证时自动获取这些设置，在支持服务器管理交付的平台上。请参阅[平台可用性](#platform-availability)。
 
-This approach is designed for organizations that don't have device management infrastructure in place, or that need to manage settings for users on unmanaged devices.
+这种方法专为没有设备管理基础设施的组织或需要为非托管设备上的用户管理设置的组织而设计。
 
 <Note>
-  Server-managed settings are available for [Claude for Teams](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=server_settings_teams#team-&-enterprise) and [Claude for Enterprise](https://anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=server_settings_enterprise) customers.
+  服务器管理的设置可供 [Claude for Teams](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=server_settings_teams#team-&-enterprise) 和 [Claude for Enterprise](https://anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=server_settings_enterprise) 客户使用。
 </Note>
 
-## Requirements
+<h2 id="requirements">
+  要求
+</h2>
 
-To use server-managed settings, you need:
+要使用服务器管理的设置，您需要：
 
-* Claude for Teams or Claude for Enterprise plan
-* The Owner or Primary Owner role in your Claude organization, to view and edit the configuration
-* Network access to `api.anthropic.com`
+* Claude for Teams 或 Claude for Enterprise 计划
+* 您的 Claude 组织中的所有者或主要所有者角色，以查看和编辑配置
+* 对 `api.anthropic.com` 的网络访问
 
-## Choose between server-managed and endpoint-managed settings
+<h2 id="choose-between-server-managed-and-endpoint-managed-settings">
+  在服务器管理和端点管理的设置之间选择
+</h2>
 
-Claude Code supports two approaches for centralized configuration. Server-managed settings deliver configuration from Anthropic's servers. [Endpoint-managed settings](/docs/en/settings#settings-files) are deployed directly to devices through native OS policies (macOS managed preferences, Windows registry) or managed settings files.
+Claude Code 支持两种集中配置方法。服务器管理的设置从 Anthropic 的服务器传递配置。[端点管理的设置](/docs/zh-CN/settings#settings-files)通过本机操作系统策略（macOS 托管首选项、Windows 注册表）或托管设置文件直接部署到设备。
 
-| Approach                                                     | Best for                                                 | Security model                                                                                            |
-| :----------------------------------------------------------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| **Server-managed settings**                                  | Organizations without MDM, or users on unmanaged devices | Settings delivered from Anthropic's servers at authentication time                                        |
-| **[Endpoint-managed settings](/docs/en/settings#settings-files)** | Organizations with MDM or endpoint management            | Settings deployed to devices via MDM configuration profiles, registry policies, or managed settings files |
+| 方法                                            | 最适合                   | 安全模型                             |
+| :-------------------------------------------- | :-------------------- | :------------------------------- |
+| **服务器管理的设置**                                  | 没有 MDM 的组织，或非托管设备上的用户 | 在身份验证时从 Anthropic 的服务器传递的设置      |
+| **[端点管理的设置](/docs/zh-CN/settings#settings-files)** | 具有 MDM 或端点管理的组织       | 通过 MDM 配置文件、注册表策略或托管设置文件部署到设备的设置 |
 
-If your devices are enrolled in an MDM or endpoint management solution, endpoint-managed settings provide stronger security guarantees because the settings file can be protected from user modification at the OS level. Endpoint-managed settings don't reach [cloud sessions](/docs/en/model-config#surface-coverage), so organizations using Claude Code on the web should configure server-managed settings as well.
+如果您的设备已在 MDM 或端点管理解决方案中注册，端点管理的设置提供更强的安全保证，因为设置文件可以在操作系统级别受到保护，防止用户修改。端点管理的设置不会到达[云会话](/docs/zh-CN/model-config#surface-coverage)，因此在网络上使用 Claude Code 的组织也应该配置服务器管理的设置。
 
-## Configure server-managed settings
+<h2 id="configure-server-managed-settings">
+  配置服务器管理的设置
+</h2>
 
 <Steps>
-  <Step title="Open the admin console">
-    In the claude.ai console, go to [**Admin Settings > Claude Code > Managed settings**](https://claude.ai/admin-settings/claude-code).
+  <Step title="打开管理控制台">
+    在 claude.ai 控制台中，转到 [**Admin Settings > Claude Code > Managed settings**](https://claude.ai/admin-settings/claude-code)。
 
-    If the link redirects you to a different Admin Settings page instead of the Claude Code page, your account doesn't have the required role. Admin and other non-Owner roles can't view or edit managed settings, so ask an Owner or Primary Owner in your organization to make the change. See [Access control](#access-control).
+    如果链接将您重定向到不同的 Admin Settings 页面而不是 Claude Code 页面，您的账户没有所需的角色。Admin 和其他非 Owner 角色无法查看或编辑托管设置，因此请要求您的组织中的 Owner 或 Primary Owner 进行更改。请参阅[访问控制](#access-control)。
   </Step>
 
-  <Step title="Define your settings">
-    Add your configuration as JSON. All [settings available in `settings.json`](/docs/en/settings#available-settings) are supported except those restricted to OS-level policy delivery; see [Current limitations](#current-limitations) for that short list. This includes [hooks](/docs/en/hooks), [environment variables](/docs/en/env-vars), and [managed-only settings](/docs/en/permissions#managed-only-settings) like `allowManagedPermissionRulesOnly`.
+  <Step title="定义您的设置">
+    将您的配置添加为 JSON。支持 [`settings.json` 中可用的所有设置](/docs/zh-CN/settings#available-settings)，除了限制于操作系统级别策略传递的设置外；有关该简短列表，请参阅[当前限制](#current-limitations)。这包括 [hooks](/docs/zh-CN/hooks)、[环境变量](/docs/zh-CN/env-vars) 和[仅限托管的设置](/docs/zh-CN/permissions#managed-only-settings)，如 `allowManagedPermissionRulesOnly`。
 
-    This example enforces a permission deny list, prevents users from bypassing permissions, and restricts permission rules to those defined in managed settings:
+    此示例强制执行权限拒绝列表，防止用户绕过权限，并将权限规则限制为在托管设置中定义的规则：
 
     ```json theme={null}
     {
@@ -62,9 +68,9 @@ If your devices are enrolled in an MDM or endpoint management solution, endpoint
     }
     ```
 
-    Hooks use the same format as in `settings.json`.
+    Hooks 使用与 `settings.json` 中相同的格式。
 
-    This example runs an audit script after every file edit across the organization:
+    此示例在整个组织中每次文件编辑后运行审计脚本：
 
     ```json theme={null}
     {
@@ -81,7 +87,7 @@ If your devices are enrolled in an MDM or endpoint management solution, endpoint
     }
     ```
 
-    To configure the [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) classifier so it knows which repos, buckets, and domains your organization trusts:
+    要配置 [auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) 分类器，使其了解您的组织信任的存储库、存储桶和域：
 
     ```json theme={null}
     {
@@ -95,100 +101,118 @@ If your devices are enrolled in an MDM or endpoint management solution, endpoint
     }
     ```
 
-    Because hooks execute shell commands, users see a [security approval dialog](#security-approval-dialogs) before they're applied. See [Configure auto mode](/docs/en/auto-mode-config) for how the `autoMode` entries affect what the classifier blocks and important warnings about the `environment`, `allow`, `soft_deny`, and `hard_deny` fields.
+    由于 hooks 执行 shell 命令，用户在应用前会看到[安全批准对话框](#security-approval-dialogs)。有关 `autoMode` 条目如何影响分类器阻止的内容以及关于 `environment`、`allow`、`soft_deny` 和 `hard_deny` 字段的重要警告，请参阅[配置 auto mode](/docs/zh-CN/auto-mode-config)。
   </Step>
 
-  <Step title="Save and deploy">
-    Save your changes. Claude Code clients receive the updated settings on their next startup or hourly polling cycle.
+  <Step title="保存并部署">
+    保存您的更改。Claude Code 客户端在下次启动或每小时轮询周期时接收更新的设置。
   </Step>
 </Steps>
 
-### Verify settings delivery
+<h3 id="verify-settings-delivery">
+  验证设置传递
+</h3>
 
-To confirm that settings are being applied, ask a user to restart Claude Code. If the configuration includes settings that trigger the [security approval dialog](#security-approval-dialogs), the user sees a prompt describing the managed settings on startup. You can also verify that managed permission rules are active by having a user run `/permissions` to view their effective permission rules.
+要确认设置正在被应用，请要求用户重新启动 Claude Code。如果配置包含触发[安全批准对话框](#security-approval-dialogs)的设置，用户会在启动时看到描述托管设置的提示。您还可以通过让用户运行 `/permissions` 来验证托管权限规则是否处于活动状态，以查看其有效的权限规则。
 
-### Access control
+<h3 id="access-control">
+  访问控制
+</h3>
 
-The following roles can manage server-managed settings:
+以下角色可以管理服务器管理的设置：
 
-* **Primary Owner**
-* **Owner**
+* **主要所有者**
+* **所有者**
 
-Restrict access to trusted personnel, as settings changes apply to all users in the organization.
+限制对受信任人员的访问，因为设置更改适用于组织中的所有用户。
 
-### Managed-only settings
+<h3 id="managed-only-settings">
+  仅限托管的设置
+</h3>
 
-Most [settings keys](/docs/en/settings#available-settings) work in any scope. A handful of keys are only read from managed settings and have no effect when placed in user or project settings files. See [managed-only settings](/docs/en/permissions#managed-only-settings) for the full list. Any setting not on that list can still be placed in managed settings and takes the highest precedence.
+大多数[设置键](/docs/zh-CN/settings#available-settings)可在任何范围内工作。少数几个键仅从托管设置中读取，当放置在用户或项目设置文件中时无效。有关完整列表，请参阅[仅限托管的设置](/docs/zh-CN/permissions#managed-only-settings)。任何不在该列表上的设置仍然可以放置在托管设置中，并具有最高优先级。
 
-### Current limitations
+<h3 id="current-limitations">
+  当前限制
+</h3>
 
-Server-managed settings have the following limitations:
+服务器管理的设置有以下限制：
 
-* Settings apply uniformly to all users in the organization. Per-group configurations are not yet supported.
-* A [`managed-mcp.json`](/docs/en/managed-mcp) file can't be distributed through server-managed settings. Deliver the `allowedMcpServers` and `deniedMcpServers` policy keys there instead.
-* Settings restricted to OS-level policy sources, such as `policyHelper` and `wslInheritsWindowsSettings`, are not honored. Deploy them through MDM or a system `managed-settings.json` file instead.
+* 设置统一应用于组织中的所有用户。尚不支持按组配置。
+* [`managed-mcp.json`](/docs/zh-CN/managed-mcp) 文件无法通过服务器管理的设置分发。改为在那里传递 `allowedMcpServers` 和 `deniedMcpServers` 策略键。
+* 限制于操作系统级别策略源的设置，如 `policyHelper` 和 `wslInheritsWindowsSettings`，不被遵守。改为通过 MDM 或系统 `managed-settings.json` 文件部署它们。
 
-## Settings delivery
+<h2 id="settings-delivery">
+  设置传递
+</h2>
 
-### Settings precedence
+<h3 id="settings-precedence">
+  设置优先级
+</h3>
 
-Server-managed settings and [endpoint-managed settings](/docs/en/settings#settings-files) both occupy the highest tier in the Claude Code [settings hierarchy](/docs/en/settings#settings-precedence). No other settings level can override them, including command line arguments.
+服务器管理的设置和[端点管理的设置](/docs/zh-CN/settings#settings-files)都占据 Claude Code [设置层次结构](/docs/zh-CN/settings#settings-precedence)中的最高层。没有其他设置级别可以覆盖它们，包括命令行参数。
 
-Within the managed tier, a configured [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper) preempts every other managed source, including server-managed settings: its output becomes the only managed configuration for the run.
+在托管层内，配置的 [`policyHelper`](/docs/zh-CN/settings#compute-managed-settings-with-a-policy-helper) 优先于所有其他托管源，包括服务器管理的设置：其输出成为该运行的唯一托管配置。
 
-Otherwise, Claude Code uses the first source that delivers a non-empty configuration. Server-managed settings are checked first, then endpoint-managed settings. Sources don't merge: if server-managed settings deliver any keys at all, other endpoint-managed settings are ignored. If server-managed settings deliver nothing, endpoint-managed settings apply.
+否则，Claude Code 使用首先传递非空配置的源。首先检查服务器管理的设置，然后检查端点管理的设置。源不合并：如果服务器管理的设置传递任何键，其他端点管理的设置将被完全忽略。如果服务器管理的设置不传递任何内容，端点管理的设置将应用。
 
-A small set of [cross-source lock keys](/docs/en/settings#settings-precedence), such as the sandbox allowlist locks, is honored when any admin-controlled managed source sets them; the user-writable HKCU registry tier is excluded, and when a [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper) is configured, its output is the only source these checks read.
+有一个例外适用：当任何管理员控制的托管源设置一小组[跨源锁定键](/docs/zh-CN/settings#settings-precedence)（例如沙箱允许列表锁）时，这些键会被遵守；用户可写的 HKCU 注册表层被排除。
 
-If you clear your server-managed configuration in the admin console with the intent of falling back to an endpoint-managed plist or registry policy, be aware that [cached settings](#fetch-and-caching-behavior) persist on client machines until the next successful fetch. Run `/status` to see which managed source is active.
+如果您清除管理控制台中的服务器管理配置，意图回退到端点管理的 plist 或注册表策略，请注意[缓存的设置](#fetch-and-caching-behavior)在客户端机器上持久化，直到下次成功获取。运行 `/status` 查看哪个托管源处于活动状态。
 
-### Fetch and caching behavior
+<h3 id="fetch-and-caching-behavior">
+  获取和缓存行为
+</h3>
 
-Claude Code fetches settings from Anthropic's servers at startup and polls for updates hourly during active sessions.
+Claude Code 在启动时从 Anthropic 的服务器获取设置，并在活动会话期间每小时轮询一次更新。
 
-**First launch without cached settings:**
+**首次启动而无缓存的设置：**
 
-* Claude Code fetches settings asynchronously
-* If the fetch fails, Claude Code continues without managed settings
-* There is a brief window before settings load where restrictions are not yet enforced
+* Claude Code 异步获取设置
+* 如果获取失败，Claude Code 继续运行而不使用托管设置
+* 在设置加载之前有一个简短的窗口，其中限制尚未被强制执行
 
-**Subsequent launches with cached settings:**
+**后续启动且有缓存的设置：**
 
-* Cached settings apply immediately at startup, except for the transport, routing, and authentication environment variables described below
-* Claude Code fetches fresh settings in the background
-* Cached settings persist through network failures. The withheld environment variables remain withheld until a fetch succeeds
+* 缓存的设置在启动时立即应用，除了下面描述的传输、路由和身份验证环境变量
+* Claude Code 在后台获取新鲜设置
+* 缓存的设置通过网络故障持久化。被保留的环境变量保持被保留状态，直到获取成功
 
-As of v2.1.198, Claude Code withholds three categories of variables in the cached `env` block until the server confirms the payload for the session. This keeps a cached proxy, certificate authority, endpoint, or credential value from redirecting, intercepting, or re-authenticating the settings fetch that confirms the payload. The hardening applies only to the server-fetched settings cache: [endpoint-managed settings](/docs/en/settings#settings-files) deployed through MDM or `managed-settings.json` are unaffected. The withheld categories are:
+从 v2.1.198 开始，Claude Code 在缓存的 `env` 块中保留三类变量，直到服务器确认该会话的有效负载。这可以防止缓存的代理、证书颁发机构、端点或凭证值重定向、拦截或重新身份验证确认有效负载的设置获取。加固仅适用于服务器获取的设置缓存：通过 MDM 或 `managed-settings.json` 部署的[端点管理的设置](/docs/zh-CN/settings#settings-files)不受影响。被保留的类别是：
 
-* Proxy and TLS configuration, such as `HTTPS_PROXY`, `NODE_EXTRA_CA_CERTS`, and the mTLS client certificate variables `CLAUDE_CODE_CLIENT_CERT` and `CLAUDE_CODE_CLIENT_KEY`
-* API routing and provider selection, including `ANTHROPIC_BASE_URL`, the provider selection variables such as `CLAUDE_CODE_USE_BEDROCK` and `CLAUDE_CODE_USE_VERTEX`, and the provider endpoint URLs such as `ANTHROPIC_BEDROCK_BASE_URL`
-* Authentication credentials, such as `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, and `CLAUDE_CODE_OAUTH_TOKEN`
+* 代理和 TLS 配置，例如 `HTTPS_PROXY`、`NODE_EXTRA_CA_CERTS` 和 mTLS 客户端证书变量 `CLAUDE_CODE_CLIENT_CERT` 和 `CLAUDE_CODE_CLIENT_KEY`
+* API 路由和提供商选择，包括 `ANTHROPIC_BASE_URL`、提供商选择变量（例如 `CLAUDE_CODE_USE_BEDROCK` 和 `CLAUDE_CODE_USE_VERTEX`）以及提供商端点 URL（例如 `ANTHROPIC_BEDROCK_BASE_URL`）
+* 身份验证凭证，例如 `ANTHROPIC_API_KEY`、`ANTHROPIC_AUTH_TOKEN` 和 `CLAUDE_CODE_OAUTH_TOKEN`
 
-Every other key in the cached `env` block, such as telemetry and OpenTelemetry configuration, applies at startup as before. Once the fetch succeeds, the withheld variables apply for the rest of the session.
+缓存 `env` 块中的所有其他键（例如遥测和 OpenTelemetry 配置）在启动时应用，如前所述。获取成功后，被保留的变量在会话的其余时间应用。
 
-If your organization needs a proxy to reach `api.anthropic.com`, set it in the shell environment or in [user settings](/docs/en/settings#settings-files) rather than only in the managed `env` block. The first launch has no cache, so those sources were already required for the initial fetch.
+如果您的组织需要代理来访问 `api.anthropic.com`，请在 shell 环境或[用户设置](/docs/zh-CN/settings#settings-files)中设置它，而不仅仅在托管 `env` 块中。首次启动没有缓存，所以这些源已经是初始获取所必需的。
 
-Claude Code applies settings updates automatically without a restart, except for advanced settings like OpenTelemetry configuration, which require a full restart to take effect.
+Claude Code 自动应用设置更新而无需重新启动，除了高级设置（如 OpenTelemetry 配置）需要完全重新启动才能生效。
 
-### Invalid entries in delivered settings
+<h3 id="invalid-entries-in-delivered-settings">
+  已传递设置中的无效条目
+</h3>
 
-Delivered payloads parse tolerantly with the same rules as the other managed sources. When a payload contains an entry that fails schema validation, Claude Code strips that entry, surfaces a validation error, and applies every remaining valid setting. See [Invalid entries in managed settings](/docs/en/settings#invalid-entries-in-managed-settings) for the field-level behavior, including how security-enforcement fields are handled. Requires Claude Code v2.1.169 or later.
+已传递的有效负载使用与其他托管源相同的规则进行容错解析。当有效负载包含未通过架构验证的条目时，Claude Code 会删除该条目、显示验证错误，并应用每个剩余的有效设置。有关字段级行为的详细信息，请参阅[托管设置中的无效条目](/docs/zh-CN/settings#invalid-entries-in-managed-settings)，包括如何处理安全强制字段。需要 Claude Code v2.1.169 或更高版本。
 
-Server-managed delivery adds these behaviors:
+服务器管理的传递添加了这些行为：
 
-* The cache at `~/.claude/remote-settings.json` stores the salvaged payload with invalid entries removed. The raw invalid payload is never persisted.
-* When no field in the payload can be salvaged, Claude Code keeps the last-accepted cached settings and records a fatal error.
-* The [security approval dialog](#security-approval-dialogs) evaluates the salvaged payload, so a stripped invalid entry is never presented for approval and never executes.
+* 位于 `~/.claude/remote-settings.json` 的缓存存储已删除无效条目的已保存有效负载。原始无效有效负载永远不会被持久化。
+* 当有效负载中没有字段可以被保存时，Claude Code 保留最后接受的缓存设置并记录致命错误。
+* [安全批准对话框](#security-approval-dialogs)评估已保存的有效负载，因此被删除的无效条目永远不会被呈现以供批准，也永远不会执行。
 
-To debug delivery issues, run `claude --debug-file <path>` and search the log for `Remote settings`. Validate a payload change with `claude doctor` on a test machine before rolling it out to the organization.
+要调试传递问题，请运行 `claude --debug-file <path>` 并在日志中搜索 `Remote settings`。在向组织推出有效负载更改之前，使用 `claude doctor` 在测试机器上验证有效负载更改。
 
-### Enforce fail-closed startup
+<h3 id="enforce-fail-closed-startup">
+  强制执行故障关闭启动
+</h3>
 
-By default, if the remote settings fetch fails at startup, the CLI continues without managed settings. For environments where this brief unenforced window is unacceptable, set `forceRemoteSettingsRefresh: true` in your managed settings.
+默认情况下，如果远程设置获取在启动时失败，CLI 继续运行而不使用托管设置。对于这个简短的未强制执行窗口不可接受的环境，在您的托管设置中设置 `forceRemoteSettingsRefresh: true`。
 
-When this setting is active, the CLI blocks at startup until remote settings are freshly fetched. If the fetch fails, the CLI exits rather than proceeding without the policy. This setting self-perpetuates: once delivered from the server, it is also cached locally so that subsequent startups enforce the same behavior even before the first successful fetch of a new session.
+当此设置处于活动状态时，CLI 在启动时阻止，直到远程设置被新鲜获取。如果获取失败，CLI 退出而不是继续运行而不使用策略。此设置自我延续：一旦从服务器传递，它也会在本地缓存，以便后续启动即使在新会话的首次成功获取之前也强制执行相同的行为。
 
-To enable this, add the key to your managed settings configuration:
+要启用此功能，请将键添加到您的托管设置配置中：
 
 ```json theme={null}
 {
@@ -196,93 +220,87 @@ To enable this, add the key to your managed settings configuration:
 }
 ```
 
-You can also set this key in an [endpoint-managed](/docs/en/settings#settings-files) MDM profile or system `managed-settings.json` file to enforce fail-closed behavior on first launch, before any server payload has been delivered. As of v2.1.191, this flag is an exception to the [precedence rule](#settings-precedence) above: it is honored when set in any admin-controlled managed source even if a cached server-managed payload is also present, so an MDM-delivered value is not ignored when server-managed settings exist. When a [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper) is configured, its output replaces every other managed source, this key included.
+您也可以在[端点管理的](/docs/zh-CN/settings#settings-files) MDM 配置文件或系统 `managed-settings.json` 文件中设置此键，以在首次启动时强制执行故障关闭行为，在任何服务器有效负载被传递之前。从 v2.1.191 开始，此标志是上述[优先级规则](#settings-precedence)的例外：当在任何托管源中设置时，即使也存在缓存的服务器管理有效负载，它也会被遵守，因此当服务器管理的设置存在时，MDM 传递的值不会被忽略。
 
-The settings fetch also sends a `Cache-Control: no-cache` header so intermediate HTTP proxies don't serve a stale response.
+设置获取还发送 `Cache-Control: no-cache` 标头，以便中间 HTTP 代理不会提供陈旧的响应。
 
-Before enabling this setting, ensure your network policies allow connectivity to `api.anthropic.com`. If that endpoint is unreachable, the CLI exits at startup and users cannot start Claude Code.
+在启用此设置之前，请确保您的网络策略允许连接到 `api.anthropic.com`。如果该端点无法访问，CLI 在启动时退出，用户无法启动 Claude Code。
 
-As of v2.1.139, the `claude auth` subcommands such as `claude auth login` are exempt from this check, so users can re-authenticate when expired credentials are the reason the settings fetch fails.
+从 v2.1.139 开始，`claude auth` 子命令（如 `claude auth login`）不受此检查的限制，因此当过期的凭证是设置获取失败的原因时，用户可以重新身份验证。
 
-### Security approval dialogs
+<h3 id="security-approval-dialogs">
+  安全批准对话框
+</h3>
 
-Certain settings that could pose security risks require explicit user approval before Claude Code applies them:
+某些可能带来安全风险的设置在应用前需要明确的用户批准：
 
-* **Shell command settings**: settings that execute shell commands
-* **Custom environment variables**: delivered `env` variables that require the user's approval, such as proxy and base-URL variables; see [Environment variables and the approval dialog](#environment-variables-and-the-approval-dialog)
-* **Hook configurations**: any hook definition
-* **Managed CLAUDE.md content**: a `claudeMd` value delivered through managed settings
+* **Shell 命令设置**：执行 shell 命令的设置
+* **自定义环境变量**：不在已知安全允许列表中的变量
+* **Hook 配置**：任何 hook 定义
+* **托管 CLAUDE.md 内容**：通过托管设置传递的 `claudeMd` 值
 
-When these settings are present, users see a security dialog explaining what is being configured. Users must approve to proceed. If a user rejects the settings, Claude Code exits.
-
-If an interactive session can't show the dialog, Claude Code doesn't apply the delivered settings and keeps the last-approved settings; the dialog appears in the next session that can show it. Requires Claude Code v2.1.211 or later.
+当这些设置存在时，用户会看到一个安全对话框，解释正在配置的内容。用户必须批准才能继续。如果用户拒绝设置，Claude Code 会退出。
 
 <Note>
-  A non-interactive run, such as `claude -p` or an Agent SDK session, can't show the dialog. When the delivered settings would require approval, Claude Code applies them for that run only: it doesn't record them as approved or write them to the [local cache](#fetch-and-caching-behavior), and the next interactive session shows the dialog. Until a user approves in an interactive session, each non-interactive run fetches the settings again at startup. Before v2.1.207, a non-interactive run saved the settings as approved, so later interactive sessions never showed the dialog for them.
+  非交互式运行（例如 `claude -p` 或 Agent SDK 会话）无法显示对话框。当传递的设置需要批准时，Claude Code 仅为该运行应用它们：它不会将它们记录为已批准或写入[本地缓存](#fetch-and-caching-behavior)，下一个交互式会话会显示对话框。在用户在交互式会话中批准之前，每个非交互式运行都会在启动时再次获取设置。在 v2.1.207 之前，非交互式运行会将设置保存为已批准，因此后来的交互式会话永远不会为它们显示对话框。
 </Note>
 
-#### Environment variables and the approval dialog
+<h2 id="platform-availability">
+  平台可用性
+</h2>
 
-Claude Code applies some delivered `env` variables without showing the user the approval dialog, including:
+服务器管理的设置需要直接连接到 `api.anthropic.com`，并且交付需要会话使用组织 OAuth 登录或直接配置的 API 密钥进行身份验证。由 [`apiKeyHelper`](/docs/zh-CN/settings#available-settings) 脚本返回的密钥不会触发设置获取。
 
-* Feature and command toggles
-* Model selection and behavior settings, such as `ANTHROPIC_MODEL`, `DISABLE_PROMPT_CACHING`, and `CLAUDE_CODE_EFFORT_LEVEL`
-* Context window and compaction settings, such as `DISABLE_AUTO_COMPACT`
-* Terminal UI and accessibility options
-* Numeric limits, budgets, and timeouts
-
-Other delivered variables can require the user's approval before they take effect; a non-empty proxy, base-URL, or `OTEL_EXPORTER_OTLP_ENDPOINT` value always does. When a delivered variable needs approval, the dialog names it, so the user sees exactly what the policy is asking to set. Before v2.1.218, Claude Code applied fewer variables without asking the user, so settings such as `DISABLE_AUTO_COMPACT` triggered the dialog at any non-empty value.
-
-Claude Code decides whether four privacy toggles need approval by the delivered value rather than by the variable name: `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, `DISABLE_ERROR_REPORTING`, `DISABLE_TELEMETRY`, and `DO_NOT_TRACK`. A truthy value such as `1` or `true` only turns tracking, reporting, or other nonessential traffic off, so Claude Code applies it without asking the user. For any other non-empty value, Claude Code shows the dialog. Before v2.1.218, all of them except `DO_NOT_TRACK` applied without approval at any value, and `DO_NOT_TRACK` triggered the dialog at any non-empty value.
-
-## Platform availability
-
-Server-managed settings require a direct connection to `api.anthropic.com`, and delivery requires the session to authenticate with an organization OAuth login or a directly configured API key. Keys returned by an [`apiKeyHelper`](/docs/en/settings#available-settings) script don't trigger the settings fetch.
-
-Server-managed settings are not available when using third-party model providers:
+在使用第三方模型提供商时，服务器管理的设置不可用：
 
 * Amazon Bedrock
-* Google Cloud's Agent Platform
+* Google Cloud 的 Agent Platform
 * Microsoft Foundry
-* [Claude Platform on AWS](/docs/en/claude-platform-on-aws)
-* Custom API endpoints via `ANTHROPIC_BASE_URL` or third-party [LLM gateways](/docs/en/llm-gateway)
+* [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws)
+* 通过 `ANTHROPIC_BASE_URL` 或第三方 [LLM gateways](/docs/zh-CN/llm-gateway) 的自定义 API 端点
 
-If you export a `CLAUDE_CODE_USE_*` provider variable or a non-default `ANTHROPIC_BASE_URL` in your shell, Claude Code skips the settings fetch for your sessions. You can't clear the export with a server-managed `env` block, because the block arrives through the fetch that the export prevents. An [endpoint-managed settings](/docs/en/settings#settings-files) `env` block doesn't restore the fetch either: Claude Code checks eligibility before it applies managed `env` blocks, so the override changes the session's provider selection but the fetch stays skipped.
+如果您在 shell 中导出 `CLAUDE_CODE_USE_*` 提供商变量或非默认的 `ANTHROPIC_BASE_URL`，Claude Code 将跳过您的会话的设置获取。您无法使用服务器管理的 `env` 块清除导出，因为该块通过导出阻止的获取到达。[端点管理的设置](/docs/zh-CN/settings#settings-files) `env` 块也不会恢复获取：Claude Code 在应用管理的 `env` 块之前检查资格，因此覆盖会改变会话的提供商选择，但获取保持跳过。
 
-To restore server-managed delivery, remove the export from your shell, or set the variable to `""` in your user settings `env` block, which applies before the eligibility check. To enforce policy without relying on users to change their shells, deliver the settings through the endpoint-managed channel instead.
+要恢复服务器管理的交付，请从 shell 中删除导出，或在用户设置 `env` 块中将变量设置为 `""`，该块在资格检查之前应用。要在不依赖用户更改其 shell 的情况下强制执行策略，请改为通过端点管理的通道交付设置。
 
-For Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry deployments, a self-hosted [Claude apps gateway](/docs/en/claude-apps-gateway) provides the equivalent remote managed-settings delivery: gateway-signed-in clients fetch managed settings from the gateway instead of `api.anthropic.com`. The failure semantics differ at startup: a gateway client that can't reach the gateway exits with an error instead of falling back to cached settings, while the hourly background refresh is fail-open on both channels.
+对于 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 部署，自托管的 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway) 提供等效的远程管理设置交付：网关登录的客户端从网关而不是 `api.anthropic.com` 获取管理设置。启动时的失败语义不同：无法到达网关的网关客户端以错误退出，而不是回退到缓存的设置，而每小时的后台刷新在两个通道上都是故障开放的。
 
-## Audit logging
+<h2 id="audit-logging">
+  审计日志
+</h2>
 
-Audit log events for settings changes are available through the compliance API or audit log export. Contact your Anthropic account team for access.
+设置更改的审计日志事件可通过合规 API 或审计日志导出获得。请联系您的 Anthropic 账户团队以获取访问权限。
 
-Audit events include the type of action performed, the account and device that performed the action, and references to the previous and new values.
+审计事件包括执行的操作类型、执行操作的账户和设备，以及对先前值和新值的引用。
 
-## Security considerations
+<h2 id="security-considerations">
+  安全考虑
+</h2>
 
-Server-managed settings provide centralized policy enforcement, but they operate as a client-side control, not a security boundary. On unmanaged devices, a user doesn't need admin or sudo access to bypass them.
+服务器管理的设置提供集中的策略强制执行，但它们作为客户端控制运行，而不是安全边界。在非托管设备上，用户不需要管理员或 sudo 访问权限来绕过它们。
 
-| Scenario                                                               | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| :--------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| User edits the cached settings file                                    | Tampered file applies at startup, but correct settings restore on the next server fetch. {/* min-version: 2.1.198 */}As of v2.1.198, the transport, API-routing, and authentication environment variables in the `env` block are [withheld until the server confirms the payload](#fetch-and-caching-behavior)                                                                                                                                                                                                    |
-| User deletes the cached settings file                                  | First-launch behavior occurs: settings fetch asynchronously with a brief unenforced window                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| User runs a modified Claude Code binary                                | A user who can run a modified client can bypass any client-side control                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| User runs an older Claude Code version                                 | Versions that predate server-managed settings don't fetch or apply them                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| API is unavailable                                                     | Cached settings apply if available, otherwise managed settings are not enforced until the next successful fetch. {/* min-version: 2.1.198 */}As of v2.1.198, the transport, API-routing, and authentication environment variables in the cached `env` block are [withheld on fetch failure](#fetch-and-caching-behavior); the rest of the cache still applies. With `forceRemoteSettingsRefresh: true`, the CLI exits instead of continuing, except for [`claude auth` subcommands](#enforce-fail-closed-startup) |
-| User authenticates with a different organization                       | Settings are not delivered for accounts outside the managed organization                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| User configures a [third-party model provider](#platform-availability) | Server-managed settings are bypassed. This includes setting `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_MANTLE`, `CLAUDE_CODE_USE_VERTEX`, `CLAUDE_CODE_USE_FOUNDRY`, `CLAUDE_CODE_USE_ANTHROPIC_AWS`, or a non-default `ANTHROPIC_BASE_URL`                                                                                                                                                                                                                                                                      |
-| Network traffic is intercepted or redirected                           | Disabled TLS validation or intercepted traffic can alter the settings the client receives                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 场景                                     | 行为                                                                                                                                                                                                                                           |
+| :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 用户编辑缓存的设置文件                            | 篡改的文件在启动时应用，但正确的设置在下次服务器获取时恢复。从 v2.1.198 开始，`env` 块中的传输、API 路由和身份验证环境变量在[服务器确认有效负载后被保留](#fetch-and-caching-behavior)                                                                                                                         |
+| 用户删除缓存的设置文件                            | 首次启动行为发生：设置异步获取，有一个简短的未强制执行的窗口                                                                                                                                                                                                               |
+| 用户运行修改的 Claude Code 二进制文件              | 能够运行修改的客户端的用户可以绕过任何客户端控制                                                                                                                                                                                                                     |
+| 用户运行较旧的 Claude Code 版本                 | 早于服务器管理设置的版本不会获取或应用它们                                                                                                                                                                                                                        |
+| API 不可用                                | 如果可用，缓存的设置应用，否则托管设置在下次成功获取前不被强制执行。从 v2.1.198 开始，缓存的 `env` 块中的传输、API 路由和身份验证环境变量在[获取失败时被保留](#fetch-and-caching-behavior)；缓存的其余部分仍然适用。使用 `forceRemoteSettingsRefresh: true` 时，CLI 退出而不是继续，除了 [`claude auth` 子命令](#enforce-fail-closed-startup) |
+| 用户使用不同的组织进行身份验证                        | 不为托管组织外的账户传递设置                                                                                                                                                                                                                               |
+| 用户配置[第三方模型提供商](#platform-availability) | 服务器管理的设置被绕过。这包括设置 `CLAUDE_CODE_USE_BEDROCK`、`CLAUDE_CODE_USE_MANTLE`、`CLAUDE_CODE_USE_VERTEX`、`CLAUDE_CODE_USE_FOUNDRY`、`CLAUDE_CODE_USE_ANTHROPIC_AWS` 或非默认的 `ANTHROPIC_BASE_URL`                                                           |
+| 网络流量被拦截或重定向                            | 禁用的 TLS 验证或拦截的流量可以改变客户端接收的设置                                                                                                                                                                                                                 |
 
-To detect runtime configuration changes, use [`ConfigChange` hooks](/docs/en/hooks#configchange) to log modifications or block unauthorized changes before they take effect.
+要检测运行时配置更改，请使用 [`ConfigChange` hooks](/docs/zh-CN/hooks#configchange) 来记录修改或在未授权的更改生效前阻止它们。
 
-To restrict which organizations your users can access with credentials the client supplies, see [Enforce network-level access control with Tenant Restrictions](https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions) in the Claude Help Center. For stronger enforcement guarantees, use [endpoint-managed settings](/docs/en/settings#settings-files) on devices enrolled in an MDM solution.
+要限制用户可以使用客户端提供的凭证访问的组织，请参阅 Claude 帮助中心中的[使用租户限制强制执行网络级访问控制](https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions)。为了获得更强的强制执行保证，请在已在 MDM 解决方案中注册的设备上使用[端点管理的设置](/docs/zh-CN/settings#settings-files)。
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-Related pages for managing Claude Code configuration:
+用于管理 Claude Code 配置的相关页面：
 
-* [Settings](/docs/en/settings): complete configuration reference including all available settings
-* [Endpoint-managed settings](/docs/en/settings#settings-files): managed settings deployed to devices by IT
-* [Authentication](/docs/en/authentication): set up user access to Claude Code
-* [Security](/docs/en/security): security safeguards and best practices
+* [Settings](/docs/zh-CN/settings)：完整的配置参考，包括所有可用的设置
+* [Endpoint-managed settings](/docs/zh-CN/settings#settings-files)：由 IT 部门部署到设备的托管设置
+* [Authentication](/docs/zh-CN/authentication)：设置用户对 Claude Code 的访问
+* [Security](/docs/zh-CN/security)：安全保障和最佳实践

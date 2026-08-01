@@ -2,19 +2,25 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Overview
+# 概述
 
-> Claude Code is an agentic coding tool that reads your codebase, edits files, runs commands, and integrates with your development tools. Available in your terminal, IDE, desktop app, and browser.
+> Claude Code 是一个代理编码工具，可以读取你的代码库、编辑文件、运行命令，并与你的开发工具集成。可在终端、IDE、桌面应用和浏览器中使用。
 
-Claude Code is an AI-powered coding assistant that helps you build features, fix bugs, and automate development tasks. It understands your entire codebase and can work across multiple files and tools to get things done.
+Claude Code 是一个由 AI 驱动的编码助手，可帮助你构建功能、修复错误和自动化开发任务。它理解你的整个代码库，可以跨多个文件和工具工作以完成任务。
 
-## Get started
+<Note>
+  默认配置下，Claude Code 需要能够访问 claude.ai 和 Anthropic API 等端点才能完成安装、登录和正常使用。在中国大陆的网络环境中，这些端点可能无法直接访问。开始前，请先确认所在网络能够连通这些服务。企业代理配置以及 Amazon Bedrock 等第三方提供商的网络要求，请参阅[网络配置](/docs/zh-CN/network-config#network-access-requirements)。
+</Note>
 
-Claude Code runs on several surfaces: the terminal, IDE extensions, a desktop app, and the web. Choose one from the tabs below to get started. Most surfaces require a [Claude subscription](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=overview_pricing) or [Anthropic Console](https://console.anthropic.com/) account. The Terminal CLI and VS Code also support [third-party providers](/docs/en/third-party-integrations).
+<h2 id="get-started">
+  开始使用
+</h2>
+
+Claude Code 在多个平台上运行：终端、IDE 扩展、桌面应用和网络。从下面的标签页中选择一个来开始使用。大多数平台需要 [Claude 订阅](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=overview_pricing) 或 [Anthropic 控制台](https://console.anthropic.com/) 账户。终端 CLI 和 VS Code 也支持[第三方提供商](/docs/zh-CN/third-party-integrations)。
 
 <Tabs>
   <Tab title="Terminal">
-    The full-featured CLI for working with Claude Code directly in your terminal. Edit files, run commands, and manage your entire project from the command line.
+    功能完整的 CLI，用于直接在终端中使用 Claude Code。编辑文件、运行命令，并从命令行管理整个项目。
 
     To install Claude Code, use one of the following methods:
 
@@ -74,171 +80,177 @@ Claude Code runs on several surfaces: the terminal, IDE extensions, a desktop ap
 
     You can also install with [apt, dnf, or apk](/docs/en/setup#install-with-linux-package-managers) on Debian, Fedora, RHEL, and Alpine.
 
-    Then start Claude Code in any project. Replace `your-project` with the path to a project directory on your machine:
+    然后在任何项目中启动 Claude Code：
 
     ```bash theme={null}
     cd your-project
     claude
     ```
 
-    You'll be prompted to log in on first use. If you've set the `ANTHROPIC_API_KEY` environment variable, Claude Code skips the login prompt and asks you to approve the key instead. That's it! [Continue with the Quickstart →](/docs/en/quickstart)
+    首次使用时，系统会提示你登录。就这样！[继续快速入门 →](/docs/zh-CN/quickstart)
 
     <Tip>
-      See [advanced setup](/docs/en/setup) for installation options, manual updates, or uninstallation instructions. Visit [installation troubleshooting](/docs/en/troubleshoot-install) if you hit issues.
+      查看[高级设置](/docs/zh-CN/setup)了解安装选项、手动更新或卸载说明。如果遇到问题，请访问[安装故障排除](/docs/zh-CN/troubleshoot-install)。
     </Tip>
   </Tab>
 
   <Tab title="VS Code">
-    The VS Code extension provides inline diffs, @-mentions, plan review, and conversation history directly in your editor.
+    VS Code 扩展在编辑器中直接提供内联差异、@-提及、计划审查和对话历史。
 
-    * [Install for VS Code](vscode:extension/anthropic.claude-code)
-    * [Install for Cursor](cursor:extension/anthropic.claude-code)
+    * [为 VS Code 安装](vscode:extension/anthropic.claude-code)
+    * [为 Cursor 安装](cursor:extension/anthropic.claude-code)
 
-    Or search for "Claude Code" in the Extensions view (`Cmd+Shift+X` on Mac, `Ctrl+Shift+X` on Windows/Linux). After installing, open the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`), type "Claude Code", and select **Open in New Tab**.
+    或在扩展视图中搜索"Claude Code"（Mac 上为 `Cmd+Shift+X`，Windows/Linux 上为 `Ctrl+Shift+X`）。安装后，打开命令面板（`Cmd+Shift+P` / `Ctrl+Shift+P`），输入"Claude Code"，然后选择**在新标签页中打开**。
 
-    [Get started with VS Code →](/docs/en/vs-code#get-started)
+    [开始使用 VS Code →](/docs/zh-CN/vs-code#get-started)
   </Tab>
 
   <Tab title="Desktop app">
-    A standalone app for running Claude Code outside your IDE or terminal. Review diffs visually, run multiple sessions side by side, schedule recurring tasks, and kick off cloud sessions.
+    一个独立应用，用于在 IDE 或终端之外运行 Claude Code。直观地查看差异、并行运行多个会话、安排定期任务，并启动云会话。
 
-    Download and install:
+    下载并安装：
 
-    * [macOS](https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect?utm_source=claude_code\&utm_medium=docs) (Intel and Apple Silicon)
-    * [Windows](https://claude.ai/api/desktop/win32/x64/setup/latest/redirect?utm_source=claude_code\&utm_medium=docs) (x64)
+    * [macOS](https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect?utm_source=claude_code\&utm_medium=docs)（Intel 和 Apple Silicon）
+    * [Windows](https://claude.ai/api/desktop/win32/x64/setup/latest/redirect?utm_source=claude_code\&utm_medium=docs)（x64）
     * [Windows ARM64](https://claude.ai/api/desktop/win32/arm64/setup/latest/redirect?utm_source=claude_code\&utm_medium=docs)
 
-    After installing, launch Claude, sign in, and click the **Code** tab to start coding. A [paid subscription](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=overview_desktop_pricing) is required.
+    安装后，启动 Claude，登录，然后点击**代码**标签开始编码。需要[付费订阅](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=overview_desktop_pricing)。
 
-    [Learn more about the desktop app →](/docs/en/desktop-quickstart)
+    [了解更多关于桌面应用的信息 →](/docs/zh-CN/desktop-quickstart)
   </Tab>
 
   <Tab title="Web">
-    Run Claude Code in your browser with no local setup. Kick off long-running tasks and check back when they're done, work on repos you don't have locally, or run multiple tasks in parallel. Available on desktop browsers and [the Claude app for iOS and Android](/docs/en/mobile).
+    在浏览器中运行 Claude Code，无需本地设置。启动长时间运行的任务，完成后再检查，处理你本地没有的仓库，或并行运行多个任务。可在桌面浏览器和 Claude iOS 应用中使用。
 
-    Start coding at [claude.ai/code](https://claude.ai/code).
+    在 [claude.ai/code](https://claude.ai/code) 开始编码。
 
-    [Get started on the web →](/docs/en/web-quickstart)
+    [开始在网络上使用 →](/docs/zh-CN/web-quickstart)
   </Tab>
 
   <Tab title="JetBrains">
-    A plugin for IntelliJ IDEA, PyCharm, WebStorm, and other JetBrains IDEs with interactive diff viewing and selection context sharing.
+    一个用于 IntelliJ IDEA、PyCharm、WebStorm 和其他 JetBrains IDE 的插件，具有交互式差异查看和选择上下文共享。
 
-    Install the [Claude Code plugin](https://plugins.jetbrains.com/plugin/27310-claude-code-beta-) from the JetBrains Marketplace and restart your IDE. The plugin requires the Claude Code CLI, installed separately; see the [JetBrains setup steps](/docs/en/jetbrains#installation).
+    从 JetBrains Marketplace 安装 [Claude Code 插件](https://plugins.jetbrains.com/plugin/27310-claude-code-beta-)，然后重启你的 IDE。该插件需要单独安装 Claude Code CLI；请参阅 [JetBrains 设置步骤](/docs/zh-CN/jetbrains#installation)。
 
-    [Get started with JetBrains →](/docs/en/jetbrains)
+    [开始使用 JetBrains →](/docs/zh-CN/jetbrains)
   </Tab>
 </Tabs>
 
-## What you can do
+<h2 id="what-you-can-do">
+  你可以做什么
+</h2>
 
-Here are some of the ways you can use Claude Code:
+以下是你可以使用 Claude Code 的一些方式：
 
 <AccordionGroup>
-  <Accordion title="Automate the work you keep putting off" icon="wand-magic-sparkles">
-    Claude Code handles the tedious tasks that eat up your day: writing tests for untested code, fixing lint errors across a project, resolving merge conflicts, updating dependencies, and writing release notes.
+  <Accordion title="自动化你一直在推迟的工作" icon="wand-magic-sparkles">
+    Claude Code 处理那些占用你一整天的繁琐任务：为未测试的代码编写测试、修复项目中的 lint 错误、解决合并冲突、更新依赖项和编写发布说明。
 
     ```bash theme={null}
     claude "write tests for the auth module, run them, and fix any failures"
     ```
   </Accordion>
 
-  <Accordion title="Build features and fix bugs" icon="hammer">
-    Describe what you want in plain language. Claude Code plans the approach, writes the code across multiple files, and verifies it works.
+  <Accordion title="构建功能和修复错误" icon="hammer">
+    用简单的语言描述你想要的内容。Claude Code 规划方法、跨多个文件编写代码，并验证其工作。
 
-    For bugs, paste an error message or describe the symptom. Claude Code traces the issue through your codebase, identifies the root cause, and implements a fix. See [common workflows](/docs/en/common-workflows) for more examples.
+    对于错误，粘贴错误消息或描述症状。Claude Code 通过你的代码库追踪问题、识别根本原因并实施修复。查看[常见工作流](/docs/zh-CN/common-workflows)了解更多示例。
   </Accordion>
 
-  <Accordion title="Create commits and pull requests" icon="code-branch">
-    Claude Code works directly with git. It stages changes, writes commit messages, creates branches, and opens pull requests.
+  <Accordion title="创建提交和拉取请求" icon="code-branch">
+    Claude Code 直接与 git 配合工作。它暂存更改、编写提交消息、创建分支并打开拉取请求。
 
     ```bash theme={null}
     claude "commit my changes with a descriptive message"
     ```
 
-    In CI, you can automate code review and issue triage with [GitHub Actions](/docs/en/github-actions) or [GitLab CI/CD](/docs/en/gitlab-ci-cd).
+    在 CI 中，你可以使用 [GitHub Actions](/docs/zh-CN/github-actions) 或 [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd) 自动化代码审查和问题分类。
   </Accordion>
 
-  <Accordion title="Connect your tools with MCP" icon="plug">
-    The [Model Context Protocol (MCP)](/docs/en/mcp) is an open standard for connecting AI tools to external data sources. With MCP, Claude Code can read your design docs in Google Drive, update tickets in Jira, pull data from Slack, or use your own custom tooling. The [MCP quickstart](/docs/en/mcp-quickstart) connects your first server end to end.
+  <Accordion title="使用 MCP 连接你的工具" icon="plug">
+    [Model Context Protocol (MCP)](/docs/zh-CN/mcp) 是一个开放标准，用于将 AI 工具连接到外部数据源。使用 MCP，Claude Code 可以读取 Google Drive 中的设计文档、更新 Jira 中的工单、从 Slack 拉取数据，或使用你自己的自定义工具。[MCP 快速入门](/docs/zh-CN/mcp-quickstart)端到端连接你的第一个服务器。
   </Accordion>
 
-  <Accordion title="Customize with instructions, skills, and hooks" icon="sliders">
-    [`CLAUDE.md`](/docs/en/memory) is a markdown file you add to your project root that Claude Code reads at the start of every session. Use it to set coding standards, architecture decisions, preferred libraries, and review checklists. Claude also builds [auto memory](/docs/en/memory#auto-memory) as it works, saving learnings like build commands and debugging insights across sessions without you writing anything.
+  <Accordion title="使用说明、skills 和 hooks 进行自定义" icon="sliders">
+    [`CLAUDE.md`](/docs/zh-CN/memory) 是一个 markdown 文件，你可以将其添加到项目根目录，Claude Code 会在每个会话开始时读取它。使用它来设置编码标准、架构决策、首选库和审查清单。Claude 还会在工作时构建[自动内存](/docs/zh-CN/memory#auto-memory)，保存学习内容，如构建命令和调试见解，跨会话使用，无需你编写任何内容。
 
-    Create [skills](/docs/en/skills) to package repeatable workflows your team can share, like `/review-pr` or `/deploy-staging`.
+    创建 [skills](/docs/zh-CN/skills) 来打包你的团队可以共享的可重复工作流，如 `/review-pr` 或 `/deploy-staging`。
 
-    [Hooks](/docs/en/hooks) let you run shell commands before or after Claude Code actions, like auto-formatting after every file edit or running lint before a commit.
+    [Hooks](/docs/zh-CN/hooks) 让你在 Claude Code 操作之前或之后运行 shell 命令，如在每次文件编辑后自动格式化或在提交前运行 lint。
   </Accordion>
 
-  <Accordion title="Run agent teams and build custom agents" icon="users">
-    Spawn [multiple Claude Code agents](/docs/en/sub-agents) that work on different parts of a task simultaneously. A lead agent coordinates the work, assigns subtasks, and merges results.
+  <Accordion title="运行代理团队并构建自定义代理" icon="users">
+    生成[多个 Claude Code 代理](/docs/zh-CN/sub-agents)，同时处理任务的不同部分。主导代理协调工作、分配子任务并合并结果。
 
-    To run several full sessions in parallel and watch them from one screen, use [background agents](/docs/en/agent-view). For fully custom workflows, the [Agent SDK](/docs/en/agent-sdk/overview) lets you build your own agents powered by Claude Code's tools and capabilities, with full control over orchestration, tool access, and permissions.
+    要在并行中运行多个完整会话并从一个屏幕观看它们，请使用[后台代理](/docs/zh-CN/agent-view)。对于完全自定义的工作流，[Agent SDK](/docs/zh-CN/agent-sdk/overview) 让你构建由 Claude Code 的工具和功能驱动的自己的代理，完全控制编排、工具访问和权限。
   </Accordion>
 
-  <Accordion title="Pipe, script, and automate with the CLI" icon="terminal">
-    Claude Code is composable and follows the Unix philosophy. Pipe logs into it, run it in CI, or chain it with other tools:
+  <Accordion title="使用 CLI 进行管道、脚本和自动化" icon="terminal">
+    Claude Code 是可组合的，遵循 Unix 哲学。将日志管道传入其中、在 CI 中运行它，或将其与其他工具链接：
 
     ```bash theme={null}
-    # Analyze recent log output
+    # 分析最近的日志输出
     tail -200 app.log | claude -p "Slack me if you see any anomalies"
 
-    # Automate translations in CI
+    # 在 CI 中自动化翻译
     claude -p "translate new strings into French and raise a PR for review"
 
-    # Bulk operations across files
+    # 跨文件的批量操作
     git diff main --name-only | claude -p "review these changed files for security issues"
     ```
 
-    See the [CLI reference](/docs/en/cli-reference) for the full set of commands and flags.
+    查看 [CLI 参考](/docs/zh-CN/cli-reference)了解完整的命令和标志集。
   </Accordion>
 
-  <Accordion title="Schedule recurring tasks" icon="clock">
-    Run Claude on a schedule to automate work that repeats: morning PR reviews, overnight CI failure analysis, weekly dependency audits, or syncing docs after PRs merge.
+  <Accordion title="安排定期任务" icon="clock">
+    按计划运行 Claude 以自动化重复的工作：早晨 PR 审查、夜间 CI 失败分析、每周依赖项审计或在 PR 合并后同步文档。
 
-    * [Routines](/docs/en/routines) run on Anthropic-managed infrastructure, so they keep running even when your computer is off. They can also trigger on API calls or GitHub events. Create them from the web, the Desktop app, or by running `/schedule` in the CLI.
-    * [Desktop scheduled tasks](/docs/en/desktop-scheduled-tasks) run on your machine, with direct access to your local files and tools
-    * [`/loop`](/docs/en/scheduled-tasks) repeats a prompt within a CLI session for quick polling
+    * [Routines](/docs/zh-CN/routines) 在 Anthropic 管理的基础设施上运行，因此即使你的计算机关闭，它们也会继续运行。它们也可以在 API 调用或 GitHub 事件上触发。从网络、桌面应用或通过在 CLI 中运行 `/schedule` 来创建它们。
+    * [桌面计划任务](/docs/zh-CN/desktop-scheduled-tasks)在你的机器上运行，可直接访问你的本地文件和工具
+    * [`/loop`](/docs/zh-CN/scheduled-tasks) 在 CLI 会话中重复提示以进行快速轮询
   </Accordion>
 
-  <Accordion title="Work from anywhere" icon="globe">
-    Sessions aren't tied to a single surface. Move work between them as your context changes:
+  <Accordion title="从任何地方工作" icon="globe">
+    会话不受限于单一界面。当你的上下文改变时，在环境之间移动工作：
 
-    * Step away from your desk and keep working from your phone or any browser with [Remote Control](/docs/en/remote-control)
-    * Message [Dispatch](/docs/en/desktop#sessions-from-dispatch) a task from your phone and open the Desktop session it creates
-    * Kick off a long-running task on the [web](/docs/en/claude-code-on-the-web) or the [Claude mobile app](/docs/en/mobile), then pull it into your terminal with `claude --teleport`. Teleport requires a claude.ai subscription.
-    * Run `/desktop` to continue your current terminal session in the [Desktop app](/docs/en/desktop), where you can review diffs visually. The `/desktop` handoff requires a claude.ai subscription. Available on macOS and x64 Windows.
-    * Route tasks from team chat: mention `@Claude` in [Slack](/docs/en/slack) with a bug report and get a pull request back
+    * 离开你的办公桌，使用[远程控制](/docs/zh-CN/remote-control)从你的手机或任何浏览器继续工作
+    * 向 [Dispatch](/docs/zh-CN/desktop#sessions-from-dispatch) 发送来自你手机的任务，并打开它创建的桌面会话
+    * 在[网络](/docs/zh-CN/claude-code-on-the-web)或 [iOS 应用](https://apps.apple.com/app/claude-by-anthropic/id6473753684)上启动长时间运行的任务，然后使用 `claude --teleport` 将其拉入你的终端。Teleport 需要 claude.ai 订阅。
+    * 使用 `/desktop` 将终端会话交给[桌面应用](/docs/zh-CN/desktop)进行视觉差异审查
+    * 从团队聊天路由任务：在 [Slack](/docs/zh-CN/slack) 中提及 `@Claude` 并附上错误报告，获得拉取请求
   </Accordion>
 </AccordionGroup>
 
-## Use Claude Code everywhere
+<h2 id="use-claude-code-everywhere">
+  在任何地方使用 Claude Code
+</h2>
 
-Each [surface](/docs/en/glossary#surface) connects to the same underlying Claude Code engine, so your CLAUDE.md files, settings, and MCP servers work across all of them.
+每个[界面](/docs/zh-CN/glossary#surface)都连接到相同的底层 Claude Code 引擎，因此你的 CLAUDE.md 文件、设置和 MCP 服务器可在所有界面中工作。
 
-Beyond the [Terminal](/docs/en/quickstart), [VS Code](/docs/en/vs-code), [JetBrains](/docs/en/jetbrains), [Desktop](/docs/en/desktop), and [Web](/docs/en/claude-code-on-the-web) surfaces above, Claude Code integrates with CI/CD, chat, and browser workflows:
+除了上面的[终端](/docs/zh-CN/quickstart)、[VS Code](/docs/zh-CN/vs-code)、[JetBrains](/docs/zh-CN/jetbrains)、[桌面](/docs/zh-CN/desktop)和[网络](/docs/zh-CN/claude-code-on-the-web)界面外，Claude Code 还与 CI/CD、聊天和浏览器工作流集成：
 
-| I want to...                                                                    | Best option                                                                                                   |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Continue a local session from my phone or another device                        | [Remote Control](/docs/en/remote-control)                                                                          |
-| Push events from Telegram, Discord, iMessage, or my own webhooks into a session | [Channels](/docs/en/channels)                                                                                      |
-| Start a task locally, continue on mobile                                        | [`claude --cloud`](/docs/en/claude-code-on-the-web#from-terminal-to-web), then the [Claude mobile app](/docs/en/mobile) |
-| Run Claude on a recurring schedule                                              | [Routines](/docs/en/routines) or [Desktop scheduled tasks](/docs/en/desktop-scheduled-tasks)                            |
-| Automate PR reviews and issue triage                                            | [GitHub Actions](/docs/en/github-actions) or [GitLab CI/CD](/docs/en/gitlab-ci-cd)                                      |
-| Get automatic code review on every PR                                           | [GitHub Code Review](/docs/en/code-review)                                                                         |
-| Route bug reports from Slack to pull requests                                   | [Slack](/docs/en/slack)                                                                                            |
-| Debug live web applications                                                     | [Chrome](/docs/en/chrome)                                                                                          |
-| Build custom agents for your own workflows                                      | [Agent SDK](/docs/en/agent-sdk/overview)                                                                           |
+| 我想要...                                             | 最佳选项                                                                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 从我的手机或另一台设备继续本地会话                                  | [远程控制](/docs/zh-CN/remote-control)                                                                                     |
+| 从 Telegram、Discord、iMessage 或我自己的 webhook 推送事件到会话中 | [Channels](/docs/zh-CN/channels)                                                                                       |
+| 在本地启动任务，在移动设备上继续                                   | [网络](/docs/zh-CN/claude-code-on-the-web)或 [Claude iOS 应用](https://apps.apple.com/app/claude-by-anthropic/id6473753684) |
+| 按定期计划运行 Claude                                     | [Routines](/docs/zh-CN/routines) 或[桌面计划任务](/docs/zh-CN/desktop-scheduled-tasks)                                             |
+| 自动化 PR 审查和问题分类                                     | [GitHub Actions](/docs/zh-CN/github-actions) 或 [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd)                                     |
+| 在每个 PR 上获得自动代码审查                                   | [GitHub Code Review](/docs/zh-CN/code-review)                                                                          |
+| 将 Slack 中的错误报告路由到拉取请求                              | [Slack](/docs/zh-CN/slack)                                                                                             |
+| 调试实时网络应用                                           | [Chrome](/docs/zh-CN/chrome)                                                                                           |
+| 为你自己的工作流构建自定义代理                                    | [Agent SDK](/docs/zh-CN/agent-sdk/overview)                                                                            |
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-Once you've installed Claude Code, these guides help you go deeper.
+安装 Claude Code 后，这些指南可帮助你深入了解。
 
-* [Quickstart](/docs/en/quickstart): walk through your first real task, from exploring a codebase to committing a fix
-* [Store instructions and memories](/docs/en/memory): give Claude persistent instructions with CLAUDE.md files and auto memory
-* [Common workflows](/docs/en/common-workflows) and [best practices](/docs/en/best-practices): patterns for getting the most out of Claude Code
-* [A harness for every task](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code): how the Claude Code team uses [dynamic workflows](/docs/en/workflows) to orchestrate subagents at scale
-* [Settings](/docs/en/settings): customize Claude Code for your workflow
-* [Troubleshooting](/docs/en/troubleshooting): solutions for common issues
-* [code.claude.com](https://code.claude.com/): demos, pricing, and product details
+* [快速入门](/docs/zh-CN/quickstart)：通过你的第一个真实任务，从探索代码库到提交修复
+* [存储说明和内存](/docs/zh-CN/memory)：使用 CLAUDE.md 文件和自动内存为 Claude 提供持久说明
+* [常见工作流](/docs/zh-CN/common-workflows)和[最佳实践](/docs/zh-CN/best-practices)：充分利用 Claude Code 的模式
+* [每项任务的框架](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code)：Claude Code 团队如何使用[动态工作流](/docs/zh-CN/workflows)大规模编排子代理
+* [设置](/docs/zh-CN/settings)：为你的工作流自定义 Claude Code
+* [故障排除](/docs/zh-CN/troubleshooting)：常见问题的解决方案
+* [code.claude.com](https://code.claude.com/)：演示、定价和产品详情

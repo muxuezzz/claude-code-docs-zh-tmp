@@ -2,103 +2,107 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Create custom subagents
+# 创建自定义 subagents
 
-> Create and use specialized AI subagents in Claude Code for task-specific workflows and improved context management.
+> 在 Claude Code 中创建和使用专门的 AI subagents，用于特定任务的工作流和改进的上下文管理。
 
-Subagents are specialized AI assistants that handle specific types of tasks. Use one when a side task would flood your main conversation with search results, logs, or file contents you won't reference again: the subagent does that work in its own context and returns only the summary. Define a custom subagent when you keep spawning the same kind of worker with the same instructions.
+Subagents 是处理特定类型任务的专门 AI 助手。当一个辅助任务会用搜索结果、日志或文件内容充斥您的主对话，而您不会再次引用这些内容时，请使用一个 subagent：该 subagent 在自己的上下文中完成这项工作，仅返回摘要。当您不断生成相同类型的工作者并使用相同的指令时，定义一个自定义 subagent。
 
-Each subagent runs in its own context window with a custom system prompt, specific tool access, and independent permissions. When Claude encounters a task that matches a subagent's description, it delegates to that subagent, which works independently and returns results. To see the context savings in practice, the [context window visualization](/docs/en/context-window) walks through a session where a subagent handles research in its own separate window.
+每个 subagent 在自己的 context window 中运行，具有自定义系统提示、特定的工具访问权限和独立的权限。当 Claude 遇到与 subagent 描述相匹配的任务时，它会委托给该 subagent，该 subagent 独立工作并返回结果。要在实践中看到上下文节省，[context window 可视化](/docs/zh-CN/context-window) 演示了一个 subagent 在自己的独立窗口中处理研究的会话。
 
 <Note>
-  Subagents work within a single session. To run many independent sessions in parallel and monitor them from one place, see [background agents](/docs/en/agent-view). For sessions that communicate with each other, see [agent teams](/docs/en/agent-teams).
+  Subagents 在单个会话中工作。要在并行运行许多独立会话并从一个地方监控它们，请参阅 [background agents](/docs/zh-CN/agent-view)。对于相互通信的会话，请参阅 [agent teams](/docs/zh-CN/agent-teams)。
 </Note>
 
-Subagents help you:
+Subagents 帮助您：
 
-* **Preserve context** by keeping exploration and implementation out of your main conversation
-* **Enforce constraints** by limiting which tools a subagent can use
-* **Reuse configurations** across projects with user-level subagents
-* **Specialize behavior** with focused system prompts for specific domains
-* **Control costs** by routing tasks to faster, cheaper models like Haiku
+* **保留上下文**，通过将探索和实现保持在主对话之外
+* **强制执行约束**，通过限制 subagent 可以使用的工具
+* **跨项目重用配置**，使用用户级 subagents
+* **专门化行为**，为特定领域使用专注的系统提示
+* **控制成本**，通过将任务路由到更快、更便宜的模型（如 Haiku）
 
-Claude uses each subagent's description to decide when to delegate tasks. When you create a subagent, write a clear description so Claude knows when to use it.
+Claude 使用每个 subagent 的描述来决定何时委托任务。创建 subagent 时，请编写清晰的描述，以便 Claude 知道何时使用它。
 
-Claude Code includes several built-in subagents such as Explore, Plan, and general-purpose. You can also create custom subagents to handle specific tasks.
+Claude Code 包括几个内置 subagents，如 Explore、Plan 和 general-purpose。您也可以创建自定义 subagents 来处理特定任务。
 
-## Built-in subagents
+<h2 id="built-in-subagents">
+  内置 subagents
+</h2>
 
-Claude Code includes built-in subagents that Claude automatically uses when appropriate. Each inherits the parent conversation's permissions with additional tool restrictions.
+Claude Code 包括内置 subagents，Claude 在适当时自动使用。每个都继承父对话的权限，并有额外的工具限制。
 
-Explore and Plan skip your CLAUDE.md files and the parent session's git status to keep research fast and inexpensive. Every other built-in and [custom subagent](#configure-subagents) loads both. For the full breakdown of what reaches a subagent, see [what loads at startup](#what-loads-at-startup).
+Explore 和 Plan 会跳过您的 CLAUDE.md 文件和父会话的 git 状态，以保持研究快速且成本低廉。所有其他内置和[自定义 subagent](#configure-subagents) 都会加载两者。有关到达 subagent 的内容的完整分解，请参阅[启动时加载的内容](#what-loads-at-startup)。
 
 <Tabs>
   <Tab title="Explore">
-    A fast, read-only agent optimized for searching and analyzing codebases.
+    一个快速的、只读的代理，针对搜索和分析代码库进行了优化。
 
-    * **Model**: inherits from the main conversation, capped at Opus on the Claude API, so Explore never runs on a more expensive model than the one you already chose for the session
-    * **Tools**: read-only tools; Write and Edit are denied
-    * **Purpose**: file discovery, code search, codebase exploration
+    * **Model**: 从主对话继承，在 Claude API 上限制为 Opus，因此 Explore 永远不会在比您为会话选择的模型更昂贵的模型上运行
+    * **Tools**: 只读工具；拒绝访问 Write 和 Edit
+    * **Purpose**: 文件发现、代码搜索、代码库探索
 
-    {/* min-version: 2.1.198 */}As of v2.1.198, Explore inherits the main conversation's model instead of always running on Haiku. On the Claude API, the inherited model is capped at Opus: a main conversation on a higher tier runs Explore on Opus, and a main conversation on Sonnet or Haiku runs Explore on that same model. On any other provider, such as [Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS](/docs/en/third-party-integrations), Explore inherits the main conversation's model directly.
+    {/* min-version: 2.1.198 */}从 v2.1.198 开始，Explore 继承主对话的模型，而不是始终在 Haiku 上运行。在 Claude API 上，继承的模型限制为 Opus：主对话在更高层级上运行 Explore 时使用 Opus，主对话在 Sonnet 或 Haiku 上运行 Explore 时使用相同的模型。在任何其他提供商上，例如 [Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 或 AWS 上的 Claude Platform](/docs/zh-CN/third-party-integrations)，Explore 直接继承主对话的模型。
 
-    A [user or project subagent](#choose-the-subagent-scope) named `Explore` overrides the built-in and keeps its own `model` field, so define one with `model: haiku` to keep exploration on a lower-cost model.
+    名为 `Explore` 的[用户或项目 subagent](#choose-the-subagent-scope) 会覆盖内置的，并保持其自己的 `model` 字段，因此定义一个带有 `model: haiku` 的来保持探索在较低成本的模型上。
 
-    Claude delegates to Explore when it needs to search or understand a codebase without making changes. This keeps exploration results out of your main conversation context.
+    当 Claude 需要搜索或理解代码库而不进行更改时，它会委托给 Explore。这样可以将探索结果保持在主对话上下文之外。
 
-    When invoking Explore, Claude specifies a thoroughness level: **quick** for targeted lookups, **medium** for balanced exploration, or **very thorough** for comprehensive analysis.
+    调用 Explore 时，Claude 指定一个彻底程度级别：**quick** 用于有针对性的查找，**medium** 用于平衡的探索，或 **very thorough** 用于全面分析。
   </Tab>
 
   <Tab title="Plan">
-    A research agent used during [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode) to gather context before presenting a plan.
+    一个研究代理，在 [plan mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode) 期间使用，以在呈现计划之前收集上下文。
 
-    * **Model**: inherits from the main conversation
-    * **Tools**: read-only tools; Write and Edit are denied
-    * **Purpose**: codebase research for planning
+    * **Model**: 从主对话继承
+    * **Tools**: 只读工具；拒绝访问 Write 和 Edit
+    * **Purpose**: 用于规划的代码库研究
 
-    When you're in plan mode and Claude needs to understand your codebase, it delegates research to the Plan subagent so that exploration output stays in a separate context window while the main conversation remains read-only.
+    当您处于 plan mode 并且 Claude 需要理解您的代码库时，它会将研究委托给 Plan subagent，以便探索输出保持在单独的上下文窗口中，而主对话保持只读。
   </Tab>
 
   <Tab title="General-purpose">
-    A capable agent for complex, multi-step tasks that require both exploration and action.
+    一个能够处理复杂、多步骤任务的代理，需要探索和操作。
 
-    * **Model**: inherits from the main conversation
-    * **Tools**: every tool [available to subagents](#available-tools)
-    * **Purpose**: complex research, multi-step operations, code modifications
+    * **Model**: 从主对话继承
+    * **Tools**: 所有工具
+    * **Purpose**: 复杂研究、多步骤操作、代码修改
 
-    Claude delegates to general-purpose when the task requires both exploration and modification, complex reasoning to interpret results, or multiple dependent steps.
+    当任务需要探索和修改、复杂推理来解释结果或多个依赖步骤时，Claude 会委托给 general-purpose。
   </Tab>
 
   <Tab title="Other">
-    Claude Code includes additional helper agents for specific tasks. These are typically invoked automatically, so you don't need to use them directly.
+    Claude Code 包括用于特定任务的其他辅助代理。这些通常会自动调用，因此您不需要直接使用它们。
 
-    | Agent             | Model  | When Claude uses it                                      |
-    | :---------------- | :----- | :------------------------------------------------------- |
-    | statusline-setup  | Sonnet | When you run `/statusline` to configure your status line |
-    | claude-code-guide | Haiku  | When you ask questions about Claude Code features        |
+    | Agent             | Model  | Claude 何时使用它                 |
+    | :---------------- | :----- | :--------------------------- |
+    | statusline-setup  | Sonnet | 当您运行 `/statusline` 来配置您的状态行时 |
+    | claude-code-guide | Haiku  | 当您提出关于 Claude Code 功能的问题时    |
   </Tab>
 </Tabs>
 
-Built-in subagents are registered by default in interactive sessions. To restrict them:
+内置 subagents 在交互式会话中默认被注册。要限制它们：
 
-* To block a specific built-in type, add it to `permissions.deny` as shown in [Disable specific subagents](#disable-specific-subagents).
-* To prevent Claude from delegating to any subagent, deny the `Agent` tool itself with [`permissions.deny`](/docs/en/permissions#tool-specific-permission-rules).
-* {/* min-version: 2.1.198 */}To remove only the built-in `Explore` and `Plan` subagents, set [`CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1`](/docs/en/env-vars). Claude reads and explores files directly instead of delegating to them. Requires Claude Code v2.1.198 or later.
-* In [non-interactive mode](/docs/en/headless) and the [Agent SDK](/docs/en/agent-sdk/overview), set [`CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1`](/docs/en/env-vars) to remove all built-in types and supply only your own.
+* 要阻止特定的内置类型，请将其添加到 `permissions.deny`，如[禁用特定 subagents](#disable-specific-subagents) 中所示。
+* 要防止 Claude 委托给任何 subagent，请使用 [`permissions.deny`](/docs/zh-CN/permissions#tool-specific-permission-rules) 拒绝 `Agent` 工具本身。
+* {/* min-version: 2.1.198 */}要仅移除内置的 `Explore` 和 `Plan` subagents，请设置 [`CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1`](/docs/zh-CN/env-vars)。Claude 直接读取和探索文件，而不是委托给它们。需要 Claude Code v2.1.198 或更高版本。
+* 在[非交互模式](/docs/zh-CN/headless) 和 [Agent SDK](/docs/zh-CN/agent-sdk/overview) 中，设置 [`CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1`](/docs/zh-CN/env-vars) 以移除所有内置类型并仅提供您自己的。
 
-Beyond these built-in subagents, you can create your own with custom prompts, tool restrictions, permission modes, hooks, and skills. The following sections show how to get started and customize subagents.
+除了这些内置 subagents，您可以创建自己的，具有自定义提示、工具限制、权限模式、hooks 和 skills。以下部分展示了如何开始和自定义 subagents。
 
-## Quickstart: create your first subagent
+<h2 id="quickstart-create-your-first-subagent">
+  快速入门：创建您的第一个 subagent
+</h2>
 
-Subagents are Markdown files with YAML frontmatter. To create one, ask Claude to write it for you, or [write the file yourself](#write-subagent-files).
+Subagents 是带有 YAML frontmatter 的 Markdown 文件。要创建一个，请要求 Claude 为您编写，或者 [自己编写文件](#write-subagent-files)。
 
-{/* min-version: 2.1.198 */}As of v2.1.198, the `/agents` command no longer opens the interactive creation wizard; running it prints a reminder to ask Claude or edit `.claude/agents/` directly. Subagent files, frontmatter fields, and the `.claude/agents/` and `~/.claude/agents/` locations are unchanged; only the terminal wizard is removed.
+{/* min-version: 2.1.198 */}从 v2.1.198 开始，`/agents` 命令不再打开交互式创建向导；运行它会打印一个提醒，要求您询问 Claude 或直接编辑 `.claude/agents/`。Subagent 文件、frontmatter 字段以及 `.claude/agents/` 和 `~/.claude/agents/` 位置保持不变；仅删除了终端向导。
 
-This walkthrough creates a user-level subagent that reviews code and suggests improvements.
+本演练创建一个用户级 subagent，用于审查代码并建议改进。
 
 <Steps>
-  <Step title="Ask Claude to create the subagent">
-    In Claude Code, describe the subagent you want and where to save it:
+  <Step title="要求 Claude 创建 subagent">
+    在 Claude Code 中，描述您想要的 subagent 及其保存位置：
 
     ```text wrap theme={null}
     Create a personal code-improver subagent in ~/.claude/agents/ that scans
@@ -107,11 +111,11 @@ This walkthrough creates a user-level subagent that reviews code and suggests im
     provide an improved version. Make it read-only and have it use Sonnet.
     ```
 
-    Claude writes the file with a `name`, a `description`, a `tools` list, a `model`, and a system prompt.
+    Claude 使用 `name`、`description`、`tools` 列表、`model` 和系统提示来编写文件。
   </Step>
 
-  <Step title="Review the file">
-    Open `~/.claude/agents/code-improver.md` and confirm the frontmatter matches what you asked for. The result looks like this:
+  <Step title="审查文件">
+    打开 `~/.claude/agents/code-improver.md` 并确认 frontmatter 与您的要求相符。结果如下所示：
 
     ```markdown theme={null}
     ---
@@ -125,61 +129,65 @@ This walkthrough creates a user-level subagent that reviews code and suggests im
     the problem, show the current code, and provide an improved version.
     ```
 
-    Because the file lives in `~/.claude/agents/`, the subagent is available in every project on your machine. To scope it to one project instead, move it to that project's `.claude/agents/` directory. [Choose the subagent scope](#choose-the-subagent-scope) compares the two.
+    因为该文件位于 `~/.claude/agents/`，所以 subagent 在您机器上的每个项目中都可用。要将其范围限制在一个项目中，请将其移动到该项目的 `.claude/agents/` 目录。[选择 subagent 范围](#choose-the-subagent-scope) 比较了两者。
   </Step>
 
-  <Step title="Try it out">
-    Ask Claude to delegate to the new subagent:
+  <Step title="尝试一下">
+    要求 Claude 委托给新的 subagent：
 
     ```text wrap theme={null}
     Use the code-improver agent to suggest improvements in this project
     ```
 
-    Claude delegates to your new subagent, which scans the codebase and returns improvement suggestions.
+    Claude 委托给您的新 subagent，它扫描代码库并返回改进建议。
 
-    If Claude can't find the new subagent, restart Claude Code and try again. This happens only when `~/.claude/agents/` didn't exist before the session started, because a running session doesn't detect a newly created `agents` directory.
+    如果 Claude 找不到新的 subagent，请重新启动 Claude Code 并重试。这仅在会话开始前 `~/.claude/agents/` 不存在时发生，因为运行中的会话不会检测到新创建的 `agents` 目录。
   </Step>
 </Steps>
 
-You now have a subagent you can use in any project on your machine to analyze codebases and suggest improvements.
+现在您有了一个 subagent，可以在您机器上的任何项目中使用它来分析代码库并建议改进。
 
-You can also write subagent files by hand, define them via CLI flags, or distribute them through plugins. The following sections cover all configuration options.
+您也可以手动编写 subagent 文件、通过 CLI 标志定义它们，或通过 plugins 分发它们。以下部分涵盖所有配置选项。
 
 <Note>
-  On Claude Code v2.1.197 and earlier, `/agents` opens an interactive wizard with a **Running** tab that lists live subagents and a **Library** tab for creating, editing, and deleting them. {/* max-version: 2.1.197 */}
+  在 Claude Code v2.1.197 及更早版本中，`/agents` 打开一个交互式向导，其中有一个 **Running** 选项卡列出实时 subagents，以及一个 **Library** 选项卡用于创建、编辑和删除它们。{/* max-version: 2.1.197 */}
 </Note>
 
-## Configure subagents
+<h2 id="configure-subagents">
+  配置 subagents
+</h2>
 
-A subagent's file location determines who it's available to, and its frontmatter determines what it can do. This section covers where subagent files live and every field they support.
+一个 subagent 的文件位置决定了谁可以使用它，其 frontmatter 决定了它可以做什么。本节涵盖 subagent 文件的位置以及它们支持的每个字段。
 
-### Choose the subagent scope
+<h3 id="choose-the-subagent-scope">
+  选择 subagent 范围
+</h3>
 
-Store subagent files in different locations depending on scope. When multiple subagents share the same name, Claude Code uses the one from the higher-priority location.
+根据范围将 subagent 文件存储在不同的位置。当多个 subagents 共享相同的名称时，Claude Code 使用来自更高优先级位置的那个。
 
-| Location                     | Scope                   | Priority    | How to create                                 |
-| :--------------------------- | :---------------------- | :---------- | :-------------------------------------------- |
-| Managed settings             | Organization-wide       | 1 (highest) | Deployed via [managed settings](/docs/en/settings) |
-| `--agents` CLI flag          | Current session         | 2           | Pass JSON when launching Claude Code          |
-| `.claude/agents/`            | Current project         | 3           | Ask Claude, or create the file manually       |
-| `~/.claude/agents/`          | All your projects       | 4           | Ask Claude, or create the file manually       |
-| Plugin's `agents/` directory | Where plugin is enabled | 5 (lowest)  | Installed with [plugins](/docs/en/plugins)         |
+| Location              | Scope         | Priority | 如何创建                                      |
+| :-------------------- | :------------ | :------- | :---------------------------------------- |
+| 托管设置                  | 组织范围          | 1（最高）    | 通过 [managed settings](/docs/zh-CN/settings) 部署 |
+| `--agents` CLI 标志     | 当前会话          | 2        | 启动 Claude Code 时传递 JSON                   |
+| `.claude/agents/`     | 当前项目          | 3        | 询问 Claude，或手动创建文件                         |
+| `~/.claude/agents/`   | 所有您的项目        | 4        | 询问 Claude，或手动创建文件                         |
+| Plugin 的 `agents/` 目录 | 启用 plugin 的位置 | 5（最低）    | 与 [plugins](/docs/zh-CN/plugins) 一起安装          |
 
-**Project subagents** (`.claude/agents/`) are ideal for subagents specific to a codebase. Check them into version control so your team can use and improve them collaboratively.
+**项目 subagents**（`.claude/agents/`）非常适合特定于代码库的 subagents。将它们检入版本控制，以便您的团队可以协作使用和改进它们。
 
-Project subagents are discovered by walking up from the current working directory, so every `.claude/agents/` between there and the repository root is scanned. {/* min-version: 2.1.178 */}As of v2.1.178, when more than one of these nested directories defines the same `name`, Claude Code uses the definition closest to the working directory.
+项目 subagents 通过从当前工作目录向上遍历来发现，因此会扫描那里和存储库根目录之间的每个 `.claude/agents/`。{/* min-version: 2.1.178 */}从 v2.1.178 开始，当这些嵌套目录中的多个目录定义相同的 `name` 时，Claude Code 使用最接近工作目录的定义。
 
-Directories added with `--add-dir` are also scanned: a `.claude/agents/` folder inside an added directory loads alongside project subagents. See [Additional directories](/docs/en/permissions#additional-directories-grant-file-access-not-configuration) for which other configuration types load from `--add-dir`. To share subagents across projects without `--add-dir`, use `~/.claude/agents/` or a [plugin](/docs/en/plugins).
+使用 `--add-dir` 添加的目录也会被扫描：添加目录内的 `.claude/agents/` 文件夹与项目 subagents 一起加载。有关哪些其他配置类型从 `--add-dir` 加载，请参阅 [Additional directories](/docs/zh-CN/permissions#additional-directories-grant-file-access-not-configuration)。要在没有 `--add-dir` 的情况下跨项目共享 subagents，请使用 `~/.claude/agents/` 或 [plugin](/docs/zh-CN/plugins)。
 
-**User subagents** (`~/.claude/agents/`) are personal subagents available in all your projects.
+**用户 subagents**（`~/.claude/agents/`）是在所有项目中可用的个人 subagents。
 
-Claude Code scans `.claude/agents/` and `~/.claude/agents/` recursively, so you can organize definitions into subfolders such as `agents/review/` or `agents/research/`. The subdirectory path doesn't affect how a subagent is identified or invoked, because identity comes only from the `name` frontmatter field.
+Claude Code 递归扫描 `.claude/agents/` 和 `~/.claude/agents/`，因此您可以将定义组织到子文件夹中，例如 `agents/review/` 或 `agents/research/`。子目录路径不会影响 subagent 的识别或调用方式，因为身份仅来自 `name` frontmatter 字段。
 
-Keep `name` values unique across the whole tree: if two files under the same `.claude/agents/` directory, including its subfolders, declare the same name, Claude Code loads only one of them, chosen by filesystem read order rather than a documented precedence. Across nested project directories, the definition closest to the working directory wins, as described above. {/* min-version: 2.1.205 */}The [`/doctor`](/docs/en/commands#all-commands) setup checkup reports files in the same directory that share a name and proposes renaming or removing all but one. Before v2.1.205, `/doctor` opened a diagnostics screen that listed duplicates and showed which definition was active.
+在整个树中保持 `name` 值唯一：如果同一 `.claude/agents/` 目录下的两个文件（包括其子文件夹）声明相同的名称，Claude Code 仅加载其中一个，由文件系统读取顺序选择，而不是有文档记录的优先级。在嵌套项目目录中，最接近工作目录的定义获胜，如上所述。{/* min-version: 2.1.205 */}[`/doctor`](/docs/zh-CN/commands#all-commands) 设置检查报告同一目录中共享名称的文件，并建议重命名或删除除一个之外的所有文件。在 v2.1.205 之前，`/doctor` 打开一个诊断屏幕，列出重复项并显示哪个定义是活跃的。
 
-Plugin `agents/` directories are also scanned recursively. Unlike project and user scopes, a subfolder inside a plugin's `agents/` directory becomes part of the [scoped identifier](#invoke-subagents-explicitly): a file at `agents/review/security.md` in plugin `my-plugin` registers as `my-plugin:review:security`.
+Plugin `agents/` 目录也会被递归扫描。与项目和用户范围不同，plugin 的 `agents/` 目录内的子文件夹成为 [scoped identifier](#invoke-subagents-explicitly) 的一部分：plugin `my-plugin` 中位于 `agents/review/security.md` 的文件注册为 `my-plugin:review:security`。
 
-**CLI-defined subagents** are passed as JSON when launching Claude Code. They exist only for that session and aren't saved to disk, making them useful for quick testing or automation scripts. You can define multiple subagents in a single `--agents` call:
+**CLI 定义的 subagents** 在启动 Claude Code 时作为 JSON 传递。它们仅存在于该会话中，不会保存到磁盘，使其对快速测试或自动化脚本很有用。您可以在单个 `--agents` 调用中定义多个 subagents：
 
 <Tabs>
   <Tab title="macOS, Linux, WSL">
@@ -219,29 +227,31 @@ Plugin `agents/` directories are also scanned recursively. Unlike project and us
   </Tab>
 </Tabs>
 
-The `--agents` flag accepts JSON with the same [frontmatter](#supported-frontmatter-fields) fields as file-based subagents: `description`, `prompt`, `tools`, `disallowedTools`, `model`, `permissionMode`, `mcpServers`, `hooks`, `maxTurns`, `skills`, `initialPrompt`, `memory`, `effort`, `background`, `isolation`, and `color`. Use `prompt` for the system prompt, equivalent to the markdown body in file-based subagents.
+`--agents` 标志接受 JSON，具有与基于文件的 subagents 相同的 [frontmatter](#supported-frontmatter-fields) 字段：`description`、`prompt`、`tools`、`disallowedTools`、`model`、`permissionMode`、`mcpServers`、`hooks`、`maxTurns`、`skills`、`initialPrompt`、`memory`、`effort`、`background`、`isolation` 和 `color`。对系统提示使用 `prompt`，等同于基于文件的 subagents 中的 markdown 正文。
 
-**Managed subagents** are deployed by organization administrators. Place markdown files in `.claude/agents/` inside the [managed settings directory](/docs/en/settings#settings-files), using the same frontmatter format as project and user subagents. Managed definitions take precedence over project and user subagents with the same name.
+**托管 subagents** 由组织管理员部署。在 [managed settings directory](/docs/zh-CN/settings#settings-files) 内的 `.claude/agents/` 中放置 markdown 文件，使用与项目和用户 subagents 相同的 frontmatter 格式。托管定义优先于具有相同名称的项目和用户 subagents。
 
-**Plugin subagents** come from [plugins](/docs/en/plugins) you've installed. They load automatically alongside your custom subagents and appear in the @-mention typeahead under their scoped name. See the [plugin components reference](/docs/en/plugins-reference#agents) for details on creating plugin subagents.
+**Plugin subagents** 来自您已安装的 [plugins](/docs/zh-CN/plugins)。它们与您的自定义 subagents 一起加载，并在 @-mention 类型提前中以其范围名称出现。有关创建 plugin subagents 的详细信息，请参阅 [plugin 组件参考](/docs/zh-CN/plugins-reference#agents)。
 
 <Note>
-  For security reasons, plugin subagents don't support the `hooks`, `mcpServers`, or `permissionMode` frontmatter fields. These fields are ignored when loading agents from a plugin. If you need them, copy the agent file into `.claude/agents/` or `~/.claude/agents/`. You can also add rules to [`permissions.allow`](/docs/en/settings#permission-settings) in `settings.json` or `settings.local.json`, but these rules apply to the entire session, not only the plugin subagent.
+  出于安全原因，plugin subagents 不支持 `hooks`、`mcpServers` 或 `permissionMode` frontmatter 字段。加载来自 plugin 的代理时，这些字段被忽略。如果您需要它们，请将代理文件复制到 `.claude/agents/` 或 `~/.claude/agents/`。您也可以在 `settings.json` 或 `settings.local.json` 中向 [`permissions.allow`](/docs/zh-CN/settings#permission-settings) 添加规则，但这些规则适用于整个会话，而不仅仅是 plugin subagent。
 </Note>
 
-Subagent definitions from any of these scopes are also available to [agent teams](/docs/en/agent-teams#use-subagent-definitions-for-teammates): when spawning a teammate, you can reference a subagent type and the teammate uses its `tools` and `model`, with the definition's body appended to the teammate's system prompt as additional instructions. See [agent teams](/docs/en/agent-teams#use-subagent-definitions-for-teammates) for which frontmatter fields apply on that path.
+来自任何这些范围的 subagent 定义也可用于 [agent teams](/docs/zh-CN/agent-teams#use-subagent-definitions-for-teammates)：当生成一个队友时，您可以引用一个 subagent 类型，队友使用其 `tools` 和 `model`，定义的正文作为额外指令附加到队友的系统提示。有关哪些 frontmatter 字段适用于该路径，请参阅 [agent teams](/docs/zh-CN/agent-teams#use-subagent-definitions-for-teammates)。
 
-### Write subagent files
+<h3 id="write-subagent-files">
+  编写 subagent 文件
+</h3>
 
-Subagent files use YAML frontmatter for configuration, followed by the system prompt in Markdown:
+Subagent 文件使用 YAML frontmatter 进行配置，然后是 Markdown 中的系统提示：
 
 <Note>
-  Claude Code watches `~/.claude/agents/` and `.claude/agents/`. When you add or edit a subagent file on disk, or ask Claude to write one for you, Claude Code detects the change within a few seconds and the next delegation uses the updated definition, with no restart needed.
+  Claude Code 监视 `~/.claude/agents/` 和 `.claude/agents/`。当您在磁盘上添加或编辑 subagent 文件，或要求 Claude 为您编写一个时，Claude Code 会在几秒内检测到更改，下一次委托使用更新的定义，无需重启。
 
-  Two cases still need a restart:
+  两种情况仍然需要重启：
 
-  * The watcher covers only directories that existed when the session started, so after creating a scope's first agent file in a new `agents` directory, restart to load it.
-  * Sessions started with `--disable-slash-commands` don't watch these directories at all.
+  * 监视器仅涵盖会话启动时存在的目录，因此在新 `agents` 目录中创建范围的第一个代理文件后，重启以加载它。
+  * 使用 `--disable-slash-commands` 启动的会话根本不监视这些目录。
 </Note>
 
 ```markdown theme={null}
@@ -256,88 +266,82 @@ You are a code reviewer. When invoked, analyze the code and provide
 specific, actionable feedback on quality, security, and best practices.
 ```
 
-The frontmatter defines the subagent's metadata and configuration. The body becomes the system prompt that guides the subagent's behavior. Subagents receive only this system prompt plus basic environment details like the working directory, not the full Claude Code system prompt.
+Frontmatter 定义了 subagent 的元数据和配置。正文成为指导 subagent 行为的系统提示。Subagents 仅接收此系统提示（加上基本环境详细信息，如工作目录），而不是完整的 Claude Code 系统提示。
 
-In [non-interactive mode](/docs/en/headless), the [`--append-subagent-system-prompt`](/docs/en/cli-reference#cli-flags) flag appends the text you provide to the end of every subagent's system prompt, including nested subagents. Requires Claude Code v2.1.205 or later.
+在 [non-interactive mode](/docs/zh-CN/headless) 中，[`--append-subagent-system-prompt`](/docs/zh-CN/cli-reference#cli-flags) 标志将您提供的文本附加到每个 subagent 的系统提示末尾，包括嵌套 subagents。需要 Claude Code v2.1.205 或更高版本。
 
-A subagent starts in the main conversation's current working directory. Within a subagent, `cd` commands don't persist between Bash or PowerShell tool calls and don't affect the main conversation's working directory. To give the subagent an isolated copy of the repository instead, set [`isolation: worktree`](#supported-frontmatter-fields).
+一个 subagent 在主对话的当前工作目录中启动。在 subagent 中，`cd` 命令不会在 Bash 或 PowerShell 工具调用之间持续，也不会影响主对话的工作目录。要给 subagent 一个隔离的存储库副本，请改为设置 [`isolation: worktree`](#supported-frontmatter-fields)。
 
-{/* min-version: 2.1.203 */}A subagent with `isolation: worktree` runs its Bash and PowerShell commands inside its worktree. A command whose working directory resolves to your main checkout instead, for example because the worktree directory was removed while the subagent was running, fails with an error. Before v2.1.203, such a command could run in the main checkout.
+{/* min-version: 2.1.203 */}具有 `isolation: worktree` 的 subagent 在其 worktree 内运行其 Bash 和 PowerShell 命令。一个工作目录解析到您的主检出的命令，例如因为 worktree 目录在 subagent 运行时被删除，会失败并出现错误。在 v2.1.203 之前，这样的命令可能在主检出中运行。
 
-{/* min-version: 2.1.210 */}This working-directory check covers the whole repository containing the directory you launched Claude Code from. When your session runs in a linked [worktree](/docs/en/worktrees) of its own, the check also covers the main checkout that worktree is linked from. Before v2.1.210, the check covered only the launch directory itself. A command whose working directory resolved elsewhere in the same repository, such as the repository root when you launched Claude Code from a monorepo subdirectory, ran there instead of failing.
+<h4 id="supported-frontmatter-fields">
+  支持的 frontmatter 字段
+</h4>
 
-{/* min-version: 2.1.216 */}For Bash commands, Claude Code also checks the command itself: a command that redirects git into the main checkout fails with an error, whether it uses `git -C`, `--git-dir`, a `GIT_DIR` or `GIT_WORK_TREE` variable, or a `cd` into the main checkout first. A command too complex to check also fails, with an error telling Claude to split it into separate plain commands. This check applies to Bash only; PowerShell commands get only the working-directory check.
+以下字段可以在 YAML frontmatter 中使用。只有 `name` 和 `description` 是必需的。
 
-#### Supported frontmatter fields
+| Field             | 必需 | Description                                                                                                                                                                                                                                                     |
+| :---------------- | :- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`            | 是  | 使用小写字母和连字符的唯一标识符。[Hooks](/docs/zh-CN/hooks#subagentstart) 将此值作为 `agent_type` 接收。文件名不必匹配                                                                                                                                                                              |
+| `description`     | 是  | Claude 何时应该委托给此 subagent                                                                                                                                                                                                                                        |
+| `tools`           | 否  | [Tools](#available-tools) subagent 可以使用。如果省略，继承所有工具。要将 Skills 预加载到上下文中，请使用 `skills` 字段而不是在此处列出 `Skill`                                                                                                                                                          |
+| `disallowedTools` | 否  | 要拒绝的工具，从继承或指定的列表中删除                                                                                                                                                                                                                                             |
+| `model`           | 否  | [Model](#choose-a-model) 使用：`sonnet`、`opus`、`haiku`、`fable`、完整模型 ID（例如，`claude-opus-4-8`）或 `inherit`。默认为 `inherit`                                                                                                                                              |
+| `permissionMode`  | 否  | [Permission mode](#permission-modes)：`default`、`acceptEdits`、`auto`、`dontAsk`、`bypassPermissions`、`plan` 或 {/* min-version: 2.1.200 */}`manual` 作为 `default` 的别名。`manual` 别名需要 Claude Code v2.1.200 或更高版本。对于 [plugin subagents](#choose-the-subagent-scope) 被忽略 |
+| `maxTurns`        | 否  | subagent 停止前的最大代理轮数                                                                                                                                                                                                                                             |
+| `skills`          | 否  | [Skills](/docs/zh-CN/skills) 在启动时加载到 subagent 的上下文中。注入完整的技能内容，而不仅仅是描述。Subagents 仍然可以通过 Skill 工具调用未列出的项目、用户和 plugin 技能                                                                                                                                                |
+| `mcpServers`      | 否  | [MCP servers](/docs/zh-CN/mcp) 对此 subagent 可用。每个条目要么是引用已配置服务器的服务器名称（例如，`"slack"`），要么是内联定义，其中服务器名称为键，完整的 [MCP server config](/docs/zh-CN/mcp#installing-mcp-servers) 为值。对于 [plugin subagents](#choose-the-subagent-scope) 被忽略                                              |
+| `hooks`           | 否  | [Lifecycle hooks](#define-hooks-for-subagents) 限定于此 subagent。对于 [plugin subagents](#choose-the-subagent-scope) 被忽略                                                                                                                                              |
+| `memory`          | 否  | [Persistent memory scope](#enable-persistent-memory)：`user`、`project` 或 `local`。启用跨会话学习                                                                                                                                                                         |
+| `background`      | 否  | 设置为 `true` 以始终将此 subagent 作为 [background task](#run-subagents-in-foreground-or-background) 运行，即使 Claude 需要其结果。未设置时，Claude 选择，{/* min-version: 2.1.198 */}从 v2.1.198 开始，它默认在后台运行 subagents                                                                       |
+| `effort`          | 否  | 此 subagent 活跃时的努力级别。覆盖会话努力级别。默认：从会话继承。选项：`low`、`medium`、`high`、`xhigh`、`max`；可用级别取决于模型                                                                                                                                                                          |
+| `isolation`       | 否  | 设置为 `worktree` 以在临时 [git worktree](/docs/zh-CN/worktrees) 中运行 subagent，为其提供存储库的隔离副本，默认从您的 [default branch](/docs/zh-CN/worktrees#choose-the-base-branch) 分支，而不是父会话的 `HEAD`。如果 subagent 不进行任何更改，worktree 会自动清理                                                             |
+| `color`           | 否  | Subagent 在任务列表和转录中的显示颜色。接受 `red`、`blue`、`green`、`yellow`、`purple`、`orange`、`pink` 或 `cyan`                                                                                                                                                                      |
+| `initialPrompt`   | 否  | 当此代理作为主会话代理运行时（通过 `--agent` 或 `agent` 设置），自动提交为第一个用户轮次。[Commands](/docs/zh-CN/commands) 和 [skills](/docs/zh-CN/skills) 被处理。前置于任何用户提供的提示                                                                                                                                   |
 
-The following fields can be used in the YAML frontmatter. Only `name` and `description` are required.
+<h3 id="choose-a-model">
+  选择模型
+</h3>
 
-| Field             | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| :---------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `name`            | Yes      | Unique identifier using lowercase letters and hyphens. [Hooks](/docs/en/hooks#subagentstart) receive this value as `agent_type`. The filename doesn't have to match. {/* min-version: 2.1.218 */}Names can't contain `:`, which is reserved for [plugin-scoped identifiers](/docs/en/plugins) such as `my-plugin:reviewer`. Claude Code doesn't load a file whose name contains one and logs an error to the debug log. Before v2.1.218, such names were accepted |
-| `description`     | Yes      | When Claude should delegate to this subagent                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `tools`           | No       | [Tools](#available-tools) the subagent can use. Inherits every tool available to subagents if omitted. If no entry in the list resolves to a tool, the subagent usually [fails to launch](/docs/en/errors#agent-would-be-spawned-with-zero-tools) with an error naming the entries. To preload Skills into context, use the `skills` field rather than listing `Skill` here                                                                                  |
-| `disallowedTools` | No       | Tools to deny, removed from inherited or specified list                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `model`           | No       | [Model](#choose-a-model) to use: `sonnet`, `opus`, `haiku`, `fable`, a full model ID (for example, `claude-opus-5`), or `inherit`. Defaults to `inherit`                                                                                                                                                                                                                                                                                                |
-| `permissionMode`  | No       | [Permission mode](#permission-modes): `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan`, or {/* min-version: 2.1.200 */}`manual` as an alias for `default`. The `manual` alias requires Claude Code v2.1.200 or later. Ignored for [plugin subagents](#choose-the-subagent-scope)                                                                                                                                                |
-| `maxTurns`        | No       | Maximum number of agentic turns before the subagent stops                                                                                                                                                                                                                                                                                                                                                                                               |
-| `skills`          | No       | [Skills](/docs/en/skills) to preload into the subagent's context at startup. The full skill content is injected, not only the description. Subagents can still invoke unlisted project, user, and plugin skills through the Skill tool                                                                                                                                                                                                                       |
-| `mcpServers`      | No       | [MCP servers](/docs/en/mcp) available to this subagent. Each entry is either a server name referencing an already-configured server (e.g., `"slack"`) or an inline definition with the server name as key and a full [MCP server config](/docs/en/mcp#installing-mcp-servers) as value. Ignored for [plugin subagents](#choose-the-subagent-scope)                                                                                                                |
-| `hooks`           | No       | [Lifecycle hooks](#define-hooks-for-subagents) scoped to this subagent. Ignored for [plugin subagents](#choose-the-subagent-scope)                                                                                                                                                                                                                                                                                                                      |
-| `memory`          | No       | [Persistent memory scope](#enable-persistent-memory): `user`, `project`, or `local`. Enables cross-session learning                                                                                                                                                                                                                                                                                                                                     |
-| `background`      | No       | Set to `true` to always run this subagent as a [background task](#run-subagents-in-foreground-or-background), even when Claude needs its result right away. When unset, Claude chooses, and {/* min-version: 2.1.198 */}as of v2.1.198 it runs subagents in the background by default                                                                                                                                                                   |
-| `effort`          | No       | Effort level when this subagent is active. Overrides the session effort level. Default: inherits from session. Options: `low`, `medium`, `high`, `xhigh`, `max`; available levels depend on the model                                                                                                                                                                                                                                                   |
-| `isolation`       | No       | Set to `worktree` to run the subagent in a temporary [git worktree](/docs/en/worktrees), giving it an isolated copy of the repository branched by default from your [default branch](/docs/en/worktrees#choose-the-base-branch) rather than the parent session's `HEAD`. The worktree is automatically cleaned up if the subagent makes no changes                                                                                                                |
-| `color`           | No       | Display color for the subagent in the task list and transcript. Accepts `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, or `cyan`                                                                                                                                                                                                                                                                                                         |
-| `initialPrompt`   | No       | Auto-submitted as the first user turn when this agent runs as the main session agent (via `--agent` or the `agent` setting). [Commands](/docs/en/commands) and [skills](/docs/en/skills) are processed. Prepended to any user-provided prompt                                                                                                                                                                                                                     |
+`model` 字段控制 subagent 使用的 [AI model](/docs/zh-CN/model-config)：
 
-### Choose a model
+* **Model alias**: 使用可用的别名之一：`sonnet`、`opus`、`haiku` 或 `fable`
+* **Full model ID**: 使用完整的模型 ID，如 `claude-opus-4-8` 或 `claude-sonnet-5`。接受与 `--model` 标志相同的值
+* **inherit**: 使用与主对话相同的模型
+* **Omitted**: 默认为 `inherit` 并使用与主对话相同的模型
 
-The `model` field controls which [AI model](/docs/en/model-config) the subagent uses:
+当 Claude 调用 subagent 时，它也可以为该特定调用传递 `model` 参数。Claude Code 按以下顺序解析 subagent 的模型：
 
-* **Model alias**: use one of the available aliases: `sonnet`, `opus`, `haiku`, or `fable`
-* **Full model ID**: use a full model ID such as `claude-opus-5` or `claude-sonnet-5`. Accepts the same values as the `--model` flag
-* **inherit**: use the same model as the main conversation
-* **Omitted**: defaults to `inherit` and uses the same model as the main conversation
+1. [`CLAUDE_CODE_SUBAGENT_MODEL`](/docs/zh-CN/model-config#environment-variables) 环境变量，当设置为模型别名或模型 ID 时
+2. 每次调用的 `model` 参数
+3. Subagent 定义的 `model` frontmatter
+4. 主对话的模型
 
-When Claude invokes a subagent, it can also pass a `model` parameter for that specific invocation. Claude Code resolves the subagent's model in this order:
+{/* min-version: 2.1.196 */}从 v2.1.196 开始，将 `CLAUDE_CODE_SUBAGENT_MODEL` 设置为 `inherit` 与不设置它相同：解析继续使用每次调用的 `model` 参数，然后是 frontmatter。在早期版本中，`inherit` 强制 subagents 使用主对话的模型，并忽略这两个来源。
 
-1. The [`CLAUDE_CODE_SUBAGENT_MODEL`](/docs/en/model-config#environment-variables) environment variable, when set to a model alias or model ID
-2. The per-invocation `model` parameter
-3. The subagent definition's `model` frontmatter
-4. The main conversation's model
+环境变量、每次调用的参数和 frontmatter 值会根据您组织的 [`availableModels`](/docs/zh-CN/model-config#restrict-model-selection) 允许列表进行检查。解析为排除模型的值不会被使用，subagent 会改为在继承的模型上运行。
 
-{/* min-version: 2.1.196 */}As of v2.1.196, setting `CLAUDE_CODE_SUBAGENT_MODEL` to `inherit` is the same as leaving it unset: resolution continues with the per-invocation `model` parameter, then the frontmatter. In earlier versions, `inherit` forced subagents onto the main conversation's model and ignored both of those sources.
+{/* min-version: 2.1.198 */}从 v2.1.198 开始，subagents 也继承主对话的 [extended thinking](/docs/zh-CN/model-config#extended-thinking) 配置：如果在您的会话中启用了思考，对于 subagent 也启用，如果关闭，则保持关闭。没有每个 subagent 的思考设置。在 v2.1.198 之前，subagents 运行时禁用了扩展思考，无论主对话的设置如何。
 
-Claude Code checks the environment variable, per-invocation parameter, and frontmatter values against your organization's [`availableModels`](/docs/en/model-config#restrict-model-selection) allowlist. It skips a value that resolves to an excluded model and runs the subagent on the inherited model instead.
+<h3 id="control-subagent-capabilities">
+  控制 subagent 能力
+</h3>
 
-{/* min-version: 2.1.211 */}A per-invocation `model` parameter also applies when the subagent is [resumed or sent a follow-up message](#resume-subagents), so the subagent stays on that model. Before v2.1.211, resuming dropped the per-invocation value and the subagent reverted to its definition's `model` field or, without one, the main conversation's model.
+您可以通过工具访问、权限模式和条件规则来控制 subagents 可以做什么。
 
-{/* min-version: 2.1.198 */}As of v2.1.198, subagents also inherit the main conversation's [extended thinking](/docs/en/model-config#extended-thinking) configuration: if thinking is on in your session, it's on for the subagent, and if it's off, it stays off. There is no per-subagent thinking setting. Before v2.1.198, subagents ran with extended thinking disabled regardless of the main conversation's setting.
+<h4 id="available-tools">
+  可用工具
+</h4>
 
-### Control subagent capabilities
+Subagents 默认继承主对话中可用的 [internal tools](/docs/zh-CN/tools-reference) 和 MCP 工具。以下工具取决于主对话的 UI 或会话状态，即使在 `tools` 字段中列出也不可用于 subagents：
 
-You can control what subagents can do through tool access, permission modes, and conditional rules.
-
-#### Available tools
-
-Subagents inherit the [built-in tools](/docs/en/tools-reference) and MCP tools available in the main conversation, narrowed by two filters: the first removes a short list of tools from every subagent, and the second reduces the built-in tool set for subagents that run in the [background](#run-subagents-in-foreground-or-background), which is the default. [Forks](#fork-the-current-conversation) skip both filters and receive the main conversation's exact tool pool. The first filter removes these tools, even when listed in the `tools` field:
-
-* `Agent`, when the subagent is at the [depth limit](#let-subagents-spawn-their-own-subagents); in a [fork](#fork-the-current-conversation) the tool stays listed but returns an error instead of spawning
 * `AskUserQuestion`
-* `EndConversation`, which can end only the main conversation; see [EndConversation tool behavior](/docs/en/tools-reference#endconversation-tool-behavior)
 * `EnterPlanMode`
-* `ExitPlanMode`, unless the subagent's [`permissionMode`](#permission-modes) is `plan`
+* `ExitPlanMode`，除非 subagent 的 [`permissionMode`](#permission-modes) 是 `plan`
 * `ScheduleWakeup`
-* `TaskOutput`
 * `WaitForMcpServers`
-* `Workflow`
 
-The second filter applies to subagents running in the background. Apart from `Agent` and `ExitPlanMode`, which follow the first filter's conditions wherever the subagent runs, a background subagent keeps every MCP tool but only these built-in tools: `Read`, `Grep`, `Glob`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage`, and `Artifact`. Claude Code removes every other built-in tool from a background subagent, whether inherited or listed in the `tools` field, so the same definition can resolve to different tools in the foreground and the background. The removal reports no error unless it leaves the `tools` list [resolving to nothing](/docs/en/errors#agent-would-be-spawned-with-zero-tools).
-
-Teammates in [agent teams](/docs/en/agent-teams) additionally keep the task tools and cron tools: `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`, `CronCreate`, `CronDelete`, and `CronList`.
-
-To restrict tools, use the `tools` field as an allowlist or the `disallowedTools` field as a denylist. This example uses `tools` to allow only Read, Grep, Glob, and Bash. The subagent can't edit files, write files, or use any MCP tools:
+要限制工具，使用 `tools` 字段（允许列表）或 `disallowedTools` 字段（拒绝列表）。此示例使用 `tools` 来专门允许 Read、Grep、Glob 和 Bash。Subagent 无法编辑文件、写入文件或使用任何 MCP 工具：
 
 ```yaml theme={null}
 ---
@@ -347,21 +351,21 @@ tools: Read, Grep, Glob, Bash
 ---
 ```
 
-This example uses `disallowedTools` to inherit the subagent's tool pool except Write and Edit. The subagent keeps Bash, MCP tools, and the rest of its pool:
+此示例使用 `disallowedTools` 来继承主对话的每个工具，除了 Write 和 Edit。Subagent 保留 Bash、MCP 工具和其他所有内容：
 
 ```yaml theme={null}
 ---
 name: no-writes
-description: Inherits the available tools except file writes
+description: Inherits every tool except file writes
 disallowedTools: Write, Edit
 ---
 ```
 
-If both are set, `disallowedTools` is applied first, then `tools` is resolved against the remaining pool. A tool listed in both is removed.
+如果两者都设置，`disallowedTools` 首先应用，然后 `tools` 针对剩余的池进行解析。同时列在两者中的工具被删除。
 
-When nothing in the `tools` list resolves to a tool, for example because every entry is misspelled or names a tool that isn't available to subagents, Claude Code usually refuses to launch the subagent and the Agent tool returns an error naming the unresolved entries; see [Agent would be spawned with zero tools](/docs/en/errors#agent-would-be-spawned-with-zero-tools) for the message and how to fix each entry. {/* min-version: 2.1.208 */}Before v2.1.208, that subagent launched with no tools and could return an empty or confusing result.
+当 `tools` 列表中没有任何内容解析为工具时，例如因为每个条目都拼写错误或命名了对 subagents 不可用的工具，Claude Code 拒绝启动 subagent，Agent 工具返回一个错误，命名未解析的条目。{/* min-version: 2.1.208 */}在 v2.1.208 之前，该 subagent 启动时没有工具，可能返回空的或令人困惑的结果。
 
-Both fields accept MCP server-level patterns in addition to exact tool names: `mcp__<server>` or `mcp__<server>__*` grants or removes every tool from the named server. In `disallowedTools`, `mcp__*` also removes every MCP tool from any server. This example removes every tool from the `github` MCP server while keeping tools from other servers and the built-in tools in its pool:
+两个字段都接受 MCP 服务器级别的模式，除了精确的工具名称：`mcp__<server>` 或 `mcp__<server>__*` 授予或删除来自命名服务器的每个工具。在 `disallowedTools` 中，`mcp__*` 也删除来自任何服务器的每个 MCP 工具。此示例删除来自 `github` MCP 服务器的每个工具，同时保留来自其他服务器的工具和每个内置工具：
 
 ```yaml theme={null}
 ---
@@ -371,11 +375,13 @@ disallowedTools: mcp__github
 ---
 ```
 
-#### Restrict which subagents can be spawned
+<h4 id="restrict-which-subagents-can-be-spawned">
+  限制可以生成哪些 subagents
+</h4>
 
-When an agent runs as the main thread with `claude --agent`, it can spawn subagents using the Agent tool. To restrict which subagent types it can spawn, use `Agent(agent_type)` syntax in the `tools` field.
+当代理作为主线程运行时，使用 `claude --agent`，它可以使用 Agent 工具生成 subagents。要限制它可以生成的 subagent 类型，在 `tools` 字段中使用 `Agent(agent_type)` 语法。
 
-<Note>In version 2.1.63, the Task tool was renamed to Agent. Existing `Task(...)` references in settings and agent definitions still work as aliases.</Note>
+<Note>在版本 2.1.63 中，Task 工具被重命名为 Agent。设置和代理定义中的现有 `Task(...)` 引用仍然作为别名工作。</Note>
 
 ```yaml theme={null}
 ---
@@ -385,32 +391,34 @@ tools: Agent(worker, researcher), Read, Bash
 ---
 ```
 
-This is an allowlist: only the `worker` and `researcher` subagents can be spawned. If the agent tries to spawn any other type, the request fails and the agent sees only the allowed types in its prompt. To block specific agents while allowing all others, use [`permissions.deny`](#disable-specific-subagents) instead.
+这是一个允许列表：只有 `worker` 和 `researcher` subagents 可以被生成。如果代理尝试生成任何其他类型，请求失败，代理在其提示中仅看到允许的类型。要在允许所有其他类型的同时阻止特定代理，请改用 [`permissions.deny`](#disable-specific-subagents)。
 
-To allow spawning any subagent without restrictions, use `Agent` without parentheses:
+要允许生成任何 subagent 而不受限制，使用不带括号的 `Agent`：
 
 ```yaml theme={null}
 tools: Agent, Read, Bash
 ```
 
-If you omit `Agent` from the `tools` list entirely, the agent can't spawn any subagents with the Agent tool.
+如果 `Agent` 完全从 `tools` 列表中省略，代理无法生成任何 subagents。
 
-The `Agent(agent_type)` allowlist syntax applies only to an agent running as the main thread with `claude --agent`. In a subagent definition, listing `Agent` in `tools` lets that subagent spawn subagents of its own while the [depth limit](#let-subagents-spawn-their-own-subagents) allows it, but any type list inside the parentheses is ignored.
+`Agent(agent_type)` 允许列表语法仅适用于作为主线程运行的代理，使用 `claude --agent`。在 subagent 定义中，在 `tools` 中列出 `Agent` 让该 subagent [生成嵌套 subagents](#spawn-nested-subagents)，但括号内的任何类型列表都被忽略。
 
-#### Scope MCP servers to a subagent
+<h4 id="scope-mcp-servers-to-a-subagent">
+  将 MCP 服务器限定于 subagent
+</h4>
 
-Use the `mcpServers` field to give a subagent access to [MCP](/docs/en/mcp) servers that aren't available in the main conversation. Inline servers defined here are connected when the subagent starts and disconnected when it finishes. String references share the parent session's connection.
+使用 `mcpServers` 字段为 subagent 提供对主对话中不可用的 [MCP](/docs/zh-CN/mcp) 服务器的访问。此处定义的内联服务器在 subagent 启动时连接，在完成时断开连接。字符串引用共享父会话的连接。
 
 <Note>
-  The `mcpServers` field applies in both contexts where an agent file can run:
+  `mcpServers` 字段适用于代理文件可以运行的两个上下文：
 
-  * As a subagent, spawned through the Agent tool or an @-mention
-  * As the main session, launched with [`--agent`](#invoke-subagents-explicitly) or the `agent` setting
+  * 作为 subagent，通过 Agent 工具或 @-mention 生成
+  * 作为主会话，使用 [`--agent`](#invoke-subagents-explicitly) 或 `agent` 设置启动
 
-  When the agent is the main session, inline server definitions connect at startup alongside servers from [`.mcp.json`](/docs/en/mcp) and settings files.
+  当代理是主会话时，内联服务器定义与来自 [`.mcp.json`](/docs/zh-CN/mcp) 和设置文件的服务器一起在启动时连接。
 </Note>
 
-Each entry in the list is either an inline server definition or a string referencing an MCP server already configured in your session:
+列表中的每个条目要么是内联服务器定义，要么是引用会话中已配置的 MCP 服务器的字符串：
 
 ```yaml theme={null}
 ---
@@ -429,44 +437,48 @@ mcpServers:
 Use the Playwright tools to navigate, screenshot, and interact with pages.
 ```
 
-Inline definitions use the same schema as `.mcp.json` server entries, keyed by the server name, and support the `stdio`, `http`, `sse`, and `ws` types.
+内联定义使用与 `.mcp.json` 服务器条目相同的架构，由服务器名称键入，并支持 `stdio`、`http`、`sse` 和 `ws` 类型。
 
-To keep an MCP server out of the main conversation entirely and avoid its tool descriptions consuming context there, define it inline here rather than in `.mcp.json`. The subagent gets the tools; the parent conversation doesn't.
+要将 MCP 服务器保持在主对话之外，并避免其工具描述消耗那里的上下文，请在此处内联定义它，而不是在 `.mcp.json` 中。Subagent 获得工具；父对话不获得。
 
-As of v2.1.153, the MCP restrictions that apply to the main session also cover servers declared in subagent frontmatter:
+从 v2.1.153 开始，适用于主会话的 MCP 限制也涵盖在 subagent frontmatter 中声明的服务器：
 
-* [`--strict-mcp-config`](/docs/en/cli-reference) and [`--bare`](/docs/en/cli-reference)
-* [Enterprise managed MCP configuration](/docs/en/managed-mcp)
-* [`allowedMcpServers` and `deniedMcpServers` policies](/docs/en/managed-mcp#policy-based-control-with-allowlists-and-denylists)
+* [`--strict-mcp-config`](/docs/zh-CN/cli-reference) 和 [`--bare`](/docs/zh-CN/cli-reference)
+* [Enterprise managed MCP configuration](/docs/zh-CN/managed-mcp)
+* [`allowedMcpServers` 和 `deniedMcpServers` 策略](/docs/zh-CN/managed-mcp#policy-based-control-with-allowlists-and-denylists)
 
-When one of these blocks a server, Claude Code skips it and shows a warning naming the blocked servers.
+当其中之一阻止服务器时，Claude Code 会跳过它并显示一个警告，命名被阻止的服务器。
 
-Managed-settings restrictions apply to every subagent regardless of how it is defined. `--strict-mcp-config` doesn't filter servers you pass inline via `--agents` or the SDK `agents` option, since those are explicit caller input.
+托管设置限制适用于每个 subagent，无论如何定义。`--strict-mcp-config` 不会过滤您通过 `--agents` 或 SDK `agents` 选项内联传递的服务器，因为这些是显式调用者输入。
 
-#### Permission modes
+<h4 id="permission-modes">
+  权限模式
+</h4>
 
-The `permissionMode` field controls how the subagent handles permission prompts. Subagents inherit the permission context from the main conversation and can override the mode, except when the parent mode takes precedence as described below.
+`permissionMode` 字段控制 subagent 如何处理权限提示。Subagents 从主对话继承权限上下文，并可以覆盖模式，除非父模式优先，如下所述。
 
-| Mode                | Behavior                                                                                                                                                                                                                                                                                                                        |
-| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `default`           | Standard permission checking with prompts                                                                                                                                                                                                                                                                                       |
-| `acceptEdits`       | Auto-accept file edits and common filesystem commands for paths in the working directory or `additionalDirectories`                                                                                                                                                                                                             |
-| `auto`              | [Auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode): a background classifier reviews commands and protected-directory writes                                                                                                                                                                                     |
-| `dontAsk`           | Auto-deny permission prompts. Explicitly allowed tools still work; `AskUserQuestion`, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) are denied even if you've allowed them |
-| `bypassPermissions` | Skip permission prompts                                                                                                                                                                                                                                                                                                         |
-| `plan`              | Plan mode (read-only exploration)                                                                                                                                                                                                                                                                                               |
+| Mode                | Behavior                                                                                                                                                                                                                        |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `default`           | 标准权限检查，带有提示                                                                                                                                                                                                                     |
+| `acceptEdits`       | 自动接受文件编辑和工作目录或 `additionalDirectories` 中路径的常见文件系统命令                                                                                                                                                                             |
+| `auto`              | [Auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode)：后台分类器审查命令和受保护目录的写入                                                                                                                                        |
+| `dontAsk`           | 自动拒绝权限提示。显式允许的工具仍然工作；`AskUserQuestion`、connector 工具 [您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具被拒绝，即使您已允许它们 |
+| `bypassPermissions` | 跳过权限提示                                                                                                                                                                                                                          |
+| `plan`              | Plan mode（只读探索）                                                                                                                                                                                                                 |
 
 <Warning>
-  Use `bypassPermissions` with caution. It skips permission prompts, allowing the subagent to execute operations without approval, including writes to `.git`, `.config/git`, `.claude`, `.vscode`, `.idea`, `.husky`, `.cargo`, `.devcontainer`, `.yarn`, and `.mvn`.
+  谨慎使用 `bypassPermissions`。它跳过权限提示，允许 subagent 在没有批准的情况下执行操作，包括对 `.git`、`.config/git`、`.claude`、`.vscode`、`.idea`、`.husky`、`.cargo`、`.devcontainer`、`.yarn` 和 `.mvn` 的写入。
 
-  Explicit [`ask` rules](/docs/en/permissions#manage-permissions), connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool), and root and home directory removals such as `rm -rf /` still prompt. See [permission modes](/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) for details.
+  显式 [`ask` 规则](/docs/zh-CN/permissions#manage-permissions)、connector 工具 [您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)、标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具以及根目录和主目录删除（如 `rm -rf /`）仍然会提示。有关详细信息，请参阅 [permission modes](/docs/zh-CN/permission-modes#skip-all-checks-with-bypasspermissions-mode)。
 </Warning>
 
-If the parent uses `bypassPermissions` or `acceptEdits`, this takes precedence and can't be overridden. If the parent uses [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode), the subagent inherits auto mode and any `permissionMode` in its frontmatter is ignored: the classifier evaluates the subagent's tool calls with the same block and allow rules as the parent session.
+如果父级使用 `bypassPermissions` 或 `acceptEdits`，这优先并且无法被覆盖。如果父级使用 [auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode)，subagent 继承 auto mode，其 frontmatter 中的任何 `permissionMode` 被忽略：分类器使用与父会话相同的块和允许规则评估 subagent 的工具调用。
 
-#### Preload skills into subagents
+<h4 id="preload-skills-into-subagents">
+  将技能预加载到 subagents
+</h4>
 
-Use the `skills` field to inject skill content into a subagent's context at startup. This gives the subagent domain knowledge without requiring it to discover and load skills during execution.
+使用 `skills` 字段在启动时将技能内容注入到 subagent 的上下文中。这为 subagent 提供领域知识，而无需在执行期间发现和加载技能。
 
 ```yaml theme={null}
 ---
@@ -480,19 +492,19 @@ skills:
 Implement API endpoints. Follow the conventions and patterns from the preloaded skills.
 ```
 
-The full content of each listed skill is injected into the subagent's context at startup. This field controls which skills are preloaded, not which skills the subagent can access: without it, the subagent can still discover and invoke project, user, and plugin skills through the Skill tool during execution. To prevent a subagent from invoking skills entirely, omit `Skill` from the [`tools`](#available-tools) list or add it to `disallowedTools`.
+每个列出的技能的完整内容被注入到 subagent 的上下文中。此字段控制哪些技能被预加载，而不是 subagent 可以访问哪些技能：没有它，subagent 仍然可以在执行期间通过 Skill 工具发现和调用项目、用户和 plugin 技能。要防止 subagent 完全调用技能，请从 [`tools`](#available-tools) 列表中省略 `Skill` 或将其添加到 `disallowedTools`。
 
-You can't preload skills that set [`disable-model-invocation: true`](/docs/en/skills#control-who-invokes-a-skill), since preloading draws from the same set of skills Claude can invoke. {/* min-version: 2.1.215 */}This includes the bundled `/verify` and `/code-review` skills: only you can run them, so they can't be preloaded either.
-
-If a listed skill is missing or disabled, Claude Code skips it and logs a warning to the debug log.
+您无法预加载设置了 [`disable-model-invocation: true`](/docs/zh-CN/skills#control-who-invokes-a-skill) 的技能，因为预加载来自 Claude 可以调用的相同技能集。如果列出的技能缺失或被禁用，Claude Code 会跳过它并向调试日志记录警告。
 
 <Note>
-  This is the inverse of [running a skill in a subagent](/docs/en/skills#run-skills-in-a-subagent). With `skills` in a subagent, the subagent controls the system prompt and loads skill content. With `context: fork` in a skill, the skill content is injected into the agent you specify. Both use the same underlying system.
+  这与 [在 subagent 中运行技能](/docs/zh-CN/skills#run-skills-in-a-subagent) 相反。使用 subagent 中的 `skills`，subagent 控制系统提示并加载技能内容。使用技能中的 `context: fork`，技能内容被注入到您指定的代理中。两者都使用相同的底层系统。
 </Note>
 
-#### Enable persistent memory
+<h4 id="enable-persistent-memory">
+  启用持久内存
+</h4>
 
-The `memory` field gives the subagent a persistent directory that survives across conversations. The subagent uses this directory to build up knowledge over time, such as codebase patterns, debugging insights, and architectural decisions.
+`memory` 字段为 subagent 提供一个在对话中幸存的持久目录。Subagent 使用此目录随时间积累知识，例如代码库模式、调试见解和架构决策。
 
 ```yaml theme={null}
 ---
@@ -505,28 +517,28 @@ You are a code reviewer. As you review code, update your agent memory with
 patterns, conventions, and recurring issues you discover.
 ```
 
-Choose a scope based on how broadly the memory should apply:
+根据内存应该应用的广泛程度选择范围：
 
-| Scope     | Location                                      | Use when                                                                                   |
-| :-------- | :-------------------------------------------- | :----------------------------------------------------------------------------------------- |
-| `user`    | `~/.claude/agent-memory/<name-of-agent>/`     | the subagent should remember learnings across all projects                                 |
-| `project` | `.claude/agent-memory/<name-of-agent>/`       | the subagent's knowledge is project-specific and shareable via version control             |
-| `local`   | `.claude/agent-memory-local/<name-of-agent>/` | the subagent's knowledge is project-specific but shouldn't be checked into version control |
+| Scope     | Location                                      | 使用时机                          |
+| :-------- | :-------------------------------------------- | :---------------------------- |
+| `user`    | `~/.claude/agent-memory/<name-of-agent>/`     | subagent 应该在所有项目中记住学习         |
+| `project` | `.claude/agent-memory/<name-of-agent>/`       | subagent 的知识是特定于项目的并可通过版本控制共享 |
+| `local`   | `.claude/agent-memory-local/<name-of-agent>/` | subagent 的知识是特定于项目的但不应检入版本控制  |
 
-Subagent memory is part of [auto memory](/docs/en/memory#auto-memory): if you turn auto memory off, with the `autoMemoryEnabled` setting or `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, the `memory` field has no effect and the subagent launches without the memory instructions or the memory tool access described below.
+启用内存时：
 
-When memory is enabled:
+* Subagent 的系统提示包括读取和写入内存目录的说明。
+* Subagent 的系统提示还包括内存目录中 `MEMORY.md` 的前 200 行或 25KB，以先到者为准，以及如果 `MEMORY.md` 超过该限制则策划 `MEMORY.md` 的说明。
+* Read、Write 和 Edit 工具会自动启用，以便 subagent 可以管理其内存文件。
 
-* The subagent's system prompt includes instructions for reading and writing to the memory directory.
-* The subagent's system prompt also includes the first 200 lines or 25KB of `MEMORY.md` in the memory directory, whichever comes first, with instructions to curate `MEMORY.md` if it exceeds that limit.
-* Read, Write, and Edit tools are automatically enabled so the subagent can manage its memory files.
+<h5 id="persistent-memory-tips">
+  持久内存提示
+</h5>
 
-##### Persistent memory tips
-
-* `project` is the recommended default scope. It makes subagent knowledge shareable via version control.
-* Ask the subagent to consult its memory before starting work: "Review this PR, and check your memory for patterns you've seen before."
-* Ask the subagent to update its memory after completing a task: "Now that you're done, save what you learned to your memory." Over time, this builds a knowledge base that makes the subagent more effective.
-* Include memory instructions directly in the subagent's markdown file so it proactively maintains its own knowledge base:
+* `project` 是推荐的默认范围。它使 subagent 知识可通过版本控制共享。
+* 要求 subagent 在开始工作前查阅其内存："Review this PR, and check your memory for patterns you've seen before."
+* 要求 subagent 在完成任务后更新其内存："Now that you're done, save what you learned to your memory." 随着时间的推移，这会建立一个知识库，使 subagent 更有效。
+* 直接在 subagent 的 markdown 文件中包含内存说明，以便它主动维护自己的知识库：
 
   ```markdown theme={null}
   Update your agent memory as you discover codepaths, patterns, library
@@ -535,11 +547,13 @@ When memory is enabled:
   and where.
   ```
 
-#### Conditional rules with hooks
+<h4 id="conditional-rules-with-hooks">
+  使用 hooks 的条件规则
+</h4>
 
-For more dynamic control over tool usage, use `PreToolUse` hooks to validate operations before they execute. This is useful when you need to allow some operations of a tool while blocking others.
+为了更动态地控制工具使用，使用 `PreToolUse` hooks 在执行前验证操作。当您需要允许工具的某些操作同时阻止其他操作时，这很有用。
 
-This example creates a subagent that only allows read-only database queries. The `PreToolUse` hook runs the script specified in `command` before each Bash command executes:
+此示例创建一个仅允许只读数据库查询的 subagent。`PreToolUse` hook 在每个 Bash 命令执行前运行 `command` 中指定的脚本：
 
 ```yaml theme={null}
 ---
@@ -555,7 +569,7 @@ hooks:
 ---
 ```
 
-Claude Code [passes hook input as JSON](/docs/en/hooks#pretooluse-input) via stdin to hook commands. The validation script reads this JSON, extracts the Bash command, and [exits with code 2](/docs/en/hooks#exit-code-2-behavior-per-event) to block write operations:
+Claude Code [通过 stdin 将 hook 输入作为 JSON 传递](/docs/zh-CN/hooks#pretooluse-input) 给 hook 命令。验证脚本读取此 JSON，提取 Bash 命令，并 [以代码 2 退出](/docs/zh-CN/hooks#exit-code-2-behavior-per-event) 以阻止写入操作：
 
 ```bash theme={null}
 #!/bin/bash
@@ -573,19 +587,13 @@ fi
 exit 0
 ```
 
-On macOS and Linux, make the script executable, or the hook fails instead of blocking anything:
+有关完整的输入架构，请参阅 [Hook input](/docs/zh-CN/hooks#pretooluse-input)，有关退出代码如何影响行为，请参阅 [exit codes](/docs/zh-CN/hooks#exit-code-output)。在 Windows 上，在 PowerShell 中编写 hook 脚本，并在 hook 条目中添加 `shell: powershell`，如 [在 PowerShell 中运行 hooks](/docs/zh-CN/hooks#windows-powershell-tool) 中所示。
 
-```bash theme={null}
-chmod +x ./scripts/validate-readonly-query.sh
-```
+<h4 id="disable-specific-subagents">
+  禁用特定 subagents
+</h4>
 
-To test the rule, ask the subagent to run an `UPDATE` statement: the script exits with code 2, Claude Code blocks the command, and the subagent sees the `Blocked: Only SELECT queries are allowed` message.
-
-See [Hook input](/docs/en/hooks#pretooluse-input) for the complete input schema and [exit codes](/docs/en/hooks#exit-code-output) for how exit codes affect behavior. On Windows, write hook scripts in PowerShell and add `shell: powershell` to the hook entry as shown in [running hooks in PowerShell](/docs/en/hooks#windows-powershell-tool).
-
-#### Disable specific subagents
-
-You can prevent Claude from using specific subagents by adding them to the `deny` array in your [settings](/docs/en/settings#permission-settings). Use the format `Agent(subagent-name)` where `subagent-name` matches the subagent's name field.
+您可以通过将 subagents 添加到您的 [settings](/docs/zh-CN/settings#permission-settings) 中的 `deny` 数组来防止 Claude 使用特定 subagents。使用格式 `Agent(subagent-name)`，其中 `subagent-name` 与 subagent 的 name 字段匹配。
 
 ```json theme={null}
 {
@@ -595,44 +603,42 @@ You can prevent Claude from using specific subagents by adding them to the `deny
 }
 ```
 
-This works for both built-in and custom subagents. You can also use the `--disallowedTools` CLI flag:
+这对内置和自定义 subagents 都有效。您也可以使用 `--disallowedTools` CLI 标志：
 
 ```bash theme={null}
 claude --disallowedTools "Agent(Explore)"
 ```
 
-See [Permissions documentation](/docs/en/permissions#tool-specific-permission-rules) for more details on permission rules.
+有关权限规则的更多详细信息，请参阅 [Permissions documentation](/docs/zh-CN/permissions#tool-specific-permission-rules)。
 
-### Define hooks for subagents
+<h3 id="define-hooks-for-subagents">
+  为 subagents 定义 hooks
+</h3>
 
-Subagents can define [hooks](/docs/en/hooks) that run during the subagent's lifecycle. There are two ways to configure hooks:
+Subagents 可以定义在 subagent 的生命周期中运行的 [hooks](/docs/zh-CN/hooks)。有两种方式来配置 hooks：
 
-* **In the subagent's frontmatter**: define hooks that run only while that subagent is active
-* **In `settings.json`**: define session-wide hooks that also fire inside subagents. Tool events such as `PreToolUse` and `PostToolUse` fire for the subagent's tool calls the same way they do in the main conversation, and `SubagentStart` and `SubagentStop` fire when a subagent starts or finishes
+* **在 subagent 的 frontmatter 中**：定义仅在该 subagent 活跃时运行的 hooks
+* **在 `settings.json` 中**：定义在 subagents 启动或停止时在主会话中运行的 hooks
 
-Hooks from [settings files, managed policy settings, and plugins](/docs/en/hooks#hook-locations) all apply inside subagents, so a `PreToolUse` hook in `settings.json` also runs before every tool a subagent uses.
+<h4 id="hooks-in-subagent-frontmatter">
+  Subagent frontmatter 中的 Hooks
+</h4>
 
-#### Hooks in subagent frontmatter
-
-Define hooks directly in the subagent's markdown file. These hooks only run while that specific subagent is active and are cleaned up when it finishes.
+直接在 subagent 的 markdown 文件中定义 hooks。这些 hooks 仅在该特定 subagent 活跃时运行，并在完成时清理。
 
 <Note>
-  Frontmatter hooks fire when the agent is spawned as a subagent through the Agent tool or an @-mention, and when the agent runs as the main session via [`--agent`](#invoke-subagents-explicitly) or the `agent` setting. In the main-session case they run alongside any hooks defined in [`settings.json`](/docs/en/hooks).
+  Frontmatter hooks 在代理通过 Agent 工具或 @-mention 作为 subagent 生成时触发，以及当代理通过 [`--agent`](#invoke-subagents-explicitly) 或 `agent` 设置作为主会话运行时触发。在主会话情况下，它们与在 [`settings.json`](/docs/zh-CN/hooks) 中定义的任何 hooks 一起运行。
 </Note>
 
-{/* min-version: 2.1.218 */}To let a project-level subagent's frontmatter hooks run, accept the [workspace trust dialog](/docs/en/permissions#project-allow-rules-and-workspace-trust) for the folder that contains the agent file. Hooks from user-level subagents in `~/.claude/agents/` and from definitions you pass with `--agents` run without this step. If you added a folder with `--add-dir` from outside your trusted workspace's repository, trust that folder separately: its `.claude/agents/` hooks don't inherit the workspace's grant.
+所有 [hook events](/docs/zh-CN/hooks#hook-events) 都被支持。subagents 最常见的事件是：
 
-Until you trust the folder, the subagent still runs, but Claude Code skips its frontmatter hooks and logs an error to the debug log explaining how to trust the folder. The grant is the same workspace trust approval that covers project settings and project-level hooks. Before v2.1.218, frontmatter hooks could run from folders you hadn't trusted, including in non-interactive sessions.
+| Event         | Matcher input | 何时触发                                   |
+| :------------ | :------------ | :------------------------------------- |
+| `PreToolUse`  | Tool name     | 在 subagent 使用工具之前                      |
+| `PostToolUse` | Tool name     | 在 subagent 使用工具之后                      |
+| `Stop`        | (none)        | 当 subagent 完成时（在运行时转换为 `SubagentStop`） |
 
-All [hook events](/docs/en/hooks#hook-events) are supported. The most common events for subagents are:
-
-| Event         | Matcher input | When it fires                                                       |
-| :------------ | :------------ | :------------------------------------------------------------------ |
-| `PreToolUse`  | Tool name     | Before the subagent uses a tool                                     |
-| `PostToolUse` | Tool name     | After the subagent uses a tool                                      |
-| `Stop`        | (none)        | When the subagent finishes (converted to `SubagentStop` at runtime) |
-
-This example validates Bash commands with the `PreToolUse` hook and runs a linter after file edits with `PostToolUse`:
+此示例使用 `PreToolUse` hook 验证 Bash 命令，并在文件编辑后使用 `PostToolUse` 运行 linter：
 
 ```yaml theme={null}
 ---
@@ -652,20 +658,22 @@ hooks:
 ---
 ```
 
-When the agent is invoked as a subagent, `Stop` hooks in frontmatter are automatically converted to `SubagentStop` events.
+Frontmatter 中的 `Stop` hooks 会自动转换为 `SubagentStop` 事件。
 
-#### Project-level hooks for subagent events
+<h4 id="project-level-hooks-for-subagent-events">
+  用于 subagent 事件的项目级 hooks
+</h4>
 
-Configure hooks in `settings.json` that respond to subagent lifecycle events in the main session.
+在 `settings.json` 中配置 hooks，以响应主会话中的 subagent 生命周期事件。
 
-| Event           | Matcher input   | When it fires                    |
-| :-------------- | :-------------- | :------------------------------- |
-| `SubagentStart` | Agent type name | When a subagent begins execution |
-| `SubagentStop`  | Agent type name | When a subagent completes        |
+| Event           | Matcher input   | 何时触发             |
+| :-------------- | :-------------- | :--------------- |
+| `SubagentStart` | Agent type name | 当 subagent 开始执行时 |
+| `SubagentStop`  | Agent type name | 当 subagent 完成时   |
 
-Both events support matchers to target specific agent types by name. The matcher value is the agent's frontmatter `name` for project-level and user-level subagents, or the plugin-scoped identifier such as `my-plugin:db-agent` for [plugin subagents](/docs/en/plugins). A scoped name contains a colon, so it is evaluated as an [unanchored regular expression](/docs/en/hooks#matcher-patterns); anchor it with `^` and `$`, as in `^my-plugin:db-agent$`, to match only that agent.
+两个事件都支持匹配器以按名称针对特定代理类型。匹配器值是项目级和用户级 subagents 的代理 frontmatter `name`，或 [plugin subagents](/docs/zh-CN/plugins) 的 plugin 范围标识符，例如 `my-plugin:db-agent`。范围名称包含冒号，因此它被评估为 [unanchored regular expression](/docs/zh-CN/hooks#matcher-patterns)；使用 `^` 和 `$` 锚定它，如 `^my-plugin:db-agent$`，以仅匹配该代理。
 
-This example runs a setup script only when the `db-agent` subagent starts, and a cleanup script when any subagent stops:
+此示例仅在 `db-agent` subagent 启动时运行设置脚本，并在任何 subagent 停止时运行清理脚本：
 
 ```json theme={null}
 {
@@ -689,68 +697,72 @@ This example runs a setup script only when the `db-agent` subagent starts, and a
 }
 ```
 
-A hyphenated matcher like `db-agent` matches exactly on Claude Code v2.1.195 or later. On earlier versions it is evaluated as an unanchored regular expression and also fires for any agent type that contains it, such as `prod-db-agent`; anchor it as `^db-agent$` on those versions.
+一个带连字符的匹配器，如 `db-agent`，在 Claude Code v2.1.195 或更高版本上精确匹配。在早期版本上，它被评估为 unanchored regular expression，也会为任何包含它的代理类型触发，例如 `prod-db-agent`；在这些版本上使用 `^db-agent$` 锚定它。
 
-See [Hooks](/docs/en/hooks) for the complete hook configuration format.
+有关完整的 hook 配置格式，请参阅 [Hooks](/docs/zh-CN/hooks)。
 
-## Work with subagents
+<h2 id="work-with-subagents">
+  使用 subagents
+</h2>
 
-### Understand automatic delegation
+<h3 id="understand-automatic-delegation">
+  理解自动委托
+</h3>
 
-Claude automatically delegates tasks based on the task description in your request, the `description` field in subagent configurations, and current context. To encourage proactive delegation, include phrases like "use proactively" in your subagent's description field.
+Claude 根据您请求中的任务描述、subagent 配置中的 `description` 字段和当前上下文自动委托任务。要鼓励主动委托，在您的 subagent 的 description 字段中包含"use proactively"之类的短语。
 
-### Invoke subagents explicitly
+<h3 id="invoke-subagents-explicitly">
+  显式调用 subagents
+</h3>
 
-When automatic delegation isn't enough, you can request a subagent yourself. Three patterns escalate from a one-off suggestion to a session-wide default:
+当自动委托不够时，您可以自己请求 subagent。三种模式从一次性建议升级到会话范围的默认值：
 
-* **Natural language**: name the subagent in your prompt; Claude decides whether to delegate
-* **@-mention**: guarantees the subagent runs for one task
-* **Session-wide**: the whole session uses that subagent's system prompt, tool restrictions, and model via the `--agent` flag or the `agent` setting
+* **自然语言**：在提示中命名 subagent；Claude 决定是否委托
+* **@-mention**：保证 subagent 为一个任务运行
+* **会话范围**：整个会话使用该 subagent 的系统提示、工具限制和模型，通过 `--agent` 标志或 `agent` 设置
 
-For natural language, there's no special syntax. Name the subagent and Claude typically delegates:
+对于自然语言，没有特殊语法。命名 subagent，Claude 通常会委托：
 
 ```text wrap theme={null}
 Use the test-runner subagent to fix failing tests
 Have the code-reviewer subagent look at my recent changes
 ```
 
-**@-mention the subagent.** Type `@` and pick the subagent from the typeahead, the same way you @-mention files. This ensures that specific subagent runs rather than leaving the choice to Claude:
+**@-mention subagent。** 输入 `@` 并从类型提前中选择 subagent，就像您 @-mention 文件一样。这确保特定 subagent 运行，而不是将选择留给 Claude：
 
 ```text wrap theme={null}
 @"code-reviewer (agent)" look at the auth changes
 ```
 
-Your full message still goes to Claude, which writes the subagent's task prompt based on what you asked. The @-mention controls which subagent Claude invokes, not what prompt it receives.
+您的完整消息仍然发送给 Claude，它根据您的要求为 subagent 编写任务提示。@-mention 控制调用哪个 subagent，而不是它接收什么提示。
 
-Subagents provided by an enabled [plugin](/docs/en/plugins) appear in the typeahead under their scoped name, such as `my-plugin:code-reviewer` or `my-plugin:review:security` when the plugin [organizes agents into subfolders](#choose-the-subagent-scope). Named background subagents currently running in the session also appear in the typeahead, showing their status next to the name.
+由启用的 [plugin](/docs/zh-CN/plugins) 提供的 Subagents 在类型提前中显示为其作用域名称，例如 `my-plugin:code-reviewer` 或 `my-plugin:review:security`，当 plugin [将 agents 组织到子文件夹中](#choose-the-subagent-scope)。命名背景 subagents 当前在会话中运行也出现在类型提前中，在名称旁边显示其状态。您也可以手动输入提及而不使用选择器：`@agent-<name>` 用于本地 subagents，或 `@agent-` 后跟 plugin subagents 的作用域名称，例如 `@agent-my-plugin:code-reviewer`。
 
-You can also type the mention manually without using the picker: `@agent-<name>` for local subagents, or `@agent-` followed by the scoped name for plugin subagents, for example `@agent-my-plugin:code-reviewer`. While you type this form the typeahead shows file matches rather than agents. The agent mention still resolves when you submit.
-
-**Run the whole session as a subagent.** Pass [`--agent <name>`](/docs/en/cli-reference) to start a session where the main thread itself takes on that subagent's system prompt, tool restrictions, and model:
+**将整个会话作为 subagent 运行。** 传递 [`--agent <name>`](/docs/zh-CN/cli-reference) 以启动一个会话，其中主线程本身采用该 subagent 的系统提示、工具限制和模型：
 
 ```bash theme={null}
 claude --agent code-reviewer
 ```
 
-The subagent's system prompt replaces the default Claude Code system prompt entirely, the same way [`--system-prompt`](/docs/en/cli-reference) does. `CLAUDE.md` files and project memory still load through the normal message flow. The agent name appears as `@<name>` in the startup header so you can confirm it's active.
+Subagent 的系统提示完全替换默认 Claude Code 系统提示，就像 [`--system-prompt`](/docs/zh-CN/cli-reference) 一样。`CLAUDE.md` 文件和项目内存仍然通过正常消息流加载。代理名称在启动标题中显示为 `@<name>`，以便您可以确认它是活跃的。
 
-This works with built-in and custom subagents, and the choice persists when you resume the session: Claude Code restores the agent's system prompt, tool restrictions, and model along with the conversation. {/* min-version: 2.1.216 */}If the agent no longer exists when you resume, the session continues with the default tools and system prompt and shows a [warning naming the agent](/docs/en/errors#session-agent-no-longer-available).
+这适用于内置和自定义 subagents，当您恢复会话时选择会持续。
 
-For a plugin-provided subagent, you can pass only the agent name and Claude Code finds it:
+对于 plugin 提供的 subagent，您可以仅传递代理名称，Claude Code 会找到它：
 
 ```bash theme={null}
 claude --agent security-reviewer
 ```
 
-If multiple plugins provide agents with the same name, pass the scoped name to disambiguate:
+如果多个 plugins 提供具有相同名称的 agents，传递作用域名称以消除歧义：
 
 ```bash theme={null}
 claude --agent my-plugin:security-reviewer
 ```
 
-If the plugin places the agent in a subfolder of its `agents/` directory, include the subfolder in the scoped name, for example `claude --agent my-plugin:review:security`.
+如果 plugin 将 agent 放在其 `agents/` 目录的子文件夹中，请在作用域名称中包含子文件夹，例如 `claude --agent my-plugin:review:security`。
 
-To make it the default for every session in a project, set `agent` in `.claude/settings.json`:
+要使其成为项目中每个会话的默认值，在 `.claude/settings.json` 中设置 `agent`：
 
 ```json theme={null}
 {
@@ -758,193 +770,158 @@ To make it the default for every session in a project, set `agent` in `.claude/s
 }
 ```
 
-The CLI flag overrides the setting if both are present.
+如果两者都存在，CLI 标志覆盖设置。
 
-### Run subagents in foreground or background
+<h3 id="run-subagents-in-foreground-or-background">
+  在前台或后台运行 subagents
+</h3>
 
-Subagents can run in the foreground or the background:
+Subagents 可以在前台或后台运行：
 
-* **Foreground subagents** block the main conversation until complete. Permission prompts are passed through to you as they come up.
-* **Background subagents** run concurrently while you continue working. {/* min-version: 2.1.186 */}As of v2.1.186, when a background subagent reaches a tool call that needs permission, the prompt surfaces in your main session and names the subagent that is asking. Approve to let the subagent continue, or press Esc to deny that one tool call without stopping the subagent. Before v2.1.186, background subagents auto-denied any tool call that would have prompted.
+* **前台 subagents** 阻塞主对话直到完成。权限提示会在出现时传递给您。
+* **后台 subagents** 在您继续工作时并发运行。{/* min-version: 2.1.186 */}从 v2.1.186 开始，当后台 subagent 到达需要权限的工具调用时，提示会在您的主会话中显示，并命名正在请求的 subagent。批准以让 subagent 继续，或按 Esc 拒绝该单个工具调用而不停止 subagent。在 v2.1.186 之前，后台 subagents 自动拒绝任何会提示的工具调用。
 
-{/* min-version: 2.1.198 */}As of v2.1.198, subagents run in the background by default. Claude runs a subagent in the foreground when it needs the result before continuing. Background subagents run with a [smaller built-in tool set](#available-tools) than foreground subagents, except for conversation forks, and they surface every permission prompt in your main session.
+{/* min-version: 2.1.198 */}从 v2.1.198 开始，subagents 默认在后台运行。Claude 在需要结果才能继续时在前台运行 subagent。默认值改变 subagent 运行的位置，而不是它被允许做什么：后台 subagents 仍然在您的主会话中显示每个权限提示。在 v2.1.198 之前，Claude 根据任务在前台和后台之间选择。
 
-{/* min-version: 2.1.211 */}A background subagent's results reach Claude as a completion notification in a later turn. Claude waits for that notification before reporting the subagent's results, and if you ask about progress first, it reports that the subagent is still running. Before v2.1.211, Claude sometimes reported results for a background subagent that hadn't finished.
+您也可以自己控制这个：
 
-You can also steer this yourself:
+* 要求 Claude 在后台或前台运行任务
+* 按 **Ctrl+B** 将运行中的任务放在后台
 
-* Ask Claude to run a task in the background or in the foreground
-* Press **Ctrl+B** to background a running task
+{/* min-version: 2.1.208 */}完成的后台 subagent 在 [`/tasks`](/docs/zh-CN/commands) 中保持列出，标记为完成并排序在运行工作下方，直到会话清理其任务列表。当 subagent 完成时，其详情视图保持打开。失败或您停止的 Subagents 离开列表。在 v2.1.208 之前，完成的 subagent 在完成时立即离开列表，其详情视图关闭。
 
-{/* min-version: 2.1.208 */}A background subagent that completes stays listed in [`/tasks`](/docs/en/commands), marked done and sorted below running work, until the session cleans up its task list. Its detail view stays open when the subagent finishes. Subagents that fail or that you stop leave the list. Before v2.1.208, a completed subagent left the list the moment it finished and its detail view closed.
+要禁用所有后台任务功能，请将 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` 环境变量设置为 `1`。请参阅 [Environment variables](/docs/zh-CN/env-vars)。
 
-To disable all background task functionality, set the `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` environment variable to `1`. See [Environment variables](/docs/en/env-vars).
+当 [`CLAUDE_CODE_FORK_SUBAGENT`](#fork-the-current-conversation) 设置为 `1` 时，每个 subagent 生成都在后台运行，frontmatter `background` 字段无效，因为 fork 模式从 `Agent` 工具中移除了 `run_in_background` 参数。`CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` 优先于 fork 模式，并将 subagent 生成保持在前台。
 
-When [`CLAUDE_CODE_FORK_SUBAGENT`](#fork-the-current-conversation) is set to `1`, every subagent runs in the background and the frontmatter `background` field has no effect, because fork mode removes the `run_in_background` parameter from the `Agent` tool. `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` takes precedence over fork mode and keeps subagents in the foreground.
+<h3 id="api-errors-in-subagents">
+  Subagents 中的 API 错误
+</h3>
 
-### API errors in subagents
+{/* min-version: 2.1.199 */}从 v2.1.199 开始，subagent 的运行因 API 错误（例如使用限制或重复的服务器错误）而结束时，会向 Claude 报告该失败，而不是返回错误文本，就像它是 subagent 的发现一样。Claude 接收的内容取决于 subagent 运行的位置：
 
-{/* min-version: 2.1.199 */}As of v2.1.199, a subagent whose run ends on an API error, such as a usage limit or a repeated server error, reports that failure back to Claude instead of returning the error text as if it were the subagent's findings. What Claude receives depends on where the subagent ran:
+* **前台**：如果速率限制、过载或服务器错误切断已经产生输出的 subagent，Agent 工具返回该部分输出，并注明 subagent 被切断且未完成其任务。{/* min-version: 2.1.200 */}未产生任何内容的 subagent，或其唯一输出是工具调用的 subagent，失败并出现 [`Agent terminated early due to an API error`](/docs/zh-CN/errors#agent-terminated-early-due-to-an-api-error)，后跟错误详情。在 v2.1.199 中，切断仅工具调用形状的速率限制、过载或服务器错误返回了仅包含切断注记的空部分结果。
+* **后台**：subagent 被标记为失败，Claude 在其结束时接收的消息命名 API 错误并包括 subagent 的最后输出，所以部分工作不会丢失。
 
-* **Foreground**: if a rate limit, overload, or server error cuts off a subagent that already produced text output, the Agent tool returns that partial output with a note that the subagent was cut off and didn't finish its task. {/* min-version: 2.1.200 */}A subagent that produced nothing, or whose only output was tool calls, fails with [`Agent terminated early due to an API error`](/docs/en/errors#agent-terminated-early-due-to-an-api-error), followed by the error detail. In v2.1.199, a rate limit, overload, or server error that cut off the tool-calls-only shape returned an empty partial result containing only the cut-off note instead.
-* **Background**: the subagent is marked failed, and the message Claude receives when it ends names the API error and includes the subagent's last output, so partial work isn't lost.
+一旦底层 API 错误清除，要求 Claude 重试任务或 [恢复 subagent](#resume-subagents)。
 
-Once the underlying API error clears, ask Claude to retry the task or [resume the subagent](#resume-subagents).
+<h3 id="common-patterns">
+  常见模式
+</h3>
 
-### Subagent output scanning
+<h4 id="isolate-high-volume-operations">
+  隔离高容量操作
+</h4>
 
-Claude Code scans each subagent's final report before Claude reads it. A subagent may have read files, web pages, or command output you never reviewed, and text from those sources can carry instructions aimed at the main conversation. The scan never removes or rewords anything; it makes two kinds of change you may notice in a report:
-
-* **Backslash insertion**: the scan inserts a backslash into text that imitates Claude Code's own output, such as a `<system-reminder>` tag or a line starting with `Human:` or `Assistant:`, so the imitation reads as ordinary text instead of being mistaken for part of the conversation.
-* **Marker line**: the scan prepends a line starting with `[harness: subagent output matched instruction-shaped pattern(s):` when the report imitates a tag like `<system-reminder>` or mentions permission settings such as `bypassPermissions` or `--dangerously-skip-permissions`. Permission-setting mentions get the marker line, but the text itself stays as written.
-
-The scan doesn't judge whether content is malicious, and it doesn't change what an instruction in a report can do: a tool call the report leads Claude to make still goes through the session's [permission checks](/docs/en/permissions) and [sandboxing](/docs/en/sandboxing). It isn't a substitute for [restricting what a subagent can reach](#control-subagent-capabilities).
-
-<Note>
-  Subagent output scanning requires Claude Code v2.1.210 or later.
-</Note>
-
-### Common patterns
-
-#### Isolate high-volume operations
-
-One of the most effective uses for subagents is isolating operations that produce large amounts of output. Running tests, fetching documentation, or processing log files can consume significant context. By delegating these to a subagent, the verbose output stays in the subagent's context while only the relevant summary returns to your main conversation.
+subagents 最有效的用途之一是隔离产生大量输出的操作。运行测试、获取文档或处理日志文件可能会消耗大量上下文。通过将这些委托给 subagent，详细输出保留在 subagent 的上下文中，而只有相关摘要返回到您的主对话。
 
 ```text wrap theme={null}
 Use a subagent to run the test suite and report only the failing tests with their error messages
 ```
 
-#### Run parallel research
+<h4 id="run-parallel-research">
+  运行并行研究
+</h4>
 
-For independent investigations, spawn multiple subagents to work simultaneously:
+对于独立的调查，生成多个 subagents 以同时工作：
 
 ```text wrap theme={null}
 Research the authentication, database, and API modules in parallel using separate subagents
 ```
 
-Each subagent explores its area independently, then Claude synthesizes the findings. This works best when the research paths don't depend on each other.
+每个 subagent 独立探索其区域，然后 Claude 综合这些发现。当研究路径彼此不依赖时，这效果最好。
 
 <Warning>
-  When subagents complete, their results return to your main conversation. Running many subagents that each return detailed results can consume significant context.
+  当 subagents 完成时，它们的结果返回到您的主对话。运行许多 subagents，每个都返回详细结果，可能会消耗大量上下文。
 </Warning>
 
-For tasks that need sustained parallelism or exceed your context window, [agent teams](/docs/en/agent-teams) give each worker its own independent context.
+对于需要持续并行性或超过您的 context window 的任务，[agent teams](/docs/zh-CN/agent-teams) 为每个工作者提供自己的独立上下文。
 
-#### Chain subagents
+<h4 id="chain-subagents">
+  链接 subagents
+</h4>
 
-For multi-step workflows, ask Claude to use subagents in sequence. Each subagent completes its task and returns results to Claude, which then passes relevant context to the next subagent.
+对于多步骤工作流，要求 Claude 按顺序使用 subagents。每个 subagent 完成其任务并将结果返回给 Claude，然后将相关上下文传递给下一个 subagent。
 
 ```text wrap theme={null}
 Use the code-reviewer subagent to find performance issues, then use the optimizer subagent to fix them
 ```
 
-### Choose between subagents and main conversation
+<h3 id="choose-between-subagents-and-main-conversation">
+  在 subagents 和主对话之间选择
+</h3>
 
-Use the **main conversation** when:
+在以下情况下使用 **主对话**：
 
-* The task needs frequent back-and-forth or iterative refinement
-* Multiple phases share significant context, such as planning, implementation, and testing
-* You're making a quick, targeted change
-* Latency matters. Subagents start fresh and may need time to gather context
+* 任务需要频繁的来回或迭代细化
+* 多个阶段共享重要上下文，例如规划、实现和测试
+* 您正在进行快速、有针对性的更改
+* 延迟很重要。Subagents 从头开始，可能需要时间来收集上下文
 
-Use **subagents** when:
+在以下情况下使用 **subagents**：
 
-* The task produces verbose output you don't need in your main context
-* You want to enforce specific tool restrictions or permissions
-* The work is self-contained and can return a summary
+* 任务产生您不需要在主上下文中的详细输出
+* 您想强制执行特定的工具限制或权限
+* 工作是自包含的，可以返回摘要
 
-Consider [Skills](/docs/en/skills) instead when you want reusable prompts or workflows that run in the main conversation context rather than isolated subagent context.
+当您想要可重用的提示或在主对话上下文中运行的工作流而不是隔离的 subagent 上下文时，请改为考虑 [Skills](/docs/zh-CN/skills)。
 
-For a quick question about something already in your conversation, use [`/btw`](/docs/en/interactive-mode#side-questions-with-%2Fbtw) instead of a subagent. It sees your full context but has no tool access, and the answer is discarded rather than added to history.
+对于关于对话中已有内容的快速问题，使用 [`/btw`](/docs/zh-CN/interactive-mode#side-questions-with-%2Fbtw) 而不是 subagent。它看到您的完整上下文但没有工具访问，答案被丢弃而不是添加到历史记录。
 
-### Let subagents spawn their own subagents
+<h3 id="spawn-nested-subagents">
+  生成嵌套 subagents
+</h3>
 
-By default, a subagent can spawn subagents of its own, up to three layers below the main conversation. At the depth limit, Claude Code withholds the `Agent` tool from every subagent except a [fork](#fork-the-current-conversation), so a subagent at the limit does its delegated work itself and returns one summary. A fork at the limit keeps `Agent` in its inherited tool list, but the tool returns an error instead of spawning.
+{/* min-version: 2.1.172 */}从 Claude Code v2.1.172 开始，subagent 可以生成自己的 subagents。当委托的任务本身分裂成并行子任务时使用这个，例如审查者 subagent 为每个发现分派一个验证者，所以中间输出永远不会到达您的主对话。只有顶级 subagent 的摘要返回给您。
 
-Nested subagents suit a delegated task that itself splits into parallel subtasks, such as a reviewer subagent that dispatches a verifier per finding, so the intermediate output never reaches your main conversation. Only the top-level subagent's summary returns to you.
+嵌套 subagent 的配置方式与顶级 subagent 相同，并从相同的 [scopes](#choose-the-subagent-scope) 解析。
 
-{/* min-version: 2.1.217 */}To change the limit, set [`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`](/docs/en/env-vars) to the number of subagent layers you want below your main conversation. For example, this entry in [`settings.json`](/docs/en/settings) caps nesting at two layers:
+subagent 面板在提示输入下方显示完整的树：每行显示一个 `(+N)` 后代计数，{/* min-version: 2.1.193 */}从 v2.1.193 开始，打开一行显示该 subagent 的兄弟和直接子代，以及返回到 `main` 的路径。
 
-```json theme={null}
-{
-  "env": {
-    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "2"
-  }
-}
-```
+深度计算为主对话下方的 subagent 级别数，无论每个级别是否在 [前台或后台](#run-subagents-in-foreground-or-background) 运行。深度为五的 subagent 不接收 Agent 工具，无法进一步生成。限制是固定的且不可配置。
 
-With this value, your subagents can delegate to a second layer of their own, and that second layer can't delegate further. Set `1` to turn nesting off.
+从 Claude Code v2.1.187 开始，后台 subagent 的深度在首次生成时是固定的，[恢复](#resume-subagents)它稍后不会改变该深度。例如，如果您的主对话生成 subagent A，而 A 在深度二生成后台 subagent B，当您直接从主对话恢复 B 时，B 仍然在深度二。从更浅的上下文恢复 subagent 不会让它生成深度限制已经阻止的额外级别。
 
-A nested subagent is configured the same way as a top-level one and resolves from the same [scopes](#choose-the-subagent-scope). To keep one subagent from spawning while nesting is on, such as a reviewer that should stay read-only, omit `Agent` from its [`tools`](#available-tools) list or add it to `disallowedTools`.
+要防止特定 subagent 生成其他 subagents，从其 [`tools`](#available-tools) 列表中省略 `Agent` 或将其添加到 `disallowedTools`。
 
-The subagent panel below the prompt input shows the full tree: each row displays a `(+N)` count of descendants, and {/* min-version: 2.1.193 */}as of v2.1.193, opening a row shows that subagent's siblings and direct children with a path back to `main`.
+[fork](#fork-the-current-conversation) 仍然无法生成另一个 fork。它可以生成其他 subagent 类型，这些计入深度限制。
 
-<Note>
-  Earlier versions used different defaults:
+<h3 id="manage-subagent-context">
+  管理 subagent 上下文
+</h3>
 
-  * **v2.1.172 through v2.1.216**: subagents could nest by default, up to five layers deep, and the limit couldn't be changed.
-  * **v2.1.217 through v2.1.218**: the limit defaulted to one, so a subagent couldn't spawn its own unless you raised it; {/* min-version: 2.1.219 */}v2.1.219 raised the default to three.
-</Note>
+<h4 id="what-loads-at-startup">
+  启动时加载的内容
+</h4>
 
-### Session subagent limit
+每个 subagent 都以新鲜的隔离上下文窗口开始。它看不到您的对话历史、您已经调用的技能或 Claude 已经读取的文件。Claude 编写一条委托消息来总结任务，subagent 从那里开始工作。例外是 [fork](#fork-the-current-conversation)，它继承父对话而不是从头开始。
 
-Three separate limits control subagent use, each with its own variable: this one caps the total spawned over a session, the [concurrent subagent limit](#concurrent-subagent-limit) stops Claude from spawning more while too many are running, and the [depth limit](#let-subagents-spawn-their-own-subagents) caps how deeply subagents nest.
+非 fork subagent 的初始上下文包含：
 
-By default, Claude can spawn at most 200 subagents per session. To raise the limit, set [`CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`](/docs/en/env-vars) to any positive whole number; there is no upper bound, but the limit can't be turned off. Requires Claude Code v2.1.212 or later.
+* **系统提示**：代理自己的提示加上 Claude Code 附加的环境详情，而不是完整的 Claude Code 系统提示。自定义 subagents 在 [markdown 正文](#write-subagent-files) 或 `prompt` 字段中定义它们。内置代理有预定义的提示。
+* **任务消息**：Claude 在移交工作时编写的委托提示。
+* **CLAUDE.md 和内存**：主对话加载的 [内存层次结构](/docs/zh-CN/memory#how-claude-md-files-load) 的每个级别，包括 `~/.claude/CLAUDE.md`、项目规则、`CLAUDE.local.md` 和托管策略文件。内置的 Explore 和 Plan 代理跳过这个。
+* **Git 状态**：在父会话开始时拍摄的快照。当工作目录不是 Git 存储库或 [`includeGitInstructions`](/docs/zh-CN/settings#available-settings) 为 `false` 时不存在。Explore 和 Plan 无论如何都跳过它。
+* **预加载的技能**：代理的 [`skills` 字段](#preload-skills-into-subagents) 中命名的任何技能的完整内容。内置代理不预加载技能。
+* **兄弟名单**：系统提醒，列出 `main` 和会话中的每个其他命名代理，每个都是 [`SendMessage`](#resume-subagents) 的有效 `to` 值。{/* min-version: 2.1.206 */}需要 Claude Code v2.1.206 或更高版本。名单仅在 subagent 的工具包括 `SendMessage` 且至少有一个其他代理有名称时出现，无论 Claude 在生成时命名它还是它作为 [agent team](/docs/zh-CN/agent-teams) 队友运行。它是 subagent 启动时拍摄的快照，所以稍后命名的代理不会出现。
 
-Every subagent Claude spawns with the Agent tool counts toward the limit: nested subagents, [forks](#fork-the-current-conversation), and background subagents, including subagents that a [workflow](/docs/en/workflows)'s agents spawn with the Agent tool. An in-session fork you start yourself with `/subtask` counts too: it spends the same budget, though the limit blocks only subagents Claude spawns with the Agent tool, so your own `/subtask` still starts after Claude reaches the limit. A session you create with `/fork` doesn't count; it runs as a separate background session with its own budget. Before v2.1.212, the in-session fork was named `/fork`. Agents a workflow script spawns with `agent()` don't count; workflows have their own per-run limit. A finished subagent still counts.
+Explore 和 Plan 是仅有的省略 CLAUDE.md 和 git 状态的 subagents。没有 frontmatter 字段或按代理设置来改变哪些代理跳过它们。
 
-When Claude reaches the limit, the Agent tool fails with `Subagent spawn limit reached`, and the error tells Claude to complete the remaining work directly with its own tools.
+主对话使用完整的 CLAUDE.md 上下文读取 Explore 和 Plan 结果，所以大多数规则不需要到达 subagent 本身。如果规则必须，例如"忽略 `vendor/` 目录"，在您给 Claude 委托时的提示中重新陈述它。
 
-Run [`/clear`](/docs/en/commands#all-commands) to reset the count and start a new conversation with the full budget. If work that can still spawn subagents survives the clear, such as a running workflow, the count carries over instead.
+<h4 id="resume-subagents">
+  恢复 subagents
+</h4>
 
-### Concurrent subagent limit
+每个 subagent 调用都会创建一个具有新鲜上下文的新实例。要继续现有 subagent 的工作而不是重新开始，要求 Claude 恢复它。
 
-By default, when 20 subagents are running in a session, spawning another with the Agent tool fails with `Concurrent subagent limit reached`, and the error tells Claude not to retry. Spawning succeeds again when the running count drops below the limit. To change the limit, set [`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`](/docs/en/env-vars) to any positive whole number. Sessions with [ultracode](/docs/en/model-config#adjust-effort-level) active are exempt: the limit isn't enforced there. Requires Claude Code v2.1.217 or later.
+恢复的 subagents 保留其完整的对话历史，包括所有以前的工具调用、结果和推理。Subagent 从它停止的地方继续，而不是从头开始。
 
-The limit blocks only subagents Claude spawns with the Agent tool, but other runs occupy the same slots:
+当 subagent 完成时，Claude 接收其代理 ID。内置的 Explore 和 Plan 代理是一次性的，不返回代理 ID，所以它们无法恢复；当您需要继续工作时，使用 `general-purpose` 或自定义 subagent。
 
-* An in-session fork you start with [`/subtask`](#fork-the-current-conversation) takes a slot while it runs and is never blocked by the limit.
-* [Resuming a subagent](#resume-subagents) that already finished takes a fresh slot without checking the limit, so resumes can push the running count past it.
+Claude 使用 `SendMessage` 工具，将代理的 ID 或名称作为 `to` 字段来恢复它。`SendMessage` 不需要启用 [agent teams](/docs/zh-CN/agent-teams)；只有结构化的团队协议消息，例如 `shutdown_request` 和 `plan_approval_response`，才需要启用。
 
-Agents that other features run, such as [workflow](/docs/en/workflows) agents and [agent team](/docs/en/agent-teams) teammates, follow their own limits instead. The [session subagent limit](#session-subagent-limit) separately caps the total Claude spawns over the whole session.
-
-### Manage subagent context
-
-#### What loads at startup
-
-Each subagent starts with a fresh, isolated context window. It doesn't see your conversation history, the skills you've already invoked, or the files Claude has already read. Claude composes a delegation message that summarizes the task, and the subagent works from there. The exception is a [fork](#fork-the-current-conversation), which inherits the parent conversation instead of starting fresh.
-
-A non-fork subagent's initial context contains:
-
-* **System prompt**: the agent's own prompt plus environment details that Claude Code appends, not the full Claude Code system prompt. Custom subagents define theirs in the [markdown body](#write-subagent-files) or `prompt` field. Built-in agents have predefined prompts.
-* **Task message**: the delegation prompt Claude writes when it hands off the work.
-* **CLAUDE.md files**: every level of the [CLAUDE.md hierarchy](/docs/en/memory#how-claude-md-files-load) the main conversation loads, including `~/.claude/CLAUDE.md`, project rules, `CLAUDE.local.md`, and managed policy files. The built-in Explore and Plan agents skip this.
-* **Git status**: a snapshot taken at the start of the parent session. Absent when the working directory isn't a Git repository or when [`includeGitInstructions`](/docs/en/settings#available-settings) is `false`. Explore and Plan skip it regardless.
-* **Preloaded skills**: full content of any skill named in the agent's [`skills` field](#preload-skills-into-subagents). Built-in agents don't preload skills.
-* **Sibling roster**: a system reminder listing `main` and every other named agent in the session, each a valid `to` value for [`SendMessage`](#resume-subagents). {/* min-version: 2.1.206 */}Requires Claude Code v2.1.206 or later. The roster appears only when the subagent's tools include `SendMessage` and at least one other agent has a name, whether Claude named it when spawning it or it runs as an [agent team](/docs/en/agent-teams) teammate. It is a snapshot taken when the subagent starts, so agents named later don't appear.
-
-Explore and Plan are the only subagents that omit CLAUDE.md and git status. There is no frontmatter field or per-agent setting to change which agents skip them.
-
-The main conversation reads Explore and Plan results with full CLAUDE.md context, so most rules don't need to reach the subagent itself. If a rule must, such as "ignore the `vendor/` directory," restate it in the prompt you give Claude when delegating.
-
-Some main-conversation state never reaches a non-fork subagent:
-
-* **Output style**: a subagent runs its own system prompt, so your [output style](/docs/en/output-styles) doesn't shape its responses, except in a [fork](#fork-the-current-conversation).
-* **Auto memory**: the main conversation's [auto memory](/docs/en/memory#auto-memory) isn't loaded. To give a subagent persistent memory of its own, use the [`memory` field](#enable-persistent-memory).
-* **Context window size**: a subagent's context window is sized by its own model, not the parent's. Delegating to a model with a smaller window gives that subagent the smaller window.
-
-#### Resume subagents
-
-Each subagent invocation creates a new instance with fresh context. To continue an existing subagent's work instead of starting over, ask Claude to resume it.
-
-Resumed subagents retain their full conversation history, including all previous tool calls, results, and reasoning. The subagent picks up exactly where it stopped rather than starting fresh.
-
-When a subagent completes, Claude receives its agent ID. The built-in Explore and Plan agents are one-shot and return no agent ID, so they can't be resumed; use `general-purpose` or a custom subagent when you need to continue the work.
-
-Claude uses the `SendMessage` tool with the agent's ID or name as the `to` field to resume it. `SendMessage` doesn't require [agent teams](/docs/en/agent-teams) to be enabled; only structured team-protocol messages such as `shutdown_request` and `plan_approval_response` do.
-
-To resume a subagent, ask Claude to continue the previous work:
+要恢复 subagent，要求 Claude 继续之前的工作：
 
 ```text wrap theme={null}
 Use the code-reviewer subagent to review the authentication module
@@ -954,29 +931,31 @@ Continue that code review and now analyze the authorization logic
 [Claude resumes the subagent with full context from previous conversation]
 ```
 
-A completed subagent that receives a `SendMessage` auto-resumes in the background without a new `Agent` invocation. The same applies to a subagent that Claude stopped with the `TaskStop` tool.
+完成的 subagent 如果接收 `SendMessage`，会在后台自动恢复，无需新的 `Agent` 调用。同样适用于 Claude 用 `TaskStop` 工具停止的 subagent。
 
-{/* min-version: 2.1.191 */}As of v2.1.191, a subagent you stopped yourself, with `x` in `/tasks` or an SDK `stop_task` request, doesn't auto-resume. The `SendMessage` call returns a refusal telling Claude the agent was cancelled. Type into that subagent's transcript in the subagent panel to resume it yourself, which clears the stop so later `SendMessage` calls can auto-resume it again.
+{/* min-version: 2.1.191 */}从 v2.1.191 开始，您自己停止的 subagent，使用 `/tasks` 中的 `x` 或 SDK `stop_task` 请求，不会自动恢复。`SendMessage` 调用返回拒绝，告诉 Claude 代理已被取消。在 subagent 面板中输入到该 subagent 的转录以自己恢复它，这会清除停止，以便稍后 `SendMessage` 调用可以再次自动恢复它。
 
-Resuming starts a new run of the agent under the same ID, so a subagent that had already failed or completed shows as running again in the task list and in the Agent SDK's task events. Before v2.1.205, it kept showing its earlier failed or completed status while the resumed run was working.
+恢复在相同 ID 下启动代理的新运行，所以已经失败或完成的 subagent 在任务列表和 Agent SDK 的任务事件中再次显示为运行。在 v2.1.205 之前，它在恢复的运行工作时保持显示其早期的失败或完成状态。
 
-{/* min-version: 2.1.199 */}As of v2.1.199, `SendMessage` checks that a name still refers to the same agent it reached earlier in the conversation. If a newer agent has taken the name, such as a re-spawned background agent that reused it, Claude Code refuses the send rather than delivering it to the wrong agent, and the error reports which agent the name now reaches so Claude can retarget. To reach the earlier agent while it's still running, Claude addresses it by the agent ID it received when it spawned that agent. The check is scoped to the current conversation and resets on `/clear`.
+{/* min-version: 2.1.199 */}从 v2.1.199 开始，`SendMessage` 检查名称是否仍然指向它在对话中早期到达的同一代理。如果较新的代理已经采用了该名称，例如重新生成的后台代理重新使用了它，Claude Code 会拒绝发送，而不是将其传递给错误的代理，错误会报告该名称现在到达的代理，以便 Claude 可以重新定向。要在它仍在运行时到达早期的代理，Claude 通过其生成结果中的代理 ID 来寻址它。检查的范围是当前对话，并在 `/clear` 时重置。
 
-{/* min-version: 2.1.198 */}As of v2.1.198, a subagent treats messages from the agent that launched it as normal task direction, including mid-task course corrections, and acts on them within its own permission settings. Two limits still hold regardless of who sent the message: no message from any agent counts as your approval for a pending permission prompt, and no agent message can change a subagent's permission settings, `CLAUDE.md`, or configuration. Only the permission system or your own messages can grant approval.
+{/* min-version: 2.1.198 */}从 v2.1.198 开始，subagent 将来自启动它的代理的消息视为正常任务方向，包括中途任务方向更正，并在其自己的权限设置内对其进行操作。无论谁发送消息，两个限制仍然成立：来自任何代理的消息都不计为您对待处理权限提示的批准，任何代理消息都无法改变 subagent 的权限设置、`CLAUDE.md` 或配置。只有权限系统或您自己的消息可以授予批准。
 
-You can also ask Claude for the agent ID if you want to reference it explicitly, or find IDs in the transcript files at `~/.claude/projects/{project}/{sessionId}/subagents/`. Each transcript is stored as `agent-{agentId}.jsonl`.
+您也可以要求 Claude 提供代理 ID，如果您想明确引用它，或在 `~/.claude/projects/{project}/{sessionId}/subagents/` 的转录文件中找到 ID。每个转录存储为 `agent-{agentId}.jsonl`。
 
-Subagent transcripts persist independently of the main conversation:
+Subagent 转录独立于主对话持久化：
 
-* **Main conversation compaction**: when the main conversation compacts, subagent transcripts are unaffected. They're stored in separate files.
-* **Session persistence**: subagent transcripts persist within their session. You can [resume a subagent](#resume-subagents) after restarting Claude Code by resuming the same session.
-* **Automatic cleanup**: Claude Code deletes subagent transcripts after the `cleanupPeriodDays` retention period, 30 days by default.
+* **主对话压缩**：当主对话压缩时，subagent 转录不受影响。它们存储在单独的文件中。
+* **会话持久性**：Subagent 转录在其会话中持久化。您可以通过恢复相同的会话在重启 Claude Code 后 [恢复 subagent](#resume-subagents)。
+* **自动清理**：转录根据 `cleanupPeriodDays` 设置（默认为 30 天）进行清理。
 
-#### Auto-compaction
+<h4 id="auto-compaction">
+  自动压缩
+</h4>
 
-Subagents support automatic compaction using the same logic as the main conversation. Compaction triggers under the same conditions, and `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` applies to subagents as well. See [environment variables](/docs/en/env-vars) for when the override takes effect.
+Subagents 支持使用与主对话相同的逻辑进行自动压缩。压缩在相同条件下触发，`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` 也适用于 subagents。有关何时覆盖生效的信息，请参阅 [environment variables](/docs/zh-CN/env-vars)。
 
-Compaction events are logged in subagent transcript files:
+压缩事件记录在 subagent 转录文件中：
 
 ```json theme={null}
 {
@@ -989,84 +968,92 @@ Compaction events are logged in subagent transcript files:
 }
 ```
 
-The `preTokens` value shows how many tokens were used before compaction occurred.
+`preTokens` 值显示压缩发生前使用了多少令牌。
 
-## Fork the current conversation
+<h2 id="fork-the-current-conversation">
+  分叉当前对话
+</h2>
 
 <Note>
-  {/* min-version: 2.1.212 */}Run a forked subagent with `/subtask`, which requires Claude Code v2.1.212 or later. When [agent view is turned off](/docs/en/agent-view#turn-off-agent-view), `/subtask` isn't available and `/fork` starts the forked subagent instead; otherwise `/fork` copies the whole session into a new [background session](/docs/en/agent-view#from-inside-a-session).
-
-  {/* min-version: 2.1.161 */}Before v2.1.212, the forked-subagent command was `/fork`. It was enabled by default on v2.1.161 or later; on v2.1.117 through v2.1.160 it required setting the [`CLAUDE_CODE_FORK_SUBAGENT`](/docs/en/env-vars) environment variable to `1`, unless a server-side rollout enabled it.
-
-  Letting Claude itself spawn forks is experimental and may change in future releases. This capability may also be enabled in interactive sessions as part of a staged rollout.
+  分叉 subagents 需要 Claude Code v2.1.117 或更高版本。{/* min-version: 2.1.161 */}从 v2.1.161 开始，`/fork` 命令默认启用；在早期版本中，它需要将 [`CLAUDE_CODE_FORK_SUBAGENT`](/docs/zh-CN/env-vars) 环境变量设置为 `1`。让 Claude 本身生成分叉是实验性的，可能在未来版本中更改。此功能也可以在交互式会话中启用，作为分阶段推出的一部分。
 </Note>
 
-A fork is a subagent that inherits the entire conversation so far instead of starting fresh. This drops the input isolation that subagents otherwise provide: a fork sees the same system prompt, tools, model, and message history as the main session, so you can hand it a side task without re-explaining the situation. The fork's own tool calls still stay out of your conversation and only its final result comes back, so your main context window stays clean. Use a fork when a named subagent would need too much background to be useful, or when you want to try several approaches in parallel from the same starting point.
+分叉是一个 subagent，它继承到目前为止的整个对话，而不是从头开始。这消除了 subagents 通常提供的输入隔离：分叉看到与主会话相同的系统提示、工具、模型和消息历史，因此您可以将其交给一个辅助任务而无需重新解释情况。分叉自己的工具调用仍然保持在您的对话之外，只有其最终结果返回，因此您的主 context window 保持干净。当命名 subagent 需要太多背景才能有用时，或当您想从相同的起点并行尝试多种方法时，使用分叉。
 
-To control fork mode regardless of the staged rollout, set [`CLAUDE_CODE_FORK_SUBAGENT`](/docs/en/env-vars) to `1` to enable it explicitly or to `0` to disable it. The variable is honored in interactive mode and via the SDK or `claude -p`.
+要控制分叉模式而不管分阶段推出，将 [`CLAUDE_CODE_FORK_SUBAGENT`](/docs/zh-CN/env-vars) 设置为 `1` 以显式启用它，或设置为 `0` 以禁用它。该变量在交互模式以及通过 SDK 或 `claude -p` 中被遵守。
 
-Enabling fork mode changes Claude Code in two ways:
+启用分叉模式以两种方式改变 Claude Code：
 
-* Claude can spawn a fork by requesting the `fork` subagent type explicitly. When Claude doesn't request a type, it still gets the [general-purpose](#built-in-subagents) subagent, and named subagents such as Explore still spawn as before.
-* Every subagent runs in the [background](#run-subagents-in-foreground-or-background), whether it is a fork or a named subagent. Set `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` to `1` to keep subagents synchronous.
+* Claude 可以通过显式请求 `fork` subagent 类型来生成分叉。没有 subagent 类型的生成仍然使用 [general-purpose](#built-in-subagents) subagent，命名 subagents 如 Explore 仍然像以前一样生成。
+* 每个 subagent 生成都在 [background](#run-subagents-in-foreground-or-background) 中运行，无论它是分叉还是命名 subagent。设置 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` 为 `1` 以保持生成同步。
 
-You can start a fork yourself with `/subtask` followed by a task, with or without the variable set. On v2.1.161 through v2.1.211 the command is `/fork`. Claude Code names the fork from the first words of the task. The following example forks the conversation to draft test cases while you continue with the implementation in the main session:
+您可以使用 `/fork` 后跟指令自己启动分叉，无论是否设置了变量。Claude Code 从指令的前几个单词命名分叉。以下示例分叉对话以在您继续主会话中的实现时草拟测试用例：
 
 ```text wrap theme={null}
-/subtask draft unit tests for the parser changes so far
+/fork draft unit tests for the parser changes so far
 ```
 
-The fork appears in a panel below your prompt and runs in the background while you keep working. When it finishes, its result arrives as a message in your main conversation. The next section covers the panel controls for watching and steering forks while they run.
+分叉出现在提示下方的面板中，并在您继续工作时在后台运行。完成后，其结果作为消息到达您的主对话。下一部分涵盖了在分叉运行时观察和引导它们的面板控制。
 
-### Observe and steer running forks
+<h3 id="observe-and-steer-running-forks">
+  观察和引导运行中的分叉
+</h3>
 
-Running forks appear in a panel below the prompt input, with one row for the main session and one for each fork. Use these keys to interact with the panel:
+运行中的分叉出现在提示输入下方的面板中，主会话有一行，每个分叉有一行。使用这些键与面板交互：
 
-| Key       | Action                                                             |
-| :-------- | :----------------------------------------------------------------- |
-| `↑` / `↓` | Move between rows                                                  |
-| `Enter`   | Open the selected fork's transcript and send it follow-up messages |
-| `x`       | Dismiss a finished fork or stop a running one                      |
-| `Esc`     | Return focus to the prompt input                                   |
+| Key       | Action             |
+| :-------- | :----------------- |
+| `↑` / `↓` | 在行之间移动             |
+| `Enter`   | 打开所选分叉的转录并向其发送后续消息 |
+| `x`       | 关闭完成的分叉或停止运行中的分叉   |
+| `Esc`     | 将焦点返回到提示输入         |
 
-With a fork's or subagent's transcript open, follow-up messages and [skills](/docs/en/skills) go to that agent, but built-in commands still run in your main conversation. {/* min-version: 2.1.199 */}As of v2.1.199, typing `/model` or `/fast` in that view shows a notice that it changes the main conversation's model or fast mode, not the viewed agent's, instead of running it silently.
+打开分叉或 subagent 的转录后，后续消息和 [skills](/docs/zh-CN/skills) 会发送到该代理，但内置命令仍在您的主对话中运行。{/* min-version: 2.1.199 */}从 v2.1.199 开始，在该视图中键入 `/model` 或 `/fast` 会显示一条通知，说明它改变主对话的模型或快速模式，而不是所查看代理的，而不是静默运行它。
 
-### How forks differ from named subagents
+<h3 id="how-forks-differ-from-named-subagents">
+  分叉与命名 subagents 的区别
+</h3>
 
-A fork inherits everything the main session has at the moment it spawns. A named subagent starts from its own definition.
+分叉继承主会话在生成时拥有的一切。命名 subagent 从自己的定义开始。
 
-|                         | Fork                             | Named subagent                                                                                                    |
-| :---------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| Context                 | Full conversation history        | Fresh context with the prompt you pass                                                                            |
-| System prompt and tools | Same as main session             | From the subagent's [definition file](#write-subagent-files), [filtered for background runs](#available-tools)    |
-| Model                   | Same as main session             | From the subagent's `model` field                                                                                 |
-| Permissions             | Prompts surface in your terminal | [Prompts surface in your main session](#run-subagents-in-foreground-or-background) when running in the background |
-| Prompt cache            | Shared with main session         | Separate cache                                                                                                    |
+|              | 分叉         | 命名 subagent                                                     |
+| :----------- | :--------- | :-------------------------------------------------------------- |
+| 上下文          | 完整的对话历史    | 新鲜上下文，带有您传递的提示                                                  |
+| 系统提示和工具      | 与主会话相同     | 来自 subagent 的 [definition file](#write-subagent-files)          |
+| 模型           | 与主会话相同     | 来自 subagent 的 `model` 字段                                        |
+| 权限           | 提示在您的终端中出现 | [提示在后台运行时在您的主会话中出现](#run-subagents-in-foreground-or-background) |
+| Prompt cache | 与主会话共享     | 单独的缓存                                                           |
 
-Because a fork's system prompt and tool definitions are identical to the parent, its first request reuses the parent's [prompt cache](/docs/en/prompt-caching#subagents-and-the-cache). This makes forking cheaper than spawning a fresh subagent for tasks that need the same context.
+因为分叉的系统提示和工具定义与父级相同，其第一个请求重用父级的 [prompt cache](/docs/zh-CN/prompt-caching#subagents-and-the-cache)。这使得分叉比为需要相同上下文的任务生成新 subagent 更便宜。
 
-When Claude spawns a fork through the Agent tool, it can pass `isolation: "worktree"` so the fork's file edits are written to a separate git worktree instead of your checkout.
+当 Claude 通过 Agent 工具生成分叉时，它可以传递 `isolation: "worktree"` 以便分叉的文件编辑被写入单独的 git worktree 而不是您的检出。
 
-### Limitations
+<h3 id="limitations">
+  限制
+</h3>
 
-Setting `CLAUDE_CODE_FORK_SUBAGENT=1` enables fork mode in interactive sessions, [non-interactive mode](/docs/en/headless), and the Agent SDK; setting it to `0` disables fork mode everywhere, including any server-side rollout. A fork can't spawn further forks.
+设置 `CLAUDE_CODE_FORK_SUBAGENT=1` 在交互式会话、[non-interactive mode](/docs/zh-CN/headless) 和 Agent SDK 中启用分叉模式；将其设置为 `0` 会在所有地方禁用分叉模式，包括任何服务器端推出。分叉无法生成进一步的分叉。
 
-## Example subagents
+<h2 id="example-subagents">
+  示例 subagents
+</h2>
 
-These examples demonstrate effective patterns for building subagents. Use them as starting points, or generate a customized version with Claude.
+这些示例演示了构建 subagents 的有效模式。将它们用作起点，或使用 Claude 生成自定义版本。
 
 <Tip>
-  **Best practices:**
+  **最佳实践：**
 
-  * **Design focused subagents:** each subagent should excel at one specific task
-  * **Write detailed descriptions:** Claude uses the description to decide when to delegate
-  * **Limit tool access:** grant only necessary permissions for security and focus
-  * **Check into version control:** share project subagents with your team
+  * **设计专注的 subagents：** 每个 subagent 应该在一个特定任务中表现出色
+  * **编写详细的描述：** Claude 使用描述来决定何时委托
+  * **限制工具访问：** 仅授予必要的权限以确保安全和专注
+  * **检入版本控制：** 与您的团队共享项目 subagents
 </Tip>
 
-### Code reviewer
+<h3 id="code-reviewer">
+  代码审查者
+</h3>
 
-A read-only subagent that reviews code without modifying it. This example shows how to design a focused subagent with limited tool access that excludes Edit and Write, and a detailed prompt that specifies exactly what to look for and how to format output.
+一个只读 subagent，审查代码而不修改它。此示例展示了如何设计一个专注的 subagent，具有有限的工具访问（无 Edit 或 Write）和详细的提示，指定确切要查找的内容以及如何格式化输出。
 
 ```markdown theme={null}
 ---
@@ -1101,9 +1088,11 @@ Provide feedback organized by priority:
 Include specific examples of how to fix issues.
 ```
 
-### Debugger
+<h3 id="debugger">
+  调试器
+</h3>
 
-A subagent that can both analyze and fix issues. Unlike the code reviewer, this one includes Edit because fixing bugs requires modifying code. The prompt provides a clear workflow from diagnosis to verification.
+一个可以分析和修复问题的 subagent。与代码审查者不同，这个包括 Edit，因为修复错误需要修改代码。提示提供了从诊断到验证的清晰工作流。
 
 ```markdown theme={null}
 ---
@@ -1138,9 +1127,11 @@ For each issue, provide:
 Focus on fixing the underlying issue, not the symptoms.
 ```
 
-### Data scientist
+<h3 id="data-scientist">
+  数据科学家
+</h3>
 
-A domain-specific subagent for data analysis work. This example shows how to create subagents for specialized workflows outside of typical coding tasks. It explicitly sets `model: sonnet` for more capable analysis.
+一个用于数据分析工作的特定领域 subagent。此示例展示了如何为典型编码任务之外的专门工作流创建 subagents。它明确设置 `model: sonnet` 以获得更强大的分析能力。
 
 ```markdown theme={null}
 ---
@@ -1175,9 +1166,11 @@ For each analysis:
 Always ensure queries are efficient and cost-effective.
 ```
 
-### Database query validator
+<h3 id="database-query-validator">
+  数据库查询验证器
+</h3>
 
-A subagent that allows Bash access but validates commands to permit only read-only SQL queries. This example shows how to use `PreToolUse` hooks for conditional validation when you need finer control than the `tools` field provides.
+一个允许 Bash 访问但验证命令以仅允许只读 SQL 查询的 subagent。此示例展示了当您需要比 `tools` 字段提供的更精细的控制时如何使用 `PreToolUse` hooks。
 
 ```markdown theme={null}
 ---
@@ -1202,9 +1195,9 @@ When asked to analyze data:
 You cannot modify data. If asked to INSERT, UPDATE, DELETE, or modify schema, explain that you only have read access.
 ```
 
-Claude Code [passes hook input as JSON](/docs/en/hooks#pretooluse-input) via stdin to hook commands. The validation script reads this JSON, extracts the command being executed, and checks it against a list of SQL write operations. If a write operation is detected, the script [exits with code 2](/docs/en/hooks#exit-code-2-behavior-per-event) to block execution and returns an error message to Claude via stderr.
+Claude Code [通过 stdin 将 hook 输入作为 JSON 传递](/docs/zh-CN/hooks#pretooluse-input) 给 hook 命令。验证脚本读取此 JSON，提取正在执行的命令，并根据 SQL 写入操作列表检查它。如果检测到写入操作，脚本 [以代码 2 退出](/docs/zh-CN/hooks#exit-code-2-behavior-per-event) 以阻止执行，并通过 stderr 向 Claude 返回错误消息。
 
-Create the validation script anywhere in your project. The path must match the `command` field in your hook configuration:
+在您的项目中的任何位置创建验证脚本。路径必须与您的 hook 配置中的 `command` 字段匹配：
 
 ```bash theme={null}
 #!/bin/bash
@@ -1229,22 +1222,22 @@ fi
 exit 0
 ```
 
-On macOS and Linux, make the script executable:
+在 macOS 和 Linux 上，使脚本可执行：
 
 ```bash theme={null}
 chmod +x ./scripts/validate-readonly-query.sh
 ```
 
-On Windows, write the validation script in PowerShell and add `shell: powershell` to the hook entry. See [running hooks in PowerShell](/docs/en/hooks#windows-powershell-tool).
+在 Windows 上，用 PowerShell 编写验证脚本，并在 hook 条目中添加 `shell: powershell`。请参阅 [在 PowerShell 中运行 hooks](/docs/zh-CN/hooks#windows-powershell-tool)。
 
-The hook receives JSON via stdin with the Bash command in `tool_input.command`. Exit code 2 blocks the operation and feeds the error message back to Claude. See [Hooks](/docs/en/hooks#exit-code-output) for details on exit codes and [Hook input](/docs/en/hooks#pretooluse-input) for the complete input schema.
+Hook 通过 stdin 接收 JSON，Bash 命令在 `tool_input.command` 中。退出代码 2 阻止操作并将错误消息反馈给 Claude。有关退出代码和输出的详细信息，请参阅 [Hooks](/docs/zh-CN/hooks#exit-code-output)，有关完整的输入架构，请参阅 [Hook input](/docs/zh-CN/hooks#pretooluse-input)。
 
-The system prompt tells the subagent to refuse write requests, so the hook is a backstop: if the subagent attempts a write anyway, Claude Code blocks the command and the subagent sees the `Blocked: Write operations not allowed. Use SELECT queries only.` message.
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-## Next steps
+现在您了解了 subagents，探索这些相关功能：
 
-Now that you understand subagents, explore these related features:
-
-* [Distribute subagents with plugins](/docs/en/plugins) to share subagents across teams or projects
-* [Run Claude Code programmatically](/docs/en/headless) with the Agent SDK for CI/CD and automation
-* [Use MCP servers](/docs/en/mcp) to give subagents access to external tools and data
+* [使用 plugins 分发 subagents](/docs/zh-CN/plugins) 以在团队或项目中共享 subagents
+* [以编程方式运行 Claude Code](/docs/zh-CN/headless)，使用 Agent SDK 进行 CI/CD 和自动化
+* [使用 MCP 服务器](/docs/zh-CN/mcp) 为 subagents 提供对外部工具和数据的访问

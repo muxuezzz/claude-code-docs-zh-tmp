@@ -2,79 +2,81 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Push events into a running session with channels
+# 使用 channels 将事件推送到运行中的会话
 
-> Use channels to push messages, alerts, and webhooks into your Claude Code session from an MCP server. Forward CI results, chat messages, and monitoring events so Claude can react while you're away.
+> 使用 channels 从 MCP 服务器将消息、警报和 webhooks 推送到您的 Claude Code 会话中。转发 CI 结果、聊天消息和监控事件，以便 Claude 在您离开时做出反应。
 
 <Note>
-  Channels are in [research preview](#research-preview). They require Anthropic authentication through claude.ai or a Console API key, and are not available on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry. Team and Enterprise organizations must [explicitly enable them](#enterprise-controls).
+  Channels 处于[研究预览](#research-preview)阶段。它们需要通过 claude.ai 或控制台 API 密钥进行 Anthropic 身份验证，在 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 上不可用。Team 和 Enterprise 组织必须[明确启用它们](#enterprise-controls)。
 </Note>
 
-A channel is an MCP server that pushes events into your running Claude Code session, so Claude can react to things that happen while you're not at the terminal. Channels can be two-way: Claude reads the event and replies back through the same channel, like a chat bridge. Events only arrive while the session is open, so for an always-on setup you run Claude in a background process or persistent terminal.
+Channel 是一个 MCP 服务器，它将事件推送到您运行中的 Claude Code 会话中，以便 Claude 可以对您不在终端时发生的事情做出反应。Channels 可以是双向的：Claude 读取事件并通过同一 channel 回复，就像聊天桥接一样。事件仅在会话打开时到达，因此对于始终在线的设置，您可以在后台进程或持久终端中运行 Claude。
 
-Unlike integrations that spawn a fresh cloud session or wait to be polled, the event arrives in the session you already have open: see [how channels compare](#how-channels-compare).
+与生成新的云会话或等待被轮询的集成不同，事件到达您已经打开的会话中：请参阅 [channels 如何比较](#how-channels-compare)。
 
-You install a channel as a plugin and configure it with your own credentials. Telegram, Discord, and iMessage are included in the research preview.
+您将 channel 作为插件安装并使用您自己的凭据配置它。Telegram、Discord 和 iMessage 包含在研究预览中。
 
-When Claude replies through a channel, you see the inbound message in your terminal but not the reply text. The terminal shows the tool call and a confirmation (like "sent"), and the actual reply appears on the other platform.
+当 Claude 通过 channel 回复时，您会在终端中看到入站消息，但看不到回复文本。终端显示工具调用和确认（如"已发送"），实际回复出现在其他平台上。
 
-If you manage a Team, Enterprise, or Console organization, see [Enable channels for your organization](#enterprise-controls). To build your own channel, see the [Channels reference](/docs/en/channels-reference).
+如果您管理 Team、Enterprise 或控制台组织，请参阅[为您的组织启用 channels](#enterprise-controls)。要构建您自己的 channel，请参阅 [Channels 参考](/docs/zh-CN/channels-reference)。
 
-## Supported channels
+<h2 id="supported-channels">
+  支持的 channels
+</h2>
 
-Each supported channel is a plugin that requires [Bun](https://bun.sh). For a hands-on demo of the plugin flow before connecting a real platform, try the [fakechat quickstart](#quickstart).
+每个支持的 channel 都是一个需要 [Bun](https://bun.sh) 的插件。在连接真实平台之前，要获得插件流程的实际演示，请尝试 [fakechat 快速入门](#quickstart)。
 
 <Tabs>
   <Tab title="Telegram">
-    View the full [Telegram plugin source](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram).
+    查看完整的 [Telegram 插件源代码](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram)。
 
     <Steps>
-      <Step title="Create a Telegram bot">
-        Open [BotFather](https://t.me/BotFather) in Telegram and send `/newbot`. Give it a display name and a unique username ending in `bot`. Copy the token BotFather returns.
+      <Step title="创建 Telegram 机器人">
+        在 Telegram 中打开 [BotFather](https://t.me/BotFather) 并发送 `/newbot`。给它一个显示名称和一个以 `bot` 结尾的唯一用户名。复制 BotFather 返回的令牌。
       </Step>
 
-      <Step title="Install the plugin">
-        In Claude Code, run:
+      <Step title="安装插件">
+        在 Claude Code 中，运行：
 
         ```
         /plugin install telegram@claude-plugins-official
         ```
 
-        If Claude Code reports `Marketplace "claude-plugins-official" not found`, add the marketplace with `/plugin marketplace add anthropics/claude-plugins-official`. If it reports that the plugin is not found in the marketplace, your local copy is outdated: refresh it with `/plugin marketplace update claude-plugins-official`. Then retry the install.
+        如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
 
-        When the install asks for an installation scope, choose the user scope option so the plugin is available across all your projects. After installing, run `/reload-plugins` to activate the plugin's configure command.
+        安装后，运行 `/reload-plugins` 来激活插件的配置命令。
       </Step>
 
-      <Step title="Configure your token">
-        Run the configure command with the token from BotFather:
+      <Step title="配置您的令牌">
+        使用来自 BotFather 的令牌运行配置命令：
 
         ```
         /telegram:configure <token>
         ```
 
-        This saves it to `~/.claude/channels/telegram/.env`. You can also set `TELEGRAM_BOT_TOKEN` in your shell environment before launching Claude Code.
+        这会将其保存到 `~/.claude/channels/telegram/.env`。您也可以在启动 Claude Code 之前在 shell 环境中设置 `TELEGRAM_BOT_TOKEN`。
       </Step>
 
-      <Step title="Restart with channels enabled">
-        Exit Claude Code and restart with the channel flag. This starts the Telegram plugin, which begins polling for messages from your bot:
+      <Step title="重启并启用 channels">
+        退出 Claude Code 并使用 channel 标志重启。这会启动 Telegram 插件，它开始轮询来自您的机器人的消息：
 
         ```bash theme={null}
         claude --channels plugin:telegram@claude-plugins-official
         ```
       </Step>
 
-      <Step title="Pair your account">
-        Open Telegram and send any message to your bot. The bot replies with a pairing code.
+      <Step title="配对您的账户">
+        打开 Telegram 并向您的机器人发送任何消息。机器人会回复一个配对代码。
 
-        <Note>If your bot doesn't respond, make sure Claude Code is running with `--channels` from the previous step. The bot can only reply while the channel is active.</Note>
+        <Note>如果您的机器人没有响应，请确保 Claude Code 正在使用上一步中的 `--channels` 运行。机器人只能在 channel 处于活动状态时回复。</Note>
 
-        Back in Claude Code, run:
+        回到 Claude Code，运行：
 
         ```
         /telegram:access pair <code>
         ```
 
-        Then lock down access so only your account can send messages:
+        然后锁定访问权限，以便只有您的账户可以发送消息：
 
         ```
         /telegram:access policy allowlist
@@ -84,72 +86,72 @@ Each supported channel is a plugin that requires [Bun](https://bun.sh). For a ha
   </Tab>
 
   <Tab title="Discord">
-    View the full [Discord plugin source](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord).
+    查看完整的 [Discord 插件源代码](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord)。
 
     <Steps>
-      <Step title="Create a Discord bot">
-        Go to the [Discord Developer Portal](https://discord.com/developers/applications), click **New Application**, and name it. In the **Bot** section, create a username, then click **Reset Token** and copy the token.
+      <Step title="创建 Discord 机器人">
+        转到 [Discord 开发者门户](https://discord.com/developers/applications)，点击**新应用程序**，并为其命名。在**机器人**部分中，创建用户名，然后点击**重置令牌**并复制令牌。
       </Step>
 
-      <Step title="Enable Message Content Intent">
-        In your bot's settings, scroll to **Privileged Gateway Intents** and enable **Message Content Intent**.
+      <Step title="启用消息内容意图">
+        在您的机器人设置中，滚动到**特权网关意图**并启用**消息内容意图**。
       </Step>
 
-      <Step title="Invite the bot to your server">
-        Go to **OAuth2 > URL Generator**. Select the `bot` scope and enable these permissions:
+      <Step title="邀请机器人加入您的服务器">
+        转到 **OAuth2 > URL 生成器**。选择 `bot` 范围并启用这些权限：
 
-        * View Channels
-        * Send Messages
-        * Send Messages in Threads
-        * Read Message History
-        * Attach Files
-        * Add Reactions
+        * 查看频道
+        * 发送消息
+        * 在线程中发送消息
+        * 读取消息历史记录
+        * 附加文件
+        * 添加反应
 
-        Open the generated URL to add the bot to your server.
+        打开生成的 URL 以将机器人添加到您的服务器。
       </Step>
 
-      <Step title="Install the plugin">
-        In Claude Code, run:
+      <Step title="安装插件">
+        在 Claude Code 中，运行：
 
         ```
         /plugin install discord@claude-plugins-official
         ```
 
-        If Claude Code reports `Marketplace "claude-plugins-official" not found`, add the marketplace with `/plugin marketplace add anthropics/claude-plugins-official`. If it reports that the plugin is not found in the marketplace, your local copy is outdated: refresh it with `/plugin marketplace update claude-plugins-official`. Then retry the install.
+        如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
 
-        When the install asks for an installation scope, choose the user scope option so the plugin is available across all your projects. After installing, run `/reload-plugins` to activate the plugin's configure command.
+        安装后，运行 `/reload-plugins` 来激活插件的配置命令。
       </Step>
 
-      <Step title="Configure your token">
-        Run the configure command with the bot token you copied:
+      <Step title="配置您的令牌">
+        使用您复制的机器人令牌运行配置命令：
 
         ```
         /discord:configure <token>
         ```
 
-        This saves it to `~/.claude/channels/discord/.env`. You can also set `DISCORD_BOT_TOKEN` in your shell environment before launching Claude Code.
+        这会将其保存到 `~/.claude/channels/discord/.env`。您也可以在启动 Claude Code 之前在 shell 环境中设置 `DISCORD_BOT_TOKEN`。
       </Step>
 
-      <Step title="Restart with channels enabled">
-        Exit Claude Code and restart with the channel flag. This connects the Discord plugin so your bot can receive and respond to messages:
+      <Step title="重启并启用 channels">
+        退出 Claude Code 并使用 channel 标志重启。这会连接 Discord 插件，以便您的机器人可以接收和响应消息：
 
         ```bash theme={null}
         claude --channels plugin:discord@claude-plugins-official
         ```
       </Step>
 
-      <Step title="Pair your account">
-        DM your bot on Discord. The bot replies with a pairing code.
+      <Step title="配对您的账户">
+        在 Discord 上向您的机器人发送私信。机器人会回复一个配对代码。
 
-        <Note>If your bot doesn't respond, make sure Claude Code is running with `--channels` from the previous step. The bot can only reply while the channel is active.</Note>
+        <Note>如果您的机器人没有响应，请确保 Claude Code 正在使用上一步中的 `--channels` 运行。机器人只能在 channel 处于活动状态时回复。</Note>
 
-        Back in Claude Code, run:
+        回到 Claude Code，运行：
 
         ```
         /discord:access pair <code>
         ```
 
-        Then lock down access so only your account can send messages:
+        然后锁定访问权限，以便只有您的账户可以发送消息：
 
         ```
         /discord:access policy allowlist
@@ -159,156 +161,162 @@ Each supported channel is a plugin that requires [Bun](https://bun.sh). For a ha
   </Tab>
 
   <Tab title="iMessage">
-    View the full [iMessage plugin source](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage).
+    查看完整的 [iMessage 插件源代码](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage)。
 
-    The iMessage channel reads your Messages database directly and sends replies through AppleScript. It requires macOS and needs no bot token or external service.
+    iMessage channel 直接读取您的消息数据库，并通过 AppleScript 发送回复。它需要 macOS，不需要机器人令牌或外部服务。
 
     <Steps>
-      <Step title="Grant Full Disk Access">
-        The Messages database at `~/Library/Messages/chat.db` is protected by macOS. The first time the server reads it, macOS prompts for access: click **Allow**. The prompt names whichever app launched Bun, such as Terminal, iTerm, or your IDE.
+      <Step title="授予完全磁盘访问权限">
+        位于 `~/Library/Messages/chat.db` 的消息数据库受 macOS 保护。服务器第一次读取它时，macOS 会提示访问权限：点击**允许**。提示会命名启动 Bun 的应用程序，例如终端、iTerm 或您的 IDE。
 
-        If the prompt doesn't appear or you clicked Don't Allow, grant access manually under **System Settings > Privacy & Security > Full Disk Access** and add your terminal. Without this, the server exits immediately with `authorization denied`.
+        如果提示没有出现或您点击了"不允许"，请在**系统设置 > 隐私和安全 > 完全磁盘访问**下手动授予访问权限，并添加您的终端。没有这个，服务器会立即退出，显示 `authorization denied`。
       </Step>
 
-      <Step title="Install the plugin">
-        In Claude Code, run:
+      <Step title="安装插件">
+        在 Claude Code 中，运行：
 
         ```
         /plugin install imessage@claude-plugins-official
         ```
 
-        If Claude Code reports `Marketplace "claude-plugins-official" not found`, add the marketplace with `/plugin marketplace add anthropics/claude-plugins-official`. If it reports that the plugin is not found in the marketplace, your local copy is outdated: refresh it with `/plugin marketplace update claude-plugins-official`. Then retry the install.
-
-        When the install asks for an installation scope, choose the user scope option so the plugin is available across all your projects. Claude Code then suggests running `/reload-plugins`; you can skip that here, because restarting in the next step picks up the plugin.
+        如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
       </Step>
 
-      <Step title="Restart with channels enabled">
-        Exit Claude Code and restart with the channel flag:
+      <Step title="重启并启用 channels">
+        退出 Claude Code 并使用 channel 标志重启：
 
         ```bash theme={null}
         claude --channels plugin:imessage@claude-plugins-official
         ```
       </Step>
 
-      <Step title="Text yourself">
-        Open Messages on any device signed into your Apple ID and send a message to yourself. It reaches Claude immediately: self-chat bypasses access control with no setup.
+      <Step title="给自己发短信">
+        在任何登录到您的 Apple ID 的设备上打开消息，并向自己发送消息。它立即到达 Claude：自聊天绕过访问控制，无需设置。
 
-        <Note>The first reply Claude sends triggers a macOS Automation prompt asking if your terminal can control Messages. Click **OK**.</Note>
+        <Note>Claude 发送的第一条回复会触发 macOS 自动化提示，询问您的终端是否可以控制消息。点击**确定**。</Note>
       </Step>
 
-      <Step title="Allow other senders">
-        By default, only your own messages pass through. To let another contact reach Claude, add their handle:
+      <Step title="允许其他发送者">
+        默认情况下，只有您自己的消息通过。要让另一个联系人到达 Claude，请添加他们的句柄：
 
         ```
         /imessage:access allow +15551234567
         ```
 
-        Handles are phone numbers in `+country` format or Apple ID emails like `user@example.com`.
+        句柄是 `+country` 格式的电话号码或 Apple ID 电子邮件，如 `user@example.com`。
       </Step>
     </Steps>
   </Tab>
 </Tabs>
 
-You can also [build your own channel](/docs/en/channels-reference) for systems that don't have a plugin yet.
+您也可以[构建您自己的 channel](/docs/zh-CN/channels-reference)，用于尚未有插件的系统。
 
-## Quickstart
+<h2 id="quickstart">
+  快速入门
+</h2>
 
-Fakechat is an officially supported demo channel that runs a chat UI on localhost, with nothing to authenticate and no external service to configure.
+Fakechat 是一个官方支持的演示 channel，在 localhost 上运行聊天 UI，无需身份验证，也无需配置外部服务。
 
-Once you install and enable fakechat, you can type in the browser and the message arrives in your Claude Code session. Claude replies, and the reply shows up back in the browser. After you've tested the fakechat interface, try out [Telegram](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram), [Discord](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord), or [iMessage](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage).
+安装并启用 fakechat 后，您可以在浏览器中输入，消息会到达您的 Claude Code 会话。Claude 回复，回复会显示在浏览器中。测试了 fakechat 界面后，尝试 [Telegram](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram)、[Discord](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord) 或 [iMessage](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage)。
 
-To try the fakechat demo, you'll need:
+要尝试 fakechat 演示，您需要：
 
-* Claude Code [installed and authenticated](/docs/en/quickstart#step-1-install-claude-code) with a claude.ai account or a Claude Console API key
-* [Bun](https://bun.sh) installed. The pre-built channel plugins are Bun scripts. Check with `bun --version`; if that fails, [install Bun](https://bun.sh/docs/installation).
-* **Team, Enterprise, or managed Console org**: your admin must [enable channels](#enterprise-controls) in managed settings
+* Claude Code [已安装并使用 claude.ai 账户或 Claude 控制台 API 密钥进行身份验证](/docs/zh-CN/quickstart#step-1-install-claude-code)
+* [Bun](https://bun.sh) 已安装。预构建的 channel 插件是 Bun 脚本。使用 `bun --version` 检查；如果失败，[安装 Bun](https://bun.sh/docs/installation)。
+* **Team、Enterprise 或托管控制台组织**：您的管理员必须在托管设置中[启用 channels](#enterprise-controls)
 
 <Steps>
-  <Step title="Install the fakechat channel plugin">
-    Start a Claude Code session and run the install command:
+  <Step title="安装 fakechat channel 插件">
+    启动 Claude Code 会话并运行安装命令：
 
     ```text theme={null}
     /plugin install fakechat@claude-plugins-official
     ```
 
-    If Claude Code reports `Marketplace "claude-plugins-official" not found`, add the marketplace with `/plugin marketplace add anthropics/claude-plugins-official`. If it reports that the plugin is not found in the marketplace, your local copy is outdated: refresh it with `/plugin marketplace update claude-plugins-official`. Then retry the install.
-
-    When the install asks for an installation scope, choose the user scope option so the plugin is available across all your projects. Claude Code then suggests running `/reload-plugins`; you can skip that here, because restarting in the next step picks up the plugin.
+    如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
   </Step>
 
-  <Step title="Restart with the channel enabled">
-    Exit Claude Code, then restart with `--channels` and pass the fakechat plugin you installed:
+  <Step title="重启并启用 channel">
+    退出 Claude Code，然后使用 `--channels` 重启并传递您安装的 fakechat 插件：
 
     ```bash theme={null}
     claude --channels plugin:fakechat@claude-plugins-official
     ```
 
-    The fakechat server starts automatically. The startup screen shows a channels notice stating that messages from `plugin:fakechat@claude-plugins-official` inject directly in this session. If the plugin isn't installed or isn't on the approved allowlist, a warning line naming the problem appears below that notice.
+    fakechat 服务器会自动启动。
 
     <Tip>
-      You can pass several plugins to `--channels`, space-separated.
+      您可以将多个插件传递给 `--channels`，用空格分隔。
     </Tip>
   </Step>
 
-  <Step title="Push a message in">
-    Open the fakechat UI at [http://localhost:8787](http://localhost:8787) and type a message:
+  <Step title="推送消息进来">
+    在 [http://localhost:8787](http://localhost:8787) 打开 fakechat UI 并输入消息：
 
     ```text theme={null}
-    what's in my working directory?
+    hey, what's in my working directory?
     ```
 
-    The message arrives in your Claude Code session. The terminal shows it as an inbound channel line like `← fakechat · web: what's in my working directory?`, while the model receives it as a `<channel source="plugin:fakechat:fakechat">` event, using the plugin's scoped server name. Claude reads it, does the work, and calls fakechat's `reply` tool. The first reply triggers a permission prompt in your terminal; approve it, and the answer shows up in the chat UI.
+    消息作为 `<channel source="fakechat">` 事件到达您的 Claude Code 会话。Claude 读取它，完成工作，并调用 fakechat 的 `reply` 工具。答案显示在聊天 UI 中。
   </Step>
 </Steps>
 
-If Claude hits a permission prompt while you're away from the terminal, the session pauses until you respond. Channel servers that declare the [permission relay capability](/docs/en/channels-reference#relay-permission-prompts) can forward these prompts to you so you can approve or deny remotely. For unattended use, [`--dangerously-skip-permissions`](/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) bypasses most prompts, but only use it in environments you trust. Explicit ask rules, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) still prompt.
+如果 Claude 在您离开终端时遇到权限提示，会话会暂停，直到您响应。声明[权限中继功能](/docs/zh-CN/channels-reference#relay-permission-prompts)的 Channel 服务器可以将这些提示转发给您，以便您可以远程批准或拒绝。对于无人值守使用，[`--dangerously-skip-permissions`](/docs/zh-CN/permission-modes#skip-all-checks-with-bypasspermissions-mode) 完全绕过提示，但仅在您信任的环境中使用。显式询问规则、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具仍然会提示。
 
-When you run channels in non-interactive mode with `-p`, tools that need terminal input, such as multiple-choice questions and plan mode approval, are disabled so the session never stalls waiting for input.
+当您使用 `-p` 以非交互模式运行 channels 时，需要终端输入的工具（如多选问题和 Plan Mode 批准）被禁用，以便会话永远不会因等待输入而停滞。
 
-## Security
+<h2 id="security">
+  安全性
+</h2>
 
-Every approved channel plugin maintains a sender allowlist: only IDs you've added can push messages, and everyone else is silently dropped.
+每个批准的 channel 插件都维护一个发送者允许列表：只有您添加的 ID 可以推送消息，其他所有人都会被静默丢弃。
 
-Telegram and Discord bootstrap the list by pairing:
+Telegram 和 Discord 通过配对来引导列表：
 
-1. Find your bot in Telegram or Discord and send it any message
-2. The bot replies with a pairing code
-3. In your Claude Code session, approve the code when prompted
-4. Your sender ID is added to the allowlist
+1. 在 Telegram 或 Discord 中找到您的机器人并向其发送任何消息
+2. 机器人回复一个配对代码
+3. 在您的 Claude Code 会话中，在提示时批准代码
+4. 您的发送者 ID 被添加到允许列表
 
-iMessage works differently: texting yourself bypasses the gate automatically, and you add other contacts by handle with `/imessage:access allow`.
+iMessage 的工作方式不同：给自己发短信会自动绕过门禁，您可以使用 `/imessage:access allow` 通过句柄添加其他联系人。
 
-On top of that, you control which servers are enabled each session with `--channels`, and your organization controls availability with [`channelsEnabled`](#enterprise-controls) on claude.ai Team and Enterprise plans and on Console organizations that deploy managed settings.
+除此之外，您可以使用 `--channels` 控制每个会话启用哪些服务器，您的组织可以使用 [`channelsEnabled`](#enterprise-controls) 在 claude.ai Team 和 Enterprise 计划以及部署托管设置的控制台组织上控制可用性。
 
-Being in `.mcp.json` isn't enough to push messages: a server also has to be named in `--channels`.
+仅在 `.mcp.json` 中还不足以推送消息：服务器还必须在 `--channels` 中命名。
 
-The allowlist also gates [permission relay](/docs/en/channels-reference#relay-permission-prompts) if the channel declares it. Anyone who can reply through the channel can approve or deny tool use in your session, so only allowlist senders you trust with that authority.
+允许列表也会限制[权限中继](/docs/zh-CN/channels-reference#relay-permission-prompts)（如果 channel 声明了它）。任何可以通过 channel 回复的人都可以批准或拒绝您会话中的工具使用，因此只允许列表您信任具有该权限的发送者。
 
-## Enterprise controls
+<h2 id="enterprise-controls">
+  Enterprise 控制
+</h2>
 
-Admins control availability through two [managed settings](/docs/en/settings) that users cannot override. The default depends on how you authenticate:
+管理员通过两个[托管设置](/docs/zh-CN/settings)控制可用性，用户无法覆盖。默认值取决于您如何进行身份验证：
 
-* **claude.ai Team and Enterprise**: channels are blocked until an Owner enables them.
-* **Anthropic Console with API key authentication**: channels are permitted by default. You only need this setting if your organization deploys managed settings.
+* **claude.ai Team 和 Enterprise**：channels 被阻止，直到管理员启用它们。
+* **Anthropic 控制台与 API 密钥身份验证**：channels 默认被允许。仅当您的组织部署托管设置时才需要此设置。
 
-In all cases, no channel runs until a user opts it in for the session with `--channels`.
+在所有情况下，在用户使用 `--channels` 为会话选择加入之前，没有 channel 会运行。
 
-| Setting                 | Purpose                                                                                                                                                                                                                                                     | When not configured                                                                                                                                                                    |
-| :---------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `channelsEnabled`       | Master switch. Must be `true` for any channel to deliver messages. Set via the [claude.ai Admin console](https://claude.ai/admin-settings/claude-code) toggle or directly in managed settings. Blocks all channels including the development flag when off. | claude.ai Team and Enterprise: channels blocked. Console: channels allowed unless your organization deploys managed settings, in which case channels are blocked until this key is set |
-| `allowedChannelPlugins` | Which plugins can register once channels are enabled. Replaces the Anthropic-maintained list when set. Only applies when `channelsEnabled` is `true`.                                                                                                       | Anthropic default list applies                                                                                                                                                         |
+| 设置                      | 目的                                                                                                                                          | 未配置时                                                                                               |
+| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------- |
+| `channelsEnabled`       | 主开关。必须为 `true` 才能让任何 channel 传递消息。通过 [claude.ai 管理员控制台](https://claude.ai/admin-settings/claude-code)切换或直接在托管设置中设置。关闭时阻止所有 channels，包括开发标志。 | claude.ai Team 和 Enterprise：channels 被阻止。控制台：channels 被允许，除非您的组织部署托管设置，在这种情况下 channels 被阻止，直到设置此密钥 |
+| `allowedChannelPlugins` | 启用 channels 后哪些插件可以注册。设置时替换 Anthropic 维护的列表。仅在 `channelsEnabled` 为 `true` 时适用。                                                              | 应用 Anthropic 默认列表                                                                                  |
 
-Pro and Max users without an organization skip these checks entirely: channels are available and users opt in per session with `--channels`.
+没有组织的 Pro 和 Max 用户完全跳过这些检查：channels 可用，用户使用 `--channels` 按会话选择加入。
 
-### Enable channels for your organization
+<h3 id="enable-channels-for-your-organization">
+  为您的组织启用 channels
+</h3>
 
-Enable channels for your organization from [**claude.ai → Admin settings → Claude Code → Channels**](https://claude.ai/admin-settings/claude-code), which requires the Owner role, or by setting `channelsEnabled` to `true` in managed settings.
+管理员可以从 [**claude.ai → 管理员设置 → Claude Code → Channels**](https://claude.ai/admin-settings/claude-code) 启用 channels，或通过在托管设置中将 `channelsEnabled` 设置为 `true`。
 
-Once enabled, users in your organization can use `--channels` to opt channel servers into individual sessions. If the setting is disabled or unset, the MCP server still connects and its tools work, but channel messages won't arrive. A startup warning tells the user to have an admin enable the setting.
+启用后，您组织中的用户可以使用 `--channels` 将 channel 服务器选择加入到各个会话中。如果设置被禁用或未设置，MCP 服务器仍会连接，其工具可以工作，但 channel 消息不会到达。启动警告会告诉用户让管理员启用该设置。
 
-### Restrict which channel plugins can run
+<h3 id="restrict-which-channel-plugins-can-run">
+  限制哪些 channel 插件可以运行
+</h3>
 
-By default, any plugin on the Anthropic-maintained allowlist can register as a channel. Admins on Team and Enterprise plans can replace that allowlist with their own by setting `allowedChannelPlugins` in managed settings. Use this to restrict which official plugins are allowed, approve channels from your own internal marketplace, or both. Each entry names a plugin and the marketplace it comes from:
+默认情况下，Anthropic 维护的允许列表上的任何插件都可以注册为 channel。Team 和 Enterprise 计划上的管理员可以通过在托管设置中设置 `allowedChannelPlugins` 来替换该允许列表。使用此功能来限制允许哪些官方插件、批准来自您自己的内部市场的 channels，或两者兼有。每个条目命名一个插件及其来自的市场：
 
 ```json theme={null}
 {
@@ -321,42 +329,46 @@ By default, any plugin on the Anthropic-maintained allowlist can register as a c
 }
 ```
 
-When `allowedChannelPlugins` is set, it replaces the Anthropic allowlist entirely: only the listed plugins can register. Leave it unset to fall back to the default Anthropic allowlist. If you set an empty array, you block all channel plugins from the allowlist, but `--dangerously-load-development-channels` can still bypass that block for local testing. To block channels entirely including the development flag, leave `channelsEnabled` unset instead.
+设置 `allowedChannelPlugins` 时，它完全替换 Anthropic 允许列表：只有列出的插件可以注册。保持未设置以回退到默认 Anthropic 允许列表。如果设置空数组，您会阻止所有 channel 插件从允许列表中，但 `--dangerously-load-development-channels` 仍可以为本地测试绕过该阻止。要完全阻止 channels，包括开发标志，请改为保持 `channelsEnabled` 未设置。
 
-This setting requires `channelsEnabled: true`. If a user passes a plugin to `--channels` that isn't on your list, Claude Code starts normally but the channel doesn't register, and the startup notice explains that the plugin isn't on the organization's approved list.
+此设置需要 `channelsEnabled: true`。如果用户将不在您列表中的插件传递给 `--channels`，Claude Code 会正常启动，但 channel 不会注册，启动通知会解释该插件不在组织的批准列表中。
 
-## Research preview
+<h2 id="research-preview">
+  研究预览
+</h2>
 
-Channels are a research preview feature. Availability is rolling out gradually, and the `--channels` flag syntax and protocol contract may change based on feedback.
+Channels 是一个研究预览功能。可用性正在逐步推出，`--channels` 标志语法和协议契约可能会根据反馈而改变。
 
-Neither `--channels` nor `--dangerously-load-development-channels` appears in `claude --help` while the feature is in preview. The flags work even though they aren't listed.
+在预览期间，`--channels` 仅接受来自 Anthropic 维护的允许列表的插件，或来自您组织的允许列表（如果管理员已设置 [`allowedChannelPlugins`](#restrict-which-channel-plugins-can-run)）。[claude-plugins-official](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins) 中的 channel 插件是默认批准的集合。如果您传递不在有效允许列表中的内容，Claude Code 会正常启动，但 channel 不会注册，启动通知会告诉您原因。
 
-During the preview, `--channels` only accepts plugins from an Anthropic-maintained allowlist, or from your organization's allowlist if an admin has set [`allowedChannelPlugins`](#restrict-which-channel-plugins-can-run). The channel plugins in [claude-plugins-official](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins) are the default approved set. If you pass something that isn't on the effective allowlist, Claude Code starts normally but the channel doesn't register, and the startup notice tells you why.
+要测试您正在构建的 channel，请使用 `--dangerously-load-development-channels`。有关测试您构建的自定义 channels 的信息，请参阅[在研究预览期间测试](/docs/zh-CN/channels-reference#test-during-the-research-preview)。
 
-To test a channel you're building, use `--dangerously-load-development-channels`. See [Test during the research preview](/docs/en/channels-reference#test-during-the-research-preview) for information about testing custom channels that you build.
+在 [Claude Code GitHub 存储库](https://github.com/anthropics/claude-code/issues)上报告问题或反馈。
 
-Report issues or feedback on the [Claude Code GitHub repository](https://github.com/anthropics/claude-code/issues).
+<h2 id="how-channels-compare">
+  channels 如何比较
+</h2>
 
-## How channels compare
+几个 Claude Code 功能连接到终端外的系统，每个都适合不同类型的工作：
 
-Several Claude Code features connect to systems outside the terminal, each suited to a different kind of work:
+| 功能                                                | 它做什么                                 | 适合                    |
+| ------------------------------------------------- | ------------------------------------ | --------------------- |
+| [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) | 在新的云沙箱中运行任务，从 GitHub 克隆              | 委派您稍后检查的自包含异步工作       |
+| [Slack 中的 Claude](/docs/zh-CN/slack)                   | 从频道或线程中的 `@Claude` 提及生成网络会话          | 直接从团队对话上下文启动任务        |
+| 标准 [MCP 服务器](/docs/zh-CN/mcp)                          | Claude 在任务期间查询它；没有任何内容被推送到会话         | 给 Claude 按需访问以读取或查询系统 |
+| [远程控制](/docs/zh-CN/remote-control)                     | 您从 claude.ai 或 Claude 移动应用程序驱动您的本地会话 | 在离开您的办公桌时指导进行中的会话     |
 
-| Feature                                              | What it does                                                          | Good for                                                  |
-| ---------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
-| [Claude Code on the web](/docs/en/claude-code-on-the-web) | Runs tasks in a fresh cloud sandbox, cloned from GitHub               | Delegating self-contained async work you check on later   |
-| [Claude in Slack](/docs/en/slack)                         | Spawns a web session from an `@Claude` mention in a channel or thread | Starting tasks directly from team conversation context    |
-| Standard [MCP server](/docs/en/mcp)                       | Claude queries it during a task; nothing is pushed to the session     | Giving Claude on-demand access to read or query a system  |
-| [Remote Control](/docs/en/remote-control)                 | You drive your local session from claude.ai or the Claude mobile app  | Steering an in-progress session while away from your desk |
+Channels 通过将来自非 Claude 源的事件推送到您已经运行的本地会话中，填补了该列表中的空白。
 
-Channels fill the gap in that list by pushing events from non-Claude sources into your already-running local session.
+* **聊天桥接**：通过 Telegram、Discord 或 iMessage 从您的手机向 Claude 询问某事，答案会在同一聊天中返回，而工作在您的机器上针对您的真实文件运行。
+* **[Webhook 接收器](/docs/zh-CN/channels-reference#example-build-a-webhook-receiver)**：来自 CI、您的错误跟踪器、部署管道或其他外部服务的 webhook 到达 Claude 已经打开您的文件并记得您正在调试的内容的地方。
 
-* **Chat bridge**: ask Claude something from your phone via Telegram, Discord, or iMessage, and the answer comes back in the same chat while the work runs on your machine against your real files.
-* **[Webhook receiver](/docs/en/channels-reference#example-build-a-webhook-receiver)**: a webhook from CI, your error tracker, a deploy pipeline, or other external service arrives where Claude already has your files open and remembers what you were debugging.
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-## Next steps
+一旦您有一个 channel 运行，请探索这些相关功能：
 
-Once you have a channel running, explore these related features:
-
-* [Build your own channel](/docs/en/channels-reference) for systems that don't have plugins yet
-* [Remote Control](/docs/en/remote-control) to drive a local session from your phone instead of forwarding events into it
-* [Scheduled tasks](/docs/en/scheduled-tasks) to poll on a timer instead of reacting to pushed events
+* [构建您自己的 channel](/docs/zh-CN/channels-reference)，用于尚未有插件的系统
+* [远程控制](/docs/zh-CN/remote-control)，从您的手机驱动本地会话，而不是将事件转发到其中
+* [计划任务](/docs/zh-CN/scheduled-tasks)，按计时器轮询而不是对推送事件做出反应

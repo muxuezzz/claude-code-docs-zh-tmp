@@ -2,144 +2,147 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Interactive mode
+# 交互模式
 
-> Complete reference for keyboard shortcuts, input modes, and interactive features in Claude Code sessions.
+> Claude Code 会话中键盘快捷键、输入模式和交互功能的完整参考。
 
-## Keyboard shortcuts
+<h2 id="keyboard-shortcuts">
+  键盘快捷键
+</h2>
 
 <Note>
-  Keyboard shortcuts may vary by platform and terminal. In [fullscreen rendering](/docs/en/fullscreen), press `?` in the transcript viewer to see available shortcuts there.
+  键盘快捷键可能因平台和终端而异。在[全屏渲染](/docs/zh-CN/fullscreen)中，在转录查看器中按 `?` 查看可用的快捷键。
 
-  **macOS users**: Option/Alt key shortcuts (`Alt+B`, `Alt+F`, `Alt+Y`, `Alt+P`) require configuring Option as Meta in your terminal:
+  **macOS 用户**：Option/Alt 键快捷键（`Alt+B`、`Alt+F`、`Alt+Y`、`Alt+M`、`Alt+P`）需要在终端中将 Option 配置为 Meta：
 
-  * **iTerm2**: Settings → Profiles → Keys → General → set Left/Right Option key to "Esc+"
-  * **Apple Terminal**: Settings → Profiles → Keyboard → check "Use Option as Meta Key"
-  * **VS Code**: set `"terminal.integrated.macOptionIsMeta": true` in VS Code settings
+  * **iTerm2**：设置 → 配置文件 → 键 → 常规 → 将左/右 Option 键设置为"Esc+"
+  * **Apple Terminal**：设置 → 配置文件 → 键盘 → 勾选"使用 Option 作为 Meta 键"
+  * **VS Code**：在 VS Code 设置中设置 `"terminal.integrated.macOptionIsMeta": true`
 
-  See [Terminal configuration](/docs/en/terminal-config) for details.
+  有关详细信息，请参阅[终端配置](/docs/zh-CN/terminal-config)。
 </Note>
 
-### General controls
+<h3 id="general-controls">
+  常规控制
+</h3>
 
-| Shortcut                                                                                     | Description                                                                                                                                                | Context                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| :------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Ctrl+C`                                                                                     | Interrupt, or clear input                                                                                                                                  | Interrupts a running operation. If nothing is running, the first press clears the prompt input and a second press exits Claude Code                                                                                                                                                                                                                                                                                                             |
-| `Ctrl+X Ctrl+K`                                                                              | Stop all running [background subagents](/docs/en/sub-agents#run-subagents-in-foreground-or-background) in this session. Press twice within 3 seconds to confirm | Subagent control                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `Ctrl+D`                                                                                     | Exit Claude Code session                                                                                                                                   | The first press shows a confirmation hint and a second press within 800ms exits. When the prompt has text, `Ctrl+D` deletes the character after the cursor instead                                                                                                                                                                                                                                                                              |
-| `Ctrl+G` or `Ctrl+X Ctrl+E`                                                                  | Open in default text editor                                                                                                                                | Edit your prompt or custom response in your default text editor. `Ctrl+X Ctrl+E` is the readline-native binding. Turn on **Show last response in external editor** in `/config` to prepend Claude's previous reply as `#`-commented context above your prompt; Claude Code strips the comment block when you save                                                                                                                               |
-| `Ctrl+L`                                                                                     | Redraw screen                                                                                                                                              | Forces a full terminal redraw, keeping input and conversation history. Use this to recover if the display becomes garbled or partially blank. In [fullscreen rendering](/docs/en/fullscreen#clear-the-conversation), if you press `Ctrl+L` once, Claude Code redraws the screen and also shows a hint that pressing it again runs `/clear`. If you press it twice within two seconds, Claude Code runs `/clear` and starts a new conversation        |
-| `Ctrl+O`                                                                                     | Toggle transcript viewer                                                                                                                                   | Shows detailed tool usage and execution, with a timestamp and the model used on each assistant message. Also expands MCP calls, which collapse to a single line like "Called slack 3 times" by default                                                                                                                                                                                                                                          |
-| `Ctrl+R`                                                                                     | Reverse search command history                                                                                                                             | Search through previous commands interactively                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `Ctrl+V` or `Cmd+V` (iTerm2) or `Alt+V` (Windows and WSL)                                    | Paste image from clipboard                                                                                                                                 | Inserts an `[Image #N]` chip at the cursor so you can reference it positionally in your prompt. On WSL, both `Ctrl+V` and `Alt+V` are bound; use `Alt+V` if your terminal intercepts `Ctrl+V`                                                                                                                                                                                                                                                   |
-| `Ctrl+B`                                                                                     | Background running tasks                                                                                                                                   | Backgrounds Bash commands and agents. Tmux users press twice                                                                                                                                                                                                                                                                                                                                                                                    |
-| `Ctrl+T`                                                                                     | Toggle Claude's task checklist                                                                                                                             | Show or hide [Claude's to-do checklist](#task-list) in the status area. This is not the background-task view; use [`/tasks`](/docs/en/commands) to see running shells and subagents                                                                                                                                                                                                                                                                  |
-| `Ctrl+S`                                                                                     | Stash or restore prompt                                                                                                                                    | With text in the input, stashes it and clears the prompt. Pressed again on an empty prompt, restores the stashed text, cursor position, and pasted content                                                                                                                                                                                                                                                                                      |
-| `Ctrl+Z`                                                                                     | Suspend Claude Code                                                                                                                                        | Unix only. Suspends the process to your shell; run `fg` to resume                                                                                                                                                                                                                                                                                                                                                                               |
-| `Left/Right arrows`                                                                          | Cycle through dialog tabs                                                                                                                                  | Navigate between tabs in permission dialogs and menus                                                                                                                                                                                                                                                                                                                                                                                           |
-| `Up/Down arrows` or `Ctrl+P`/`Ctrl+N`                                                        | Move cursor or navigate command history                                                                                                                    | When the input spans more than one visual row, whether wrapped or multiline, first moves the cursor within the prompt. Once the cursor is on the first or last visual row, pressing again navigates command history. {/* min-version: 2.1.169 */}As of v2.1.169, wrapped single-line input behaves the same as multiline                                                                                                                        |
-| `Esc`                                                                                        | Interrupt Claude, or close a dialog                                                                                                                        | Stop the current response or tool call mid-turn so you can redirect. Claude keeps the work done so far. When a dialog such as a permission prompt is open, `Esc` closes the dialog rather than interrupting Claude. {/* min-version: 2.1.202 */}Before v2.1.202, `Esc` on some dialogs interrupted Claude and left the dialog open                                                                                                              |
-| `Esc` + `Esc`                                                                                | Clear input draft, or rewind                                                                                                                               | When the prompt input contains text, double `Esc` clears it and saves the draft to history so `Up` recalls it. When the input is empty, double `Esc` opens the [rewind menu](/docs/en/checkpointing) to restore or summarize code and conversation from a previous point. {/* min-version: 2.1.216 */}Before v2.1.216, double `Esc` at an empty prompt could stop opening the menu for the rest of a long-running session that used background tasks |
-| `Shift+Tab`, or `Alt+M` on Windows when the Node or Bun runtime doesn't enable VT input mode | Cycle permission modes                                                                                                                                     | Cycle through `default` (labeled Manual in the mode indicator), `acceptEdits`, `plan`, and any modes you have enabled, such as `auto` or `bypassPermissions`. See [permission modes](/docs/en/permission-modes).                                                                                                                                                                                                                                     |
-| `Option+P` (macOS) or `Alt+P` (Windows/Linux)                                                | Switch model                                                                                                                                               | Switch models without clearing your prompt                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `Option+T` (macOS) or `Alt+T` (Windows/Linux)                                                | Toggle extended thinking                                                                                                                                   | Enable or disable extended thinking mode. Has no effect on Fable 5, which always uses extended thinking. {/* min-version: 2.1.132 */}As of v2.1.132 this shortcut works on macOS without configuring Option as Meta                                                                                                                                                                                                                             |
-| `Option+O` (macOS) or `Alt+O` (Windows/Linux)                                                | Toggle fast mode                                                                                                                                           | Enable or disable [fast mode](/docs/en/fast-mode)                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 快捷键                                                | 描述                                                                                           | 上下文                                                                                                                                                        |
+| :------------------------------------------------- | :------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Ctrl+C`                                           | 中断，或清除输入                                                                                     | 中断正在运行的操作。如果没有任何操作在运行，第一次按下会清除提示输入，第二次按下会退出 Claude Code                                                                                                    |
+| `Ctrl+X Ctrl+K`                                    | 终止此会话中所有运行的[后台子代理](/docs/zh-CN/sub-agents#run-subagents-in-foreground-or-background)。在 3 秒内按两次以确认 | 子代理控制                                                                                                                                                      |
+| `Ctrl+D`                                           | 退出 Claude Code 会话                                                                            | EOF 信号                                                                                                                                                     |
+| `Ctrl+G` 或 `Ctrl+X Ctrl+E`                         | 在默认文本编辑器中打开                                                                                  | 在默认文本编辑器中编辑您的提示或自定义响应。`Ctrl+X Ctrl+E` 是 readline 原生绑定。在 `/config` 中打开"在外部编辑器中显示最后响应"以在您的提示上方将 Claude 的上一个回复作为 `#` 注释上下文预置；保存时会删除注释块                        |
+| `Ctrl+L`                                           | 重绘屏幕                                                                                         | 强制完整的终端重绘。输入和对话历史被保留。使用此功能可在显示变得混乱或部分空白时恢复                                                                                                                 |
+| `Ctrl+O`                                           | 切换转录查看器                                                                                      | 显示详细的工具使用和执行情况，每个助手消息上都有时间戳和使用的模型。还会展开 MCP 调用，这些调用默认会折叠为单行，如"Called slack 3 times"                                                                         |
+| `Ctrl+R`                                           | 反向搜索命令历史                                                                                     | 交互式搜索以前的命令                                                                                                                                                 |
+| `Ctrl+V` 或 `Cmd+V`（iTerm2）或 `Alt+V`（Windows 和 WSL） | 从剪贴板粘贴图像                                                                                     | 在光标处插入 `[Image #N]` 芯片，以便您可以在提示中按位置引用它。在 WSL 上，`Ctrl+V` 和 `Alt+V` 都被绑定；如果您的终端拦截 `Ctrl+V`，请使用 `Alt+V`                                                       |
+| `Ctrl+B`                                           | 后台运行任务                                                                                       | 后台运行 Bash 命令和代理。Tmux 用户按两次                                                                                                                                 |
+| `Ctrl+T`                                           | 切换 Claude 的任务清单                                                                              | 在状态区域中显示或隐藏 [Claude 的待办事项清单](#task-list)。这不是后台任务视图；使用 [`/tasks`](/docs/zh-CN/commands) 查看运行的 shell 和子代理                                                         |
+| `Left/Right arrows`                                | 在对话框选项卡之间循环                                                                                  | 在权限对话框和菜单中的选项卡之间导航                                                                                                                                         |
+| `Up/Down arrows` 或 `Ctrl+P`/`Ctrl+N`               | 移动光标或导航命令历史                                                                                  | 当输入跨越多个可视行时，无论是换行还是多行，首先在提示内移动光标。一旦光标在第一行或最后一行，再次按下会导航命令历史。{/* min-version: 2.1.169 */}从 v2.1.169 开始，换行的单行输入的行为与多行输入相同                                     |
+| `Esc`                                              | 中断 Claude，或关闭对话框                                                                             | 停止当前响应或工具调用中途，以便您可以重定向。Claude 保留迄今为止完成的工作。当权限提示等对话框打开时，`Esc` 关闭对话框而不是中断 Claude。{/* min-version: 2.1.202 */}在 v2.1.202 之前，某些对话框上的 `Esc` 会中断 Claude 并保持对话框打开 |
+| `Esc` + `Esc`                                      | 清除输入草稿，或回退                                                                                   | 当提示输入包含文本时，双 `Esc` 会清除它并将草稿保存到历史记录中，以便 `Up` 可以调用它。当输入为空时，双 `Esc` 会打开[回退菜单](/docs/zh-CN/checkpointing)以从上一个点恢复或总结代码和对话                                           |
+| `Shift+Tab` 或 `Alt+M`（某些配置）                        | 循环权限模式                                                                                       | 在 `default`（在模式指示器中标记为 Manual）、`acceptEdits`、`plan` 和您启用的任何模式（如 `auto` 或 `bypassPermissions`）之间循环。请参阅[权限模式](/docs/zh-CN/permission-modes)。                      |
+| `Option+P`（macOS）或 `Alt+P`（Windows/Linux）          | 切换模型                                                                                         | 在不清除提示的情况下切换模型                                                                                                                                             |
+| `Option+T`（macOS）或 `Alt+T`（Windows/Linux）          | 切换扩展思考                                                                                       | 启用或禁用扩展思考模式。对 Fable 5 无效，它始终使用扩展思考。{/* min-version: 2.1.132 */}从 v2.1.132 开始，此快捷键在 macOS 上无需配置 Option 作为 Meta 即可工作                                         |
+| `Option+O`（macOS）或 `Alt+O`（Windows/Linux）          | 切换快速模式                                                                                       | 启用或禁用[快速模式](/docs/zh-CN/fast-mode)                                                                                                                              |
 
-### Text editing
+<h3 id="text-editing">
+  文本编辑
+</h3>
 
-| Shortcut                   | Description                          | Context                                                                                                                                                                               |
-| :------------------------- | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Ctrl+A`                   | Move cursor to start of current line | In multiline input, moves to the start of the current logical line                                                                                                                    |
-| `Ctrl+E`                   | Move cursor to end of current line   | In multiline input, moves to the end of the current logical line                                                                                                                      |
-| `Ctrl+K`                   | Delete to end of line                | Stores deleted text for pasting                                                                                                                                                       |
-| `Ctrl+U`                   | Delete from cursor to line start     | Stores deleted text for pasting. Repeat to clear across lines in multiline input. On macOS, terminal emulators including iTerm2 and Terminal.app map `Cmd+Backspace` to this shortcut |
-| `Ctrl+W`                   | Delete previous word                 | Stores deleted text for pasting. On macOS, `Option+Delete` also deletes the previous word, and on Windows, `Ctrl+Backspace` does                                                      |
-| `Ctrl+Y`                   | Paste deleted text                   | Paste text deleted with `Ctrl+K`, `Ctrl+U`, or `Ctrl+W`                                                                                                                               |
-| `Alt+Y` (after `Ctrl+Y`)   | Cycle paste history                  | After pasting, cycle through previously deleted text. Requires [Option as Meta](#keyboard-shortcuts) on macOS                                                                         |
-| `Alt+B`                    | Move cursor back one word            | Word navigation. Requires [Option as Meta](#keyboard-shortcuts) on macOS                                                                                                              |
-| `Alt+F`                    | Move cursor forward one word         | Word navigation. Requires [Option as Meta](#keyboard-shortcuts) on macOS                                                                                                              |
-| `Ctrl+_` or `Ctrl+Shift+-` | Undo last input edit                 | Restores the previous input text and cursor position                                                                                                                                  |
+| 快捷键                    | 描述           | 上下文                                                                                           |
+| :--------------------- | :----------- | :-------------------------------------------------------------------------------------------- |
+| `Ctrl+A`               | 将光标移动到当前行的开始 | 在多行输入中，移动到当前逻辑行的开始                                                                            |
+| `Ctrl+E`               | 将光标移动到当前行的末尾 | 在多行输入中，移动到当前逻辑行的末尾                                                                            |
+| `Ctrl+K`               | 删除到行尾        | 存储已删除的文本以供粘贴                                                                                  |
+| `Ctrl+U`               | 从光标删除到行首     | 存储已删除的文本以供粘贴。重复以清除多行输入中的多行。在 macOS 上，终端模拟器（包括 iTerm2 和 Terminal.app）将 `Cmd+Backspace` 映射到此快捷键 |
+| `Ctrl+W`               | 删除上一个单词      | 存储已删除的文本以供粘贴。在 Windows 上，`Ctrl+Backspace` 也会删除上一个单词                                           |
+| `Ctrl+Y`               | 粘贴已删除的文本     | 粘贴用 `Ctrl+K`、`Ctrl+U` 或 `Ctrl+W` 删除的文本                                                        |
+| `Alt+Y`（在 `Ctrl+Y` 之后） | 循环粘贴历史       | 粘贴后，循环浏览以前删除的文本。在 macOS 上需要[将 Option 作为 Meta](#keyboard-shortcuts)                            |
+| `Alt+B`                | 将光标向后移动一个单词  | 单词导航。在 macOS 上需要[将 Option 作为 Meta](#keyboard-shortcuts)                                       |
+| `Alt+F`                | 将光标向前移动一个单词  | 单词导航。在 macOS 上需要[将 Option 作为 Meta](#keyboard-shortcuts)                                       |
 
-### Theme and display
+<h3 id="theme-and-display">
+  主题和显示
+</h3>
 
-| Shortcut | Description                                | Context                                                                                                      |
-| :------- | :----------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
-| `Ctrl+T` | Toggle syntax highlighting for code blocks | Only works inside the `/theme` picker menu. Controls whether code in Claude's responses uses syntax coloring |
+| 快捷键      | 描述           | 上下文                                           |
+| :------- | :----------- | :-------------------------------------------- |
+| `Ctrl+T` | 切换代码块的语法突出显示 | 仅在 `/theme` 选择器菜单内工作。控制 Claude 响应中的代码是否使用语法着色 |
 
-### Multiline input
+<h3 id="multiline-input">
+  多行输入
+</h3>
 
-| Method           | Shortcut       | Context                                                                                            |
-| :--------------- | :------------- | :------------------------------------------------------------------------------------------------- |
-| Quick escape     | `\` + `Enter`  | Works in all terminals                                                                             |
-| Option key       | `Option+Enter` | After enabling [Option as Meta](/docs/en/terminal-config#enable-option-key-shortcuts-on-macos) on macOS |
-| Shift+Enter      | `Shift+Enter`  | Native in iTerm2, WezTerm, Ghostty, Kitty, Warp, Apple Terminal, Windows Terminal                  |
-| Control sequence | `Ctrl+J`       | Works in any terminal without configuration                                                        |
-| Paste mode       | Paste directly | For code blocks, logs                                                                              |
+| 方法          | 快捷键            | 上下文                                                                                          |
+| :---------- | :------------- | :------------------------------------------------------------------------------------------- |
+| 快速转义        | `\` + `Enter`  | 在所有终端中工作                                                                                     |
+| Option 键    | `Option+Enter` | 在 macOS 上启用[将 Option 作为 Meta](/docs/zh-CN/terminal-config#enable-option-key-shortcuts-on-macos) 后 |
+| Shift+Enter | `Shift+Enter`  | 在 iTerm2、WezTerm、Ghostty、Kitty、Warp、Apple Terminal、Windows Terminal 中开箱即用                    |
+| 控制序列        | `Ctrl+J`       | 在任何终端中工作，无需配置                                                                                |
+| 粘贴模式        | 直接粘贴           | 对于代码块、日志                                                                                     |
 
 <Tip>
-  Shift+Enter works without configuration in iTerm2, WezTerm, Ghostty, Kitty, Warp, Apple Terminal, and Windows Terminal. For VS Code, Cursor, Devin Desktop, Alacritty, and Zed, run `/terminal-setup` to install the binding.
+  Shift+Enter 在 iTerm2、WezTerm、Ghostty、Kitty、Warp、Apple Terminal 和 Windows Terminal 中无需配置即可工作。对于 VS Code、Cursor、Devin Desktop、Alacritty 和 Zed，运行 `/terminal-setup` 以安装绑定。
 </Tip>
 
-### Quick commands
+<h3 id="quick-commands">
+  快速命令
+</h3>
 
-| Shortcut           | Description                    | Notes                                                                                                                                                                                                                                       |
-| :----------------- | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/` at start       | Command or skill               | See [commands](#commands) and [skills](/docs/en/skills)                                                                                                                                                                                          |
-| `!` at start       | Shell mode                     | Run a command directly, add its output to the session, and have Claude respond to it                                                                                                                                                        |
-| `@`                | File path mention              | Trigger file path autocomplete                                                                                                                                                                                                              |
-| `:`                | Emoji shortcode                | Type a full `:name:` to insert the emoji, or two or more characters for suggestions. See [Emoji shortcodes](#emoji-shortcodes). {/* min-version: 2.1.217 */}Requires Claude Code v2.1.217 or later                                          |
-| `?` on empty input | Toggle the shortcut help panel | Typing `?` when the input already contains text inserts the character. {/* min-version: 2.1.211 */}Before v2.1.211, an edit that left a lone `?` in the input, such as backspacing from `?x`, also toggled the panel and discarded the edit |
+| 快捷键     | 描述        | 注释                                          |
+| :------ | :-------- | :------------------------------------------ |
+| `/` 在开始 | 命令或 skill | 请参阅[命令](#commands)和 [skills](/docs/zh-CN/skills) |
+| `!` 在开始 | Shell 模式  | 直接运行命令，将其输出添加到会话，并让 Claude 对其进行响应           |
+| `@`     | 文件路径提及    | 触发文件路径自动完成                                  |
 
-### Transcript viewer
+<h3 id="transcript-viewer">
+  转录查看器
+</h3>
 
-When the transcript viewer is open (toggled with `Ctrl+O`), these shortcuts are available. Run `/tui` with no argument to check which renderer is active. In [fullscreen rendering](/docs/en/fullscreen), press `?` to show the full shortcut reference panel inside the viewer. `Ctrl+E` can be rebound via [`transcript:toggleShowAll`](/docs/en/keybindings).
+当转录查看器打开时（使用 `Ctrl+O` 切换），这些快捷键可用。在[全屏渲染](/docs/zh-CN/fullscreen)中，按 `?` 显示查看器内的完整快捷键参考面板。`Ctrl+E` 可以通过 [`transcript:toggleShowAll`](/docs/zh-CN/keybindings) 重新绑定。
 
-| Shortcut             | Description                                                                                                                                                                                                           |
-| :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `?`                  | Toggle the keyboard shortcut help panel. Requires [fullscreen rendering](/docs/en/fullscreen)                                                                                                                              |
-| `{` / `}`            | Jump to the previous or next user prompt, like vim paragraph motion. Requires [fullscreen rendering](/docs/en/fullscreen)                                                                                                  |
-| `Ctrl+E`             | Toggle show all content. Available in the default renderer only, not in [fullscreen rendering](/docs/en/fullscreen)                                                                                                        |
-| `[`                  | Write the full conversation to your terminal's native scrollback so `Cmd+F`, tmux copy mode, and other native tools can search it. Requires [fullscreen rendering](/docs/en/fullscreen#search-and-review-the-conversation) |
-| `v`                  | Write the conversation to a temporary file and open it in `$VISUAL` or `$EDITOR`. Requires [fullscreen rendering](/docs/en/fullscreen)                                                                                     |
-| `q`, `Ctrl+C`, `Esc` | Exit transcript view. All three can be rebound via [`transcript:exit`](/docs/en/keybindings)                                                                                                                               |
+| 快捷键                | 描述                                                                                                                |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------- |
+| `?`                | 切换键盘快捷键帮助面板。需要[全屏渲染](/docs/zh-CN/fullscreen)                                                                           |
+| `{` / `}`          | 跳转到上一个或下一个用户提示，如 vim 段落运动。需要[全屏渲染](/docs/zh-CN/fullscreen)                                                             |
+| `Ctrl+E`           | 切换显示所有内容                                                                                                          |
+| `[`                | 将完整对话写入终端的原生滚动缓冲区，以便 `Cmd+F`、tmux 复制模式和其他原生工具可以搜索它。需要[全屏渲染](/docs/zh-CN/fullscreen#search-and-review-the-conversation) |
+| `v`                | 将对话写入临时文件并在 `$VISUAL` 或 `$EDITOR` 中打开它。需要[全屏渲染](/docs/zh-CN/fullscreen)                                                |
+| `q`、`Ctrl+C`、`Esc` | 退出转录视图。所有三个都可以通过 [`transcript:exit`](/docs/zh-CN/keybindings) 重新绑定                                                     |
 
-### Voice input
+<h3 id="voice-input">
+  语音输入
+</h3>
 
-| Shortcut            | Description     | Notes                                                                                                                                                                            |
-| :------------------ | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hold or tap `Space` | Voice dictation | Requires [voice dictation](/docs/en/voice-dictation) to be enabled. Hold to record, or run `/voice tap` for tap-to-toggle. [Rebindable](/docs/en/voice-dictation#rebind-the-dictation-key) |
+| 快捷键           | 描述   | 注释                                                                                                                         |
+| :------------ | :--- | :------------------------------------------------------------------------------------------------------------------------- |
+| 按住或点击 `Space` | 语音听写 | 需要启用[语音听写](/docs/zh-CN/voice-dictation)。按住以录制，或运行 `/voice tap` 以进行点击切换。[可重新绑定](/docs/zh-CN/voice-dictation#rebind-the-dictation-key) |
 
-## Commands
+<h2 id="commands">
+  命令
+</h2>
 
-Type `/` in Claude Code to see all available commands, or type `/` followed by any letters to filter. The `/` menu shows everything you can invoke: built-in commands, bundled and user-authored [skills](/docs/en/skills), and commands contributed by [plugins](/docs/en/plugins) and [MCP servers](/docs/en/mcp#use-mcp-prompts-as-commands). Not all built-in commands are visible to every user since some depend on your platform or plan.
+在 Claude Code 中键入 `/` 以查看所有可用命令，或键入 `/` 后跟任何字母以进行筛选。`/` 菜单显示您可以调用的所有内容：内置命令、捆绑的和用户编写的 [skills](/docs/zh-CN/skills)，以及由 [plugins](/docs/zh-CN/plugins) 和 [MCP servers](/docs/zh-CN/mcp#use-mcp-prompts-as-commands) 贡献的命令。并非所有内置命令对每个用户都可见，因为某些命令取决于您的平台或计划。
 
-In [fullscreen rendering](/docs/en/fullscreen#use-the-mouse), the `/` command and `@` file suggestion lists also respond to the mouse: hovering highlights a row and clicking accepts it.
+在[全屏渲染](/docs/zh-CN/fullscreen#use-the-mouse)中，`/` 命令和 `@` 文件建议列表也响应鼠标：悬停突出显示一行，单击接受它。
 
-See the [commands reference](/docs/en/commands) for the full list of commands included in Claude Code.
+有关 Claude Code 中包含的命令的完整列表，请参阅[命令参考](/docs/zh-CN/commands)。
 
-## Vim editor mode
+<h2 id="vim-editor-mode">
+  Vim 编辑器模式
+</h2>
 
-Enable vim-style editing via `/config` → Editor mode.
+通过 `/config` → 编辑器模式启用 vim 风格编辑。
 
-### Mode switching
+<h3 id="mode-switching">
+  重新映射 INSERT 模式快捷键序列
+</h3>
 
-| Command | Action                                | From mode      |
-| :------ | :------------------------------------ | :------------- |
-| `Esc`   | Enter NORMAL mode                     | INSERT, VISUAL |
-| `i`     | Insert before cursor                  | NORMAL         |
-| `I`     | Insert at beginning of line           | NORMAL         |
-| `a`     | Insert after cursor                   | NORMAL         |
-| `A`     | Insert at end of line                 | NORMAL         |
-| `o`     | Open line below                       | NORMAL         |
-| `O`     | Open line above                       | NORMAL         |
-| `v`     | Start character-wise visual selection | NORMAL         |
-| `V`     | Start line-wise visual selection      | NORMAL         |
+[`vimInsertModeRemaps`](/docs/zh-CN/settings#available-settings) 设置将两个按键的 INSERT 模式序列映射到 Escape，因此像 `jj` 这样的映射会让你返回 NORMAL 模式。{/* min-version: 2.1.208 */}需要 Claude Code v2.1.208 或更高版本。
 
-### Remap INSERT-mode key sequences
-
-The [`vimInsertModeRemaps`](/docs/en/settings#available-settings) setting maps a two-key INSERT-mode sequence to Escape, so a mapping like `jj` returns you to NORMAL mode. {/* min-version: 2.1.208 */}Requires Claude Code v2.1.208 or later.
-
-The following `~/.claude/settings.json` example turns on vim mode and maps `jj` to Escape:
+以下 `~/.claude/settings.json` 示例打开 vim 模式并将 `jj` 映射到 Escape：
 
 ```json theme={null}
 {
@@ -148,158 +151,190 @@ The following `~/.claude/settings.json` example turns on vim mode and maps `jj` 
 }
 ```
 
-Each key is exactly two printable characters typed in sequence, and `"<Esc>"` is the only supported target. Entries with a different length or target are ignored.
+每个键恰好是按顺序输入的两个可打印字符，`"<Esc>"` 是唯一支持的目标。具有不同长度或目标的条目将被忽略。
 
-Typing the first character of a sequence inserts it normally. Pressing the second character within one second removes that pending character and switches to NORMAL mode, leaving neither character in your input. After the one-second window, or if a different key follows, both characters stay as literal text, so you can still type a word containing the sequence by pausing between the two keys.
+输入序列的第一个字符会正常插入。在一秒内按下第二个字符会移除该待处理字符并切换到 NORMAL 模式，在你的输入中不留下任何字符。在一秒窗口之后，或者如果按下不同的键，两个字符都会保留为文字文本，因此你仍然可以通过在两个键之间暂停来输入包含该序列的单词。
 
-Claude Code reads this setting from your user settings file, the `--settings` flag, and [managed settings](/docs/en/permissions#managed-settings) only. Entries in a project's `.claude/settings.json` or `.claude/settings.local.json` are ignored, so a checked-out repository can't remap your keystrokes.
+Claude Code 仅从你的用户设置文件、`--settings` 标志和[托管设置](/docs/zh-CN/permissions#managed-settings)读取此设置。项目的 `.claude/settings.json` 或 `.claude/settings.local.json` 中的条目被忽略，因此已检出的存储库无法重新映射你的按键。
 
-### Navigation (NORMAL mode)
+<h3 id="remap-insert-mode-key-sequences">
+  模式切换
+</h3>
 
-| Command         | Action                                                                                                                                                                                          |
-| :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `h`/`j`/`k`/`l` | Move left/down/up/right                                                                                                                                                                         |
-| `Space`         | Move right                                                                                                                                                                                      |
-| `w`             | Next word                                                                                                                                                                                       |
-| `e`             | End of word                                                                                                                                                                                     |
-| `b`             | Previous word                                                                                                                                                                                   |
-| `0`             | Beginning of line                                                                                                                                                                               |
-| `$`             | End of line                                                                                                                                                                                     |
-| `^`             | First non-blank character                                                                                                                                                                       |
-| `gg`            | Beginning of input                                                                                                                                                                              |
-| `G`             | End of input                                                                                                                                                                                    |
-| `f{char}`       | Jump to next occurrence of character                                                                                                                                                            |
-| `F{char}`       | Jump to previous occurrence of character                                                                                                                                                        |
-| `t{char}`       | Jump to just before next occurrence of character                                                                                                                                                |
-| `T{char}`       | Jump to just after previous occurrence of character                                                                                                                                             |
-| `;`             | Repeat last f/F/t/T motion                                                                                                                                                                      |
-| `,`             | Repeat last f/F/t/T motion in reverse                                                                                                                                                           |
-| `/`             | Open reverse history search, same as `Ctrl+R`. {/* min-version: 2.1.191 */}As of v2.1.191, the empty search prompt shows a hint: press `Esc` then `i` then `/` to open the command menu instead |
+| 命令    | 操作           | 来自模式          |
+| :---- | :----------- | :------------ |
+| `Esc` | 进入 NORMAL 模式 | INSERT、VISUAL |
+| `i`   | 在光标前插入       | NORMAL        |
+| `I`   | 在行首插入        | NORMAL        |
+| `a`   | 在光标后插入       | NORMAL        |
+| `A`   | 在行尾插入        | NORMAL        |
+| `o`   | 在下方打开行       | NORMAL        |
+| `O`   | 在上方打开行       | NORMAL        |
+| `v`   | 开始字符级可视选择    | NORMAL        |
+| `V`   | 开始行级可视选择     | NORMAL        |
+
+<h3 id="navigation-normal-mode">
+  导航（NORMAL 模式）
+</h3>
+
+| 命令              | 操作                                                                                                        |
+| :-------------- | :-------------------------------------------------------------------------------------------------------- |
+| `h`/`j`/`k`/`l` | 向左/向下/向上/向右移动                                                                                             |
+| `Space`         | 向右移动                                                                                                      |
+| `w`             | 下一个单词                                                                                                     |
+| `e`             | 单词末尾                                                                                                      |
+| `b`             | 上一个单词                                                                                                     |
+| `0`             | 行首                                                                                                        |
+| `$`             | 行尾                                                                                                        |
+| `^`             | 第一个非空白字符                                                                                                  |
+| `gg`            | 输入开始                                                                                                      |
+| `G`             | 输入结束                                                                                                      |
+| `f{char}`       | 跳转到下一个字符出现处                                                                                               |
+| `F{char}`       | 跳转到上一个字符出现处                                                                                               |
+| `t{char}`       | 跳转到下一个字符出现处之前                                                                                             |
+| `T{char}`       | 跳转到上一个字符出现处之后                                                                                             |
+| `;`             | 重复最后一个 f/F/t/T 动作                                                                                         |
+| `,`             | 反向重复最后一个 f/F/t/T 动作                                                                                       |
+| `/`             | 打开反向历史搜索，与 `Ctrl+R` 相同。{/* min-version: 2.1.191 */}从 v2.1.191 开始，空搜索提示显示一个提示：按 `Esc` 然后 `i` 然后 `/` 打开命令菜单 |
 
 <Note>
-  In vim NORMAL mode, if the cursor is at the beginning or end of input and can't move further, `j`/`k` and `↑`/`↓` navigate command history instead. {/* min-version: 2.1.219 */}`←` on an empty prompt opens [agent view](/docs/en/agent-view) from NORMAL mode as well as INSERT; before v2.1.219, `←` on an empty prompt did nothing in NORMAL mode.
+  在 vim 正常模式下，如果光标在输入的开始或结束处且无法进一步移动，`j`/`k` 和箭头键将导航命令历史。
 </Note>
 
-### Editing (NORMAL mode)
+<h3 id="editing-normal-mode">
+  编辑（NORMAL 模式）
+</h3>
 
-| Command        | Action                                                                                                                                                                                                                                          |
-| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `x`            | Delete character                                                                                                                                                                                                                                |
-| `dd`           | Delete line                                                                                                                                                                                                                                     |
-| `D`            | Delete to end of line                                                                                                                                                                                                                           |
-| `dw`/`de`/`db` | Delete word/to end/back                                                                                                                                                                                                                         |
-| `cc`           | Change line                                                                                                                                                                                                                                     |
-| `C`            | Change to end of line                                                                                                                                                                                                                           |
-| `cw`/`ce`/`cb` | Change word/to end/back                                                                                                                                                                                                                         |
-| `s`            | Substitute character: delete the character under the cursor and enter INSERT mode. {/* min-version: 2.1.211 */}Requires Claude Code v2.1.211 or later                                                                                           |
-| `S`            | Substitute line: clear the line and enter INSERT mode. {/* min-version: 2.1.211 */}Requires Claude Code v2.1.211 or later                                                                                                                       |
-| `yy`/`Y`       | Yank (copy) line                                                                                                                                                                                                                                |
-| `yw`/`ye`/`yb` | Yank word/to end/back                                                                                                                                                                                                                           |
-| `p`            | Paste after cursor                                                                                                                                                                                                                              |
-| `P`            | Paste before cursor                                                                                                                                                                                                                             |
-| `>>`           | Indent line                                                                                                                                                                                                                                     |
-| `<<`           | Dedent line                                                                                                                                                                                                                                     |
-| `J`            | Join lines                                                                                                                                                                                                                                      |
-| `u`            | Undo                                                                                                                                                                                                                                            |
-| `.`            | Repeat last change. {/* min-version: 2.1.216 */}Before v2.1.216, repeating a change operator such as `cw` or `cc` replayed only the inserted text without the deletion, and `.` after `p`/`P` repeated the previous change instead of the paste |
+| 命令             | 操作          |
+| :------------- | :---------- |
+| `x`            | 删除字符        |
+| `dd`           | 删除行         |
+| `D`            | 删除到行尾       |
+| `dw`/`de`/`db` | 删除单词/到末尾/向后 |
+| `cc`           | 更改行         |
+| `C`            | 更改到行尾       |
+| `cw`/`ce`/`cb` | 更改单词/到末尾/向后 |
+| `yy`/`Y`       | 复制行         |
+| `yw`/`ye`/`yb` | 复制单词/到末尾/向后 |
+| `p`            | 在光标后粘贴      |
+| `P`            | 在光标前粘贴      |
+| `>>`           | 缩进行         |
+| `<<`           | 取消缩进行       |
+| `J`            | 连接行         |
+| `u`            | 撤销          |
+| `.`            | 重复最后一个更改    |
 
-### Text objects (NORMAL mode)
+<h3 id="text-objects-normal-mode">
+  文本对象（NORMAL 模式）
+</h3>
 
-Text objects work with operators like `d`, `c`, and `y`:
+文本对象与 `d`、`c` 和 `y` 等运算符一起工作：
 
-| Command   | Action                                   |
-| :-------- | :--------------------------------------- |
-| `iw`/`aw` | Inner/around word                        |
-| `iW`/`aW` | Inner/around WORD (whitespace-delimited) |
-| `i"`/`a"` | Inner/around double quotes               |
-| `i'`/`a'` | Inner/around single quotes               |
-| `i(`/`a(` | Inner/around parentheses                 |
-| `i[`/`a[` | Inner/around brackets                    |
-| `i{`/`a{` | Inner/around braces                      |
+| 命令        | 操作               |
+| :-------- | :--------------- |
+| `iw`/`aw` | 内部/周围单词          |
+| `iW`/`aW` | 内部/周围 WORD（空白分隔） |
+| `i"`/`a"` | 内部/周围双引号         |
+| `i'`/`a'` | 内部/周围单引号         |
+| `i(`/`a(` | 内部/周围括号          |
+| `i[`/`a[` | 内部/周围方括号         |
+| `i{`/`a{` | 内部/周围大括号         |
 
-### Visual mode
+<h3 id="visual-mode">
+  可视模式
+</h3>
 
-Press `v` for character-wise selection or `V` for line-wise selection. Motions extend the selection, and operators act on it directly.
+按 `v` 进行字符级选择或按 `V` 进行行级选择。动作扩展选择，运算符直接作用于选择。
 
-| Command          | Action                                               |
-| :--------------- | :--------------------------------------------------- |
-| `d`/`x`          | Delete selection                                     |
-| `y`              | Yank selection                                       |
-| `c`/`s`          | Change selection                                     |
-| `p`              | Replace selection with register contents             |
-| `r{char}`        | Replace every selected character with `{char}`       |
-| `~`/`u`/`U`      | Toggle, lowercase, or uppercase selection            |
-| `>`/`<`          | Indent or dedent selected lines                      |
-| `J`              | Join selected lines                                  |
-| `o`              | Swap cursor and anchor                               |
-| `iw`/`aw`/`i"`/… | Select a text object                                 |
-| `v`/`V`          | Toggle between character-wise and line-wise, or exit |
+| 命令               | 操作                   |
+| :--------------- | :------------------- |
+| `d`/`x`          | 删除选择                 |
+| `y`              | 复制选择                 |
+| `c`/`s`          | 更改选择                 |
+| `p`              | 用寄存器内容替换选择           |
+| `r{char}`        | 将每个选定的字符替换为 `{char}` |
+| `~`/`u`/`U`      | 切换、小写或大写选择           |
+| `>`/`<`          | 缩进或取消缩进选定的行          |
+| `J`              | 连接选定的行               |
+| `o`              | 交换光标和锚点              |
+| `iw`/`aw`/`i"`/… | 选择文本对象               |
+| `v`/`V`          | 在字符级和行级之间切换，或退出      |
 
-Block-wise visual mode with `Ctrl+V` is not supported.
+不支持使用 `Ctrl+V` 的块级可视模式。
 
-## Command history
+<h2 id="command-history">
+  命令历史
+</h2>
 
-Claude Code maintains command history for the current session:
+Claude Code 为当前会话维护命令历史：
 
-* Input history is stored per working directory
-* Input history resets when you run `/clear` to start a new session. The previous session's conversation is preserved and can be resumed.
-* Submitting the same prompt twice in a row records one history entry, so pressing Up steps to the previous distinct prompt
-* Use Up/Down arrows to navigate (see keyboard shortcuts above)
-* History expansion with `!` is disabled by default
+* 输入历史按工作目录存储
+* 当您运行 `/clear` 以启动新会话时，输入历史会重置。上一个会话的对话被保留并可以恢复。
+* 连续两次提交相同的提示会记录一个历史条目，因此按向上箭头会跳转到上一个不同的提示
+* 使用向上/向下箭头导航（请参阅上面的快捷键）
+* 历史扩展（`!`）默认禁用
 
-### Reverse search with Ctrl+R
+<h3 id="reverse-search-with-ctrl-r">
+  使用 Ctrl+R 反向搜索
+</h3>
 
-Press `Ctrl+R` to interactively search through your command history. In [fullscreen rendering](/docs/en/fullscreen), `Ctrl+R` opens a search dialog instead: type to filter, press `Up` and `Down` to move through matches, and press `Ctrl+S` to cycle the scope through this session, this project, and all projects. Press `Enter` or `Tab` to place a match in the prompt input, or `Esc` to cancel. The steps below describe the default inline search:
+按 `Ctrl+R` 以交互方式搜索您的命令历史：
 
-1. **Start search**: press `Ctrl+R` to activate reverse history search
-2. **Type query**: enter text to search for in previous commands. The search term is highlighted in matching results
-3. **Navigate matches**: press `Ctrl+R` again to cycle through older matches
-4. **Search scope**: the inline search always searches prompts from all projects
-5. **Accept match**:
-   * Press `Tab` or `Esc` to accept the current match and continue editing
-   * Press `Enter` to accept and execute the command immediately
-6. **Cancel search**:
-   * Press `Ctrl+C` to cancel and restore your original input
-   * Press `Backspace` on empty search to cancel
+1. **开始搜索**：按 `Ctrl+R` 激活反向历史搜索
+2. **键入查询**：输入文本以在以前的命令中搜索。搜索词在匹配结果中突出显示
+3. **导航匹配**：再次按 `Ctrl+R` 以循环浏览较旧的匹配
+4. **更改范围**：搜索默认为来自所有项目的提示。按 `Ctrl+S` 在此会话、此项目和所有项目之间循环范围
+5. **接受匹配**：
+   * 按 `Tab` 或 `Esc` 接受当前匹配并继续编辑
+   * 按 `Enter` 接受并立即执行命令
+6. **取消搜索**：
+   * 按 `Ctrl+C` 取消并恢复原始输入
+   * 在空搜索上按 `Backspace` 以取消
 
-The inline search scans your full prompt history, newest first, with duplicates collapsed to the newest occurrence. The fullscreen dialog lists the 100 most recent unique prompts in the selected scope. Matching prompts display with the search term highlighted, so you can find and reuse previous inputs.
+搜索加载所选范围内最近的 100 个唯一提示，重复项折叠到最新出现。匹配的提示显示时搜索词突出显示，因此您可以找到并重用以前的输入。
 
-Accepting a match or canceling the search takes effect immediately, even while Claude Code is still loading the history. Before v2.1.202, accepting or canceling during that load could report an internal error.
+接受匹配或取消搜索会立即生效，即使 Claude Code 仍在加载历史记录。在 v2.1.202 之前，在加载期间接受或取消可能会报告内部错误。
 
-## Background Bash commands
+<h2 id="background-bash-commands">
+  后台 Bash 命令
+</h2>
 
-Claude Code supports running Bash commands in the background, allowing you to continue working while long-running processes execute.
+Claude Code 支持在后台运行 Bash 命令，允许您在长时间运行的进程执行时继续工作。
 
-### How backgrounding works
+<h3 id="how-backgrounding-works">
+  后台运行的工作原理
+</h3>
 
-When Claude Code runs a command in the background, it runs the command asynchronously and immediately returns a background task ID. Claude Code can respond to new prompts while the command continues executing in the background.
+当 Claude Code 在后台运行命令时，它异步运行命令并立即返回后台任务 ID。Claude Code 可以在命令继续在后台执行时响应新提示。
 
-To run commands in the background, you can either:
+要在后台运行命令，您可以：
 
-* Prompt Claude Code to run a command in the background
-* Press `Ctrl+B` to move a regular Bash tool invocation to the background. Tmux users must press `Ctrl+B` twice due to tmux's prefix key.
+* 提示 Claude Code 在后台运行命令
+* 按 `Ctrl+B` 将常规 Bash 工具调用移到后台。Tmux 用户必须按 `Ctrl+B` 两次，因为 tmux 的前缀键。
 
-**Key features:**
+**主要功能：**
 
-* Output is written to a file and Claude can retrieve it using the Read tool
-* Background tasks have unique IDs for tracking and output retrieval
-* Background tasks are automatically cleaned up when Claude Code exits. If you background the session instead of exiting it, Claude Code hands them to the background session, where they keep running. See [background a running session](/docs/en/agent-view#from-inside-a-session)
-* Background tasks are automatically terminated if output exceeds 5GB, with a note in stderr explaining why
-* {/* min-version: 2.1.193 */}On macOS and Linux, Claude Code terminates running background tasks when the operating system signals memory pressure, provided the session has been idle for at least 30 minutes and no turn or subagent is running. Set [`CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP`](/docs/en/env-vars) to `1` to turn this off. Requires Claude Code v2.1.193 or later. Background commands owned by a [subagent](/docs/en/sub-agents) are instead terminated after 60 minutes, configurable in milliseconds with [`CLAUDE_SUBAGENT_BG_SHELL_MAX_MS`](/docs/en/env-vars). {/* min-version: 2.1.218 */}Before v2.1.218, neither limit covered commands moved to the background with `Ctrl+B`
+* 输出被写入文件，Claude 可以使用 Read 工具检索它
+* 后台任务具有唯一的 ID 用于跟踪和输出检索
+* 当 Claude Code 退出时，后台任务会自动清理。将会话放在后台而不是退出会将它们交给后台会话，它们会继续运行。请参阅[在会话内部将其放在后台](/docs/zh-CN/agent-view#from-inside-a-session)
+* 如果输出超过 5GB，后台任务会自动终止，stderr 中会有说明原因的注释
+* {/* min-version: 2.1.193 */}从 v2.1.193 开始，在 macOS 和 Linux 上，当操作系统发出内存压力信号时，运行中的后台任务会被终止，前提是会话已经空闲至少 30 分钟，没有任何轮次或子代理运行。将 [`CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP`](/docs/zh-CN/env-vars) 设置为 `1` 以关闭此功能
 
-To disable all background task functionality, set the `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` environment variable to `1`. See [Environment variables](/docs/en/env-vars) for details.
+要禁用所有后台任务功能，请将 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` 环境变量设置为 `1`。有关详细信息，请参阅[环境变量](/docs/zh-CN/env-vars)。
 
-**Common backgrounded commands:**
+**常见的后台命令：**
 
-* Build tools (webpack, vite, make)
-* Package managers (npm, yarn, pnpm)
-* Test runners (jest, pytest)
-* Development servers
-* Long-running processes (docker, terraform)
+* 构建工具（webpack、vite、make）
+* 包管理器（npm、yarn、pnpm）
+* 测试运行器（jest、pytest）
+* 开发服务器
+* 长时间运行的进程（docker、terraform）
 
-### Shell mode with `!` prefix
+<h3 id="shell-mode-with-prefix">
+  使用 `!` 前缀的 Shell 模式
+</h3>
 
-Run shell commands directly without going through Claude by prefixing your input with `!`:
+通过在输入前加上 `!` 来直接运行 shell 命令，无需通过 Claude：
 
 ```bash theme={null}
 ! npm test
@@ -307,123 +342,118 @@ Run shell commands directly without going through Claude by prefixing your input
 ! ls -la
 ```
 
-Shell mode:
+Shell 模式：
 
-* Adds the command and its output to the conversation context
-* Shows real-time progress and output
-* Supports the same `Ctrl+B` backgrounding for long-running commands
-* Doesn't require Claude to interpret or approve the command
-* Supports history-based autocomplete: type a partial command and press `Tab` to complete from previous `!` commands in the current project
-* {/* min-version: 2.1.193 */}Supports live file path autocomplete as of v2.1.193 on all platforms: type a token containing a forward slash, such as `./src/` or `~/`, to see a dropdown of matching files and directories, then press `Tab` to accept. Use forward slashes on Windows too; the dropdown is triggered by `/`, not `\`
-* Exit with `Escape`, `Backspace`, or `Ctrl+U` on an empty prompt
-* Pasting text that starts with `!` into an empty prompt enters shell mode automatically, matching typed `!` behavior
+* 将命令及其输出添加到对话上下文
+* 显示实时进度和输出
+* 支持相同的 `Ctrl+B` 后台运行长时间运行的命令
+* 不需要 Claude 解释或批准命令
+* 支持基于历史的自动完成：键入部分命令并按 `Tab` 以从当前项目中的上一个 `!` 命令完成
+* {/* min-version: 2.1.193 */}从 v2.1.193 开始在所有平台上支持实时文件路径自动完成：键入包含正斜杠的令牌，例如 `./src/` 或 `~/`，以查看匹配文件和目录的下拉列表，然后按 `Tab` 接受。在 Windows 上也使用正斜杠；下拉列表由 `/` 触发，而不是 `\`
+* 在空提示上使用 `Escape`、`Backspace` 或 `Ctrl+U` 退出
+* 将以 `!` 开头的文本粘贴到空提示中会自动进入 shell 模式，与键入的 `!` 行为相匹配
 
-As of v2.1.186, Claude responds to the command output automatically once it lands in the transcript, so you can run `! npm test` and get an explanation of the failures without a second prompt. The response costs the same as sending a normal prompt. To restore the earlier behavior where the output is added to context without a response, set [`respondToBashCommands`](/docs/en/settings#available-settings) to `false` in `settings.json`. Before v2.1.186, shell mode always added output to context without a response.
+从 v2.1.186 开始，Claude 在命令输出进入记录后会自动响应，因此您可以运行 `! npm test` 并获得失败的解释，无需第二个提示。响应成本与发送普通提示相同。要恢复早期行为（其中输出被添加到上下文而不响应），请在 `settings.json` 中将 [`respondToBashCommands`](/docs/zh-CN/settings#available-settings) 设置为 `false`。在 v2.1.186 之前，shell 模式始终将输出添加到上下文而不响应。
 
-This is useful for quick shell operations while maintaining conversation context.
+这对于快速 shell 操作同时保持对话上下文很有用。
 
-## Prompt suggestions
+<h2 id="prompt-suggestions">
+  提示建议
+</h2>
 
-When you first open a session, a grayed-out example command appears in the prompt input to help you get started. Claude Code picks this from your project's git history, so it reflects files you've been working on recently.
+当您首次打开会话时，灰显的示例命令会出现在提示输入中以帮助您入门。Claude Code 从您的项目的 git 历史中选择此命令，因此它反映了您最近一直在处理的文件。
 
-After Claude responds, suggestions continue to appear based on your conversation history, such as a follow-up step from a multi-part request or a natural continuation of your workflow.
+Claude 响应后，建议会根据您的对话历史继续出现，例如多部分请求的后续步骤或工作流的自然延续。
 
-* Press `Tab` or `Right arrow` to place the suggestion in the prompt input, then `Enter` to submit
-* Start typing to dismiss it
+* 按 `Tab` 或 `Right arrow` 将建议放入提示输入中，然后按 `Enter` 提交
+* 开始输入以关闭它
 
-The suggestion runs as a background request that reuses the parent conversation's prompt cache, so the additional cost is minimal. Claude Code skips suggestion generation when the cache is cold to avoid unnecessary cost.
+建议作为后台请求运行，该请求重用父对话的 prompt cache，因此额外成本最小。当缓存冷时，Claude Code 会跳过建议生成以避免不必要的成本。
 
-Suggestions are automatically skipped after the first turn of a conversation and in plan mode.
+在对话的第一轮之后以及在 Plan Mode 中，建议会自动跳过。在打印模式下，它们默认关闭。传递 [`--prompt-suggestions`](/docs/zh-CN/cli-reference#cli-flags) 与 `--output-format stream-json --verbose` 以在每轮之后发出 `prompt_suggestion` 消息。
 
-In print mode they are off by default. Pass [`--prompt-suggestions`](/docs/en/cli-reference#cli-flags) with `-p "<prompt>" --output-format stream-json --verbose` to emit a `prompt_suggestion` message after each turn instead.
-
-To disable prompt suggestions entirely, set the environment variable or toggle the setting in `/config`:
+要完全禁用提示建议，请设置环境变量或在 `/config` 中切换设置：
 
 ```bash theme={null}
 export CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false
 ```
 
-## Emoji shortcodes
+<h2 id="side-questions-with-/btw">
+  使用 /btw 的侧面问题
+</h2>
 
-Type a `:` followed by an emoji shortcode in the prompt input to insert the emoji. {/* min-version: 2.1.217 */}Requires Claude Code v2.1.217 or later.
-
-* Type a complete shortcode such as `:heart:` and Claude Code replaces it with ❤️ as soon as you type the closing `:`
-* Type `:` plus at least two characters of a name, such as `:hea`, to open a suggestion popup, then press `Tab` or `Enter` to insert the highlighted emoji
-
-The shortcode must start the input or follow a space, so a `:` inside a word or URL doesn't open suggestions.
-
-To turn the feature off, set [`emojiCompletionEnabled`](/docs/en/settings#available-settings) to `false` in `settings.json`. This disables both the suggestion popup and the inline replacement.
-
-## Side questions with /btw
-
-Use `/btw` to ask a quick question about your current work without adding to the conversation history. This is useful when you want a fast answer but don't want to clutter the main context or derail Claude from a long-running task.
+使用 `/btw` 快速提问您当前的工作，而不添加到对话历史。当您想要快速答案但不想混乱主要上下文或使 Claude 偏离长时间运行的任务时，这很有用。
 
 ```
 /btw what was the name of that config file again?
 ```
 
-Side questions have full visibility into the current conversation, so you can ask about code Claude has already read, decisions it made earlier, or anything else from the session. The question and answer are ephemeral: they appear in a dismissible overlay and never enter the conversation history.
+侧面问题可以完全看到当前对话，因此您可以询问 Claude 已经读过的代码、它之前做出的决定或会话中的任何其他内容。问题和答案是短暂的：它们出现在可关闭的覆盖层中，永远不会进入对话历史。
 
-* **Available while Claude is working**: you can run `/btw` even while Claude is processing a response. The side question runs independently and doesn't interrupt the main turn.
-* **No tool access**: side questions answer only from what is already in context. Claude can't read files, run commands, or search when answering a side question.
-* **Single response**: there are no follow-up turns in the overlay. To continue the thread, fork it into its own session with `f`.
-* **Low cost**: the side question reuses the parent conversation's prompt cache, so the additional cost is minimal.
+* **Claude 工作时可用**：即使 Claude 正在处理响应时，您也可以运行 `/btw`。侧面问题独立运行，不会中断主要轮次。
+* **无工具访问**：侧面问题仅从已在上下文中的内容回答。Claude 在回答侧面问题时无法读取文件、运行命令或搜索。
+* **单一响应**：覆盖层中没有后续轮次。要继续该线程，请使用 `f` 将其分叉到自己的会话中。
+* **低成本**：侧面问题重用父对话的提示缓存，因此额外成本最小。
 
-Earlier side questions from the same session appear as a dimmed list above the current answer. They stay out of the conversation history but remain visible in the overlay until you clear them.
+来自同一会话的较早侧面问题显示为当前答案上方的暗淡列表。它们保持在对话历史之外，但在覆盖层中保持可见，直到您清除它们。
 
-To return to the overlay after dismissing it, run `/btw` with no question. The overlay reopens on your most recent exchange. Press `Left` to step back through earlier answers. Before v2.1.212, `/btw` without a question printed a usage message instead.
+答案出现后，覆盖层接受这些按键。
 
-Once the answer appears, the overlay accepts these keys.
+| 按键                       | 操作                                                                                                                    |
+| :----------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `Space`、`Enter`、`Escape` | 关闭答案并返回提示                                                                                                             |
+| `Up` / `Down`            | 滚动答案                                                                                                                  |
+| `Left` / `Right`         | {/* min-version: 2.1.187 */}在此答案和您来自会话的较早 `/btw` 答案之间切换。`Left` 移动到较早的答案，`Right` 返回到当前答案。需要 Claude Code v2.1.187 或更高版本 |
+| `c`                      | 将答案作为原始 Markdown 复制到您的剪贴板。使用此方法而不是鼠标选择，后者会捕获硬换行的终端呈现而不是源文本                                                            |
+| `f`                      | 分叉到新会话。分叉继承父对话加上此问题和答案作为真实记录轮次，因此您可以继续使用完整工具访问。原始会话保留在 [`/resume`](/docs/zh-CN/commands) 下。仅在本地会话中可用                       |
+| `x`                      | 清除当前答案上方显示的较早 `/btw` 交换列表                                                                                             |
 
-| Key                        | Action                                                                                                                                                                                                                                                                    |
-| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Space`, `Enter`, `Escape` | Dismiss the answer and return to the prompt                                                                                                                                                                                                                               |
-| `Up` / `Down`              | Scroll the answer                                                                                                                                                                                                                                                         |
-| `Left` / `Right`           | {/* min-version: 2.1.187 */}Step between this answer and your earlier `/btw` answers from the session. `Left` moves to older answers and `Right` returns toward the current one. Requires Claude Code v2.1.187 or later                                                   |
-| `c`                        | Copy the answer to your clipboard as raw Markdown. Use this instead of mouse selection, which captures the hard-wrapped terminal rendering rather than the source text                                                                                                    |
-| `f`                        | Fork into a new session. The fork inherits the parent conversation plus this question and answer as real transcript turns, so you can continue with full tool access. The original session is preserved under [`/resume`](/docs/en/commands). Available in local sessions only |
-| `x`                        | Clear the list of earlier `/btw` exchanges shown above the current answer                                                                                                                                                                                                 |
+`/btw` 是 [subagent](/docs/zh-CN/sub-agents) 的反面：它看到您的完整对话但没有工具，而 subagent 具有完整工具但从空上下文开始。使用 `/btw` 询问 Claude 从此会话已知的内容；使用 subagent 去发现新的东西。
 
-`/btw` is the inverse of a [subagent](/docs/en/sub-agents): it sees your full conversation but has no tools, while a subagent has full tools but starts with an empty context. Use `/btw` to ask about what Claude already knows from this session; use a subagent to go find out something new.
+<h2 id="task-list">
+  任务列表
+</h2>
 
-## Task list
+任务列表是 Claude 的待办事项清单：Claude 创建的用于规划多步骤工作的项目，带有指示器显示待处理、进行中或完成的内容。它与后台任务视图分开。要查看运行中的 shell 和子代理，请改用 [`/tasks`](/docs/zh-CN/commands)。
 
-The task list is Claude's to-do checklist: items Claude created to plan multi-step work, with indicators showing what's pending, in progress, or complete. It's separate from the background-task view. To see running shells and subagents, use [`/tasks`](/docs/en/commands) instead.
+* 按 `Ctrl+T` 切换任务列表视图。显示一次最多五个任务。当 Claude 还没有创建任何清单项目时，切换没有可见效果，因为没有任何内容可显示
+* 要查看所有任务或清除它们，直接询问 Claude："show me all tasks"或"clear all tasks"
+* 任务在上下文压缩中持续存在，帮助 Claude 在较大的项目上保持组织
+* 要在会话之间共享任务列表，请设置 `CLAUDE_CODE_TASK_LIST_ID` 以使用 `~/.claude/tasks/` 中的命名目录：`CLAUDE_CODE_TASK_LIST_ID=my-project claude`
 
-* Press `Ctrl+T` to toggle the task list view. The display shows up to five tasks at a time. When Claude hasn't created any checklist items yet, the toggle has no visible effect because there's nothing to display
-* To see all tasks or clear them, ask Claude directly: "show me all tasks" or "clear all tasks"
-* Tasks persist across context compactions, helping Claude stay organized on larger projects
-* To share a task list across sessions, set `CLAUDE_CODE_TASK_LIST_ID` to use a named directory in `~/.claude/tasks/`: `CLAUDE_CODE_TASK_LIST_ID=my-project claude`
+<h2 id="session-recap">
+  会话回顾
+</h2>
 
-## Session recap
+当您从离开后返回终端时，Claude Code 会显示到目前为止会话中发生的情况的单行回顾。回顾在后台生成，一旦自上次完成的轮次以来至少已经过了三分钟且终端未聚焦，就会生成，因此当您切换回来时已准备好。回顾仅在会话至少有三个轮次后出现，并且永远不会连续出现两次。
 
-When you return to the terminal after stepping away, Claude Code shows a one-line recap of what happened in the session so far. The recap generates in the background once at least three minutes have passed since the last completed turn and the terminal is unfocused, so it's ready when you switch back. Recaps only appear once the session has at least three turns, and never twice in a row.
+运行 `/recap` 以按需生成摘要。要关闭自动回顾，打开 `/config` 并禁用**会话回顾**。
 
-Run `/recap` to generate a summary on demand. To turn automatic recaps off, open `/config` and disable **Session recap**.
+会话回顾在每个计划和提供商上默认启用。回顾在非交互模式下始终被跳过。
 
-Session recap is on by default for every plan and provider. The recap is always skipped in non-interactive mode.
+<h2 id="pr-review-status">
+  PR 审查状态
+</h2>
 
-## PR review status
+在处理具有开放拉取请求的分支时，Claude Code 在页脚中显示可点击的 PR 链接，例如"PR #446"。该链接具有彩色下划线，指示审查状态：
 
-When working on a branch with an open pull request, Claude Code displays a clickable PR link in the footer, such as "PR #446". The link has a colored underline indicating the review state:
+* 绿色：已批准
+* 黄色：待审查
+* 红色：请求更改
+* 灰色：草稿
 
-* Green: approved
-* Yellow: pending review
-* Red: changes requested
-* Gray: draft
-
-The badge disappears once the pull request merges or closes. `Cmd+click` (macOS) or `Ctrl+click` (Windows/Linux) the link to open the pull request in your browser. The status refreshes every 60 seconds, and immediately after a `gh pr` or `git push` command runs in the session.
-
-Claude Code renders the badge as a hyperlink even when it can't detect hyperlink support in your terminal, which commonly happens over SSH or in tmux. Set [`FORCE_HYPERLINK=0`](/docs/en/env-vars) to render the badge as plain text. Before v2.1.217, the badge was a hyperlink only when detection succeeded.
+拉取请求合并或关闭后，徽章消失。`Cmd+click`（macOS）或 `Ctrl+click`（Windows/Linux）点击链接以在浏览器中打开拉取请求。状态每 60 秒刷新一次，并在会话中运行 `gh pr` 或 `git push` 命令后立即刷新。
 
 <Note>
-  PR status requires the `gh` CLI to be installed and authenticated (`gh auth login`).
+  PR 状态需要安装并验证 `gh` CLI（`gh auth login`）。
 </Note>
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Skills](/docs/en/skills) - Custom prompts and workflows
-* [Checkpointing](/docs/en/checkpointing) - Rewind Claude's edits and restore previous states
-* [CLI reference](/docs/en/cli-reference) - Command-line flags and options
-* [Settings](/docs/en/settings) - Configuration options
-* [Memory management](/docs/en/memory) - Managing CLAUDE.md files
+* [Skills](/docs/zh-CN/skills) - 自定义提示和工作流
+* [Checkpointing](/docs/zh-CN/checkpointing) - 回退 Claude 的编辑并恢复以前的状态
+* [CLI 参考](/docs/zh-CN/cli-reference) - 命令行标志和选项
+* [设置](/docs/zh-CN/settings) - 配置选项
+* [内存管理](/docs/zh-CN/memory) - 管理 CLAUDE.md 文件

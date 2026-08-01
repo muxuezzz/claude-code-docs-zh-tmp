@@ -2,55 +2,63 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Other LLM gateways
+# 其他 LLM 网关
 
-> Route Claude Code through an LLM gateway your organization already runs. Covers connecting Claude Code to a gateway, rolling one out for your organization, and what Claude Code sends to a gateway.
+> 通过您的组织已运行的 LLM 网关路由 Claude Code。涵盖将 Claude Code 连接到网关、为您的组织部署网关以及 Claude Code 发送到网关的内容。
 
-This section covers using a gateway product your organization already runs, rather than [Claude apps gateway](/docs/en/claude-apps-gateway). For what a gateway is, how it sits between Claude Code and your provider, and how to choose between Claude apps gateway and another product, see the [gateway overview](/docs/en/gateways).
+本部分涵盖使用您的组织已运行的网关产品，而不是 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway)。有关网关是什么、它如何位于 Claude Code 和您的提供商之间，以及如何在 Claude apps gateway 和其他产品之间进行选择，请参阅[网关概述](/docs/zh-CN/gateways)。
 
 <Note>
-  * If you're a developer connecting to an existing gateway: [connect Claude Code to your gateway](/docs/en/llm-gateway-connect)
-  * If you're an admin rolling out a gateway for your organization: [deploy and distribute a gateway](/docs/en/llm-gateway-rollout)
-  * If you're configuring a gateway product: the [gateway protocol reference](/docs/en/llm-gateway-protocol)
+  * 如果您是连接到现有网关的开发人员：[将 Claude Code 连接到您的网关](/docs/zh-CN/llm-gateway-connect)
+  * 如果您是为组织部署网关的管理员：[部署和分发网关](/docs/zh-CN/llm-gateway-rollout)
+  * 如果您正在配置网关产品：[网关协议参考](/docs/zh-CN/llm-gateway-protocol)
 </Note>
 
-Any gateway that exposes a [supported API format](/docs/en/llm-gateway-protocol#api-formats) works. Anthropic doesn't endorse, maintain, or audit third-party gateway products, and doesn't support routing Claude Code to non-Claude models through any gateway. Deploy the gateway following its own documentation, then complete the Claude Code side with the [rollout steps below](#roll-out-a-gateway).
+任何公开[支持的 API 格式](/docs/zh-CN/llm-gateway-protocol#api-formats)的网关都可以工作。Anthropic 不认可、维护或审计第三方网关产品，也不支持通过任何网关将 Claude Code 路由到非 Claude 模型。按照网关自己的文档部署网关，然后使用下面的[部署步骤](#roll-out-a-gateway)完成 Claude Code 端的部署。
 
-## What a gateway provides
+<h2 id="what-a-gateway-provides">
+  网关提供的功能
+</h2>
 
-A gateway gives your organization one place to manage:
+网关为您的组织提供一个地方来管理：
 
-* **Credentials**: the provider key stays server-side; developers hold gateway credentials instead
-* **Usage tracking**: attribute usage by developer or team, regardless of which provider serves the request
-* **Cost controls**: enforce budgets and rate limits in one place
-* **Audit logging**: log every model request for compliance
-* **Provider switching**: change the provider in gateway configuration, without touching developer machines
+* **凭证**：提供商密钥保留在服务器端；开发人员改为持有网关凭证
+* **使用情况跟踪**：按开发人员或团队归属使用情况，无论哪个提供商处理请求
+* **成本控制**：在一个地方强制执行预算和速率限制
+* **审计日志**：记录每个模型请求以实现合规性
+* **提供商切换**：在网关配置中更改提供商，无需接触开发人员机器
 
-All of these except provider switching apply whether the upstream is Anthropic's API or a [cloud provider](/docs/en/third-party-integrations). Provider switching without reconfiguring developer machines also depends on the gateway exposing a single [Anthropic-format endpoint](/docs/en/llm-gateway-protocol#api-formats) regardless of upstream; a gateway that exposes a provider's own format ties the client configuration to that provider.
+除了提供商切换外，所有这些都适用于上游是 Anthropic 的 API 还是[云提供商](/docs/zh-CN/third-party-integrations)。提供商切换而无需重新配置开发人员机器也取决于网关公开单个[Anthropic 格式端点](/docs/zh-CN/llm-gateway-protocol#api-formats)，无论上游如何；公开提供商自己格式的网关将客户端配置与该提供商绑定。
 
-The tradeoff is that the gateway becomes infrastructure your organization operates. Claude Code adds capabilities with each release, and a gateway that doesn't forward them breaks the corresponding features, so the gateway product needs to be kept updated as Claude Code evolves. The [gateway protocol reference](/docs/en/llm-gateway-protocol) covers what to forward.
+权衡是网关成为您的组织运营的基础设施。Claude Code 在每个版本中添加功能，不转发这些功能的网关会破坏相应的功能，因此网关产品需要随着 Claude Code 的发展而保持更新。[网关协议参考](/docs/zh-CN/llm-gateway-protocol)涵盖要转发的内容。
 
-## Roll out a gateway
+<h2 id="roll-out-a-gateway">
+  部署网关
+</h2>
 
-When you're ready to roll out an LLM gateway to your organization, the sequence is the same whichever gateway product you choose:
+当您准备好为组织部署 LLM 网关时，无论您选择哪个网关产品，顺序都是相同的：
 
-1. Deploy the gateway and give it your provider credential, so it can authenticate the requests it forwards.
-2. Issue each developer a gateway credential, so usage is attributed to the developer and offboarding revokes one credential.
-3. Distribute the configuration through a [managed settings file](/docs/en/settings#settings-files) and your secrets tooling, so every machine receives the base URL and a credential. When both are distributed, developers don't configure anything. If you don't have settings distribution in place, developers follow the [connect page](/docs/en/llm-gateway-connect) to set the variables themselves.
-4. Have each developer [check for the configuration in Claude Code](/docs/en/llm-gateway-connect#check-for-an-existing-configuration), so distribution problems surface before they depend on the gateway.
+1. 部署网关并给予它您的提供商凭证，以便它可以验证它转发的请求。
+2. 为每个开发人员颁发网关凭证，以便使用情况归属于开发人员，离职时撤销一个凭证。
+3. 通过[托管设置文件](/docs/zh-CN/settings#settings-files)和您的机密工具分发配置，以便每台机器都接收基础 URL 和凭证。当两者都分发时，开发人员无需配置任何内容。如果您没有设置分发，开发人员按照[连接页面](/docs/zh-CN/llm-gateway-connect)自己设置变量。
+4. 让每个开发人员[检查 Claude Code 中的配置](/docs/zh-CN/llm-gateway-connect#check-for-an-existing-configuration)，以便分发问题在他们依赖网关之前浮出水面。
 
-[Roll out an LLM gateway for your organization](/docs/en/llm-gateway-rollout) walks each step and shows the configuration files to distribute at each one. The gateway is one part of organization setup; for policy enforcement, usage visibility, and data handling decisions, see [Set up Claude Code for your organization](/docs/en/admin-setup).
+[为您的组织部署 LLM 网关](/docs/zh-CN/llm-gateway-rollout)逐步讲解每个步骤，并显示在每个步骤中分发的配置文件。网关是组织设置的一部分；对于策略强制执行、使用情况可见性和数据处理决策，请参阅[为您的组织设置 Claude Code](/docs/zh-CN/admin-setup)。
 
-## Subscriptions and gateways
+<h2 id="subscriptions-and-gateways">
+  订阅和网关
+</h2>
 
-While a [gateway credential variable](/docs/en/llm-gateway-connect#set-the-credential-variable) or `apiKeyHelper` is active, a developer's claude.ai subscription isn't used: the credential replaces the subscription login for that session, and the subscription's usage limits don't apply. That traffic is billed per token to whoever owns the credential the gateway forwards, such as your organization's Anthropic Console account, or your Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry account when the gateway routes there.
+当[网关凭证变量](/docs/zh-CN/llm-gateway-connect#set-the-credential-variable)或 `apiKeyHelper` 处于活动状态时，开发人员的 claude.ai 订阅不被使用：凭证替换该会话的订阅登录，订阅的使用限制不适用。该流量按令牌计费给拥有网关转发的凭证的人，例如您的组织的 Anthropic Console 账户，或当网关路由到那里时您的 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 账户。
 
-[`ANTHROPIC_BASE_URL`](/docs/en/llm-gateway-connect#set-the-base-url-and-credential) is the variable that points Claude Code at the gateway. Setting only that variable, without a gateway credential, doesn't replace the subscription. Requests still route through the gateway, but a saved claude.ai login remains the active credential, so its usage limits and billing apply. Gateways that pass this traffic on to Anthropic must forward the OAuth capability in `anthropic-beta`; see the [request headers reference](/docs/en/llm-gateway-protocol#request-headers).
+[`ANTHROPIC_BASE_URL`](/docs/zh-CN/llm-gateway-connect#set-the-base-url-and-credential)是指向 Claude Code 网关的变量。仅设置该变量，不设置网关凭证，不会替换订阅。请求仍然通过网关路由，但保存的 claude.ai 登录保持活动凭证，因此其使用限制和计费适用。将此流量转发给 Anthropic 的网关必须转发 `anthropic-beta` 中的 OAuth 功能；请参阅[请求头参考](/docs/zh-CN/llm-gateway-protocol#request-headers)。
 
-## Related pages
+<h2 id="related-pages">
+  相关页面
+</h2>
 
-* [Gateway overview](/docs/en/gateways): how a gateway works and how to choose between Claude apps gateway and another product
-* [Claude apps gateway](/docs/en/claude-apps-gateway): Anthropic's self-hosted gateway with SSO sign-in and OTLP telemetry
-* [Connect Claude Code to an LLM gateway](/docs/en/llm-gateway-connect): set the base URL and credential on your own machine, with per-surface configuration and a troubleshooting table
-* [Roll out an LLM gateway for your organization](/docs/en/llm-gateway-rollout): the admin checklist for deploying a gateway, issuing developer credentials, and distributing managed settings
-* [Gateway protocol reference](/docs/en/llm-gateway-protocol): what Claude Code sends to a gateway, for operators configuring one, covering endpoints, headers to forward, and feature pass-through
+* [网关概述](/docs/zh-CN/gateways)：网关如何工作以及如何在 Claude apps gateway 和其他产品之间进行选择
+* [Claude apps gateway](/docs/zh-CN/claude-apps-gateway)：Anthropic 的自托管网关，具有 SSO 登录和 OTLP 遥测
+* [将 Claude Code 连接到 LLM 网关](/docs/zh-CN/llm-gateway-connect)：在您自己的机器上设置基础 URL 和凭证，具有每个表面的配置和故障排除表
+* [为您的组织部署 LLM 网关](/docs/zh-CN/llm-gateway-rollout)：部署网关、颁发开发人员凭证和分发托管设置的管理员检查清单
+* [网关协议参考](/docs/zh-CN/llm-gateway-protocol)：Claude Code 发送到网关的内容，供配置网关的运营商使用，涵盖端点、要转发的头和功能传递

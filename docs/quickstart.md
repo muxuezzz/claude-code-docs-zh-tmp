@@ -2,26 +2,34 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Quickstart
+# 快速开始
 
-> Welcome to Claude Code!
+> 欢迎使用 Claude Code！
 
-This quickstart guide will have you using AI-powered coding assistance in a few minutes. By the end, you'll understand how to use Claude Code for common development tasks.
-
-## Before you begin
-
-Make sure you have:
-
-* A terminal or command prompt open
-  * If you've never used the terminal before, check out the [terminal guide](/docs/en/terminal-guide)
-* A code project to work with
-* A [Claude subscription](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=quickstart_prereq) (Pro, Max, Team, or Enterprise), [Claude Console](https://console.anthropic.com/) account, or access through a [supported cloud provider](/docs/en/third-party-integrations)
+本快速开始指南将在几分钟内让您使用 AI 驱动的编码辅助。完成本指南后，您将了解如何使用 Claude Code 完成常见的开发任务。
 
 <Note>
-  This guide covers the terminal CLI. Claude Code is also available on the [web](https://claude.ai/code), as a [desktop app](/docs/en/desktop), in [VS Code](/docs/en/vs-code) and [JetBrains IDEs](/docs/en/jetbrains), in [Slack](/docs/en/slack), and in CI/CD with [GitHub Actions](/docs/en/github-actions) and [GitLab](/docs/en/gitlab-ci-cd). See [all interfaces](/docs/en/overview#use-claude-code-everywhere).
+  默认配置下，Claude Code 需要能够访问 claude.ai 和 Anthropic API 等端点才能完成安装、登录和正常使用。在中国大陆的网络环境中，这些端点可能无法直接访问。开始前，请先确认所在网络能够连通这些服务。企业代理配置以及 Amazon Bedrock 等第三方提供商的网络要求，请参阅[网络配置](/docs/zh-CN/network-config#network-access-requirements)。
 </Note>
 
-## Step 1: Install Claude Code
+<h2 id="before-you-begin">
+  开始前
+</h2>
+
+确保您拥有：
+
+* 打开的终端或命令提示符
+  * 如果您之前从未使用过终端，请查看[终端指南](/docs/zh-CN/terminal-guide)
+* 一个可以使用的代码项目
+* 一个 [Claude 订阅](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=quickstart_prereq)（Pro、Max、Team 或 Enterprise）、[Claude Console](https://console.anthropic.com/) 账户，或通过[支持的云提供商](/docs/zh-CN/third-party-integrations)的访问权限
+
+<Note>
+  本指南涵盖终端 CLI。Claude Code 也可在[网页](https://claude.ai/code)、[桌面应用](/docs/zh-CN/desktop)、[VS Code](/docs/zh-CN/vs-code) 和 [JetBrains IDE](/docs/zh-CN/jetbrains)、[Slack](/docs/zh-CN/slack) 中使用，以及通过 [GitHub Actions](/docs/zh-CN/github-actions) 和 [GitLab](/docs/zh-CN/gitlab-ci-cd) 进行 CI/CD。查看[所有界面](/docs/zh-CN/overview#use-claude-code-everywhere)。
+</Note>
+
+<h2 id="step-1-install-claude-code">
+  步骤 1：安装 Claude Code
+</h2>
 
 To install Claude Code, use one of the following methods:
 
@@ -81,283 +89,295 @@ To install Claude Code, use one of the following methods:
 
 You can also install with [apt, dnf, or apk](/docs/en/setup#install-with-linux-package-managers) on Debian, Fedora, RHEL, and Alpine.
 
-To confirm the installation worked, run:
+<h2 id="step-2-log-in-to-your-account">
+  步骤 2：登录您的账户
+</h2>
 
-```bash theme={null}
-claude --version
-```
-
-The command prints a version number followed by `(Claude Code)`.
-
-## Step 2: Log in to your account
-
-Claude Code requires an account to use. Start an interactive session with the `claude` command and you'll be prompted to log in on first use:
+Claude Code 需要账户才能使用。使用 `claude` 命令启动交互式会话，首次使用时系统会提示您登录：
 
 ```bash theme={null}
 claude
 ```
 
-For Claude subscription or Console accounts, follow the prompts to complete authentication in your browser. If you've set the `ANTHROPIC_API_KEY` environment variable, Claude Code skips the login prompt and asks you to approve the key instead. To switch accounts later or re-authenticate, type `/login` inside the running session:
+对于 Claude 订阅或 Console 账户，请按照提示在浏览器中完成身份验证。要稍后切换账户或重新身份验证，请在运行的会话中输入 `/login`：
 
-```text wrap theme={null}
+```text theme={null}
 /login
 ```
 
-You can log in using any of these account types:
+您可以使用以下任何账户类型登录：
 
-* [Claude Pro, Max, Team, or Enterprise](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=quickstart_login) (recommended)
-* [Claude Console](https://console.anthropic.com/) (API access with pre-paid credits). On first login, a "Claude Code" workspace is automatically created in the Console for centralized cost tracking.
-* [Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry](/docs/en/third-party-integrations) (enterprise cloud providers)
-* A self-hosted [Claude apps gateway](/docs/en/claude-apps-gateway), if your organization runs one: your admin pre-configures the gateway URL, and `/login` opens directly on the **Cloud gateway** screen for you to sign in with corporate SSO
+* [Claude Pro、Max、Team 或 Enterprise](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=quickstart_login)（推荐）
+* [Claude Console](https://console.anthropic.com/)（具有预付费额度的 API 访问）。首次登录时，Console 中会自动为集中成本跟踪创建一个"Claude Code"工作区。
+* [Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry](/docs/zh-CN/third-party-integrations)（企业云提供商）
+* 自托管的 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway)（如果您的组织运行一个）：您的管理员会预先配置网关 URL，`/login` 会直接在 **Cloud gateway** 屏幕上打开，供您使用企业 SSO 登录
 
-Once logged in, your credentials are stored and you won't need to log in again.
+登录后，您的凭证将被存储，您无需再次登录。
 
-## Step 3: Start your first session
+<h2 id="step-3-start-your-first-session">
+  步骤 3：启动您的第一个会话
+</h2>
 
-Open your terminal in any project directory and start Claude Code:
+在任何项目目录中打开您的终端并启动 Claude Code：
 
 ```bash theme={null}
 cd /path/to/your/project
 claude
 ```
 
-Replace `/path/to/your/project` with the path to the project you want to work on.
-
-You'll see the Claude Code prompt with the version, current model, and working directory shown above it. Type `/help` for available commands or `/resume` to continue a previous conversation.
+您将看到 Claude Code 提示符，其中显示版本、当前模型和上方显示的工作目录。输入 `/help` 查看可用命令，或输入 `/resume` 继续之前的对话。
 
 <Tip>
-  After logging in (Step 2), your credentials are stored on your system. Learn more in [Credential Management](/docs/en/authentication#credential-management).
+  登录后（步骤 2），您的凭证将存储在您的系统上。在[凭证管理](/docs/zh-CN/authentication#credential-management)中了解更多信息。
 </Tip>
 
-## Step 4: Ask your first question
+<h2 id="step-4-ask-your-first-question">
+  步骤 4：提出您的第一个问题
+</h2>
 
-Let's start with understanding your codebase. Try one of these commands:
+让我们从理解您的代码库开始。尝试以下命令之一：
 
-```text wrap theme={null}
+```text theme={null}
 what does this project do?
 ```
 
-Claude will analyze your files and provide a summary. You can also ask more specific questions:
+Claude 将分析您的文件并提供摘要。您也可以提出更具体的问题：
 
-```text wrap theme={null}
+```text theme={null}
 what technologies does this project use?
 ```
 
-```text wrap theme={null}
+```text theme={null}
 where is the main entry point?
 ```
 
-```text wrap theme={null}
+```text theme={null}
 explain the folder structure
 ```
 
-You can also ask Claude about its own capabilities:
+您也可以询问 Claude 关于其自身功能的问题：
 
-```text wrap theme={null}
+```text theme={null}
 what can Claude Code do?
 ```
 
-```text wrap theme={null}
+```text theme={null}
 how do I create custom skills in Claude Code?
 ```
 
-```text wrap theme={null}
+```text theme={null}
 can Claude Code work with Docker?
 ```
 
 <Note>
-  Claude Code reads your project files as needed. You don't have to manually add context.
+  Claude Code 根据需要读取您的项目文件。您不必手动添加上下文。
 </Note>
 
-## Step 5: Make your first code change
+<h2 id="step-5-make-your-first-code-change">
+  步骤 5：进行您的第一次代码更改
+</h2>
 
-Now let's make Claude Code do some actual coding. Try a simple task:
+现在让我们让 Claude Code 进行一些实际的编码。尝试一个简单的任务：
 
-```text wrap theme={null}
-add a hello world function to the main file
+```text theme={null}
+在主文件中添加一个 hello world 函数
 ```
 
-Claude Code will:
+Claude Code 将：
 
-1. Find the appropriate file
-2. Show you the proposed changes
-3. Ask for your approval before changing files, depending on your permission mode
-4. Make the edit
+1. 找到适当的文件
+2. 向您显示建议的更改
+3. 请求您的批准
+4. 进行编辑
 
 <Note>
-  Whether Claude Code asks before changing files depends on your [permission mode](/docs/en/permission-modes). In default mode, Claude asks for approval before each change. Press `Shift+Tab` to cycle through modes: `acceptEdits` auto-approves file edits, and `plan` lets Claude propose changes without editing. Some accounts also have an `auto` mode that runs a background safety check and blocks risky actions, returning to prompts only after repeated blocks.
+  Claude Code 在修改文件前始终请求许可。您可以批准单个更改或为会话启用"全部接受"模式。
 </Note>
 
-## Step 6: Use Git with Claude Code
+<h2 id="step-6-use-git-with-claude-code">
+  步骤 6：在 Claude Code 中使用 Git
+</h2>
 
-Claude Code makes Git operations conversational:
+Claude Code 使 Git 操作变得对话式：
 
-```text wrap theme={null}
-what files have I changed?
+```text theme={null}
+我更改了哪些文件？
 ```
 
-```text wrap theme={null}
-commit my changes with a descriptive message
+```text theme={null}
+用描述性消息提交我的更改
 ```
 
-You can also prompt for more complex Git operations:
+您也可以提示更复杂的 Git 操作：
 
-```text wrap theme={null}
-create a new branch called feature/quickstart
+```text theme={null}
+创建一个名为 feature/quickstart 的新分支
 ```
 
-```text wrap theme={null}
-show me the last 5 commits
+```text theme={null}
+显示我最后的 5 次提交
 ```
 
-```text wrap theme={null}
-help me resolve merge conflicts
+```text theme={null}
+帮我解决合并冲突
 ```
 
-## Step 7: Fix a bug or add a feature
+<h2 id="step-7-fix-a-bug-or-add-a-feature">
+  步骤 7：修复错误或添加功能
+</h2>
 
-Claude is proficient at debugging and feature implementation.
+Claude 擅长调试和功能实现。
 
-Describe what you want in natural language:
+用自然语言描述您想要的内容：
 
-```text wrap theme={null}
-add input validation to the user registration form
+```text theme={null}
+向用户注册表单添加输入验证
 ```
 
-Or fix existing issues:
+或修复现有问题：
 
-```text wrap theme={null}
-there's a bug where users can submit empty forms - fix it
+```text theme={null}
+有一个错误，用户可以提交空表单 - 修复它
 ```
 
-Claude Code will:
+Claude Code 将：
 
-* Locate the relevant code
-* Understand the context
-* Implement a solution
-* Run tests if available
+* 定位相关代码
+* 理解上下文
+* 实现解决方案
+* 如果可用，运行测试
 
-## Step 8: Test out other common workflows
+<h2 id="step-8-test-out-other-common-workflows">
+  步骤 8：尝试其他常见工作流
+</h2>
 
-There are a number of ways to work with Claude:
+有多种方式可以与 Claude 一起工作：
 
-**Refactor code**
+**重构代码**
 
-```text wrap theme={null}
+```text theme={null}
 refactor the authentication module to use async/await instead of callbacks
 ```
 
-**Write tests**
+**编写测试**
 
-```text wrap theme={null}
+```text theme={null}
 write unit tests for the calculator functions
 ```
 
-**Update documentation**
+**更新文档**
 
-```text wrap theme={null}
+```text theme={null}
 update the README with installation instructions
 ```
 
-**Code review**
+**代码审查**
 
-```text wrap theme={null}
+```text theme={null}
 review my changes and suggest improvements
 ```
 
 <Tip>
-  Talk to Claude like you would a helpful colleague. Describe what you want to achieve, and it will help you get there.
+  像与有帮助的同事交谈一样与 Claude 交谈。描述您想要实现的目标，它将帮助您实现。
 </Tip>
 
-## Essential commands
+<h2 id="essential-commands">
+  基本命令
+</h2>
 
-Here are the most important commands for daily use. Shell commands run from your terminal to start or resume Claude Code. Session commands run inside Claude Code after it starts.
+以下是日常使用中最重要的命令。Shell 命令从您的终端运行以启动或恢复 Claude Code。会话命令在 Claude Code 启动后在其内部运行。
 
-**Shell commands**
+**Shell 命令**
 
-| Command             | What it does                                           | Example                             |
-| ------------------- | ------------------------------------------------------ | ----------------------------------- |
-| `claude`            | Start interactive mode                                 | `claude`                            |
-| `claude "task"`     | Run a one-time task                                    | `claude "fix the build error"`      |
-| `claude -p "query"` | Run one-off query, then exit                           | `claude -p "explain this function"` |
-| `claude -c`         | Continue most recent conversation in current directory | `claude -c`                         |
-| `claude -r`         | Resume a previous conversation                         | `claude -r`                         |
+| 命令                  | 功能            | 示例                                  |
+| ------------------- | ------------- | ----------------------------------- |
+| `claude`            | 启动交互模式        | `claude`                            |
+| `claude "task"`     | 运行一次性任务       | `claude "fix the build error"`      |
+| `claude -p "query"` | 运行一次性查询，然后退出  | `claude -p "explain this function"` |
+| `claude -c`         | 在当前目录中继续最近的对话 | `claude -c`                         |
+| `claude -r`         | 恢复之前的对话       | `claude -r`                         |
 
-**Session commands**
+**会话命令**
 
-| Command                 | What it does               | Example  |
-| ----------------------- | -------------------------- | -------- |
-| `/clear`                | Clear conversation history | `/clear` |
-| `/help`                 | Show available commands    | `/help`  |
-| `/exit` or Ctrl+D twice | Exit Claude Code           | `/exit`  |
+| 命令               | 功能             | 示例       |
+| ---------------- | -------------- | -------- |
+| `/clear`         | 清除对话历史         | `/clear` |
+| `/help`          | 显示可用命令         | `/help`  |
+| `/exit` 或 Ctrl+D | 退出 Claude Code | `/exit`  |
 
-See the [CLI reference](/docs/en/cli-reference) for the complete list of shell commands and the [commands reference](/docs/en/commands) for the complete list of session commands.
+有关完整的 shell 命令列表，请参阅 [CLI 参考](/docs/zh-CN/cli-reference)，有关完整的会话命令列表，请参阅 [命令参考](/docs/zh-CN/commands)。
 
-## Pro tips for beginners
+<h2 id="pro-tips-for-beginners">
+  初学者专业提示
+</h2>
 
-For more, see [best practices](/docs/en/best-practices) and [common workflows](/docs/en/common-workflows).
+有关更多信息，请参阅[最佳实践](/docs/zh-CN/best-practices)和[常见工作流](/docs/zh-CN/common-workflows)。
 
 <AccordionGroup>
-  <Accordion title="Be specific with your requests">
-    Instead of: "fix the bug"
+  <Accordion title="对您的请求要具体">
+    不要说："修复错误"
 
-    Try: "fix the login bug where users see a blank screen after entering wrong credentials"
+    尝试："修复登录错误，用户输入错误凭证后看到空白屏幕"
   </Accordion>
 
-  <Accordion title="Use step-by-step instructions">
-    Break complex tasks into steps:
+  <Accordion title="使用分步说明">
+    将复杂任务分解为步骤：
 
-    ```text wrap theme={null}
-    1. create a new database table for user profiles
-    2. create an API endpoint to get and update user profiles
-    3. build a webpage that allows users to see and edit their information
+    ```text theme={null}
+    1. 为用户配置文件创建新的数据库表
+    2. 创建 API 端点以获取和更新用户配置文件
+    3. 构建允许用户查看和编辑其信息的网页
     ```
   </Accordion>
 
-  <Accordion title="Let Claude explore first">
-    Before making changes, let Claude understand your code:
+  <Accordion title="让 Claude 先探索">
+    在进行更改之前，让 Claude 理解您的代码：
 
-    ```text wrap theme={null}
-    analyze the database schema
+    ```text theme={null}
+    分析数据库架构
     ```
 
-    ```text wrap theme={null}
-    build a dashboard showing products that are most frequently returned by our UK customers
+    ```text theme={null}
+    构建一个仪表板，显示英国客户最常退货的产品
     ```
   </Accordion>
 
-  <Accordion title="Save time with shortcuts">
-    * Type `/` to see all commands and skills
-    * Use Tab for command completion
-    * Press ↑ for command history
-    * Press `Shift+Tab` to cycle permission modes
+  <Accordion title="使用快捷方式节省时间">
+    * 输入 `/` 查看所有命令和 skills
+    * 使用 Tab 进行命令补全
+    * 按 ↑ 查看命令历史
+    * 按 `Shift+Tab` 循环切换权限模式
   </Accordion>
 </AccordionGroup>
 
-## What's next?
+<h2 id="what’s-next">
+  接下来呢？
+</h2>
 
-Now that you've learned the basics, explore more advanced features:
+现在您已经学习了基础知识，探索更多高级功能：
 
 <CardGroup cols={2}>
-  <Card title="How Claude Code works" icon="microchip" href="/docs/en/how-claude-code-works">
-    Understand the agentic loop, built-in tools, and how Claude Code interacts with your project
+  <Card title="Claude Code 如何工作" icon="microchip" href="/docs/zh-CN/how-claude-code-works">
+    了解代理循环、内置工具以及 Claude Code 如何与您的项目交互
   </Card>
 
-  <Card title="Best practices" icon="star" href="/docs/en/best-practices">
-    Get better results with effective prompting and project setup
+  <Card title="最佳实践" icon="star" href="/docs/zh-CN/best-practices">
+    通过有效的提示和项目设置获得更好的结果
   </Card>
 
-  <Card title="Common workflows" icon="graduation-cap" href="/docs/en/common-workflows">
-    Step-by-step guides for common tasks
+  <Card title="常见工作流" icon="graduation-cap" href="/docs/zh-CN/common-workflows">
+    常见任务的分步指南
   </Card>
 
-  <Card title="Extend Claude Code" icon="puzzle-piece" href="/docs/en/features-overview">
-    Customize with CLAUDE.md, skills, hooks, MCP, and more
+  <Card title="扩展 Claude Code" icon="puzzle-piece" href="/docs/zh-CN/features-overview">
+    使用 CLAUDE.md、skills、hooks、MCP 等进行自定义
   </Card>
 </CardGroup>
 
-## Getting help
+<h2 id="getting-help">
+  获取帮助
+</h2>
 
-* **In Claude Code**: Type `/help` or ask "how do I..."
-* **Documentation**: You're here! Browse other guides
-* **Community**: Join our [Discord](https://www.anthropic.com/discord) for tips and support
+* **在 Claude Code 中**：输入 `/help` 或询问"我如何..."
+* **文档**：您在这里！浏览其他指南
+* **社区**：加入我们的 [Discord](https://www.anthropic.com/discord) 获取提示和支持

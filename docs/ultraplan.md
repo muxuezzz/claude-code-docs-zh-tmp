@@ -2,83 +2,95 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Plan in the cloud with ultraplan
+# 使用 ultraplan 在云端规划
 
-> Start a plan from your CLI, draft it on Claude Code on the web, then execute it remotely or back in your terminal
+> 从 CLI 启动计划，在网络上的 Claude Code 中草拟，然后远程执行或在终端中执行
 
 <Note>
-  Ultraplan is in research preview. Behavior and capabilities may change based on feedback.
+  Ultraplan 处于研究预览阶段。行为和功能可能会根据反馈而改变。
 </Note>
 
-Ultraplan hands a planning task from your local CLI to a [Claude Code on the web](/docs/en/claude-code-on-the-web) session running in [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode). Claude drafts the plan in the cloud while you keep working in your terminal. When the plan is ready, you open it in your browser to comment on specific sections, ask for revisions, and choose where to execute it.
+Ultraplan 将规划任务从本地 CLI 交给在 [plan mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode) 中运行的 [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) 会话。Claude 在云端草拟计划，同时你可以继续在终端中工作。计划准备好后，你在浏览器中打开它来对特定部分进行评论、请求修订，并选择在何处执行。
 
-This is useful when you want a richer review surface than the terminal offers:
+当你需要比终端提供的更丰富的审查界面时，这很有用：
 
-* **Targeted feedback**: comment on individual sections of the plan instead of replying to the whole thing
-* **Hands-off drafting**: the plan is generated remotely, so your terminal stays free for other work
-* **Flexible execution**: approve the plan to run on the web and open a pull request, or send it back to your terminal
+* **有针对性的反馈**：对计划的各个部分进行评论，而不是回复整个计划
+* **无需干预的草拟**：计划在远程生成，所以你的终端可以自由用于其他工作
+* **灵活的执行**：批准计划在网络上运行并打开拉取请求，或将其发送回终端
 
-Ultraplan requires a [Claude Code on the web](/docs/en/claude-code-on-the-web) account and a GitHub repository. Because it runs on Anthropic's cloud infrastructure, it is not available when using Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry. The cloud session runs in your default [cloud environment](/docs/en/cloud-environments); use [`/remote-env`](/docs/en/cloud-environments#select-an-environment-from-the-cli) in your terminal to change which environment that is. If you don't have a cloud environment yet, ultraplan creates one automatically when it first launches.
+Ultraplan 需要 [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) 账户和 GitHub 仓库。由于它在 Anthropic 的云基础设施上运行，当使用 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 时不可用。云会话在你账户的默认 [云环境](/docs/zh-CN/claude-code-on-the-web#the-cloud-environment) 中运行。如果你还没有云环境，ultraplan 在首次启动时会自动创建一个。
 
-## Launch ultraplan from the CLI
+<h2 id="launch-ultraplan-from-the-cli">
+  从 CLI 启动 ultraplan
+</h2>
 
-From your local CLI session, you can launch ultraplan in three ways:
+从本地 CLI 会话，你可以通过三种方式启动 ultraplan：
 
-* **Command**: run `/ultraplan` followed by your prompt
-* **Keyword**: include the word `ultraplan` anywhere in a normal prompt
-* **From a local plan**: when Claude finishes a local plan and shows the approval dialog, choose **No, refine with Ultraplan on Claude Code on the web** to send the draft to the cloud for further iteration
+* **命令**：运行 `/ultraplan` 后跟你的提示
+* **关键字**：在普通提示中的任何地方包含单词 `ultraplan`
+* **从本地计划**：当 Claude 完成本地计划并显示批准对话框时，选择 **No, refine with Ultraplan on Claude Code on the web** 将草稿发送到云端进行进一步迭代
 
-For example, to plan a service migration with the command:
+例如，要使用命令规划服务迁移：
 
 ```
 /ultraplan migrate the auth service from sessions to JWTs
 ```
 
-The command and keyword paths open a confirmation dialog before launching. The local plan path skips this dialog because that selection already serves as confirmation. If [Remote Control](/docs/en/remote-control) is active, it disconnects when ultraplan starts because both features occupy the claude.ai/code interface and only one can be connected at a time.
+命令和关键字路径在启动前打开确认对话框。本地计划路径跳过此对话框，因为该选择已作为确认。如果 [Remote Control](/docs/zh-CN/remote-control) 处于活动状态，当 ultraplan 启动时它会断开连接，因为两个功能都占用 claude.ai/code 界面，一次只能连接一个。
 
-After the cloud session launches, your CLI's prompt input shows a status indicator while the cloud session works:
+云会话启动后，CLI 的提示输入显示状态指示器，同时云会话工作：
 
-| Status                         | Meaning                                                            |
-| :----------------------------- | :----------------------------------------------------------------- |
-| `◇ ultraplan`                  | Claude is researching your codebase and drafting the plan          |
-| `◇ ultraplan needs your input` | Claude has a clarifying question; open the session link to respond |
-| `◆ ultraplan ready`            | The plan is ready to review in your browser                        |
+| 状态                             | 含义                     |
+| :----------------------------- | :--------------------- |
+| `◇ ultraplan`                  | Claude 正在研究你的代码库并草拟计划  |
+| `◇ ultraplan needs your input` | Claude 有澄清问题；打开会话链接以响应 |
+| `◆ ultraplan ready`            | 计划已准备好在浏览器中审查          |
 
-Run `/tasks` and select the ultraplan entry to open a detail view with the session link, agent activity, and a **Stop ultraplan** action. Stopping archives the cloud session and clears the indicator; nothing is saved to your terminal.
+运行 `/tasks` 并选择 ultraplan 条目以打开详细视图，其中包含会话链接、代理活动和 **Stop ultraplan** 操作。停止会存档云会话并清除指示器；没有任何内容保存到终端。
 
-## Review and revise the plan in your browser
+<h2 id="review-and-revise-the-plan-in-your-browser">
+  在浏览器中审查和修订计划
+</h2>
 
-When the status changes to `◆ ultraplan ready`, open the session link to view the plan on claude.ai. The plan appears in a dedicated review view:
+当状态更改为 `◆ ultraplan ready` 时，打开会话链接以在 claude.ai 上查看计划。计划出现在专用审查视图中：
 
-* **Inline comments**: highlight any passage and leave a comment for Claude to address
-* **Emoji reactions**: react to a section to signal approval or concern without writing a full comment
-* **Outline sidebar**: jump between sections of the plan
+* **内联评论**：突出显示任何段落并留下评论供 Claude 处理
+* **表情符号反应**：对部分进行反应以表示批准或关注，无需撰写完整评论
+* **大纲侧边栏**：在计划的各个部分之间跳转
 
-When you ask Claude to address your comments, it revises the plan and presents an updated draft. You can iterate as many times as needed before choosing where to execute.
+当你要求 Claude 处理你的评论时，它会修订计划并呈现更新的草稿。你可以根据需要迭代多次，然后选择在何处执行。
 
-## Choose where to execute
+<h2 id="choose-where-to-execute">
+  选择执行位置
+</h2>
 
-When the plan looks right, you choose from the browser whether Claude implements it in the same cloud session or sends it back to your waiting terminal.
+当计划看起来正确时，你在浏览器中选择 Claude 是在同一云会话中实现它，还是将其发送回等待的终端。
 
-### Execute on the web
+<h3 id="execute-on-the-web">
+  在网络上执行
+</h3>
 
-Select **Approve Claude's plan and start coding** in your browser to have Claude implement it in the same Claude Code on the web session. Your terminal shows a confirmation, the status indicator clears, and the work continues in the cloud. When the implementation finishes, [review the diff](/docs/en/claude-code-on-the-web#review-changes) and create a pull request from the web interface.
+在浏览器中选择 **Approve Claude's plan and start coding** 让 Claude 在同一 Claude Code on the web 会话中实现它。你的终端显示确认，状态指示器清除，工作继续在云端。实现完成后，[审查差异](/docs/zh-CN/claude-code-on-the-web#review-changes) 并从网络界面创建拉取请求。
 
-### Send the plan back to your terminal
+<h3 id="send-the-plan-back-to-your-terminal">
+  将计划发送回终端
+</h3>
 
-Select **Approve plan and teleport back to terminal** in your browser to implement the plan locally with full access to your environment. This option appears when the session was launched from your CLI and the terminal is still polling. The web session is archived so it doesn't continue working in parallel.
+在浏览器中选择 **Approve plan and teleport back to terminal** 以在本地实现计划，完全访问你的环境。当会话从 CLI 启动且终端仍在轮询时，此选项出现。网络会话被存档，因此它不会继续并行工作。
 
-Your terminal shows the plan in a dialog titled **Ultraplan approved** with three options:
+你的终端在标题为 **Ultraplan approved** 的对话框中显示计划，有三个选项：
 
-* **Implement here**: inject the plan into your current conversation and continue from where you left off
-* **Start new session**: clear the current conversation and begin fresh with only the plan as context
-* **Cancel**: save the plan to a file without executing it; Claude prints the file path so you can return to it later
+* **Implement here**：将计划注入到当前对话中，从你离开的地方继续
+* **Start new session**：清除当前对话并仅以计划作为上下文重新开始
+* **Cancel**：将计划保存到文件而不执行它；Claude 打印文件路径，以便你稍后可以返回到它
 
-If you start a new session, Claude prints a `claude --resume` command at the top so you can return to your previous conversation later.
+如果你启动新会话，Claude 会在顶部打印 `claude --resume` 命令，以便你稍后可以返回到之前的对话。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* [Claude Code on the web](/docs/en/claude-code-on-the-web): the cloud infrastructure ultraplan runs on
-* [Plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode): how planning works in a local session
-* [Find bugs with ultrareview](/docs/en/ultrareview): the code review counterpart to ultraplan for catching issues before merge
-* [Remote Control](/docs/en/remote-control): use the claude.ai/code interface with a session running on your own machine
+* [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)：ultraplan 运行的云基础设施
+* [Plan mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode)：本地会话中规划的工作方式
+* [使用 ultrareview 查找错误](/docs/zh-CN/ultrareview)：ultraplan 的代码审查对应物，用于在合并前捕获问题
+* [Remote Control](/docs/zh-CN/remote-control)：使用 claude.ai/code 界面与在自己机器上运行的会话

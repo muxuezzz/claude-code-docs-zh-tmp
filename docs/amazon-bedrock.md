@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Claude Code on Amazon Bedrock
+# Amazon Bedrock 上的 Claude Code
 
-> Learn about configuring Claude Code through Amazon Bedrock, including setup, IAM configuration, and troubleshooting.
+> 了解如何通过 Amazon Bedrock 配置 Claude Code，包括设置、IAM 配置和故障排除。
 
 export const ContactSalesCard = ({surface}) => {
   const utm = content => `utm_source=claude_code&utm_medium=docs&utm_content=${surface}_${content}`;
@@ -78,63 +78,73 @@ export const ContactSalesCard = ({surface}) => {
 
 <ContactSalesCard surface="bedrock" />
 
-## Prerequisites
+<h2 id="prerequisites">
+  前置条件
+</h2>
 
-Before configuring Claude Code with Amazon Bedrock, ensure you have:
+在使用 Amazon Bedrock 配置 Claude Code 之前，请确保您拥有：
 
-* An AWS account with Amazon Bedrock access enabled
-* Access to desired Claude models (for example, Claude Sonnet 4.6) in Amazon Bedrock
-* AWS CLI installed and configured (optional - only needed if you don't have another mechanism for getting credentials)
-* Appropriate IAM permissions
+* 启用了 Amazon Bedrock 访问权限的 AWS 账户
+* 在 Amazon Bedrock 中访问所需的 Claude 模型（例如 Claude Sonnet 4.6）
+* 已安装并配置 AWS CLI（可选 - 仅在您没有其他获取凭证的机制时需要）
+* 适当的 IAM 权限
 
-To sign in with your own Amazon Bedrock credentials, follow [Sign in with Amazon Bedrock](#sign-in-with-bedrock) below. To deploy Claude Code across a team, use the [manual setup](#set-up-manually) steps and [pin your model versions](#4-pin-model-versions) before rolling out.
+要使用您自己的 Amazon Bedrock 凭证登录，请按照下面的[使用 Amazon Bedrock 登录](#sign-in-with-bedrock)进行操作。要在团队中部署 Claude Code，请使用[手动设置](#set-up-manually)步骤并在推出前[固定您的模型版本](#4-pin-model-versions)。
 
-## Sign in with Bedrock
+<h2 id="sign-in-with-bedrock">
+  使用 Bedrock 登录
+</h2>
 
-If you have AWS credentials and want to start using Claude Code through Amazon Bedrock, the login wizard walks you through it. You complete the AWS-side prerequisites once per account; the wizard handles the Claude Code side.
+如果您拥有 AWS 凭证并想开始通过 Amazon Bedrock 使用 Claude Code，登录向导会引导您完成整个过程。您每个账户完成一次 AWS 端的前置条件；向导处理 Claude Code 端。
 
 <Steps>
-  <Step title="Enable Anthropic models in your AWS account">
-    In the [Amazon Bedrock console](https://console.aws.amazon.com/bedrock/), open the Model catalog, select an Anthropic model, and submit the use case form. Access is granted immediately after submission. See [Submit use case details](#1-submit-use-case-details) for AWS Organizations and [IAM configuration](#iam-configuration) for the permissions your role needs.
+  <Step title="在您的 AWS 账户中启用 Anthropic 模型">
+    在 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)中，打开模型目录，选择一个 Anthropic 模型，并提交用例表单。提交后立即授予访问权限。有关 AWS Organizations，请参阅[提交用例详情](#1-submit-use-case-details)，有关权限，请参阅 [IAM 配置](#iam-configuration)。
   </Step>
 
-  <Step title="Start Claude Code and choose Amazon Bedrock">
-    Run `claude`. At the login prompt, select **3rd-party platform**, then **Amazon Bedrock**. If you're already signed in and see the chat prompt instead, run `/setup-bedrock` to open the wizard. The command works when typed even though it isn't listed in the command menu until Bedrock is configured.
+  <Step title="启动 Claude Code 并选择 Amazon Bedrock">
+    运行 `claude`。在登录提示处，选择 **3rd-party platform**，然后选择 **Amazon Bedrock**。
   </Step>
 
-  <Step title="Follow the wizard prompts">
-    Choose how you authenticate to AWS: an AWS profile detected from your `~/.aws` directory, an Amazon Bedrock API key, an access key and secret, or credentials already in your environment. The wizard picks up your region, verifies which Claude models your account can invoke, and lets you pin them. It saves the result to the `env` block of your [user settings file](/docs/en/settings), so you don't need to export environment variables yourself.
+  <Step title="按照向导提示操作">
+    选择您如何向 AWS 进行身份验证：从您的 `~/.aws` 目录检测到的 AWS 配置文件、Amazon Bedrock API 密钥、访问密钥和密钥，或已在您的环境中的凭证。向导会获取您的区域，验证您的账户可以调用哪些 Claude 模型，并让您固定它们。它将结果保存到您的[用户设置文件](/docs/zh-CN/settings)的 `env` 块中，因此您无需自己导出环境变量。
   </Step>
 </Steps>
 
-After you've signed in, run `/setup-bedrock` any time to reopen the wizard and change your credentials, region, or model pins. The model pin step starts from your currently pinned models. The wizard writes to `~/.claude/settings.json`, or to `$CLAUDE_CONFIG_DIR/settings.json` when [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars#variables) is set.
+登录后，随时运行 `/setup-bedrock` 重新打开向导并更改您的凭证、区域或模型固定。模型固定步骤从您当前固定的模型开始。向导写入 `~/.claude/settings.json`，或在设置了 [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars#variables) 时写入 `$CLAUDE_CONFIG_DIR/settings.json`。
 
-## Set up manually
+<h2 id="set-up-manually">
+  手动设置
+</h2>
 
-To configure Amazon Bedrock through environment variables instead of the wizard, for example in CI or a scripted enterprise rollout, follow the steps below.
+要通过环境变量而不是向导配置 Amazon Bedrock，例如在 CI 或脚本化企业推出中，请按照下面的步骤操作。
 
-### 1. Submit use case details
+<h3 id="1-submit-use-case-details">
+  1. 提交用例详情
+</h3>
 
-Before you invoke an Anthropic model for the first time, submit use case details. You do this once per AWS account.
+Anthropic 模型的首次用户需要在调用模型之前提交用例详情。这是每个 AWS 账户执行一次的操作。
 
-1. Ensure you have the right IAM permissions described below
-2. Navigate to the [Amazon Bedrock console](https://console.aws.amazon.com/bedrock/)
-3. Select an Anthropic model from the **Model catalog**
-4. Complete the use case form. Access is granted immediately after submission.
+1. 确保您拥有下面描述的正确 IAM 权限
+2. 导航到 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)
+3. 从**模型目录**中选择一个 Anthropic 模型
+4. 完成用例表单。提交后立即授予访问权限。
 
-If you use AWS Organizations, you can submit the form once from the management account using the [`PutUseCaseForModelAccess` API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_PutUseCaseForModelAccess.html). This call requires the `bedrock:PutUseCaseForModelAccess` IAM permission. Approval extends to child accounts automatically.
+如果您使用 AWS Organizations，您可以使用 [`PutUseCaseForModelAccess` API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_PutUseCaseForModelAccess.html) 从管理账户提交一次表单。此调用需要 `bedrock:PutUseCaseForModelAccess` IAM 权限。批准自动扩展到子账户。
 
-### 2. Configure AWS credentials
+<h3 id="2-configure-aws-credentials">
+  2. 配置 AWS 凭证
+</h3>
 
-Claude Code uses the default AWS SDK credential chain. Set up your credentials using one of these methods:
+Claude Code 使用默认的 AWS SDK 凭证链。使用以下方法之一设置您的凭证：
 
-**Option A: AWS CLI configuration**
+**选项 A：AWS CLI 配置**
 
 ```bash theme={null}
 aws configure
 ```
 
-**Option B: Environment variables (access key)**
+**选项 B：环境变量（访问密钥）**
 
 ```bash theme={null}
 export AWS_ACCESS_KEY_ID=your-access-key-id
@@ -142,9 +152,9 @@ export AWS_SECRET_ACCESS_KEY=your-secret-access-key
 export AWS_SESSION_TOKEN=your-session-token
 ```
 
-**Option C: Environment variables (SSO profile)**
+**选项 C：环境变量（SSO 配置文件）**
 
-Replace `your-profile-name` with the name of your AWS profile before running these commands.
+将 `your-profile-name` 替换为您的 AWS 配置文件的名称，然后运行这些命令。
 
 ```bash theme={null}
 aws sso login --profile=your-profile-name
@@ -152,44 +162,50 @@ aws sso login --profile=your-profile-name
 export AWS_PROFILE=your-profile-name
 ```
 
-Claude Code requests role credentials from the IAM Identity Center region named by the profile's `sso_region`, which doesn't need to match the region you run Amazon Bedrock in. {/* min-version: 2.1.208 */}In v2.1.207, the Amazon Bedrock region overrode `sso_region`, so a profile whose IAM Identity Center instance is in a different region failed to authenticate with a `Session token not found or invalid` error.
+Claude Code 从 IAM Identity Center 区域请求角色凭证，该区域由配置文件的 `sso_region` 命名，不需要与您运行 Amazon Bedrock 的区域匹配。{/* min-version: 2.1.208 */}在 v2.1.207 中，Amazon Bedrock 区域覆盖了 `sso_region`，因此其 IAM Identity Center 实例在不同区域的配置文件无法使用 `Session token not found or invalid` 错误进行身份验证。
 
-**Option D: AWS Management Console credentials**
+**选项 D：AWS 管理控制台凭证**
 
 ```bash theme={null}
 aws login
 ```
 
-[Learn more](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html) about `aws login`.
+[了解更多](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html)关于 `aws login`。
 
-**Option E: Amazon Bedrock API keys**
+**选项 E：Amazon Bedrock API 密钥**
 
 ```bash theme={null}
 export AWS_BEARER_TOKEN_BEDROCK=your-bedrock-api-key
 ```
 
-Amazon Bedrock API keys provide a simpler authentication method without needing full AWS credentials. [Learn more about Amazon Bedrock API keys](https://aws.amazon.com/blogs/machine-learning/accelerate-ai-development-with-amazon-bedrock-api-keys/).
+Amazon Bedrock API 密钥提供了一种更简单的身份验证方法，无需完整的 AWS 凭证。[了解更多关于 Amazon Bedrock API 密钥](https://aws.amazon.com/blogs/machine-learning/accelerate-ai-development-with-amazon-bedrock-api-keys/)。
 
-#### Credential caching and resolution timeout
+<h4 id="credential-caching-and-resolution-timeout">
+  凭证缓存和解析超时
+</h4>
 
-Claude Code resolves the AWS default credential provider chain once and keeps the resolved credentials in memory. It reuses them until five minutes before they expire, or for one hour when they carry no expiration, so an SSO-backed profile requests credentials from IAM Identity Center about once per credential lifetime. A credential error from the API clears the cache, and the retry resolves fresh credentials.
+Claude Code 解析 AWS 默认凭证提供商链一次，并将解析的凭证保存在内存中。它重复使用它们，直到它们过期前五分钟，或在没有过期时间时使用一小时，因此 SSO 支持的配置文件大约每个凭证生命周期从 IAM Identity Center 请求一次凭证。来自 API 的凭证错误会清除缓存，重试会解析新的凭证。
 
-Before v2.1.207, Claude Code resolved the chain on every API request, so an SSO-backed profile requested fresh credentials from IAM Identity Center each time and could be throttled in large deployments.
+在 v2.1.207 之前，Claude Code 在每个 API 请求时解析链，因此 SSO 支持的配置文件每次都从 IAM Identity Center 请求新凭证，在大型部署中可能会被限流。
 
-The cache covers every credential option above except an Amazon Bedrock API key, which doesn't use the provider chain. To resolve the chain on every request instead, set [`CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1`](/docs/en/env-vars).
+缓存涵盖上面的每个凭证选项，除了 Amazon Bedrock API 密钥，它不使用提供商链。要改为在每个请求时解析链，请设置 [`CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1`](/docs/zh-CN/env-vars)。
 
-Each resolve of the chain times out after 60 seconds. If a step in the chain stalls, for example a `credential_process` helper that waits for input it can't receive, the request fails with [`AWS default-chain credential resolve timed out`](/docs/en/errors#aws-default-chain-credential-resolve-timed-out). If your chain runs an interactive sign-in that legitimately needs longer, such as browser-based SSO with MFA through a wrapper like `aws-vault`, raise the limit in milliseconds with [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](/docs/en/env-vars). Before v2.1.207, a stalled credential resolution left the request waiting indefinitely.
+链的每次解析在 60 秒后超时。如果链中的一个步骤停滞，例如等待无法接收的输入的 `credential_process` 帮助程序，请求会失败，显示 [`AWS default-chain credential resolve timed out`](/docs/zh-CN/errors#aws-default-chain-credential-resolve-timed-out)。如果您的链运行合法需要更长时间的交互式登录，例如通过 `aws-vault` 等包装器进行基于浏览器的 SSO 和 MFA，请使用 [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](/docs/zh-CN/env-vars) 以毫秒为单位提高限制。在 v2.1.207 之前，停滞的凭证解析会使请求无限期等待。
 
-#### Advanced credential configuration
+<h4 id="advanced-credential-configuration">
+  高级凭证配置
+</h4>
 
-Claude Code supports automatic credential refresh for AWS SSO and corporate identity providers. Add these settings to your Claude Code settings file (see [Settings](/docs/en/settings) for file locations).
+Claude Code 支持 AWS SSO 和企业身份提供商的自动凭证刷新。将这些设置添加到您的 Claude Code 设置文件（请参阅[设置](/docs/zh-CN/settings)了解文件位置）。
 
-These two settings have different trigger conditions:
+这两个设置有不同的触发条件：
 
-* **`awsAuthRefresh`**: runs only when Claude Code detects that your AWS credentials are expired, either locally based on their timestamp or when the API returns a credential error, then retries the request with refreshed credentials.
-* **`awsCredentialExport`**: runs at session start and on each credential reload, even when the credentials in your AWS default credential provider chain are still valid. Use this when your Amazon Bedrock account requires cross-account credentials that differ from the ones the default provider chain would resolve.
+* **`awsAuthRefresh`**：仅当 Claude Code 检测到您的 AWS 凭证已过期时运行，基于本地时间戳或当 API 返回凭证错误时，然后使用刷新的凭证重试请求。
+* **`awsCredentialExport`**：在会话启动和每次凭证重新加载时运行，即使您的 AWS 默认凭证提供商链中的凭证仍然有效。当您的 Amazon Bedrock 账户需要与默认提供商链会解析的凭证不同的跨账户凭证时，请使用此选项。
 
-##### Example configuration
+<h5 id="example-configuration">
+  示例配置
+</h5>
 
 ```json theme={null}
 {
@@ -200,11 +216,13 @@ These two settings have different trigger conditions:
 }
 ```
 
-##### Configuration settings explained
+<h5 id="configuration-settings-explained">
+  配置设置说明
+</h5>
 
-**`awsAuthRefresh`**: Use this for commands that modify the `.aws` directory, such as updating credentials, SSO cache, or config files. The command's output is displayed to the user, but interactive input isn't supported. This works well for browser-based SSO flows where the CLI displays a URL or code and you complete authentication in the browser.
+**`awsAuthRefresh`**：用于修改 `.aws` 目录的命令，例如更新凭证、SSO 缓存或配置文件。命令的输出显示给用户，但不支持交互式输入。这适用于基于浏览器的 SSO 流，其中 CLI 显示 URL 或代码，您在浏览器中完成身份验证。
 
-**`awsCredentialExport`**: Only use this if you can't modify `.aws` and must directly return credentials. This command runs whenever credentials need to be refreshed, not only when credentials are expired. Output is captured silently and not shown to the user. The command must output JSON in this format:
+**`awsCredentialExport`**：仅在您无法修改 `.aws` 且必须直接返回凭证时使用。此命令在需要刷新凭证时运行，而不仅仅是在凭证过期时。输出被静默捕获，不显示给用户。命令必须以此格式输出 JSON：
 
 ```json theme={null}
 {
@@ -217,53 +235,57 @@ These two settings have different trigger conditions:
 }
 ```
 
-{/* min-version: 2.1.181 */}As of Claude Code v2.1.181, the flat output from `aws configure export-credentials --format process` is also accepted, with the same keys at the top level instead of nested under `Credentials`.
+{/* min-version: 2.1.181 */}从 Claude Code v2.1.181 开始，`aws configure export-credentials --format process` 的平面输出也被接受，具有相同的密钥在顶级而不是嵌套在 `Credentials` 下。
 
-`Expiration` is optional. {/* min-version: 2.1.176 */}As of Claude Code v2.1.176, when the command returns a valid ISO 8601 `Expiration`, Claude Code caches the credentials until five minutes before that time. Without it, or on earlier versions, credentials are cached for one hour.
+`Expiration` 是可选的。{/* min-version: 2.1.176 */}从 Claude Code v2.1.176 开始，当命令返回有效的 ISO 8601 `Expiration` 时，Claude Code 会缓存凭证直到该时间前五分钟。没有它，或在更早的版本上，凭证被缓存一小时。
 
-When you configure `awsCredentialExport` without `awsAuthRefresh`, Claude Code uses the exported credentials directly and doesn't re-resolve the AWS default credential provider chain at startup. Before v2.1.206, startup also re-resolved the default provider chain, which made a live SSO or STS call outside your proxy configuration and could block the first prompt for several minutes on networks with restricted egress.
+当您配置 `awsCredentialExport` 而不配置 `awsAuthRefresh` 时，Claude Code 直接使用导出的凭证，不在启动时重新解析 AWS 默认凭证提供商链。在 v2.1.206 之前，启动也会重新解析默认提供商链，这会在您的代理配置之外进行实时 SSO 或 STS 调用，并可能在具有受限出口的网络上阻止第一个提示数分钟。
 
-### 3. Configure Claude Code
+<h3 id="3-configure-claude-code">
+  3. 配置 Claude Code
+</h3>
 
-Set the following environment variables to enable Amazon Bedrock:
+设置以下环境变量以启用 Amazon Bedrock：
 
 ```bash theme={null}
-# Enable Bedrock integration
+# 启用 Bedrock 集成
 export CLAUDE_CODE_USE_BEDROCK=1
-export AWS_REGION=us-east-1  # optional if your AWS profile already sets a region
+export AWS_REGION=us-east-1  # 如果您的 AWS 配置文件已设置区域，则可选
 
-# Optional: Override the AWS region for the small/fast model (Bedrock and Mantle).
-# On Bedrock, has no effect without ANTHROPIC_DEFAULT_HAIKU_MODEL
-# or the deprecated ANTHROPIC_SMALL_FAST_MODEL set.
+# 可选：覆盖小型/快速模型 (Bedrock 和 Mantle) 的 AWS 区域。
+# 在 Bedrock 上，如果未设置 ANTHROPIC_DEFAULT_HAIKU_MODEL
+# 或已弃用的 ANTHROPIC_SMALL_FAST_MODEL，则无效。
 export ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION=us-west-2
 
-# Optional: Override the Bedrock endpoint URL for custom endpoints or gateways
+# 可选：覆盖 Bedrock 端点 URL 以用于自定义端点或网关
 # export ANTHROPIC_BEDROCK_BASE_URL=https://bedrock-runtime.us-east-1.amazonaws.com
 ```
 
-When enabling Amazon Bedrock for Claude Code, keep the following in mind:
+为 Claude Code 启用 Amazon Bedrock 时，请记住以下几点：
 
-* {/* min-version: 2.1.172 */}As of v2.1.172, you only need to set `AWS_REGION` to override your AWS profile's region or when your profile has no region. Claude Code resolves the region in this order:
+* {/* min-version: 2.1.172 */}从 v2.1.172 开始，您只需设置 `AWS_REGION` 来覆盖您的 AWS 配置文件的区域，或在您的配置文件没有区域时设置。Claude Code 按此顺序解析区域：
 
   * `AWS_REGION`
   * `AWS_DEFAULT_REGION`
-  * the `region` set on your active AWS profile, read from the AWS shared credentials file first and then the shared config file, matching AWS SDK precedence
+  * 在您的活跃 AWS 配置文件上设置的 `region`，首先从 AWS 共享凭证文件读取，然后从共享配置文件读取，匹配 AWS SDK 优先级
   * `us-east-1`
 
-  The active profile is `AWS_PROFILE` if set, otherwise `default`. Set `AWS_SHARED_CREDENTIALS_FILE` or `AWS_CONFIG_FILE` to point at non-default file paths. Run `/status` to see the resolved region. When the region came from your AWS config files or the default fallback, `/status` also notes the source. On v2.1.171 and earlier, Claude Code does not read the AWS config files, so set `AWS_REGION` explicitly.
-* When using Amazon Bedrock, the `/logout` command is unavailable since authentication is handled through AWS credentials.
-* The WebSearch tool is not available on Amazon Bedrock. See [WebSearch tool behavior](/docs/en/tools-reference#websearch-tool-behavior).
-* You can use settings files for environment variables like `AWS_PROFILE` that you don't want to leak to other processes. See [Settings](/docs/en/settings) for more information.
+  活跃配置文件是 `AWS_PROFILE`（如果已设置），否则为 `default`。设置 `AWS_SHARED_CREDENTIALS_FILE` 或 `AWS_CONFIG_FILE` 以指向非默认文件路径。运行 `/status` 以查看解析的区域。当区域来自您的 AWS 配置文件或默认回退时，`/status` 也会注明来源。在 v2.1.171 及更早版本上，Claude Code 不读取 AWS 配置文件，因此请显式设置 `AWS_REGION`。
+* 使用 Amazon Bedrock 时，`/logout` 命令不可用，因为身份验证通过 AWS 凭证处理。
+* WebSearch 工具在 Amazon Bedrock 上不可用。请参阅 [WebSearch 工具行为](/docs/zh-CN/tools-reference#websearch-tool-behavior)。
+* 您可以使用设置文件来处理环境变量，如 `AWS_PROFILE`，您不希望泄露给其他进程。请参阅[设置](/docs/zh-CN/settings)了解更多信息。
 
-### 4. Pin model versions
+<h3 id="4-pin-model-versions">
+  4. 固定模型版本
+</h3>
 
 <Warning>
-  Pin specific model versions when deploying to multiple users. Without pinning, model aliases such as `sonnet` and `opus` resolve to Claude Code's built-in default for Amazon Bedrock, which can lag the newest release and may not yet be available in your account. Claude Code [falls back](#startup-model-checks) to an earlier or lower-tier model at startup when the default is unavailable, but pinning lets you control when your users move to a new model.
+  在部署到多个用户时固定特定的模型版本。如果不固定，模型别名（如 `sonnet` 和 `opus`）会解析为 Claude Code 为 Amazon Bedrock 内置的默认值，这可能滞后于最新版本，并且可能在您的账户中还不可用。Claude Code 在启动时会[回退](#startup-model-checks)到上一个版本或更低级别的模型（如果默认版本不可用），但固定让您可以控制用户何时迁移到新模型。
 </Warning>
 
-Set these environment variables to specific Amazon Bedrock model IDs.
+将这些环境变量设置为特定的 Amazon Bedrock 模型 ID。
 
-Without `ANTHROPIC_DEFAULT_OPUS_MODEL`, the `opus` alias on Amazon Bedrock resolves to Opus 5, and without `ANTHROPIC_DEFAULT_SONNET_MODEL`, the `sonnet` alias resolves to Sonnet 4.5. This example pins each alias to a specific version:
+如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，Amazon Bedrock 上的 `opus` 别名会解析为 Opus 4.8，如果没有 `ANTHROPIC_DEFAULT_SONNET_MODEL`，`sonnet` 别名会解析为 Sonnet 4.5。此示例将每个别名固定到特定版本：
 
 ```bash theme={null}
 export ANTHROPIC_DEFAULT_OPUS_MODEL='us.anthropic.claude-opus-4-8'
@@ -271,52 +293,54 @@ export ANTHROPIC_DEFAULT_SONNET_MODEL='us.anthropic.claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='us.anthropic.claude-haiku-4-5-20251001-v1:0'
 ```
 
-These variables use cross-region inference profile IDs (with the `us.` prefix). If you use a different region prefix or application inference profiles, adjust accordingly. In AWS GovCloud regions, use the `us-gov.` prefix. For current and legacy model IDs, see [Models overview](https://platform.claude.com/docs/en/about-claude/models/overview). See [Model configuration](/docs/en/model-config#pin-models-for-third-party-deployments) for the full list of environment variables.
+这些变量使用跨区域推理配置文件 ID（带有 `us.` 前缀）。如果您使用不同的区域前缀或应用推理配置文件，请相应调整。在 AWS GovCloud 区域中，使用 `us-gov.` 前缀。有关当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。请参阅[模型配置](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解完整的环境变量列表。
 
-Claude Code uses these default models when no pinning variables are set:
+Claude Code 使用这些默认模型当未设置固定变量时：
 
-| Model type       | Default value                                  |
-| :--------------- | :--------------------------------------------- |
-| Primary model    | `us.anthropic.claude-opus-5`                   |
-| Small/fast model | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| 模型类型    | 默认值                                            |
+| :------ | :--------------------------------------------- |
+| 主模型     | `us.anthropic.claude-opus-4-8`                 |
+| 小型/快速模型 | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
 
-Background tasks such as session title generation use the small/fast model, normally a Haiku-class model. On Amazon Bedrock, Claude Code uses the default Sonnet model for background tasks because Haiku may not be enabled in every account or region. Two selections change which model carries them:
+后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Amazon Bedrock 上，Claude Code 为后台任务使用默认 Sonnet 模型，因为并非每个账户或区域都启用了 Haiku。两个选择改变哪个模型执行它们：
 
-* When you select a primary model with `--model`, `ANTHROPIC_MODEL`, or the `model` setting, background tasks use that model. Setting `ANTHROPIC_DEFAULT_OPUS_MODEL` without `ANTHROPIC_DEFAULT_SONNET_MODEL` counts as a selection too, because the built-in Sonnet model may not be enabled in an account that steers its own Opus.
-* To use Haiku for background tasks, set `ANTHROPIC_DEFAULT_HAIKU_MODEL` to a model ID that is available in your account.
+* 当您使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置选择主模型时，后台任务使用该模型。设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 而不设置 `ANTHROPIC_DEFAULT_SONNET_MODEL` 也算作一个选择，因为内置 Sonnet 模型可能在引导自己的 Opus 的账户中不启用。
+* 要为后台任务使用 Haiku，请将 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 设置为您账户中可用的模型 ID。
 
 <Warning>
-  Opus models have a higher per-token price than Sonnet models, so a deployment that doesn't pin a primary model is billed at the Opus rate once it updates to v2.1.207 or later. To keep Sonnet 4.5 as the primary model, set `ANTHROPIC_MODEL` to its full model ID. A deployment that steers the default with `ANTHROPIC_DEFAULT_SONNET_MODEL` and doesn't set `ANTHROPIC_DEFAULT_OPUS_MODEL` keeps its steered Sonnet model as the default.
+  Opus 模型的每令牌价格高于 Sonnet 模型，因此不固定主模型的部署在更新到 v2.1.207 或更高版本后将按 Opus 费率计费。要将 Sonnet 4.5 保持为主模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署会保持其引导的 Sonnet 模型作为默认值。
 </Warning>
 
-{/* min-version: 2.1.219 */}On v2.1.207 through v2.1.218, the primary model on Amazon Bedrock defaulted to Opus 4.8 and the `opus` alias resolved to Opus 4.8. {/* min-version: 2.1.207 */}Before v2.1.207, the primary model defaulted to Sonnet 4.5, the `opus` alias resolved to Opus 4.6, and background tasks always used the primary model.
+{/* min-version: 2.1.207 */}在 v2.1.207 之前，Amazon Bedrock 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
 
-To customize models further, use one of these methods:
+要进一步自定义模型，请使用以下方法之一：
 
 ```bash theme={null}
-# Using inference profile ID
+# 使用推理配置文件 ID
 export ANTHROPIC_MODEL='us.anthropic.claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='us.anthropic.claude-haiku-4-5-20251001-v1:0'
 
-# Using application inference profile ARN
+# 使用应用推理配置文件 ARN
 export ANTHROPIC_MODEL='arn:aws:bedrock:us-east-2:your-account-id:application-inference-profile/your-model-id'
 
-# Optional: Disable prompt caching if needed
-# export DISABLE_PROMPT_CACHING=1
+# 可选：如果需要，禁用 prompt caching
+export DISABLE_PROMPT_CACHING=1
 
-# Optional: Request 1-hour prompt cache TTL instead of the 5-minute default
-# export ENABLE_PROMPT_CACHING_1H=1
+# 可选：请求 1 小时 prompt cache TTL 而不是 5 分钟默认值
+export ENABLE_PROMPT_CACHING_1H=1
 ```
 
-The 1-hour cache TTL is billed at a higher rate than the 5-minute default. See [cache lifetime](/docs/en/prompt-caching#cache-lifetime).
+1 小时缓存 TTL 的计费费率高于 5 分钟默认值。请参阅[缓存生命周期](/docs/zh-CN/prompt-caching#cache-lifetime)。
 
-<Note>Prompt caching may not be available in all Amazon Bedrock regions. If cache token counts stay at zero, check [supported models, regions, and limits](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html#prompt-caching-models) in the Amazon Bedrock documentation.</Note>
+<Note>Prompt caching 可能在所有 Amazon Bedrock 区域都不可用。如果缓存令牌计数保持为零，请检查 Amazon Bedrock 文档中的[支持的模型、区域和限制](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html#prompt-caching-models)。</Note>
 
-#### Map each model version to an inference profile
+<h4 id="map-each-model-version-to-an-inference-profile">
+  将每个模型版本映射到推理配置文件
+</h4>
 
-The `ANTHROPIC_DEFAULT_*_MODEL` environment variables configure one inference profile per model family. If your organization needs to expose several versions of the same family in the `/model` picker, each routed to its own application inference profile ARN, use the `modelOverrides` setting in your [settings file](/docs/en/settings#settings-files) instead.
+`ANTHROPIC_DEFAULT_*_MODEL` 环境变量为每个模型系列配置一个推理配置文件。如果您的组织需要在 `/model` 选择器中公开同一系列的多个版本，每个版本路由到其自己的应用推理配置文件 ARN，请改用[设置文件](/docs/zh-CN/settings#settings-files)中的 `modelOverrides` 设置。
 
-This example maps four Opus versions to distinct ARNs so users can switch between them without bypassing your organization's inference profiles:
+此示例将四个 Opus 版本映射到不同的 ARN，以便用户可以在它们之间切换，而无需绕过您组织的推理配置文件：
 
 ```json theme={null}
 {
@@ -329,25 +353,23 @@ This example maps four Opus versions to distinct ARNs so users can switch betwee
 }
 ```
 
-When a user selects one of these versions in `/model`, Claude Code calls Amazon Bedrock with the mapped ARN. {/* min-version: 2.1.200 */}The same mapping applies when you pass the Anthropic model ID directly through `--model` or `ANTHROPIC_MODEL`. Versions without an override fall back to the built-in Amazon Bedrock model ID or any matching inference profile discovered at startup. Before v2.1.200, `--model` and `ANTHROPIC_MODEL` values reached Amazon Bedrock as-is without going through the override map. See [Override model IDs per version](/docs/en/model-config#override-model-ids-per-version) for details on how overrides interact with `availableModels` and other model settings.
+当用户在 `/model` 中选择其中一个版本时，Claude Code 使用映射的 ARN 调用 Amazon Bedrock。{/* min-version: 2.1.200 */}当您通过 `--model` 或 `ANTHROPIC_MODEL` 直接传递 Anthropic 模型 ID 时，相同的映射也适用。没有覆盖的版本回退到内置的 Amazon Bedrock 模型 ID 或启动时发现的任何匹配推理配置文件。在 v2.1.200 之前，`--model` 和 `ANTHROPIC_MODEL` 值直接到达 Amazon Bedrock，不经过覆盖映射。请参阅[按版本覆盖模型 ID](/docs/zh-CN/model-config#override-model-ids-per-version)了解覆盖如何与 `availableModels` 和其他模型设置交互的详情。
 
-## Startup model checks
+<h2 id="startup-model-checks">
+  启动模型检查
+</h2>
 
-When Claude Code starts with Amazon Bedrock configured, it verifies that the models it intends to use are accessible in your account.
+当 Claude Code 启动并配置了 Amazon Bedrock 时，它会验证它打算使用的模型在您的账户中是否可访问。
 
-If you have pinned a model version that is older than the current Claude Code default, and your account can invoke the newer version, Claude Code prompts you to update the pin. Accepting writes the new model ID to your [user settings file](/docs/en/settings) and restarts Claude Code. Declining is remembered until the next default version change. Pins that point to an [application inference profile ARN](#map-each-model-version-to-an-inference-profile) are skipped, since those are managed by your administrator.
+如果您固定了一个比当前 Claude Code 默认值更旧的模型版本，并且您的账户可以调用较新版本，Claude Code 会提示您更新固定。接受会将新模型 ID 写入您的[用户设置文件](/docs/zh-CN/settings)并重启 Claude Code。拒绝会被记住，直到下一个默认版本更改。指向[应用推理配置文件 ARN](#map-each-model-version-to-an-inference-profile) 的固定会被跳过，因为这些由您的管理员管理。
 
-If you have not pinned a model and the current default is unavailable in your account, Claude Code falls back for the current session and shows a notice. It tries earlier versions of the default model first and, when the default is an Opus model and no Opus version is available, falls back to the default Sonnet model. The fallback is not persisted. Enable the newer model in your Amazon Bedrock account or [pin a version](#4-pin-model-versions) to make the choice permanent.
+如果您没有固定模型，并且当前默认值在您的账户中不可用，Claude Code 会在当前会话中回退并显示通知。它首先尝试默认模型的早期版本，当默认值是 Opus 模型且没有 Opus 版本可用时，会回退到默认 Sonnet 模型。回退不会被持久化。在您的 Amazon Bedrock 账户中启用较新的模型或[固定一个版本](#4-pin-model-versions)以使选择永久化。
 
-{/* min-version: 2.1.211 */}When you start the session on a specific Sonnet or Opus version, with `--model`, `ANTHROPIC_MODEL`, or the [`model` setting](/docs/en/settings), that version acts as the session's pinned default for the matching `sonnet` or `opus` alias. Claude Code skips the availability check for the built-in default your model replaces and starts on the model you configured, with no fallback notice.
+<h2 id="iam-configuration">
+  IAM 配置
+</h2>
 
-Model aliases such as `opus` don't act as pins, and neither does a model ID Claude Code doesn't recognize, such as an application inference profile ARN.
-
-<Info>Before v2.1.211, Claude Code checked the default model's availability even when a session model was explicitly configured, and could show a fallback notice for a default the session didn't use.</Info>
-
-## IAM configuration
-
-Create an IAM policy with the required permissions for Claude Code:
+创建具有 Claude Code 所需权限的 IAM 策略：
 
 ```json theme={null}
 {
@@ -386,39 +408,45 @@ Create an IAM policy with the required permissions for Claude Code:
 }
 ```
 
-For more restrictive permissions, you can limit the Resource to specific inference profile ARNs.
+为了获得更严格的权限，您可以将资源限制为特定的推理配置文件 ARN。
 
-`bedrock:GetInferenceProfile` lets Claude Code resolve an [application inference profile ARN](#map-each-model-version-to-an-inference-profile) to its backing foundation model, which is used to select the correct request shape for that model.
+`bedrock:GetInferenceProfile` 让 Claude Code 能够将[应用推理配置文件 ARN](#map-each-model-version-to-an-inference-profile) 解析为其支持的基础模型，该模型用于为该模型选择正确的请求形状。
 
-If the token is missing this permission, Claude Code recovers automatically by retrying once with the alternate shape, so requests still succeed but each new model adds an extra round-trip. Granting the permission avoids the retry. This applies most often to `AWS_BEARER_TOKEN_BEDROCK` deployments, where the token's policy is typically narrower than a full IAM role.
+如果令牌缺少此权限，Claude Code 会通过使用备用形状重试一次来自动恢复，因此请求仍然会成功，但每个新模型都会增加一个额外的往返。授予该权限可以避免重试。这最常适用于 `AWS_BEARER_TOKEN_BEDROCK` 部署，其中令牌的策略通常比完整的 IAM 角色更窄。
 
-For details, see [Amazon Bedrock IAM documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html).
+有关详情，请参阅 [Amazon Bedrock IAM 文档](https://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html)。
 
 <Note>
-  Create a dedicated AWS account for Claude Code to simplify cost tracking and access control.
+  为 Claude Code 创建一个专用的 AWS 账户，以简化成本跟踪和访问控制。
 </Note>
 
-## 1M token context window
+<h2 id="1m-token-context-window">
+  1M 令牌上下文窗口
+</h2>
 
-Claude Sonnet 5, Opus 4.6 and later, and Sonnet 4.6 support the [1M token context window](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model) on Amazon Bedrock. Sonnet 5 is served through the [Mantle endpoint](#use-the-mantle-endpoint) and always runs with the 1M window, with no `[1m]` variant to select. For the other models, Claude Code automatically enables the extended context window when you select a 1M model variant.
+Claude Sonnet 5、Opus 4.6 及更高版本，以及 Sonnet 4.6 在 Amazon Bedrock 上支持 [1M 令牌上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)。Sonnet 5 通过 [Mantle 端点](#use-the-mantle-endpoint)提供，始终以 1M 窗口运行，没有 `[1m]` 变体可选择。对于其他模型，当您选择 1M 模型变体时，Claude Code 会自动启用扩展上下文窗口。
 
-The [setup wizard](#sign-in-with-bedrock) offers a 1M context option when it pins models. To enable it for a manually pinned model instead, append `[1m]` to the model ID. See [Pin models for third-party deployments](/docs/en/model-config#pin-models-for-third-party-deployments) for details.
+[设置向导](#sign-in-with-bedrock)在固定模型时提供 1M 上下文选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解详情。
 
-## Service tiers
+<h2 id="service-tiers">
+  服务层级
+</h2>
 
-[Amazon Bedrock service tiers](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html) let you trade off cost against latency. Set `ANTHROPIC_BEDROCK_SERVICE_TIER` to `default`, `flex`, or `priority`:
+[Amazon Bedrock 服务层级](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html)让您在成本和延迟之间进行权衡。将 `ANTHROPIC_BEDROCK_SERVICE_TIER` 设置为 `default`、`flex` 或 `priority`：
 
 ```bash theme={null}
 export ANTHROPIC_BEDROCK_SERVICE_TIER=priority
 ```
 
-Claude Code sends this as the `X-Amzn-Bedrock-Service-Tier` header on each request. Tier availability varies by model and region. Reserved capacity uses a [provisioned throughput](https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html) ARN as the model ID instead of this setting.
+Claude Code 在每个请求上将此作为 `X-Amzn-Bedrock-Service-Tier` 标头发送。层级可用性因模型和区域而异。预留容量使用[预配吞吐量](https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html) ARN 作为模型 ID，而不是此设置。
 
-## AWS Guardrails
+<h2 id="aws-guardrails">
+  AWS Guardrails
+</h2>
 
-[Amazon Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you implement content filtering for Claude Code. Create a Guardrail in the [Amazon Bedrock console](https://console.aws.amazon.com/bedrock/), publish a version, then add the Guardrail headers to your [settings file](/docs/en/settings). Enable Cross-Region inference on your Guardrail if you're using cross-region inference profiles.
+[Amazon Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) 让您为 Claude Code 实现内容过滤。在 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)中创建 Guardrail，发布一个版本，然后将 Guardrail 标头添加到您的[设置文件](/docs/zh-CN/settings)。如果您使用跨区域推理配置文件，请在您的 Guardrail 上启用跨区域推理。
 
-Example configuration:
+示例配置：
 
 ```json theme={null}
 {
@@ -428,43 +456,51 @@ Example configuration:
 }
 ```
 
-## Use the Mantle endpoint
+<h2 id="use-the-mantle-endpoint">
+  使用 Mantle 端点
+</h2>
 
-Mantle is an Amazon Bedrock endpoint that serves Claude models through the native Anthropic API shape rather than the Amazon Bedrock Invoke API. It uses the same AWS credentials, IAM permissions, and `awsAuthRefresh` configuration described earlier on this page.
+Mantle 是一个 Amazon Bedrock 端点，通过原生 Anthropic API 形状而不是 Amazon Bedrock Invoke API 提供 Claude 模型。它使用相同的 AWS 凭证、IAM 权限和本页面前面描述的 `awsAuthRefresh` 配置。
 
-### Enable Mantle
+<h3 id="enable-mantle">
+  启用 Mantle
+</h3>
 
-With AWS credentials already configured, set `CLAUDE_CODE_USE_MANTLE` to route requests to the Mantle endpoint:
+配置了 AWS 凭证后，设置 `CLAUDE_CODE_USE_MANTLE` 以将请求路由到 Mantle 端点：
 
 ```bash theme={null}
 export CLAUDE_CODE_USE_MANTLE=1
 export AWS_REGION=us-east-1
 ```
 
-Claude Code constructs the endpoint URL from the AWS region. {/* min-version: 2.1.172 */}As of v2.1.172, the region is resolved with the same precedence as [Amazon Bedrock above](#3-configure-claude-code); earlier versions use `AWS_REGION` only. To override the URL for a custom endpoint or gateway, set `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`.
+Claude Code 从 AWS 区域构造端点 URL。{/* min-version: 2.1.172 */}从 v2.1.172 开始，区域的解析优先级与[上面的 Amazon Bedrock](#3-configure-claude-code) 相同；较早的版本仅使用 `AWS_REGION`。要为自定义端点或网关覆盖 URL，请设置 `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`。
 
-Run `/status` inside Claude Code to confirm. The provider line shows `Amazon Bedrock (Mantle)` when Mantle is active.
+在 Claude Code 内运行 `/status` 来确认。当 Mantle 处于活动状态时，提供者行显示 `Amazon Bedrock (Mantle)`。
 
-### Select a Mantle model
+<h3 id="select-a-mantle-model">
+  选择 Mantle 模型
+</h3>
 
-Mantle uses model IDs prefixed with `anthropic.` and without a version suffix, for example `anthropic.claude-sonnet-5` or `anthropic.claude-haiku-4-5`. The models available to your account depend on what your organization has been granted; additional model IDs are listed in your onboarding materials from AWS. Contact your AWS account team to request access to allowlisted models.
+Mantle 使用以 `anthropic.` 为前缀且没有版本后缀的模型 ID，例如 `anthropic.claude-sonnet-5` 或 `anthropic.claude-haiku-4-5`。您的账户可用的模型取决于您的组织被授予的内容；其他模型 ID 列在您来自 AWS 的入职材料中。联系您的 AWS 账户团队以请求访问允许列表中的模型。
 
-Set the model with the `--model` flag or with `/model` inside Claude Code:
+使用 `--model` 标志或在 Claude Code 内使用 `/model` 设置模型：
 
 ```bash theme={null}
 claude --model anthropic.claude-haiku-4-5
 ```
 
-### Run Mantle alongside the Invoke API
+<h3 id="run-mantle-alongside-the-invoke-api">
+  在 Invoke API 旁边运行 Mantle
+</h3>
 
-The models available to you on Mantle may not include every model you use today. Setting both `CLAUDE_CODE_USE_BEDROCK` and `CLAUDE_CODE_USE_MANTLE` lets Claude Code call both endpoints from the same session. Model IDs that match the Mantle format are routed to Mantle, and all other model IDs go to the Amazon Bedrock Invoke API.
+您在 Mantle 上可用的模型可能不包括您今天使用的每个模型。设置 `CLAUDE_CODE_USE_BEDROCK` 和 `CLAUDE_CODE_USE_MANTLE` 让 Claude Code 从同一会话调用两个端点。与 Mantle 格式匹配的模型 ID 被路由到 Mantle，所有其他模型 ID 转到 Amazon Bedrock Invoke API。
 
 ```bash theme={null}
 export CLAUDE_CODE_USE_BEDROCK=1
 export CLAUDE_CODE_USE_MANTLE=1
 ```
 
-To surface a Mantle model in the `/model` picker, list its ID in `availableModels` in your [settings file](/docs/en/settings). This setting also restricts the picker to the listed entries. Listing `anthropic.claude-haiku-4-5` removes the bare `haiku` alias from the picker, so also list version prefixes or full IDs for the versions you want to keep selectable. The Mantle ID and the `haiku` alias resolve to the same model family, so the merge keeps only the more specific entry. See [Merge behavior](/docs/en/model-config#merge-behavior):
+要在 `/model` 选择器中显示 Mantle 模型，请在您的[设置文件](/docs/zh-CN/settings)中的 `availableModels` 中列出其 ID。此设置也将选择器限制为列出的条目。列出 `anthropic.claude-haiku-4-5` 会从选择器中移除裸 `haiku` 别名，因此也要列出版本前缀或您想保持可选择的版本的完整 ID。Mantle ID 和 `haiku` 别名解析为相同的模型族，因此合并仅保留更具体的条目。请参阅[合并行为](/docs/zh-CN/model-config#merge-behavior)：
 
 ```json theme={null}
 {
@@ -472,13 +508,15 @@ To surface a Mantle model in the `/model` picker, list its ID in `availableModel
 }
 ```
 
-Entries with the `anthropic.` prefix are added as custom picker options and routed to Mantle. Replace `anthropic.claude-haiku-4-5` with the model ID your account has been granted. See [Restrict model selection](/docs/en/model-config#restrict-model-selection) for how `availableModels` interacts with other model settings.
+带有 `anthropic.` 前缀的条目被添加为自定义选择器选项并路由到 Mantle。将 `anthropic.claude-haiku-4-5` 替换为您的账户被授予的模型 ID。请参阅[限制模型选择](/docs/zh-CN/model-config#restrict-model-selection)了解 `availableModels` 如何与其他模型设置交互。
 
-When both providers are active, `/status` shows `Amazon Bedrock + Amazon Bedrock (Mantle)`.
+当两个提供商都处于活动状态时，`/status` 显示 `Amazon Bedrock + Amazon Bedrock (Mantle)`。
 
-### Route Mantle through a gateway
+<h3 id="route-mantle-through-a-gateway">
+  通过网关路由 Mantle
+</h3>
 
-If your organization routes model traffic through a centralized [LLM gateway](/docs/en/llm-gateway) that injects AWS credentials server-side, disable client-side authentication so Claude Code sends requests without SigV4 signatures or `x-api-key` headers:
+如果您的组织通过集中式 [LLM 网关](/docs/zh-CN/llm-gateway)路由模型流量，该网关在服务器端注入 AWS 凭证，请禁用客户端身份验证，以便 Claude Code 发送没有 SigV4 签名或 `x-api-key` 标头的请求：
 
 ```bash theme={null}
 export CLAUDE_CODE_USE_MANTLE=1
@@ -486,66 +524,82 @@ export CLAUDE_CODE_SKIP_MANTLE_AUTH=1
 export ANTHROPIC_BEDROCK_MANTLE_BASE_URL=https://your-gateway.example.com
 ```
 
-### Mantle environment variables
+<h3 id="mantle-environment-variables">
+  Mantle 环境变量
+</h3>
 
-These variables are specific to the Mantle endpoint. See [Environment variables](/docs/en/env-vars) for the full list.
+这些变量特定于 Mantle 端点。请参阅[环境变量](/docs/zh-CN/env-vars)了解完整列表。
 
-| Variable                                | Purpose                                                                    |
-| :-------------------------------------- | :------------------------------------------------------------------------- |
-| `CLAUDE_CODE_USE_MANTLE`                | Enable the Mantle endpoint. Set to `1` or `true`.                          |
-| `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`     | Override the default Mantle endpoint URL                                   |
-| `CLAUDE_CODE_SKIP_MANTLE_AUTH`          | Skip client-side authentication for proxy setups                           |
-| `ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION` | Override AWS region for the Haiku-class model (shared with Amazon Bedrock) |
+| 变量                                      | 目的                                        |
+| :-------------------------------------- | :---------------------------------------- |
+| `CLAUDE_CODE_USE_MANTLE`                | 启用 Mantle 端点。设置为 `1` 或 `true`。            |
+| `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`     | 覆盖默认 Mantle 端点 URL                        |
+| `CLAUDE_CODE_SKIP_MANTLE_AUTH`          | 跳过客户端身份验证以用于代理设置                          |
+| `ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION` | 覆盖 Haiku 类模型的 AWS 区域（与 Amazon Bedrock 共享） |
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Authentication loop with SSO and corporate proxies
+<h3 id="authentication-loop-with-sso-and-corporate-proxies">
+  使用 SSO 和企业代理的身份验证循环
+</h3>
 
-If browser tabs spawn repeatedly when using AWS SSO, remove the `awsAuthRefresh` setting from your [settings file](/docs/en/settings). This can occur when corporate VPNs or TLS inspection proxies interrupt the SSO browser flow. Claude Code treats the interrupted connection as an authentication failure, re-runs `awsAuthRefresh`, and loops indefinitely.
+如果在使用 AWS SSO 时浏览器标签页反复生成，请从您的[设置文件](/docs/zh-CN/settings)中删除 `awsAuthRefresh` 设置。这可能发生在企业 VPN 或 TLS 检查代理中断 SSO 浏览器流时。Claude Code 将中断的连接视为身份验证失败，重新运行 `awsAuthRefresh`，并无限循环。
 
-If your network environment interferes with automatic browser-based SSO flows, use `aws sso login` manually before starting Claude Code instead of relying on `awsAuthRefresh`.
+如果您的网络环境干扰自动基于浏览器的 SSO 流，请在启动 Claude Code 之前手动使用 `aws sso login`，而不是依赖 `awsAuthRefresh`。
 
-### Region issues
+<h3 id="region-issues">
+  区域问题
+</h3>
 
-If you encounter region issues:
+如果您遇到区域问题：
 
-* Check model availability: `aws bedrock list-inference-profiles --region your-region`
-* Switch to a supported region: `export AWS_REGION=us-east-1`
-* Consider using inference profiles for cross-region access
+* 检查模型可用性：`aws bedrock list-inference-profiles --region your-region`
+* 切换到支持的区域：`export AWS_REGION=us-east-1`
+* 考虑使用推理配置文件进行跨区域访问
 
-If you receive an error "on-demand throughput isn't supported":
+如果您收到错误"不支持按需吞吐量"：
 
-* Specify the model as an [inference profile](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) ID
+* 将模型指定为[推理配置文件](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) ID
 
-Claude Code uses the Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModelWithResponseStream.html) and does not support the Converse API.
+Claude Code 使用 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModelWithResponseStream.html)，不支持 Converse API。
 
-### Streaming errors behind a gateway or proxy
+<h3 id="streaming-errors-behind-a-gateway-or-proxy">
+  网关或代理后的流式传输错误
+</h3>
 
-If streaming requests fail with an error that begins `Bedrock streaming response has content-type`, a gateway or proxy between Claude Code and Amazon Bedrock is transforming the streaming response. Amazon Bedrock streams responses in a binary event-stream format with the content-type `application/vnd.amazon.eventstream`, and Claude Code rejects a successful streaming response that reports a different content-type instead of decoding a body it can't read. The error names the content-type it received, commonly `text/event-stream` from an Amazon API Gateway and Lambda integration that re-emits the stream as server-sent events.
+如果流式传输请求失败，错误以 `Bedrock streaming response has content-type` 开头，则 Claude Code 和 Amazon Bedrock 之间的网关或代理正在转换流式传输响应。Amazon Bedrock 以二进制事件流格式流式传输响应，内容类型为 `application/vnd.amazon.eventstream`，Claude Code 拒绝报告不同内容类型的成功流式传输响应，而不是解码它无法读取的正文。该错误命名了它收到的内容类型，通常是来自 Amazon API Gateway 和 Lambda 集成的 `text/event-stream`，该集成将流重新发出为服务器发送的事件。
 
-Before v2.1.208, the same misconfiguration surfaced as `API Error: Truncated event message received` after the whole response had been buffered.
+在 v2.1.208 之前，相同的配置错误在整个响应被缓冲后显示为 `API Error: Truncated event message received`。
 
-To fix it, configure the gateway to pass the `InvokeModelWithResponseStream` response body and its `Content-Type` header through unmodified. If the gateway rewrites only the header and passes the binary body through intact, set [`CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD=1`](/docs/en/env-vars) to skip the check until the gateway is fixed. With the check off, a response body that was transformed fails with `Truncated event message received` again.
+要修复它，请配置网关以通过未修改的 `InvokeModelWithResponseStream` 响应正文及其 `Content-Type` 标头。如果网关仅重写标头并通过完整的二进制正文，请设置 [`CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD=1`](/docs/zh-CN/env-vars) 以跳过检查，直到网关被修复。关闭检查后，被转换的响应正文再次失败，显示 `Truncated event message received`。
 
-### Zero token counts in /context
+<h3 id="zero-token-counts-in-/context">
+  /context 中的零令牌计数
+</h3>
 
-The `/context` command counts tokens for each tool group by sending the tool schemas to the Amazon Bedrock count-tokens API. {/* min-version: 2.1.196 */}On Claude Code versions before v2.1.196, Amazon Bedrock rejected that request because the schemas carried fields its count-tokens API doesn't accept, so every tool group showed 0 tokens. Other rows in the breakdown, such as messages and memory files, aren't affected.
+`/context` 命令通过将工具架构发送到 Amazon Bedrock count-tokens API 来计算每个工具组的令牌。{/* min-version: 2.1.196 */}在 Claude Code v2.1.196 之前的版本中，Amazon Bedrock 拒绝了该请求，因为架构包含其 count-tokens API 不接受的字段，因此每个工具组显示 0 个令牌。分解中的其他行（如消息和内存文件）不受影响。
 
-Update to v2.1.196 or later.
+更新到 v2.1.196 或更高版本。
 
-### Mantle endpoint errors
+<h3 id="mantle-endpoint-errors">
+  Mantle 端点错误
+</h3>
 
-If `/status` does not show `Amazon Bedrock (Mantle)` after you set `CLAUDE_CODE_USE_MANTLE`, the variable is not reaching the process. Confirm it is exported in the shell where you launched `claude`, or set it in the `env` block of your [settings file](/docs/en/settings).
+如果在设置 `CLAUDE_CODE_USE_MANTLE` 后 `/status` 没有显示 `Amazon Bedrock (Mantle)`，则该变量没有到达进程。确认它在您启动 `claude` 的 shell 中被导出，或在您的[设置文件](/docs/zh-CN/settings)的 `env` 块中设置它。
 
-A `403` from the Mantle endpoint with valid credentials means your AWS account has not been granted access to the model you requested. Contact your AWS account team to request access.
+来自 Mantle 端点的 `403`（具有有效凭证）意味着您的 AWS 账户没有被授予访问您请求的模型的权限。联系您的 AWS 账户团队以请求访问。
 
-A `400` that names the model ID means that model is not served on Mantle. Mantle has its own model lineup separate from the standard Amazon Bedrock catalog, so inference profile IDs such as `us.anthropic.claude-sonnet-4-6` will not work. Use a Mantle-format ID, or enable [both endpoints](#run-mantle-alongside-the-invoke-api) so Claude Code routes each request to the endpoint where the model is available.
+命名模型 ID 的 `400` 意味着该模型不在 Mantle 上提供。Mantle 有其自己的模型阵容，与标准 Amazon Bedrock 目录分开，因此推理配置文件 ID（如 `us.anthropic.claude-sonnet-4-6`）将不起作用。使用 Mantle 格式的 ID，或启用[两个端点](#run-mantle-alongside-the-invoke-api)，以便 Claude Code 将每个请求路由到模型可用的端点。
 
-## Additional resources
+<h2 id="additional-resources">
+  其他资源
+</h2>
 
-* [Amazon Bedrock documentation](https://docs.aws.amazon.com/bedrock/)
-* [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)
-* [Amazon Bedrock inference profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html)
-* [Amazon Bedrock token burndown and quotas](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html)
-* [Claude Code on Amazon Bedrock: Quick Setup Guide](https://builder.aws.com/content/2tXkZKrZzlrlu0KfH8gST5Dkppq/claude-code-on-amazon-bedrock-quick-setup-guide)
-* [Claude Code Monitoring Implementation (Amazon Bedrock)](https://github.com/aws-solutions-library-samples/guidance-for-claude-code-with-amazon-bedrock/blob/main/assets/docs/MONITORING.md)
+* [Amazon Bedrock 文档](https://docs.aws.amazon.com/bedrock/)
+* [Amazon Bedrock 定价](https://aws.amazon.com/bedrock/pricing/)
+* [Amazon Bedrock 推理配置文件](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html)
+* [Amazon Bedrock 令牌消耗和配额](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html)
+* [Amazon Bedrock 上的 Claude Code：快速设置指南](https://community.aws/content/2tXkZKrZzlrlu0KfH8gST5Dkppq/claude-code-on-amazon-bedrock-quick-setup-guide)
+* [Claude Code 监控实现 (Amazon Bedrock)](https://github.com/aws-solutions-library-samples/guidance-for-claude-code-with-amazon-bedrock/blob/main/assets/docs/MONITORING.md)

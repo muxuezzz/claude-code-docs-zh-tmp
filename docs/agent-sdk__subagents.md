@@ -2,62 +2,78 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Subagents in the SDK
+# SDK 中的子代理
 
-> Define and invoke subagents to isolate context, run tasks in parallel, and apply specialized instructions in your Claude Agent SDK applications.
+> 定义和调用子代理以隔离上下文、并行运行任务，以及在 Claude Agent SDK 应用程序中应用专门的指令。
 
-Subagents are separate agent instances that your main agent can spawn to handle focused subtasks.
-Use them to isolate context, run multiple analyses in parallel, and apply specialized instructions without adding to the main agent's prompt.
+子代理是您的主代理可以生成的独立代理实例，用于处理专注的子任务。
+使用子代理来隔离上下文、并行运行多个分析，以及应用专门的指令，而不会增加主代理的提示词。
 
-This guide explains how to define and use subagents in the SDK using the `agents` parameter.
+本指南说明如何使用 `agents` 参数在 SDK 中定义和使用子代理。
 
-## Overview
+<h2 id="overview">
+  概述
+</h2>
 
-You can create subagents in three ways:
+您可以通过三种方式创建子代理：
 
-* **Programmatically**: use the `agents` parameter in your `query()` options. See the [TypeScript](/docs/en/agent-sdk/typescript#agentdefinition) and [Python](/docs/en/agent-sdk/python#agentdefinition) references
-* **Filesystem-based**: define agents as markdown files in `.claude/agents/` directories. See [defining subagents as files](/docs/en/sub-agents)
-* **Built-in general-purpose**: Claude can invoke the built-in `general-purpose` subagent at any time via the Agent tool without you defining anything
+* **以编程方式**：在您的 `query()` 选项中使用 `agents` 参数。请参阅 [TypeScript](/docs/zh-CN/agent-sdk/typescript#agentdefinition) 和 [Python](/docs/zh-CN/agent-sdk/python#agentdefinition) 参考文档
+* **基于文件系统**：在 `.claude/agents/` 目录中将代理定义为 markdown 文件。请参阅[将子代理定义为文件](/docs/zh-CN/sub-agents)
+* **内置通用代理**：Claude 可以随时通过 Agent 工具调用内置的 `general-purpose` 子代理，无需您定义任何内容
 
-This guide focuses on the programmatic approach, which is recommended for SDK applications.
+本指南重点介绍编程方法，这是 SDK 应用程序的推荐方法。
 
-When you define subagents, Claude determines whether to invoke them based on each subagent's `description` field. Write clear descriptions that explain when to use the subagent, and Claude automatically delegates appropriate tasks. You can also explicitly request a subagent by name in your prompt, for example "Use the code-reviewer agent to...".
+定义子代理时，Claude 根据每个子代理的 `description` 字段确定是否调用它。编写清晰的描述，说明何时应使用子代理，Claude 将自动委派适当的任务。您也可以在提示词中按名称显式请求子代理，例如"使用代码审查员代理来..."。
 
-## Benefits of using subagents
+<h2 id="benefits-of-using-subagents">
+  使用子代理的好处
+</h2>
 
-### Context isolation
+<h3 id="context-isolation">
+  上下文隔离
+</h3>
 
-Each subagent runs in its own fresh conversation. Intermediate tool calls and results stay inside the subagent; only its final message returns to the parent. See [What subagents inherit](#what-subagents-inherit) for exactly what's in the subagent's context.
+每个子代理在其自己的新对话中运行。中间工具调用和结果保留在子代理内部；只有其最终消息返回到父代理。请参阅[子代理继承的内容](#what-subagents-inherit)以了解子代理上下文中的确切内容。
 
-**Example:** a `research-assistant` subagent can explore dozens of files without any of that content accumulating in the main conversation. The parent receives a concise summary, not every file the subagent read.
+**示例：** `research-assistant` 子代理可以探索数十个文件，而这些内容都不会在主对话中累积。父代理收到的是简洁的摘要，而不是子代理读取的每个文件。
 
-### Parallelization
+<h3 id="parallelization">
+  并行化
+</h3>
 
-Multiple subagents can run concurrently, so independent subtasks finish in the time of the slowest one rather than the sum of all of them.
+多个子代理可以并发运行，因此独立的子任务完成时间为最慢的一个，而不是所有任务的总和。
 
-**Example:** during a code review, you can run `style-checker`, `security-scanner`, and `test-coverage` subagents simultaneously instead of sequentially.
+**示例：** 在代码审查期间，您可以同时运行 `style-checker`、`security-scanner` 和 `test-coverage` 子代理，而不是按顺序运行。
 
-### Specialized instructions and knowledge
+<h3 id="specialized-instructions-and-knowledge">
+  专门的指令和知识
+</h3>
 
-Each subagent can have tailored system prompts with specific expertise, best practices, and constraints.
+每个子代理都可以有定制的系统提示词，具有特定的专业知识、最佳实践和约束。
 
-**Example:** a `database-migration` subagent can have detailed knowledge about SQL best practices, rollback strategies, and data integrity checks that would be unnecessary noise in the main agent's instructions.
+**示例：** `database-migration` 子代理可以具有关于 SQL 最佳实践、回滚策略和数据完整性检查的详细知识，这些在主代理的指令中将是不必要的噪音。
 
-### Tool restrictions
+<h3 id="tool-restrictions">
+  工具限制
+</h3>
 
-Subagents can be limited to specific tools, reducing the risk of unintended actions.
+子代理可以限制为特定工具，降低意外操作的风险。
 
-**Example:** a `doc-reviewer` subagent might only have access to Read and Grep tools, ensuring it can analyze but never accidentally modify your documentation files.
+**示例：** `doc-reviewer` 子代理可能只能访问 Read 和 Grep 工具，确保它可以分析但永远不会意外修改您的文档文件。
 
-## Create subagents
+<h2 id="create-subagents">
+  创建子代理
+</h2>
 
-### Programmatic definition (recommended)
+<h3 id="programmatic-definition-recommended">
+  以编程方式定义（推荐）
+</h3>
 
-Define subagents directly in your code using the `agents` parameter. Claude invokes subagents through the `Agent` tool, so include `Agent` in `allowedTools` to auto-approve subagent invocations without a permission prompt.
+使用 `agents` 参数直接在代码中定义子代理。Claude 通过 `Agent` 工具调用子代理，因此在 `allowedTools` 中包含 `Agent` 以自动批准子代理调用，无需权限提示。
 
-Most examples on this page print only the final result. To confirm that Claude delegated to a subagent rather than answering directly, see [Detect subagent invocation](#detect-subagent-invocation).
+本页面上的大多数示例仅打印最终结果。要确认 Claude 委派给了子代理而不是直接回答，请参阅[检测子代理调用](#detect-subagent-invocation)。
 
-This example creates two subagents: a code reviewer with read-only access and a test runner that can execute commands.
+此示例创建两个子代理：一个具有只读访问权限的代码审查员和一个可以执行命令的测试运行器。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -161,97 +177,98 @@ This example creates two subagents: a code reviewer with read-only access and a 
   ```
 </CodeGroup>
 
-### AgentDefinition configuration
+<h3 id="agentdefinition-configuration">
+  AgentDefinition 配置
+</h3>
 
-| Field             | Type                                                        | Required | Description                                                                                                                                                                                                                      |
-| :---------------- | :---------------------------------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `description`     | `string`                                                    | Yes      | Natural language description of when to use this agent                                                                                                                                                                           |
-| `prompt`          | `string`                                                    | Yes      | The agent's system prompt defining its role and behavior                                                                                                                                                                         |
-| `tools`           | `string[]`                                                  | No       | Array of allowed tool names. If omitted, inherits every [tool available to subagents](/docs/en/sub-agents#available-tools)                                                                                                            |
-| `disallowedTools` | `string[]`                                                  | No       | Array of tool names to remove from the agent's tool set. MCP server-level patterns are also accepted: `mcp__server` or `mcp__server__*` removes every tool from that server, and `mcp__*` removes every MCP tool from any server |
-| `model`           | `string`                                                    | No       | Model override for this agent. Accepts an alias such as `'fable'`, `'opus'`, `'sonnet'`, `'haiku'`, `'inherit'`, or a full model ID. Defaults to main model if omitted                                                           |
-| `skills`          | `string[]`                                                  | No       | List of skill names to preload into the agent's context at startup. Unlisted skills remain invocable through the Skill tool                                                                                                      |
-| `memory`          | `'user' \| 'project' \| 'local'`                            | No       | Memory source for this agent                                                                                                                                                                                                     |
-| `mcpServers`      | `(string \| object)[]`                                      | No       | MCP servers available to this agent, by name or inline config                                                                                                                                                                    |
-| `initialPrompt`   | `string`                                                    | No       | Auto-submitted as the first user turn when this agent runs as the main thread agent. Ignored when the agent is invoked as a subagent                                                                                             |
-| `maxTurns`        | `number`                                                    | No       | Maximum number of agentic turns before the agent stops                                                                                                                                                                           |
-| `background`      | `boolean`                                                   | No       | Run this agent as a non-blocking background task when invoked                                                                                                                                                                    |
-| `effort`          | `'low' \| 'medium' \| 'high' \| 'xhigh' \| 'max' \| number` | No       | Reasoning effort level for this agent                                                                                                                                                                                            |
-| `permissionMode`  | `PermissionMode`                                            | No       | Permission mode for tool execution within this agent                                                                                                                                                                             |
+| 字段                | 类型                                                          | 必需 | 描述                                                                                                              |
+| :---------------- | :---------------------------------------------------------- | :- | :-------------------------------------------------------------------------------------------------------------- |
+| `description`     | `string`                                                    | 是  | 何时使用此代理的自然语言描述                                                                                                  |
+| `prompt`          | `string`                                                    | 是  | 代理的系统提示词，定义其角色和行为                                                                                               |
+| `tools`           | `string[]`                                                  | 否  | 允许的工具名称数组。如果省略，继承所有工具                                                                                           |
+| `disallowedTools` | `string[]`                                                  | 否  | 要从代理的工具集中移除的工具名称数组。MCP 服务器级别的模式也被接受：`mcp__server` 或 `mcp__server__*` 移除来自该服务器的每个工具，`mcp__*` 移除来自任何服务器的每个 MCP 工具 |
+| `model`           | `string`                                                    | 否  | 此代理的模型覆盖。接受别名，如 `'fable'`、`'opus'`、`'sonnet'`、`'haiku'`、`'inherit'`，或完整的模型 ID。如果省略，默认为主模型                       |
+| `skills`          | `string[]`                                                  | 否  | 在启动时预加载到代理上下文中的 skills 名称列表。未列出的 skills 仍可通过 Skill 工具调用                                                         |
+| `memory`          | `'user' \| 'project' \| 'local'`                            | 否  | 此代理的内存源                                                                                                         |
+| `mcpServers`      | `(string \| object)[]`                                      | 否  | 此代理可用的 MCP 服务器，按名称或内联配置                                                                                         |
+| `initialPrompt`   | `string`                                                    | 否  | 当此代理作为主线程代理运行时自动提交为第一个用户轮次。当代理作为子代理调用时忽略                                                                        |
+| `maxTurns`        | `number`                                                    | 否  | 代理停止前的最大代理轮数                                                                                                    |
+| `background`      | `boolean`                                                   | 否  | 调用时将此代理作为非阻塞后台任务运行                                                                                              |
+| `effort`          | `'low' \| 'medium' \| 'high' \| 'xhigh' \| 'max' \| number` | 否  | 此代理的推理工作量级别                                                                                                     |
+| `permissionMode`  | `PermissionMode`                                            | 否  | 此代理内工具执行的权限模式                                                                                                   |
 
-In the Python SDK, multi-word field names such as `disallowedTools` and `mcpServers` keep their camelCase spelling to match the wire format rather than following Python's snake\_case convention. See the [`AgentDefinition` reference](/docs/en/agent-sdk/python#agentdefinition) for details.
+在 Python SDK 中，多字词字段名称（如 `disallowedTools` 和 `mcpServers`）保持其 camelCase 拼写以匹配线路格式，而不是遵循 Python 的 snake\_case 约定。有关详细信息，请参阅 [`AgentDefinition` 参考](/docs/zh-CN/agent-sdk/python#agentdefinition)。
 
-Two subagent behaviors changed in Claude Code v2.1.198:
+Claude Code v2.1.198 中的两个子代理行为发生了变化：
 
-* Subagents run in the background by default. An Agent tool call that omits the [`run_in_background`](/docs/en/agent-sdk/typescript) input launches a background subagent, and Claude sets `run_in_background: false` when it needs the result before continuing. Before v2.1.198, omitting `run_in_background` ran the subagent synchronously. Set the `background` field to `true` to force background execution for a specific agent regardless of what Claude requests.
-* A subagent inherits the main session's extended thinking configuration. On earlier versions, extended thinking is disabled inside subagents regardless of the main session's setting.
-
-<Note>
-  {/* min-version: 2.1.219 */}By default, subagents can spawn subagents of their own, up to three layers below the main conversation. {/* min-version: 2.1.217 */}To change the limit, set [`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`](/docs/en/env-vars) to the number of subagent layers you want below your main conversation, or `1` to turn nesting off; see [nested subagents](/docs/en/sub-agents#let-subagents-spawn-their-own-subagents).
-
-  Earlier versions used different defaults:
-
-  * **v2.1.172 through v2.1.216**: subagents could nest by default, up to five layers deep, and the limit couldn't be changed.
-  * **v2.1.217 through v2.1.218**: the limit defaulted to one, so a subagent couldn't spawn its own unless you raised it; {/* min-version: 2.1.219 */}v2.1.219 raised the default to three.
-</Note>
-
-### Filesystem-based definition (alternative)
-
-You can also define subagents as markdown files in `.claude/agents/` directories. See the [Claude Code subagents documentation](/docs/en/sub-agents) for details on this approach. Programmatically defined agents take precedence over filesystem-based agents with the same name.
+* 子代理默认在后台运行。省略 [`run_in_background`](/docs/zh-CN/agent-sdk/typescript) 输入的 Agent 工具调用会启动后台子代理，当 Claude 需要结果后才继续时，它会设置 `run_in_background: false`。在 v2.1.198 之前，省略 `run_in_background` 会同步运行子代理。设置 `background` 字段为 `true` 以强制特定代理进行后台执行，无论 Claude 请求什么。
+* 子代理继承主会话的扩展思考配置。在早期版本中，无论主会话的设置如何，扩展思考在子代理内被禁用。
 
 <Note>
-  Even without defining custom subagents, Claude can spawn the built-in `general-purpose` subagent. This is useful for delegating research or exploration tasks without creating specialized agents. Include `Agent` in `allowedTools` so these invocations auto-approve without a permission prompt.
+  {/* min-version: 2.1.172 */}自 Claude Code v2.1.172 起，子代理可以生成自己的子代理。位于主代理下方五个级别的子代理无法生成进一步的子代理，无论其是在前台还是后台运行。要防止子代理生成其他子代理，请从其 `tools` 数组中省略 `Agent` 或将其添加到 `disallowedTools`。有关完整的深度规则，请参阅[嵌套子代理](/docs/zh-CN/sub-agents#spawn-nested-subagents)。
 </Note>
 
-## What subagents inherit
+<h3 id="filesystem-based-definition-alternative">
+  基于文件系统的定义（替代方案）
+</h3>
 
-A subagent's context window starts fresh, with no parent conversation, but isn't empty. The only content you pass from parent to subagent is the Agent tool's prompt string, so include any file paths, error messages, or decisions the subagent needs directly in that prompt.
-
-{/* min-version: 2.1.206 */}A subagent that has the [`SendMessage`](/docs/en/tools-reference) tool starts with a list of the other named agents running in the session, so it knows which names it can send messages to. Claude Code adds the list to the subagent's first turn automatically. A [fork](/docs/en/sub-agents#fork-the-current-conversation) doesn't get the list because it inherits the parent conversation instead. The list requires Claude Code v2.1.206 or later.
-
-| The subagent receives                                                                                                                 | The subagent doesn't receive                                       |
-| :------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
-| Its own system prompt (`AgentDefinition.prompt`) and the Agent tool's prompt                                                          | The parent's conversation history or tool results                  |
-| Project CLAUDE.md (loaded via [`settingSources`](/docs/en/agent-sdk/claude-code-features#control-filesystem-settings-with-settingsources)) | Preloaded skill content, unless listed in `AgentDefinition.skills` |
-| Tool definitions (inherited from parent or the subset in `tools`, [filtered for background runs](/docs/en/sub-agents#available-tools))     | The parent's system prompt                                         |
+您也可以在 `.claude/agents/` 目录中将子代理定义为 markdown 文件。有关此方法的详细信息，请参阅 [Claude Code 子代理文档](/docs/zh-CN/sub-agents)。以编程方式定义的代理优先于具有相同名称的基于文件系统的代理。
 
 <Note>
-  The parent receives the subagent's final message as the Agent tool result, but may summarize it in its own response. To preserve subagent output verbatim in the user-facing response, include an instruction to do so in the prompt or `systemPrompt` option you pass to the main `query()` call.
-
-  {/* min-version: 2.1.210 */}In v2.1.210 and later, Claude Code [scans the final message for instruction-shaped patterns](/docs/en/sub-agents#subagent-output-scanning) before the parent reads it. The scan treats three kinds of pattern differently:
-
-  * **Control-tag imitation**: Claude Code neutralizes a tag that only the harness emits, such as a `<system-reminder>` block, in place. It inserts a backslash after the opening angle bracket and deletes nothing.
-  * **Permission-configuration mentions**: Claude Code keeps references to the permission configuration, such as `.claude/settings.json`, `bypassPermissions`, or `--dangerously-skip-permissions`, as written.
-  * **Turn markers**: a line that starts with `Human:` or `Assistant:` gets a backslash before the colon, so the message can't imitate a conversation turn boundary.
-
-  For a control-tag or permission-configuration match, Claude Code prepends a `[harness: ...]` marker line naming the matched patterns; a turn-marker match doesn't add the marker line. Those are the only modifications the scan makes: it never removes or rewords the subagent's text.
+  即使不定义自定义子代理，Claude 也可以生成内置的 `general-purpose` 子代理。这对于委派研究或探索任务而无需创建专门的代理很有用。在 `allowedTools` 中包含 `Agent` 以便这些调用自动批准，无需权限提示。
 </Note>
 
-{/* min-version: 2.1.199 */}An API error that ends the subagent early, such as a rate limit, is never delivered as its result. If a rate limit, overload, or server error cuts off a foreground subagent that already produced text output, the Agent tool returns that partial output with a note that the subagent didn't finish. {/* min-version: 2.1.200 */}A subagent that produced nothing, or whose only output was tool calls with no text, fails with an error message, `Agent terminated early due to an API error`, followed by the error detail. See [API errors in subagents](/docs/en/sub-agents#api-errors-in-subagents) for the foreground and background behavior.
+<h2 id="what-subagents-inherit">
+  子代理继承的内容
+</h2>
 
-This partial-output handling requires Claude Code v2.1.199 or later. In v2.1.199, a rate limit, overload, or server error left the tool-calls-only shape with an empty partial result containing only the cutoff note.
+子代理的上下文窗口从新开始，没有父对话，但不是空的。从父代理到子代理的唯一内容是 Agent 工具的提示词字符串，因此请直接在该提示词中包含子代理需要的任何文件路径、错误消息或决策。
 
-## Invoke subagents
+{/* min-version: 2.1.206 */}具有 [`SendMessage`](/docs/zh-CN/tools-reference) 工具的子代理会从会话中运行的其他命名代理列表开始，因此它知道可以向哪些名称发送消息。Claude Code 会自动在子代理的第一轮中添加该列表。[fork](/docs/zh-CN/sub-agents#fork-the-current-conversation) 不会获得该列表，因为它继承了父对话。该列表需要 Claude Code v2.1.206 或更高版本。
 
-### Automatic invocation
+| 子代理接收                                                                                                                         | 子代理不接收                                         |
+| :---------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| 其自己的系统提示词（`AgentDefinition.prompt`）和 Agent 工具的提示词                                                                             | 父代理的对话历史或工具结果                                  |
+| 项目 CLAUDE.md（通过 [`settingSources`](/docs/zh-CN/agent-sdk/claude-code-features#control-filesystem-settings-with-settingsources) 加载） | 预加载的 skill 内容，除非在 `AgentDefinition.skills` 中列出 |
+| 工具定义（从父代理继承，或 `tools` 中的子集）                                                                                                   | 父代理的系统提示词                                      |
 
-Claude automatically decides when to invoke subagents based on the task and each subagent's `description`. For example, if you define a `performance-optimizer` subagent with the description "Performance optimization specialist for query tuning", Claude will invoke it when your prompt mentions optimizing queries.
+<Note>
+  父代理逐字接收子代理的最终消息作为 Agent 工具结果，但可能在其自己的响应中总结它。要在面向用户的响应中逐字保留子代理输出，请在您传递给主 `query()` 调用的提示词或 `systemPrompt` 选项中包含一条指令。
+</Note>
 
-Write clear, specific descriptions so Claude can match tasks to the right subagent.
+{/* min-version: 2.1.199 */}结束子代理早期的 API 错误（例如速率限制）永远不会作为其结果传递。如果速率限制、过载或服务器错误中断了已经产生文本输出的前台子代理，Agent 工具会返回该部分输出并注明子代理未完成。{/* min-version: 2.1.200 */}未产生任何内容的子代理，或其唯一输出仅为工具调用且没有文本的子代理，会失败并显示错误消息 `Agent terminated early due to an API error`，后跟错误详情。有关前台和后台行为，请参阅 [API errors in subagents](/docs/zh-CN/sub-agents#api-errors-in-subagents)。
 
-### Explicit invocation
+这种部分输出处理需要 Claude Code v2.1.199 或更高版本。在 v2.1.199 中，速率限制、过载或服务器错误会导致仅工具调用的形状出现空的部分结果，仅包含中断注记。
 
-To guarantee Claude uses a specific subagent, mention it by name in your prompt:
+<h2 id="invoke-subagents">
+  调用子代理
+</h2>
+
+<h3 id="automatic-invocation">
+  自动调用
+</h3>
+
+Claude 根据任务和每个子代理的 `description` 自动决定何时调用子代理。例如，如果您定义了一个 `performance-optimizer` 子代理，其描述为"用于查询调优的性能优化专家"，当您的提示词提到优化查询时，Claude 将调用它。
+
+编写清晰、具体的描述，以便 Claude 可以将任务匹配到正确的子代理。
+
+<h3 id="explicit-invocation">
+  显式调用
+</h3>
+
+要保证 Claude 使用特定的子代理，请在您的提示词中按名称提及它：
 
 ```text theme={null}
 "Use the code-reviewer agent to check the authentication module"
 ```
 
-This bypasses automatic matching and directly invokes the named subagent.
+这绕过自动匹配并直接调用命名的子代理。
 
-### Dynamic agent configuration
+<h3 id="dynamic-agent-configuration">
+  动态代理配置
+</h3>
 
-You can create agent definitions dynamically based on runtime conditions. This example creates a security reviewer with different strictness levels, using a more powerful model for strict reviews.
+您可以根据运行时条件动态创建代理定义。此示例创建一个安全审查员，具有不同的严格级别，对严格审查使用更强大的模型。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -325,17 +342,19 @@ You can create agent definitions dynamically based on runtime conditions. This e
   ```
 </CodeGroup>
 
-## Detect subagent invocation
+<h2 id="detect-subagent-invocation">
+  检测子代理调用
+</h2>
 
-Claude invokes subagents through the Agent tool. To detect when a subagent is invoked, check for `tool_use` blocks where `name` is `"Agent"`. Messages from within a subagent's context include a `parent_tool_use_id` field.
+Claude 通过 Agent 工具调用子代理。要检测何时调用子代理，请检查 `tool_use` 块，其中 `name` 是 `"Agent"`。来自子代理上下文内的消息包含 `parent_tool_use_id` 字段。
 
 <Note>
-  The tool name was renamed from `"Task"` to `"Agent"` in Claude Code v2.1.63. Current SDK releases emit `"Agent"` in `tool_use` blocks but still use `"Task"` in the `system:init` tools list and in `result.permission_denials[].tool_name`. Checking both values in `block.name` ensures compatibility across SDK versions.
+  工具名称在 Claude Code v2.1.63 中从 `"Task"` 重命名为 `"Agent"`。当前 SDK 版本在 `tool_use` 块中发出 `"Agent"`，但在 `system:init` 工具列表和 `result.permission_denials[].tool_name` 中仍使用 `"Task"`。检查 `block.name` 中的两个值可确保跨 SDK 版本的兼容性。
 </Note>
 
-The message structure differs between SDKs. In Python, you access content blocks directly via `message.content`. In TypeScript, `SDKAssistantMessage` wraps the Claude API message, so you access content via `message.message.content`.
+消息结构在 SDK 之间有所不同。在 Python 中，内容块直接通过 `message.content` 访问。在 TypeScript 中，`SDKAssistantMessage` 包装 Claude API 消息，因此内容通过 `message.message.content` 访问。
 
-This example iterates through streamed messages, logging when a subagent is invoked and when subsequent messages originate from within that subagent's execution context.
+此示例遍历流式消息，记录何时调用子代理以及后续消息何时源自该子代理的执行上下文。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -416,23 +435,25 @@ This example iterates through streamed messages, logging when a subagent is invo
   ```
 </CodeGroup>
 
-## Resume subagents
+<h2 id="resume-subagents">
+  恢复子代理
+</h2>
 
-You can resume a subagent to continue where it left off rather than starting fresh. A resumed subagent retains its full conversation history, including all previous tool calls, results, and reasoning.
+您可以恢复子代理以继续中断的地方，而不是重新开始。恢复的子代理保留其完整的对话历史，包括所有先前的工具调用、结果和推理。
 
-When a subagent completes, the Agent tool result includes a text block containing `agentId: <id>`. The built-in [`Explore` and `Plan` agents](/docs/en/sub-agents#built-in-subagents) are one-shot and don't return an `agentId`, so use a custom agent or `general-purpose` when you need to resume. To resume a subagent programmatically:
+当子代理完成时，Agent 工具结果包含一个包含 `agentId: <id>` 的文本块。内置的 [`Explore` 和 `Plan` 代理](/docs/zh-CN/sub-agents#built-in-subagents) 是一次性的，不返回 `agentId`，因此当您需要恢复时，请使用自定义代理或 `general-purpose`。要以编程方式恢复子代理：
 
-1. **Capture the session ID**: extract `session_id` from messages during the first query
-2. **Extract the agent ID**: parse `agentId` from the Agent tool result text
-3. **Resume the session**: pass `resume: sessionId` in the second query's options, and include the agent ID in your prompt
+1. **捕获会话 ID**：在第一个查询期间从消息中提取 `session_id`
+2. **提取代理 ID**：从 Agent 工具结果文本中解析 `agentId`
+3. **恢复会话**：在第二个查询的选项中传递 `resume: sessionId`，并在您的提示词中包含代理 ID
 
 <Note>
-  You must resume the same session to access the subagent's transcript. Each `query()` call starts a new session by default, so pass `resume: sessionId` to continue in the same session.
+  您必须恢复同一会话以访问子代理的记录。默认情况下，每个 `query()` 调用都会启动一个新会话，因此请传递 `resume: sessionId` 以在同一会话中继续。
 
-  When using a custom agent, pass the same agent definition in the `agents` parameter for both queries.
+  使用自定义代理时，在两个查询的 `agents` 参数中传递相同的代理定义。
 </Note>
 
-The example below defines a custom `endpoint-finder` agent. The first query runs it and captures the session ID and agent ID from the Agent tool result, then the second query resumes the session to ask a follow-up question that requires context from the first analysis.
+下面的示例定义了一个自定义 `endpoint-finder` 代理。第一个查询运行它并从 Agent 工具结果中捕获会话 ID 和代理 ID，然后第二个查询恢复会话以提出需要来自第一个分析的上下文的后续问题。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -556,22 +577,22 @@ The example below defines a custom `endpoint-finder` agent. The first query runs
   ```
 </CodeGroup>
 
-Subagent transcripts persist independently of the main conversation:
+子代理记录独立于主对话而持久存在：
 
-* **Main conversation compaction**: when the main conversation compacts, subagent transcripts are unaffected. They're stored in separate files.
-* **Session persistence**: subagent transcripts persist within their session. You can resume a subagent after restarting Claude Code by resuming the same session.
-* **Automatic cleanup**: Claude Code deletes subagent transcripts after the `cleanupPeriodDays` retention period, 30 days by default.
+* **主对话压缩**：当主对话压缩时，子代理记录不受影响。它们存储在单独的文件中。
+* **会话持久性**：子代理记录在其会话内持久存在。您可以通过恢复同一会话在重启 Claude Code 后恢复子代理。
+* **自动清理**：记录根据 `cleanupPeriodDays` 设置进行清理，默认为 30 天。
 
-## Tool restrictions
+<h2 id="tool-restrictions-2">
+  工具限制
+</h2>
 
-Use the `tools` field to limit what a subagent can do:
+子代理可以通过 `tools` 字段具有受限的工具访问：
 
-* **Omit `tools`**: the subagent gets every [tool available to subagents](/docs/en/sub-agents#available-tools)
-* **List tools**: the subagent gets only those. A code reviewer that should never edit files, for example, gets `["Read", "Grep", "Glob"]`
+* **省略该字段**：代理继承所有可用工具（默认）
+* **指定工具**：代理只能使用列出的工具
 
-A tool you leave out isn't in the subagent's session at all: Claude works without it, with no permission prompt or error.
-
-This example creates a read-only analysis agent that can examine code but can't modify files or run commands.
+此示例创建一个只读分析代理，可以检查代码但无法修改文件或运行命令。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -625,48 +646,62 @@ This example creates a read-only analysis agent that can examine code but can't 
   ```
 </CodeGroup>
 
-### Common tool combinations
+<h3 id="common-tool-combinations">
+  常见工具组合
+</h3>
 
-| Use case           | Tools                                   | Description                                                        |
-| :----------------- | :-------------------------------------- | :----------------------------------------------------------------- |
-| Read-only analysis | `Read`, `Grep`, `Glob`                  | Can examine code but not modify or execute                         |
-| Test execution     | `Bash`, `Read`, `Grep`                  | Can run commands and analyze output                                |
-| Code modification  | `Read`, `Edit`, `Write`, `Grep`, `Glob` | Full read/write access without command execution                   |
-| Full access        | All tools                               | Inherits the tools available to subagents (omit the `tools` field) |
+| 用例   | 工具                                  | 描述                        |
+| :--- | :---------------------------------- | :------------------------ |
+| 只读分析 | `Read`、`Grep`、`Glob`                | 可以检查代码但不能修改或执行            |
+| 测试执行 | `Bash`、`Read`、`Grep`                | 可以运行命令并分析输出               |
+| 代码修改 | `Read`、`Edit`、`Write`、`Grep`、`Glob` | 完整的读/写访问，无命令执行            |
+| 完全访问 | 所有工具                                | 从父代理继承所有工具（省略 `tools` 字段） |
 
-## Scale up with dynamic workflows
+<h2 id="scale-up-with-dynamic-workflows">
+  使用动态工作流进行扩展
+</h2>
 
-Subagents work well for a few delegated tasks per turn. For runs that coordinate dozens to hundreds of agents, use the `Workflow` tool, which moves the orchestration into a script the runtime executes outside the conversation context. See [dynamic workflows](/docs/en/workflows) for how workflows differ from turn-by-turn subagent delegation.
+子代理适用于每轮委派的几个任务。对于协调数十到数百个代理的运行，请使用 `Workflow` 工具，它将编排移到运行时在对话上下文外执行的脚本中。请参阅[动态工作流](/docs/zh-CN/workflows)以了解工作流与逐轮子代理委派的区别。
 
-The `Workflow` tool is available in the TypeScript Agent SDK v0.3.149 and later. Include `Workflow` in `allowedTools` to auto-approve workflow runs. The tool input and output schemas are listed in the [TypeScript reference](/docs/en/agent-sdk/typescript#workflow).
+`Workflow` 工具在 TypeScript Agent SDK v0.3.149 及更高版本中可用。在 `allowedTools` 中包含 `Workflow` 以自动批准工作流运行。工具输入和输出架构列在 [TypeScript 参考](/docs/zh-CN/agent-sdk/typescript#workflow)中。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Claude not delegating to subagents
+<h3 id="claude-not-delegating-to-subagents">
+  Claude 不委派给子代理
+</h3>
 
-If Claude completes tasks directly instead of delegating to your subagent:
+如果 Claude 直接完成任务而不是委派给您的子代理：
 
-* **Check Agent invocations are approved**: include `Agent` in `allowedTools` to auto-approve subagent calls. Without it, Agent invocations fall through to your `canUseTool` callback or, in `dontAsk` mode, are denied
-* **Use explicit prompting**: mention the subagent by name in your prompt, for example "Use the code-reviewer agent to..."
-* **Write a clear description**: explain exactly when to use the subagent so Claude can match tasks appropriately
+* **检查 Agent 调用是否被批准**：在 `allowedTools` 中包含 `Agent` 以自动批准子代理调用。如果没有它，Agent 调用将转到您的 `canUseTool` 回调，或在 `dontAsk` 模式下被拒绝
+* **使用显式提示**：在您的提示词中按名称提及子代理，例如"使用代码审查员代理来..."
+* **编写清晰的描述**：准确解释何时应使用子代理，以便 Claude 可以适当地匹配任务
 
-### Filesystem-based agents not loading
+<h3 id="filesystem-based-agents-not-loading">
+  基于文件系统的代理未加载
+</h3>
 
-Claude Code watches `~/.claude/agents/` and `.claude/agents/` and picks up a new or edited agent file within a few seconds, with no restart needed. If a definition never appears, work through these causes:
+Claude Code 监视 `~/.claude/agents/` 和 `.claude/agents/`，并在几秒内拾取新的或编辑的代理文件，无需重启。如果定义从未出现，请排查这些原因：
 
-* **New `agents` directory**: the watcher covers only directories that existed when the session started, so the first file in a new directory needs a session restart. This is the most common cause.
-* **Invalid frontmatter or a duplicate `name`**: check the file's YAML, and whether an existing agent already uses the `name`.
-* **`--disable-slash-commands`**: sessions started with this flag don't watch these directories and always need a restart to load new files.
-* **A programmatic agent with the same name**: `agents` passed to `query()` override a filesystem agent with the same name.
+* **新的 `agents` 目录**：监视程序仅覆盖会话启动时存在的目录，因此新目录中的第一个文件需要会话重启。这是最常见的原因。
+* **无效的 frontmatter 或重复的 `name`**：检查文件的 YAML，以及现有代理是否已使用该 `name`。
+* **`--disable-slash-commands`**：使用此标志启动的会话不监视这些目录，始终需要重启以加载新文件。
+* **具有相同名称的程序化代理**：传递给 `query()` 的 `agents` 会覆盖具有相同名称的文件系统代理。
 
-For the file format, see [how to write subagent files](/docs/en/sub-agents#write-subagent-files).
+有关文件格式，请参阅[如何编写子代理文件](/docs/zh-CN/sub-agents#write-subagent-files)。
 
-### Long prompt failures on Windows
+<h3 id="long-prompt-failures-on-windows">
+  Windows 上的长提示词失败
+</h3>
 
-On Windows, subagents with very long prompts may fail due to the command line length limit of 8191 characters. Keep prompts concise or use filesystem-based agents for complex instructions.
+在 Windows 上，具有非常长提示词的子代理可能因命令行长度限制（8191 个字符）而失败。保持提示词简洁或使用基于文件系统的代理来处理复杂指令。
 
-## Related documentation
+<h2 id="related-documentation">
+  相关文档
+</h2>
 
-* [Claude Code subagents](/docs/en/sub-agents): comprehensive subagent documentation including filesystem-based definitions
-* [Dynamic workflows](/docs/en/workflows): orchestrate many subagents from a script for jobs too large for one conversation
-* [SDK overview](/docs/en/agent-sdk/overview): getting started with the Claude Agent SDK
+* [Claude Code 子代理](/docs/zh-CN/sub-agents)：包括基于文件系统的定义的全面子代理文档
+* [动态工作流](/docs/zh-CN/workflows)：从脚本编排许多子代理，用于对话过大的工作
+* [SDK 概述](/docs/zh-CN/agent-sdk/overview)：Claude Agent SDK 入门

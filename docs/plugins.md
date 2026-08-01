@@ -2,77 +2,85 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Create plugins
+# 创建插件
 
-> Create custom plugins to extend Claude Code with skills, agents, hooks, and MCP servers.
+> 创建自定义插件以使用 skills、agents、hooks 和 MCP servers 扩展 Claude Code。
 
-Plugins let you extend Claude Code with custom functionality that can be shared across projects and teams. This guide covers creating your own plugins with skills, agents, hooks, and MCP servers.
+Plugins 让你能够使用自定义功能扩展 Claude Code，这些功能可以在项目和团队中共享。本指南涵盖如何使用 skills、agents、hooks 和 MCP servers 创建自己的插件。
 
-Looking to install existing plugins? See [Discover and install plugins](/docs/en/discover-plugins). For complete technical specifications, see [Plugins reference](/docs/en/plugins-reference).
+想要安装现有插件？请参阅[发现和安装插件](/docs/zh-CN/discover-plugins)。有关完整的技术规范，请参阅[插件参考](/docs/zh-CN/plugins-reference)。
 
-## When to use plugins vs standalone configuration
+<h2 id="when-to-use-plugins-vs-standalone-configuration">
+  何时使用插件与独立配置
+</h2>
 
-Claude Code supports two ways to add custom skills, agents, and hooks:
+Claude Code 支持两种方式来添加自定义 skills、agents 和 hooks：
 
-| Approach                                                                                                        | Skill names          | Best for                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------- | :------------------- | :---------------------------------------------------------------------------------------------- |
-| **Standalone** (`.claude/` directory)                                                                           | `/hello`             | Personal workflows, project-specific customizations, quick experiments                          |
-| **Plugins** (self-contained directories with skills, agents, hooks, or a `.claude-plugin/plugin.json` manifest) | `/plugin-name:hello` | Sharing with teammates, distributing to community, versioned releases, reusable across projects |
+| 方法                                                                     | Skill 名称             | 最适合                       |
+| :--------------------------------------------------------------------- | :------------------- | :------------------------ |
+| **独立**（`.claude/` 目录）                                                  | `/hello`             | 个人工作流、项目特定的自定义、快速实验       |
+| **插件**（包含 skills、agents、hooks 或 `.claude-plugin/plugin.json` 清单的自包含目录） | `/plugin-name:hello` | 与团队成员共享、分发到社区、版本化发布、跨项目重用 |
 
-**Use standalone configuration when**:
+**在以下情况下使用独立配置**：
 
-* You're customizing Claude Code for a single project
-* The configuration is personal and doesn't need to be shared
-* You're experimenting with skills or hooks before packaging them
-* You want short skill names like `/hello` or `/deploy`
+* 你正在为单个项目自定义 Claude Code
+* 配置是个人的，不需要共享
+* 你在打包 skills 或 hooks 之前进行实验
+* 你想要简短的 skill 名称，如 `/hello` 或 `/deploy`
 
-**Use plugins when**:
+**在以下情况下使用插件**：
 
-* You want to share functionality with your team or community
-* You need the same skills/agents across multiple projects
-* You want version control and easy updates for your extensions
-* You're distributing through a marketplace
-* You're okay with namespaced skills like `/my-plugin:hello` (namespacing prevents conflicts between plugins)
+* 你想与团队或社区共享功能
+* 你需要在多个项目中使用相同的 skills/agents
+* 你想要版本控制和轻松更新扩展
+* 你通过市场分发
+* 你可以接受命名空间化的 skills，如 `/my-plugin:hello`（命名空间可防止插件之间的冲突）
 
 <Tip>
-  Start with standalone configuration in `.claude/` for quick iteration, then [convert to a plugin](#convert-existing-configurations-to-plugins) when you're ready to share.
+  从 `.claude/` 中的独立配置开始进行快速迭代，然后在准备好共享时[转换为插件](#convert-existing-configurations-to-plugins)。
 </Tip>
 
-## Quickstart
+<h2 id="quickstart">
+  快速开始
+</h2>
 
-This quickstart walks you through creating a plugin with a custom skill. You'll create a manifest (the configuration file that defines your plugin), add a skill, and test it locally using the `--plugin-dir` flag.
+本快速开始将引导你创建一个带有自定义 skill 的插件。你将创建一个清单（定义插件的配置文件）、添加一个 skill，并使用 `--plugin-dir` 标志在本地测试它。
 
-### Prerequisites
+<h3 id="prerequisites">
+  前置条件
+</h3>
 
-* Claude Code [installed and authenticated](/docs/en/quickstart#step-1-install-claude-code)
+* Claude Code [已安装并已认证](/docs/zh-CN/quickstart#step-1-install-claude-code)
 
 <Note>
-  If you don't see the `/plugin` command, update Claude Code to the latest version. See [Troubleshooting](/docs/en/troubleshooting) for upgrade instructions.
+  如果你没有看到 `/plugin` 命令，请将 Claude Code 更新到最新版本。有关升级说明，请参阅[故障排除](/docs/zh-CN/troubleshooting)。
 </Note>
 
-### Create your first plugin
+<h3 id="create-your-first-plugin">
+  创建你的第一个插件
+</h3>
 
 <Steps>
-  <Step title="Create the plugin directory">
-    Every plugin lives in its own directory containing your skills, agents, or hooks, optionally alongside a `.claude-plugin/plugin.json` manifest. The location doesn't matter for this quickstart because you'll point Claude Code at the directory with `--plugin-dir` in the test step. Create it anywhere convenient, such as a scratch folder or a projects directory:
+  <Step title="创建插件目录">
+    每个插件都位于其自己的目录中，包含你的 skills、agents 或 hooks，可选地与 `.claude-plugin/plugin.json` 清单一起。该位置对于本快速开始并不重要，因为你将在测试步骤中使用 `--plugin-dir` 指向 Claude Code 该目录。在任何方便的地方创建它，例如临时文件夹或项目目录：
 
     ```bash theme={null}
     mkdir my-first-plugin
     ```
 
-    The remaining steps run from the parent directory and reference paths like `my-first-plugin/...` relative to it.
+    其余步骤从父目录运行，并引用相对于它的路径，如 `my-first-plugin/...`。
   </Step>
 
-  <Step title="Create the plugin manifest">
-    The manifest file at `.claude-plugin/plugin.json` defines your plugin's identity: its name, description, and version. Claude Code uses this metadata to display your plugin in the plugin manager.
+  <Step title="创建插件清单">
+    位于 `.claude-plugin/plugin.json` 的清单文件定义了你的插件的身份：其名称、描述和版本。Claude Code 使用此元数据在插件管理器中显示你的插件。
 
-    Create the `.claude-plugin` directory inside your plugin folder:
+    在你的插件文件夹内创建 `.claude-plugin` 目录：
 
     ```bash theme={null}
     mkdir my-first-plugin/.claude-plugin
     ```
 
-    Then create `my-first-plugin/.claude-plugin/plugin.json` with this content:
+    然后使用以下内容创建 `my-first-plugin/.claude-plugin/plugin.json`：
 
     ```json my-first-plugin/.claude-plugin/plugin.json theme={null}
     {
@@ -85,26 +93,26 @@ This quickstart walks you through creating a plugin with a custom skill. You'll 
     }
     ```
 
-    | Field         | Purpose                                                                                                                                                                                                                                                        |
-    | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-    | `name`        | Unique identifier and skill namespace. Skills are prefixed with this (e.g., `/my-first-plugin:hello`).                                                                                                                                                         |
-    | `description` | Shown in the plugin manager when browsing or installing plugins.                                                                                                                                                                                               |
-    | `version`     | Optional. If set, users only receive updates when you bump this field. If omitted and your plugin is distributed via git, the commit SHA is used and every commit counts as a new version. See [version management](/docs/en/plugins-reference#version-management). |
-    | `author`      | Optional. Helpful for attribution.                                                                                                                                                                                                                             |
+    | 字段            | 目的                                                                                                                      |
+    | :------------ | :---------------------------------------------------------------------------------------------------------------------- |
+    | `name`        | 唯一标识符和 skill 命名空间。Skills 以此为前缀（例如 `/my-first-plugin:hello`）。                                                            |
+    | `description` | 在浏览或安装插件时在插件管理器中显示。                                                                                                     |
+    | `version`     | 可选。如果设置，用户仅在你更新此字段时接收更新。如果省略且你的插件通过 git 分发，则使用提交 SHA，每个提交都计为新版本。请参阅[版本管理](/docs/zh-CN/plugins-reference#version-management)。 |
+    | `author`      | 可选。有助于归属。                                                                                                               |
 
-    For additional fields like `homepage`, `repository`, and `license`, see the [full manifest schema](/docs/en/plugins-reference#plugin-manifest-schema).
+    有关 `homepage`、`repository` 和 `license` 等其他字段，请参阅[完整清单架构](/docs/zh-CN/plugins-reference#plugin-manifest-schema)。
   </Step>
 
-  <Step title="Add a skill">
-    Skills live in the `skills/` directory. Each skill is a folder containing a `SKILL.md` file. The folder name becomes the skill name, prefixed with the plugin's namespace (`hello/` in a plugin named `my-first-plugin` creates `/my-first-plugin:hello`).
+  <Step title="添加 skill">
+    Skills 位于 `skills/` 目录中。每个 skill 是一个包含 `SKILL.md` 文件的文件夹。文件夹名称成为 skill 名称，以插件的命名空间为前缀（在名为 `my-first-plugin` 的插件中的 `hello/` 创建 `/my-first-plugin:hello`）。
 
-    Create a skill directory in your plugin folder:
+    在你的插件文件夹中创建一个 skill 目录：
 
     ```bash theme={null}
     mkdir -p my-first-plugin/skills/hello
     ```
 
-    Then create `my-first-plugin/skills/hello/SKILL.md` with this content:
+    然后使用以下内容创建 `my-first-plugin/skills/hello/SKILL.md`：
 
     ```markdown my-first-plugin/skills/hello/SKILL.md theme={null}
     ---
@@ -116,32 +124,32 @@ This quickstart walks you through creating a plugin with a custom skill. You'll 
     ```
   </Step>
 
-  <Step title="Test your plugin">
-    Run Claude Code with the `--plugin-dir` flag to load your plugin:
+  <Step title="测试你的插件">
+    使用 `--plugin-dir` 标志运行 Claude Code 以加载你的插件：
 
     ```bash theme={null}
     claude --plugin-dir ./my-first-plugin
     ```
 
-    Once Claude Code starts, try your new skill:
+    Claude Code 启动后，尝试你的新 skill：
 
     ```shell theme={null}
     /my-first-plugin:hello
     ```
 
-    You'll see Claude respond with a greeting. Run `/help` and open the **Custom commands** tab to see your skill listed under the plugin namespace.
+    你将看到 Claude 用问候语回应。运行 `/help` 以查看你的 skill 在插件命名空间下列出。
 
     <Note>
-      **Why namespacing?** Plugin skills are always namespaced (like `/my-first-plugin:hello`) to prevent conflicts when multiple plugins have skills with the same name.
+      **为什么要命名空间？** 插件 skills 总是命名空间化的（如 `/my-first-plugin:hello`），以防止多个插件具有相同名称的 skills 时发生冲突。
 
-      To change the namespace prefix, update the `name` field in `plugin.json`.
+      要更改命名空间前缀，请更新 `plugin.json` 中的 `name` 字段。
     </Note>
   </Step>
 
-  <Step title="Add skill arguments">
-    Make your skill dynamic by accepting user input. The `$ARGUMENTS` placeholder captures any text the user provides after the skill name.
+  <Step title="添加 skill 参数">
+    通过接受用户输入使你的 skill 动态化。`$ARGUMENTS` 占位符捕获用户在 skill 名称后提供的任何文本。
 
-    Update your `SKILL.md` file:
+    更新你的 `SKILL.md` 文件：
 
     ```markdown my-first-plugin/skills/hello/SKILL.md theme={null}
     ---
@@ -153,76 +161,84 @@ This quickstart walks you through creating a plugin with a custom skill. You'll 
     Greet the user named "$ARGUMENTS" warmly and ask how you can help them today. Make the greeting personal and encouraging.
     ```
 
-    Run `/reload-plugins` to pick up the changes. The skills count in the summary covers only `commands/` directories, so it can report `0 skills` even though the skill you just edited reloaded. Then try the skill with your name:
+    运行 `/reload-plugins` 以获取更改，然后尝试使用你的名字的 skill：
 
     ```shell theme={null}
     /my-first-plugin:hello Alex
     ```
 
-    Claude will greet you by name. For more on passing arguments to skills, see [Skills](/docs/en/skills#pass-arguments-to-skills).
+    Claude 将按名字问候你。有关向 skills 传递参数的更多信息，请参阅 [Skills](/docs/zh-CN/skills#pass-arguments-to-skills)。
   </Step>
 </Steps>
 
-You've successfully created and tested a plugin with these key components:
+你已成功创建并测试了一个包含以下关键组件的插件：
 
-* **Plugin manifest** (`.claude-plugin/plugin.json`): describes your plugin's metadata
-* **Skills directory** (`skills/`): contains your custom skills
-* **Skill arguments** (`$ARGUMENTS`): captures user input for dynamic behavior
+* **插件清单**（`.claude-plugin/plugin.json`）：描述你的插件的元数据
+* **Skills 目录**（`skills/`）：包含你的自定义 skills
+* **Skill 参数**（`$ARGUMENTS`）：捕获用户输入以实现动态行为
 
 <Tip>
-  The `--plugin-dir` flag is useful for development and testing. When you're ready to share your plugin with others, see [Create and distribute a plugin marketplace](/docs/en/plugin-marketplaces).
+  `--plugin-dir` 标志对开发和测试很有用。当你准备好与他人共享你的插件时，请参阅[创建和分发插件市场](/docs/zh-CN/plugin-marketplaces)。
 </Tip>
 
-## Develop a plugin in your skills directory
+<h2 id="develop-a-plugin-in-your-skills-directory">
+  在你的 skills 目录中开发插件
+</h2>
 
-Instead of passing `--plugin-dir` on every launch, you can keep a plugin in your skills directory and have Claude Code load it automatically. `claude plugin init` scaffolds one:
+与其在每次启动时传递 `--plugin-dir`，你可以在你的 skills 目录中保留一个插件，并让 Claude Code 自动加载它。`claude plugin init` 会为你搭建一个：
 
 ```bash theme={null}
 claude plugin init my-tool
 ```
 
-This creates `~/.claude/skills/my-tool/` with a `.claude-plugin/plugin.json` manifest and a starter `SKILL.md`. On the next session it loads as `my-tool@skills-dir` with no marketplace or install step.
+这会创建 `~/.claude/skills/my-tool/`，其中包含 `.claude-plugin/plugin.json` 清单和一个启动器 `SKILL.md`。在下一个会话中，它会作为 `my-tool@skills-dir` 加载，无需市场或安装步骤。
 
-For the auto-load rules, personal vs. project scope, the workspace-trust requirement, and how to update or remove one, see [Skills-directory plugins](/docs/en/plugins-reference#skills-directory-plugins).
+有关自动加载规则、个人与项目范围、工作区信任要求以及如何更新或删除一个，请参阅 [Skills-directory plugins](/docs/zh-CN/plugins-reference#skills-directory-plugins)。
 
-## Plugin structure overview
+<h2 id="plugin-structure-overview">
+  插件结构概览
+</h2>
 
-You've created a plugin with a skill, but plugins can include much more: custom agents, hooks, MCP servers, LSP servers, and background monitors.
+你已创建了一个带有 skill 的插件，但插件可以包含更多内容：自定义 agents、hooks、MCP servers、LSP servers 和后台监视器。
 
 <Warning>
-  **Common mistake**: Don't put `commands/`, `agents/`, `skills/`, or `hooks/` inside the `.claude-plugin/` directory. Only `plugin.json` goes inside `.claude-plugin/`. All other directories must be at the plugin root level.
+  **常见错误**：不要将 `commands/`、`agents/`、`skills/` 或 `hooks/` 放在 `.claude-plugin/` 目录内。只有 `plugin.json` 应该在 `.claude-plugin/` 内。所有其他目录必须在插件根级别。
 
-  The plugin root is the individual plugin's own directory: the one you pass to `--plugin-dir` or that contains `.claude-plugin/plugin.json`. It is never `~/.claude/`. For example, Claude Code doesn't read a `.mcp.json` placed at `~/.claude/.mcp.json`.
+  插件根是单个插件自己的目录：包含 `.claude-plugin/plugin.json` 的目录。它永远不是 `~/.claude/`。例如，Claude Code 不会读取放在 `~/.claude/.mcp.json` 的 `.mcp.json`。
 </Warning>
 
-| Directory         | Location    | Purpose                                                                        |
-| :---------------- | :---------- | :----------------------------------------------------------------------------- |
-| `.claude-plugin/` | Plugin root | Contains `plugin.json` manifest (optional if components use default locations) |
-| `skills/`         | Plugin root | Skills as `<name>/SKILL.md` directories                                        |
-| `commands/`       | Plugin root | Skills as flat Markdown files. Use `skills/` for new plugins                   |
-| `agents/`         | Plugin root | Custom agent definitions                                                       |
-| `hooks/`          | Plugin root | Event handlers in `hooks.json`                                                 |
-| `.mcp.json`       | Plugin root | MCP server configurations                                                      |
-| `.lsp.json`       | Plugin root | LSP server configurations for code intelligence                                |
-| `monitors/`       | Plugin root | Background monitor configurations in `monitors.json`                           |
-| `bin/`            | Plugin root | Executables added to the Bash tool's `PATH` while the plugin is enabled        |
-| `settings.json`   | Plugin root | Default [settings](/docs/en/settings) applied when the plugin is enabled            |
+| 目录                | 位置  | 目的                                       |
+| :---------------- | :-- | :--------------------------------------- |
+| `.claude-plugin/` | 插件根 | 包含 `plugin.json` 清单（如果组件使用默认位置，则可选）      |
+| `skills/`         | 插件根 | Skills 作为 `<name>/SKILL.md` 目录           |
+| `commands/`       | 插件根 | Skills 作为平面 Markdown 文件。为新插件使用 `skills/` |
+| `agents/`         | 插件根 | 自定义 agent 定义                             |
+| `hooks/`          | 插件根 | `hooks.json` 中的事件处理程序                    |
+| `.mcp.json`       | 插件根 | MCP server 配置                            |
+| `.lsp.json`       | 插件根 | 用于代码智能的 LSP server 配置                    |
+| `monitors/`       | 插件根 | `monitors.json` 中的后台监视器配置                |
+| `bin/`            | 插件根 | 在启用插件时添加到 Bash tool 的 `PATH` 的可执行文件      |
+| `settings.json`   | 插件根 | 启用插件时应用的默认[设置](/docs/zh-CN/settings)          |
 
-A plugin that ships exactly one skill can place `SKILL.md` directly at the plugin root instead of creating a `skills/` directory. Claude Code loads it as a single skill and uses the frontmatter `name` field for the invocation name. Use the `skills/` layout for plugins that may grow to more than one skill.
+恰好包含一个 skill 的插件可以直接在插件根目录放置 `SKILL.md`，而不是创建 `skills/` 目录。Claude Code 会将其作为单个 skill 加载，并使用 frontmatter 中的 `name` 字段作为调用名称。对于可能增长到多个 skill 的插件，请使用 `skills/` 布局。
 
 <Note>
-  **Next steps**: Ready to add more features? Jump to [Develop more complex plugins](#develop-more-complex-plugins) to add agents, hooks, MCP servers, and LSP servers. For complete technical specifications of all plugin components, see [Plugins reference](/docs/en/plugins-reference).
+  **后续步骤**：准备好添加更多功能了吗？跳转到[开发更复杂的插件](#develop-more-complex-plugins)以添加 agents、hooks、MCP servers 和 LSP servers。有关所有插件组件的完整技术规范，请参阅[插件参考](/docs/zh-CN/plugins-reference)。
 </Note>
 
-## Develop more complex plugins
+<h2 id="develop-more-complex-plugins">
+  开发更复杂的插件
+</h2>
 
-Once you're comfortable with basic plugins, you can create more sophisticated extensions.
+一旦你对基本插件感到满意，你可以创建更复杂的扩展。
 
-### Add Skills to your plugin
+<h3 id="add-skills-to-your-plugin">
+  向你的插件添加 Skills
+</h3>
 
-Plugins can include [Agent Skills](/docs/en/skills) to extend Claude's capabilities. Skills are model-invoked: Claude automatically uses them based on the task context.
+插件可以包含 [Agent Skills](/docs/zh-CN/skills) 以扩展 Claude 的功能。Skills 是模型调用的：Claude 根据任务上下文自动使用它们。
 
-Add a `skills/` directory at your plugin root with Skill folders containing `SKILL.md` files:
+在你的插件根目录添加一个 `skills/` 目录，其中包含包含 `SKILL.md` 文件的 Skill 文件夹：
 
 ```text theme={null}
 my-plugin/
@@ -233,7 +249,7 @@ my-plugin/
         └── SKILL.md
 ```
 
-Each `SKILL.md` contains YAML frontmatter and instructions. Include a `description` so Claude knows when to use the skill:
+每个 `SKILL.md` 包含 YAML frontmatter 和说明。包含一个 `description`，以便 Claude 知道何时使用该 skill：
 
 ```yaml theme={null}
 ---
@@ -247,15 +263,17 @@ When reviewing code, check for:
 4. Test coverage
 ```
 
-After installing the plugin, run `/reload-plugins` to load the Skills. For complete Skill authoring guidance including progressive disclosure and tool restrictions, see [Agent Skills](/docs/en/skills).
+安装插件后，运行 `/reload-plugins` 以加载 Skills。有关完整的 Skill 编写指南，包括渐进式披露和工具限制，请参阅 [Agent Skills](/docs/zh-CN/skills)。
 
-### Add LSP servers to your plugin
+<h3 id="add-lsp-servers-to-your-plugin">
+  向你的插件添加 LSP servers
+</h3>
 
 <Tip>
-  For common languages like TypeScript, Python, and Rust, install the pre-built LSP plugins from the official marketplace. Create custom LSP plugins only when you need support for languages not already covered.
+  对于 TypeScript、Python 和 Rust 等常见语言，请从官方市场安装预构建的 LSP 插件。仅当你需要支持尚未涵盖的语言时，才创建自定义 LSP 插件。
 </Tip>
 
-LSP (Language Server Protocol) plugins give Claude real-time code intelligence. If you need to support a language that doesn't have an official LSP plugin, you can create your own by adding an `.lsp.json` file to your plugin:
+LSP（Language Server Protocol）插件为 Claude 提供实时代码智能。如果你需要支持没有官方 LSP 插件的语言，你可以通过向你的插件添加 `.lsp.json` 文件来创建自己的：
 
 ```json .lsp.json theme={null}
 {
@@ -269,17 +287,17 @@ LSP (Language Server Protocol) plugins give Claude real-time code intelligence. 
 }
 ```
 
-Users installing your plugin must have the language server binary installed on their machine.
+安装你的插件的用户必须在其机器上安装语言服务器二进制文件。
 
-To confirm the server starts, launch Claude Code with the plugin enabled and check the `/plugin` Errors tab: a language server that fails to start appears there, for example with `Executable not found in $PATH` when the binary isn't installed. An entry with an invalid configuration is skipped instead; run `claude --debug` to see why.
+有关完整的 LSP 配置选项，请参阅 [LSP servers](/docs/zh-CN/plugins-reference#lsp-servers)。
 
-For complete LSP configuration options, see [LSP servers](/docs/en/plugins-reference#lsp-servers).
+<h3 id="add-background-monitors-to-your-plugin">
+  向你的插件添加后台监视器
+</h3>
 
-### Add background monitors to your plugin
+后台监视器让你的插件在后台监视日志、文件或外部状态，并在事件到达时通知 Claude。Claude Code 在插件处于活动状态时自动启动每个监视器，因此你无需指示 Claude 启动监视。
 
-Background monitors let your plugin watch logs, files, or external status in the background and notify Claude as events arrive. Claude Code starts each monitor automatically when the plugin is active, so you don't need to instruct Claude to start the watch.
-
-Add a `monitors/monitors.json` file at the plugin root with an array of monitor entries:
+在插件根目录添加一个 `monitors/monitors.json` 文件，其中包含监视器条目数组：
 
 ```json monitors/monitors.json theme={null}
 [
@@ -291,13 +309,15 @@ Add a `monitors/monitors.json` file at the plugin root with an array of monitor 
 ]
 ```
 
-Each stdout line from `command` is delivered to Claude as a notification during the session. For the full schema, including the `when` trigger and variable substitution, see [Monitors](/docs/en/plugins-reference#monitors).
+来自 `command` 的每个 stdout 行在会话期间作为通知传递给 Claude。有关完整的架构，包括 `when` 触发器和变量替换，请参阅 [Monitors](/docs/zh-CN/plugins-reference#monitors)。
 
-### Ship default settings with your plugin
+<h3 id="ship-default-settings-with-your-plugin">
+  使用你的插件提供默认设置
+</h3>
 
-Plugins can include a `settings.json` file at the plugin root to apply default configuration when the plugin is enabled. Currently, only the `agent` and `subagentStatusLine` keys are supported.
+插件可以在插件根目录包含一个 `settings.json` 文件，以在启用插件时应用默认配置。目前仅支持 `agent` 和 `subagentStatusLine` 键。
 
-Setting `agent` activates one of the plugin's [custom agents](/docs/en/sub-agents) as the main thread, applying its system prompt, tool restrictions, and model. This lets a plugin change how Claude Code behaves by default when enabled.
+设置 `agent` 激活插件的[自定义 agents](/docs/zh-CN/sub-agents) 之一作为主线程，应用其系统提示、工具限制和模型。这让插件在启用时通过改变 Claude Code 的默认行为方式。
 
 ```json settings.json theme={null}
 {
@@ -305,116 +325,130 @@ Setting `agent` activates one of the plugin's [custom agents](/docs/en/sub-agent
 }
 ```
 
-This example activates the `security-reviewer` agent defined in the plugin's `agents/` directory. Settings from `settings.json` take priority over `settings` declared in `plugin.json`. Unknown keys are silently ignored.
+此示例激活在插件的 `agents/` 目录中定义的 `security-reviewer` agent。来自 `settings.json` 的设置优先于在 `plugin.json` 中声明的 `settings`。未知键被静默忽略。
 
-### Organize complex plugins
+<h3 id="organize-complex-plugins">
+  组织复杂的插件
+</h3>
 
-For plugins with many components, organize your directory structure by functionality. For complete directory layouts and organization patterns, see [Plugin directory structure](/docs/en/plugins-reference#plugin-directory-structure).
+对于具有许多组件的插件，按功能组织你的目录结构。有关完整的目录布局和组织模式，请参阅 [Plugin directory structure](/docs/zh-CN/plugins-reference#plugin-directory-structure)。
 
-### Test your plugins locally
+<h3 id="test-your-plugins-locally">
+  在本地测试你的插件
+</h3>
 
-Use the `--plugin-dir` flag to test plugins during development. This loads your plugin directly without requiring installation.
+使用 `--plugin-dir` 标志在开发期间测试插件。这会直接加载你的插件，无需安装。
 
 ```bash theme={null}
 claude --plugin-dir ./my-plugin
 ```
 
-The flag also accepts a `.zip` archive of the plugin directory, which requires Claude Code v2.1.128 or later.
+该标志也接受插件目录的 `.zip` 存档，这需要 Claude Code v2.1.128 或更高版本。
 
 ```bash theme={null}
 claude --plugin-dir ./my-plugin.zip
 ```
 
-When a `--plugin-dir` plugin has the same name as an installed marketplace plugin, the local copy takes precedence for that session. This lets you test changes to a plugin you already have installed without uninstalling it first. The exception is plugins that managed settings force-enable or force-disable: `--plugin-dir` cannot override those.
+当 `--plugin-dir` 插件与已安装的市场插件同名时，本地副本在该会话中优先。这让你可以测试已安装的插件的更改，而无需先卸载它。由托管设置强制启用或强制禁用的插件是唯一的例外：`--plugin-dir` 无法覆盖这些。
 
-As you make changes to your plugin, run `/reload-plugins` to pick up the updates without restarting. This reloads plugins, skills, agents, hooks, plugin MCP servers, and plugin LSP servers. Test your plugin components:
+当你对插件进行更改时，运行 `/reload-plugins` 以获取更新，无需重新启动。这会重新加载 plugins、skills、agents、hooks、插件 MCP servers 和插件 LSP servers。测试你的插件组件：
 
-* Try your skills with `/plugin-name:skill-name`
-* Check that agents appear in `/context` under Custom Agents, or @-mention one by its scoped name
-* Trigger the event each hook matches, such as asking Claude to edit a file for a `PostToolUse` hook, and confirm its effect. Claude Code records which hooks matched, their exit codes, and their output in the [debug log](/docs/en/hooks#debug-hooks)
+* 使用 `/plugin-name:skill-name` 尝试你的 skills
+* 检查 agents 是否出现在 `/context` 中的 Custom Agents 下，或通过其作用域名称 @-mention 其中一个
+* 验证 hooks 是否按预期工作
 
 <Tip>
-  You can load multiple plugins at once by specifying the flag multiple times:
+  你可以通过多次指定标志来一次加载多个插件：
 
   ```bash theme={null}
   claude --plugin-dir ./plugin-one --plugin-dir ./plugin-two
   ```
 </Tip>
 
-To test a plugin that is already packaged as a `.zip` archive and hosted at a URL, such as a CI build artifact, use `--plugin-url` instead. Claude Code fetches the archive at startup and loads it for that session only. If Claude Code can't fetch the archive, or the archive is invalid, it starts without the plugin and records a plugin load error that you can review in the `/plugin` manager's **Errors** tab. The same [trust considerations](/docs/en/discover-plugins#security) apply as for any plugin source: only point this flag at archives you control or trust.
+要测试已打包为 `.zip` 存档并托管在 URL 上的插件（例如 CI 构建工件），请改用 `--plugin-url`。Claude Code 在启动时获取存档并仅为该会话加载它。如果获取失败或存档无效，Claude Code 会报告插件加载错误并在没有它的情况下启动。与任何插件源相同的[信任考虑](/docs/zh-CN/discover-plugins#security)适用：仅将此标志指向你控制或信任的存档。
 
-To load multiple plugins, repeat the flag for each URL:
+要加载多个插件，请为每个 URL 重复该标志：
 
 ```bash theme={null}
 claude --plugin-url https://example.com/my-plugin.zip --plugin-url https://example.com/other.zip
 ```
 
-Or pass space-separated URLs as one quoted argument:
+或将空格分隔的 URL 作为一个带引号的参数传递：
 
 ```bash theme={null}
 claude --plugin-url "https://example.com/my-plugin.zip https://example.com/other.zip"
 ```
 
-### Debug plugin issues
+<h3 id="debug-plugin-issues">
+  调试插件问题
+</h3>
 
-If your plugin isn't working as expected:
+如果你的插件不按预期工作：
 
-1. **Check the structure**: Ensure your directories are at the plugin root, not inside `.claude-plugin/`
-2. **Test components individually**: Check each skill, agent, and hook separately
-3. **Use validation and debugging tools**: See [Debugging and development tools](/docs/en/plugins-reference#debugging-and-development-tools) for CLI commands and troubleshooting techniques
+1. **检查结构**：确保你的目录在插件根目录，而不是在 `.claude-plugin/` 内
+2. **单独测试组件**：分别检查每个 skill、agent 和 hook
+3. **使用验证和调试工具**：有关 CLI 命令和故障排除技术，请参阅 [Debugging and development tools](/docs/zh-CN/plugins-reference#debugging-and-development-tools)
 
-### Share your plugins
+<h3 id="share-your-plugins">
+  共享你的插件
+</h3>
 
-When your plugin is ready to share:
+当你的插件准备好共享时：
 
-1. **Add documentation**: Include a `README.md` with installation and usage instructions
-2. **Choose a versioning strategy**: Decide whether to set an explicit `version` or rely on the git commit SHA. See [version management](/docs/en/plugins-reference#version-management)
-3. **Create or use a marketplace**: Distribute through [plugin marketplaces](/docs/en/plugin-marketplaces) for installation
-4. **Test with others**: Have team members test the plugin before wider distribution
+1. **添加文档**：包含一个 `README.md`，其中包含安装和使用说明
+2. **选择版本控制策略**：决定是设置显式 `version` 还是依赖 git 提交 SHA。请参阅 [version management](/docs/zh-CN/plugins-reference#version-management)
+3. **创建或使用市场**：通过 [plugin marketplaces](/docs/zh-CN/plugin-marketplaces) 分发以供安装
+4. **与他人测试**：在更广泛分发之前让团队成员测试插件
 
-Once your plugin is in a marketplace, others can install it using the instructions in [Discover and install plugins](/docs/en/discover-plugins). To keep a plugin internal to your team, host the marketplace in a [private repository](/docs/en/plugin-marketplaces#private-repositories).
+一旦你的插件在市场中，其他人可以使用 [Discover and install plugins](/docs/zh-CN/discover-plugins) 中的说明安装它。要将插件保持在你的团队内部，请在 [private repository](/docs/zh-CN/plugin-marketplaces#private-repositories) 中托管市场。
 
-### Submit your plugin to the community marketplace
+<h3 id="submit-your-plugin-to-the-community-marketplace">
+  向社区市场提交你的插件
+</h3>
 
-Anthropic maintains two public marketplaces for Claude Code plugins:
+Anthropic 为 Claude Code 插件维护两个公共市场：
 
-* **`claude-plugins-official`**: a curated set of plugins maintained by Anthropic. Registered automatically the first time you start Claude Code interactively. A non-interactive script that runs before that first launch must add it explicitly with `claude plugin marketplace add anthropics/claude-plugins-official`.
-* **`claude-community`**: the public community marketplace where third-party submissions land after review. Users add it with `/plugin marketplace add anthropics/claude-plugins-community` and install from it as `@claude-community`.
+* **`claude-plugins-official`**：由 Anthropic 维护的精选插件集。在你首次以交互方式启动 Claude Code 时自动注册。在该首次启动之前运行的非交互式脚本必须使用 `claude plugin marketplace add anthropics/claude-plugins-official` 显式添加它。
+* **`claude-community`**：公共社区市场，第三方提交在审查后进入。用户使用 `/plugin marketplace add anthropics/claude-plugins-community` 添加它，并从中安装为 `@claude-community`。
 
-To submit your plugin for community-marketplace review, use one of the in-app forms:
+要提交你的插件以供社区市场审查，请使用以下应用内表单之一：
 
-* **claude.ai**: [claude.ai/admin-settings/directory/submissions/plugins/new](https://claude.ai/admin-settings/directory/submissions/plugins/new)
-* **Console**: [platform.claude.com/plugins/submit](https://platform.claude.com/plugins/submit)
+* **claude.ai**：[claude.ai/admin-settings/directory/submissions/plugins/new](https://claude.ai/admin-settings/directory/submissions/plugins/new)
+* **Console**：[platform.claude.com/plugins/submit](https://platform.claude.com/plugins/submit)
 
-The claude.ai form requires a Team or Enterprise organization and directory management access; organization Owners have this access by default. Individual authors who aren't part of a Team or Enterprise organization can use the Console form instead.
+claude.ai 表单需要 Team 或 Enterprise 组织和目录管理访问权限；组织所有者默认具有此访问权限。不属于 Team 或 Enterprise 组织的个人作者可以改用 Console 表单。
 
-Run `claude plugin validate ./your-plugin` locally before you submit, replacing `./your-plugin` with the path to your plugin directory. The review pipeline runs the same check on every submission, along with automated safety screening. When validation passes, Claude Code prints `✔ Validation passed`, or `✔ Validation passed with warnings` if there are warnings. Warnings don't fail validation; add `--strict` to treat them as errors.
+在提交之前，在本地运行 `claude plugin validate`。审查管道对每个提交运行相同的检查，以及自动安全筛选。
 
-Approved plugins are pinned to a specific commit SHA in the [`anthropics/claude-plugins-community`](https://github.com/anthropics/claude-plugins-community) catalog, and CI bumps the pin automatically as you push new commits to your repository. The public catalog syncs nightly from the review pipeline, so there can be a delay between approval and your plugin appearing in `marketplace.json`. To check whether your plugin is installable yet, search for its name in the [community catalog](https://github.com/anthropics/claude-plugins-community/blob/main/.claude-plugin/marketplace.json).
+批准的插件被固定到 [`anthropics/claude-plugins-community`](https://github.com/anthropics/claude-plugins-community) 目录中的特定提交 SHA，当你向你的存储库推送新提交时，CI 会自动提升该固定。公共目录每晚从审查管道同步，因此批准和你的插件出现在 `marketplace.json` 中之间可能会有延迟。要检查你的插件是否已可安装，请在[社区目录](https://github.com/anthropics/claude-plugins-community/blob/main/.claude-plugin/marketplace.json)中搜索其名称。
 
-The official marketplace, `claude-plugins-official`, is curated separately. Anthropic decides which plugins to include at its discretion. There is no application process, and the submission form does not add plugins to the official marketplace.
+官方市场 `claude-plugins-official` 是单独策划的。Anthropic 自行决定包含哪些插件。没有申请流程，提交表单不会将插件添加到官方市场。
 
-If Anthropic lists your plugin in the official marketplace, your CLI can prompt Claude Code users to install it. See [Recommend your plugin from your CLI](/docs/en/plugin-hints).
+如果 Anthropic 在官方市场中列出你的插件，你的 CLI 可以提示 Claude Code 用户安装它。请参阅 [Recommend your plugin from your CLI](/docs/zh-CN/plugin-hints)。
 
 <Note>
-  For complete technical specifications, debugging techniques, and distribution strategies, see [Plugins reference](/docs/en/plugins-reference).
+  有关完整的技术规范、调试技术和分发策略，请参阅 [Plugins reference](/docs/zh-CN/plugins-reference)。
 </Note>
 
-## Convert existing configurations to plugins
+<h2 id="convert-existing-configurations-to-plugins">
+  将现有配置转换为插件
+</h2>
 
-If you already have skills or hooks in your `.claude/` directory, you can convert them into a plugin for easier sharing and distribution.
+如果你已经在 `.claude/` 目录中有 skills 或 hooks，你可以将它们转换为插件，以便更轻松地共享和分发。
 
-### Migration steps
+<h3 id="migration-steps">
+  迁移步骤
+</h3>
 
 <Steps>
-  <Step title="Create the plugin structure">
-    Create a new plugin directory in your project root, alongside the existing `.claude/` folder, so the relative `cp` paths in the next step resolve:
+  <Step title="创建插件结构">
+    在你的项目根目录中创建一个新的插件目录，与现有的 `.claude/` 文件夹并排放置，以便下一步中的相对 `cp` 路径能够解析：
 
     ```bash theme={null}
     mkdir -p my-plugin/.claude-plugin
     ```
 
-    Create the manifest file at `my-plugin/.claude-plugin/plugin.json`:
+    在 `my-plugin/.claude-plugin/plugin.json` 处创建清单文件：
 
     ```json my-plugin/.claude-plugin/plugin.json theme={null}
     {
@@ -425,28 +459,29 @@ If you already have skills or hooks in your `.claude/` directory, you can conver
     ```
   </Step>
 
-  <Step title="Copy your existing files">
-    Copy each configuration directory you have to the plugin root. You might not have all three: if a directory doesn't exist, `cp` prints `No such file or directory` and copies nothing, so skip that command or ignore the error.
+  <Step title="复制你现有的文件">
+    将你现有的配置复制到插件目录：
 
     ```bash theme={null}
+    # Copy commands
     cp -r .claude/commands my-plugin/
 
+    # Copy agents (if any)
     cp -r .claude/agents my-plugin/
 
+    # Copy skills (if any)
     cp -r .claude/skills my-plugin/
     ```
-
-    Your plugin now contains copies of the directories you had under `.claude/`. Run `ls my-plugin` to confirm: you should see each directory you copied.
   </Step>
 
-  <Step title="Migrate hooks">
-    If you have hooks in your settings, create a hooks directory:
+  <Step title="迁移 hooks">
+    如果你在设置中有 hooks，请创建一个 hooks 目录：
 
     ```bash theme={null}
     mkdir my-plugin/hooks
     ```
 
-    Create `my-plugin/hooks/hooks.json` with your hooks configuration. Copy the `hooks` object from your `.claude/settings.json` or `settings.local.json`, since the format is the same. The command receives hook input as JSON on stdin, so use `jq` to extract the file path:
+    使用你的 hooks 配置创建 `my-plugin/hooks/hooks.json`。从你的 `.claude/settings.json` 或 `settings.local.json` 复制 `hooks` 对象，因为格式相同。命令在 stdin 上接收 hook 输入作为 JSON，所以使用 `jq` 提取文件路径：
 
     ```json my-plugin/hooks/hooks.json theme={null}
     {
@@ -462,45 +497,53 @@ If you already have skills or hooks in your `.claude/` directory, you can conver
     ```
   </Step>
 
-  <Step title="Test your migrated plugin">
-    Load your plugin to verify everything works:
+  <Step title="测试你迁移的插件">
+    加载你的插件以验证一切正常：
 
     ```bash theme={null}
     claude --plugin-dir ./my-plugin
     ```
 
-    Test each component: run your commands, check that agents appear in `/context`, and trigger the event each hook matches to confirm its effect. Claude Code records which hooks matched and how they exited in the [debug log](/docs/en/hooks#debug-hooks).
+    测试每个组件：运行你的命令、检查 agents 是否出现在 `/context` 中，并验证 hooks 是否正确触发。
   </Step>
 </Steps>
 
-### What changes when migrating
+<h3 id="what-changes-when-migrating">
+  迁移时的变化
+</h3>
 
-| Standalone (`.claude/`)       | Plugin                           |
-| :---------------------------- | :------------------------------- |
-| Only available in one project | Can be shared via marketplaces   |
-| Files in `.claude/commands/`  | Files in `plugin-name/commands/` |
-| Hooks in `settings.json`      | Hooks in `hooks/hooks.json`      |
-| Must manually copy to share   | Install with `/plugin install`   |
+| 独立（`.claude/`）           | 插件                           |
+| :----------------------- | :--------------------------- |
+| 仅在一个项目中可用                | 可以通过市场共享                     |
+| `.claude/commands/` 中的文件 | `plugin-name/commands/` 中的文件 |
+| `settings.json` 中的 Hooks | `hooks/hooks.json` 中的 Hooks  |
+| 必须手动复制以共享                | 使用 `/plugin install` 安装      |
 
 <Note>
-  After migrating, remove the original files from `.claude/` to avoid duplicates. Project and user `.claude/agents/` definitions override same-named plugin agents, so the plugin version only takes effect once the originals are removed. Plugin skills are namespaced as `/plugin-name:skill-name`, so the original `/skill-name` and the plugin copy both remain available rather than one overriding the other.
+  迁移后，从 `.claude/` 中删除原始文件以避免重复。项目和用户 `.claude/agents/` 定义会覆盖同名的插件 agents，因此插件版本仅在删除原始文件后才会生效。Plugin skills 被命名为 `/plugin-name:skill-name`，所以原始的 `/skill-name` 和插件副本都保持可用，而不是其中一个覆盖另一个。
 </Note>
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-Now that you understand Claude Code's plugin system, here are suggested paths for different goals:
+现在你了解了 Claude Code 的插件系统，以下是针对不同目标的建议路径：
 
-### For plugin users
+<h3 id="for-plugin-users">
+  对于插件用户
+</h3>
 
-* [Discover and install plugins](/docs/en/discover-plugins): browse marketplaces and install plugins
-* [Configure team marketplaces](/docs/en/discover-plugins#configure-team-marketplaces): set up repository-level plugins for your team
+* [发现和安装插件](/docs/zh-CN/discover-plugins)：浏览市场并安装插件
+* [配置团队市场](/docs/zh-CN/discover-plugins#configure-team-marketplaces)：为你的团队设置存储库级别的插件
 
-### For plugin developers
+<h3 id="for-plugin-developers">
+  对于插件开发者
+</h3>
 
-* [Create and distribute a marketplace](/docs/en/plugin-marketplaces): package and share your plugins
-* [Plugins reference](/docs/en/plugins-reference): complete technical specifications
-* Dive deeper into specific plugin components:
-  * [Skills](/docs/en/skills): skill development details
-  * [Subagents](/docs/en/sub-agents): agent configuration and capabilities
-  * [Hooks](/docs/en/hooks): event handling and automation
-  * [MCP](/docs/en/mcp): external tool integration
+* [创建和分发市场](/docs/zh-CN/plugin-marketplaces)：打包和共享你的插件
+* [插件参考](/docs/zh-CN/plugins-reference)：完整的技术规范
+* 深入了解特定的插件组件：
+  * [Skills](/docs/zh-CN/skills)：skill 开发详情
+  * [Subagents](/docs/zh-CN/sub-agents)：agent 配置和功能
+  * [Hooks](/docs/zh-CN/hooks)：事件处理和自动化
+  * [MCP](/docs/zh-CN/mcp)：外部工具集成

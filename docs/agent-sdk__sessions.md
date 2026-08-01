@@ -2,53 +2,61 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Work with sessions
+# 使用会话
 
-> How sessions persist agent conversation history, and when to use continue, resume, and fork to return to a prior run.
+> 会话如何保持代理对话历史记录，以及何时使用 continue、resume 和 fork 返回到之前的运行。
 
-A session is the conversation history the SDK accumulates while your agent works. It contains your prompt, every tool call the agent made, every tool result, and every response. The SDK writes it to disk automatically so you can return to it later.
+会话是 SDK 在代理工作时积累的对话历史记录。它包含您的提示、代理进行的每个工具调用、每个工具结果和每个响应。SDK 会自动将其写入磁盘，以便您稍后可以返回到它。
 
-Returning to a session means the agent has full context from before: files it already read, analysis it already performed, decisions it already made. You can ask a follow-up question, recover from an interruption, or branch off to try a different approach.
+返回到会话意味着代理具有之前的完整上下文：它已经读取的文件、它已经执行的分析、它已经做出的决定。您可以提出后续问题、从中断中恢复或分支以尝试不同的方法。
 
 <Note>
-  Sessions persist the **conversation**, not the filesystem. To snapshot and revert file changes the agent made, use [file checkpointing](/docs/en/agent-sdk/file-checkpointing).
+  会话保持**对话**，而不是文件系统。要快照和还原代理所做的文件更改，请使用[文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing)。
 </Note>
 
-This guide covers how to pick the right approach for your app, the SDK interfaces that track sessions automatically, how to capture session IDs and use `resume` and `fork` manually, and what to know about resuming sessions across hosts.
+本指南涵盖如何为您的应用选择正确的方法、自动跟踪会话的 SDK 接口、如何捕获会话 ID 以及手动使用 `resume` 和 `fork` 的方法，以及关于在主机之间恢复会话需要了解的内容。
 
-## Choose an approach
+<h2 id="choose-an-approach">
+  选择一种方法
+</h2>
 
-How much session handling you need depends on your application's shape. Session management comes into play when you send multiple prompts that should share context. Within a single `query()` call, the agent already takes as many turns as it needs, and permission prompts and `AskUserQuestion` are [handled in-loop](/docs/en/agent-sdk/user-input) (they don't end the call).
+您需要多少会话处理取决于应用的形状。当您发送应该共享上下文的多个提示时，会话管理就会发挥作用。在单个 `query()` 调用中，代理已经根据需要进行了尽可能多的轮次，权限提示和 `AskUserQuestion` 是[在循环中处理的](/docs/zh-CN/agent-sdk/user-input)（它们不会结束调用）。
 
-| What you're building                                                  | What to use                                                                                                                                                      |
-| :-------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| One-shot task: single prompt, no follow-up                            | Nothing extra. One `query()` call handles it.                                                                                                                    |
-| Multi-turn chat in one process                                        | [`ClaudeSDKClient` (Python) or `continue: true` (TypeScript)](#automatic-session-management). The SDK tracks the session for you with no ID handling.            |
-| Pick up where you left off after a process restart                    | `continue_conversation=True` (Python) / `continue: true` (TypeScript). Resumes the most recent session in the directory, no ID needed.                           |
-| Resume a specific past session (not the most recent)                  | Capture the session ID and pass it to `resume`.                                                                                                                  |
-| Try an alternative approach without losing the original               | Fork the session.                                                                                                                                                |
-| Stateless task, don't want anything written to disk (TypeScript only) | Set [`persistSession: false`](/docs/en/agent-sdk/typescript#options). The session exists only in memory for the duration of the call. Python always persists to disk. |
+| 您正在构建的内容                        | 使用什么                                                                                                          |
+| :------------------------------ | :------------------------------------------------------------------------------------------------------------ |
+| 一次性任务：单个提示，无后续                  | 无需额外操作。一个 `query()` 调用可以处理它。                                                                                  |
+| 在一个进程中进行多轮聊天                    | [`ClaudeSDKClient`（Python）或 `continue: true`（TypeScript）](#automatic-session-management)。SDK 为您跟踪会话，无需 ID 处理。 |
+| 在进程重启后从中断处继续                    | `continue_conversation=True`（Python）/ `continue: true`（TypeScript）。恢复目录中最近的会话，无需 ID。                          |
+| 恢复特定的过去会话（不是最近的）                | 捕获会话 ID 并将其传递给 `resume`。                                                                                      |
+| 尝试替代方法而不丢失原始方法                  | Fork 会话。                                                                                                      |
+| 无状态任务，不希望任何内容写入磁盘（仅 TypeScript） | 设置 [`persistSession: false`](/docs/zh-CN/agent-sdk/typescript#options)。会话仅在调用期间存在于内存中。Python 始终保持到磁盘。              |
 
-### Continue, resume, and fork
+<h3 id="continue-resume-and-fork">
+  Continue、resume 和 fork
+</h3>
 
-Continue, resume, and fork are option fields you set on `query()` ([`ClaudeAgentOptions`](/docs/en/agent-sdk/python#claudeagentoptions) in Python, [`Options`](/docs/en/agent-sdk/typescript#options) in TypeScript).
+Continue、resume 和 fork 是您在 `query()` 上设置的选项字段（Python 中的 [`ClaudeAgentOptions`](/docs/zh-CN/agent-sdk/python#claudeagentoptions)，TypeScript 中的 [`Options`](/docs/zh-CN/agent-sdk/typescript#options)）。
 
-**Continue** and **resume** both pick up an existing session and add to it. The difference is how they find that session:
+**Continue** 和 **resume** 都会选择现有会话并添加到其中。区别在于它们如何找到该会话：
 
-* **Continue** finds the most recent session in the current directory. You don't track anything. Works well when your app runs one conversation at a time.
-* **Resume** takes a specific session ID. You track the ID. Required when you have multiple sessions (for example, one per user in a multi-user app) or want to return to one that isn't the most recent.
+* **Continue** 在当前目录中查找最近的会话。您无需跟踪任何内容。当您的应用一次运行一个对话时效果很好。
+* **Resume** 采用特定的会话 ID。您跟踪 ID。当您有多个会话（例如，多用户应用中每个用户一个）或想要返回到不是最近的会话时需要。
 
-**Fork** is different: it creates a new session that starts with a copy of the original's history. The original stays unchanged. Use fork to try a different direction while keeping the option to go back.
+**Fork** 不同：它创建一个新会话，从原始会话历史记录的副本开始。原始会话保持不变。使用 fork 尝试不同的方向，同时保持返回的选项。
 
-## Automatic session management
+<h2 id="automatic-session-management">
+  自动会话管理
+</h2>
 
-Both SDKs offer an interface that tracks session state for you across calls, so you don't pass IDs around manually. Use these for multi-turn conversations within a single process.
+两个 SDK 都提供了一个接口，可以跨调用为您跟踪会话状态，因此您无需手动传递 ID。将这些用于单个进程中的多轮对话。
 
-### Python: `ClaudeSDKClient`
+<h3 id="python-claudesdkclient">
+  Python：`ClaudeSDKClient`
+</h3>
 
-[`ClaudeSDKClient`](/docs/en/agent-sdk/python#claudesdkclient) handles session IDs internally. Each call to `client.query()` automatically continues the same session. Call [`client.receive_response()`](/docs/en/agent-sdk/python#claudesdkclient) to iterate over the messages for the current query. Use the client as an async context manager so connection setup and teardown are handled for you, or call `connect()` and `disconnect()` manually.
+[`ClaudeSDKClient`](/docs/zh-CN/agent-sdk/python#claudesdkclient) 在内部处理会话 ID。每次调用 `client.query()` 都会自动继续同一会话。调用 [`client.receive_response()`](/docs/zh-CN/agent-sdk/python#claudesdkclient) 以迭代当前查询的消息。使用客户端作为异步上下文管理器，以便为您处理连接设置和拆卸，或手动调用 `connect()` 和 `disconnect()`。
 
-This example runs two queries against the same `client`. The first asks the agent to analyze a module; the second asks it to refactor that module. Because both calls go through the same client instance, the second query has full context from the first without any explicit `resume` or session ID:
+此示例针对同一 `client` 运行两个查询。第一个要求代理分析一个模块；第二个要求它重构该模块。因为两个调用都通过同一客户端实例进行，第二个查询具有来自第一个查询的完整上下文，无需任何显式 `resume` 或会话 ID：
 
 ```python Python theme={null}
 import asyncio
@@ -96,33 +104,27 @@ async def main():
 asyncio.run(main())
 ```
 
-Each query prints the agent's text response followed by a status line from the result message, such as `[done: success, cost: $0.0042]`.
+有关何时使用 `ClaudeSDKClient` 与独立 `query()` 函数的详细信息，请参阅 [Python SDK 参考](/docs/zh-CN/agent-sdk/python#choosing-between-query-and-claudesdkclient)。
 
-See the [Python SDK reference](/docs/en/agent-sdk/python#choosing-between-query-and-claudesdkclient) for details on when to use `ClaudeSDKClient` vs the standalone `query()` function.
+<h3 id="typescript-continue-true">
+  TypeScript：`continue: true`
+</h3>
 
-### TypeScript: `continue: true`
+TypeScript SDK 没有像 Python 的 `ClaudeSDKClient` 那样的会话保持客户端对象。相反，在每个后续 `query()` 调用上传递 `continue: true`，SDK 会在当前目录中选择最近的会话。无需 ID 跟踪。
 
-The TypeScript SDK doesn't have a session-holding client object like Python's `ClaudeSDKClient`. Instead, pass `continue: true` on each subsequent `query()` call and the SDK picks up the most recent session in the current directory. No ID tracking required.
-
-This example makes two separate `query()` calls. The first creates a fresh session; the second sets `continue: true`, which tells the SDK to find and resume the most recent session on disk. The agent has full context from the first call:
+此示例进行两个单独的 `query()` 调用。第一个创建一个新会话；第二个设置 `continue: true`，这告诉 SDK 在磁盘上查找并恢复最近的会话。代理具有来自第一个调用的完整上下文：
 
 ```typescript TypeScript theme={null}
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // First query: creates a new session
-try {
-  for await (const message of query({
-    prompt: "Analyze the auth module",
-    options: { allowedTools: ["Read", "Glob", "Grep"] }
-  })) {
-    if (message.type === "result" && message.subtype === "success") {
-      console.log(message.result);
-    }
+for await (const message of query({
+  prompt: "Analyze the auth module",
+  options: { allowedTools: ["Read", "Glob", "Grep"] }
+})) {
+  if (message.type === "result" && message.subtype === "success") {
+    console.log(message.result);
   }
-} catch (error) {
-  // A single-shot query() throws after yielding an error result,
-  // so the follow-up query below still runs.
-  console.error(`Session ended with an error: ${error}`);
 }
 
 // Second query: continue: true resumes the most recent session
@@ -140,14 +142,18 @@ for await (const message of query({
 ```
 
 <Note>
-  The experimental [V2 session API](/docs/en/agent-sdk/typescript-v2-preview), which provided `createSession()` with a `send` / `stream` pattern, was removed in TypeScript Agent SDK 0.3.142. Use the `query()` function and the session options described on this page instead.
+  实验性的 [V2 会话 API](/docs/zh-CN/agent-sdk/typescript-v2-preview)（提供了带有 `send` / `stream` 模式的 `createSession()`）已在 TypeScript Agent SDK 0.3.142 中移除。使用 `query()` 函数和本页面上描述的会话选项。
 </Note>
 
-## Use session options with `query()`
+<h2 id="use-session-options-with-query">
+  将会话选项与 `query()` 一起使用
+</h2>
 
-### Capture the session ID
+<h3 id="capture-the-session-id">
+  捕获会话 ID
+</h3>
 
-Resume and fork require a session ID. Read it from the `session_id` field on the result message ([`ResultMessage`](/docs/en/agent-sdk/python#resultmessage) in Python, [`SDKResultMessage`](/docs/en/agent-sdk/typescript#sdkresultmessage) in TypeScript), which is present on every result regardless of success or error. In TypeScript the ID is also available earlier as a direct field on the init `SystemMessage`; in Python it's nested inside `SystemMessage.data`.
+Resume 和 fork 需要会话 ID。从结果消息上的 `session_id` 字段读取它（Python 中的 [`ResultMessage`](/docs/zh-CN/agent-sdk/python#resultmessage)，TypeScript 中的 [`SDKResultMessage`](/docs/zh-CN/agent-sdk/typescript#sdkresultmessage)），该字段存在于每个结果上，无论成功还是错误。在 TypeScript 中，ID 也可以作为初始化 `SystemMessage` 上的直接字段更早获得；在 Python 中，它嵌套在 `SystemMessage.data` 内。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -158,22 +164,16 @@ Resume and fork require a session ID. Read it from the `session_id` field on the
   async def main():
       session_id = None
 
-      try:
-          async for message in query(
-              prompt="Analyze the auth module and suggest improvements",
-              options=ClaudeAgentOptions(
-                  allowed_tools=["Read", "Glob", "Grep"],
-              ),
-          ):
-              if isinstance(message, ResultMessage):
-                  session_id = message.session_id
-                  if message.subtype == "success":
-                      print(message.result)
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result. If the
-          # failure was an error result, the loop above already captured session_id;
-          # process failures yield no result message, so session_id stays None.
-          print(f"Session ended with an error: {error}")
+      async for message in query(
+          prompt="Analyze the auth module and suggest improvements",
+          options=ClaudeAgentOptions(
+              allowed_tools=["Read", "Glob", "Grep"],
+          ),
+      ):
+          if isinstance(message, ResultMessage):
+              session_id = message.session_id
+              if message.subtype == "success":
+                  print(message.result)
 
       print(f"Session ID: {session_id}")
       return session_id
@@ -187,63 +187,46 @@ Resume and fork require a session ID. Read it from the `session_id` field on the
 
   let sessionId: string | undefined;
 
-  try {
-    for await (const message of query({
-      prompt: "Analyze the auth module and suggest improvements",
-      options: { allowedTools: ["Read", "Glob", "Grep"] }
-    })) {
-      if (message.type === "result") {
-        sessionId = message.session_id;
-        if (message.subtype === "success") {
-          console.log(message.result);
-        }
+  for await (const message of query({
+    prompt: "Analyze the auth module and suggest improvements",
+    options: { allowedTools: ["Read", "Glob", "Grep"] }
+  })) {
+    if (message.type === "result") {
+      sessionId = message.session_id;
+      if (message.subtype === "success") {
+        console.log(message.result);
       }
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result. If the
-    // failure was an error result, the loop above already captured sessionId;
-    // process failures yield no result message, so sessionId stays undefined.
-    console.error(`Session ended with an error: ${error}`);
   }
 
   console.log(`Session ID: ${sessionId}`);
   ```
 </CodeGroup>
 
-When the query completes, the script prints the agent's response followed by a line such as `Session ID: 5b3f2c1a-8d4e-4f6b-9a7c-2e1d0f9b8a6c`. In the next sections, you pass this ID to `resume`.
+<h3 id="resume-by-id">
+  按 ID 恢复
+</h3>
 
-### Resume by ID
+将会话 ID 传递给 `resume` 以返回到该特定会话。代理从会话中断的任何地方继续，具有完整的上下文。恢复的常见原因：
 
-Pass a session ID to `resume` to return to that specific session. The agent picks up with full context from wherever the session left off. Common reasons to resume:
+* **跟进已完成的任务。** 代理已经分析了某些内容；现在您希望它根据该分析采取行动，而无需重新读取文件。
+* **从限制中恢复。** 第一次运行以 `error_max_turns` 或 `error_max_budget_usd` 结束（请参阅[处理结果](/docs/zh-CN/agent-sdk/agent-loop#handle-the-result)）；使用更高的限制恢复。
+* **重启您的进程。** 您在关闭前捕获了 ID，并希望恢复对话。
 
-* **Follow up on a completed task.** The agent already analyzed something; now you want it to act on that analysis without re-reading files.
-* **Recover from a limit.** The first run ended with `error_max_turns` or `error_max_budget_usd` (see [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result)); resume with a higher limit. In a single-shot `query()` call the SDK raises after yielding that error result, so catch the error before resuming.
-* **Restart your process.** You captured the ID before shutdown and want to restore the conversation.
-
-This example resumes the session from [Capture the session ID](#capture-the-session-id) with a follow-up prompt. Because you're resuming, the agent already has the prior analysis in context:
+此示例使用后续提示恢复[捕获会话 ID](#capture-the-session-id) 中的会话。因为您正在恢复，代理已经在上下文中具有先前的分析：
 
 <CodeGroup>
   ```python Python theme={null}
-  import asyncio
-  from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
-
-  session_id = "..."  # The ID you captured in the previous example
-
-
-  async def main():
-      # Earlier session analyzed the code; now build on that analysis
-      async for message in query(
-          prompt="Now implement the refactoring you suggested",
-          options=ClaudeAgentOptions(
-              resume=session_id,
-              allowed_tools=["Read", "Edit", "Write", "Glob", "Grep"],
-          ),
-      ):
-          if isinstance(message, ResultMessage) and message.subtype == "success":
-              print(message.result)
-
-
-  asyncio.run(main())
+  # Earlier session analyzed the code; now build on that analysis
+  async for message in query(
+      prompt="Now implement the refactoring you suggested",
+      options=ClaudeAgentOptions(
+          resume=session_id,
+          allowed_tools=["Read", "Edit", "Write", "Glob", "Grep"],
+      ),
+  ):
+      if isinstance(message, ResultMessage) and message.subtype == "success":
+          print(message.result)
   ```
 
   ```typescript TypeScript theme={null}
@@ -266,70 +249,52 @@ This example resumes the session from [Capture the session ID](#capture-the-sess
   ```
 </CodeGroup>
 
-You should see a response that builds on the earlier analysis instead of starting fresh. That confirms the agent resumed the session with its prior context intact.
+您应该看到一个基于早期分析而构建的响应，而不是从头开始。这证实了代理恢复了会话，其先前的上下文保持完整。
 
 <Tip>
-  If a `resume` call returns a fresh session instead of the expected history, the most common cause is a mismatched `cwd`. Sessions are stored under `~/.claude/projects/<encoded-cwd>/*.jsonl`, or under `$CLAUDE_CONFIG_DIR/projects/<encoded-cwd>/*.jsonl` if you set the `CLAUDE_CONFIG_DIR` environment variable, where `<encoded-cwd>` is the absolute working directory with every non-alphanumeric character replaced by `-` (so `/Users/me/proj` becomes `-Users-me-proj`). If your resume call runs from a different directory, the SDK looks in the wrong place. The session file also needs to exist on the current machine.
+  如果 `resume` 调用返回新会话而不是预期的历史记录，最常见的原因是不匹配的 `cwd`。会话存储在 `~/.claude/projects/<encoded-cwd>/*.jsonl` 下，或者如果您设置了 `CLAUDE_CONFIG_DIR` 环境变量，则存储在 `$CLAUDE_CONFIG_DIR/projects/<encoded-cwd>/*.jsonl` 下，其中 `<encoded-cwd>` 是绝对工作目录，每个非字母数字字符都被替换为 `-`（所以 `/Users/me/proj` 变成 `-Users-me-proj`）。如果您的 resume 调用从不同的目录运行，SDK 会在错误的位置查找。会话文件也需要存在于当前机器上。
 </Tip>
 
-To resume sessions across machines or in serverless environments, mirror transcripts to shared storage with a [`SessionStore` adapter](/docs/en/agent-sdk/session-storage).
+要在机器之间或在无服务器环境中恢复会话，请使用 [`SessionStore` 适配器](/docs/zh-CN/agent-sdk/session-storage)将记录镜像到共享存储。
 
-### Fork to explore alternatives
+<h3 id="fork-to-explore-alternatives">
+  Fork 以探索替代方案
+</h3>
 
-Forking creates a new session that starts with a copy of the original's history but diverges from that point. The fork gets its own session ID; the original's ID and history stay unchanged. You end up with two independent sessions you can resume separately.
+Forking 创建一个新会话，从原始会话历史记录的副本开始，但从该点开始分支。fork 获得自己的会话 ID；原始的 ID 和历史记录保持不变。您最终会得到两个独立的会话，可以分别恢复。
 
 <Note>
-  Forking branches the conversation history, not the filesystem. If a forked agent edits files, those changes are real and visible to any session working in the same directory. To branch and revert file changes, use [file checkpointing](/docs/en/agent-sdk/file-checkpointing).
+  Forking 分支对话历史记录，而不是文件系统。如果 forked 代理编辑文件，这些更改是真实的，对在同一目录中工作的任何会话都可见。要分支和还原文件更改，请使用[文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing)。
 </Note>
 
-This example builds on [Capture the session ID](#capture-the-session-id): you've already analyzed an auth module in `session_id` and want to explore OAuth2 without losing the JWT-focused thread. The first block forks the session and captures the fork's ID (`forked_id`); the second block resumes the original `session_id` to continue down the JWT path. You now have two session IDs pointing at two separate histories:
+此示例基于[捕获会话 ID](#capture-the-session-id)：您已经在 `session_id` 中分析了一个身份验证模块，并希望探索 OAuth2 而不丢失 JWT 焦点线程。第一个块 forks 会话并捕获 fork 的 ID（`forked_id`）；第二个块恢复原始 `session_id` 以继续沿着 JWT 路径。您现在有两个会话 ID 指向两个单独的历史记录：
 
 <CodeGroup>
   ```python Python theme={null}
-  import asyncio
-  from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+  # Fork: branch from session_id into a new session
+  forked_id = None
+  async for message in query(
+      prompt="Instead of JWT, outline how OAuth2 would work for the auth module",
+      options=ClaudeAgentOptions(
+          resume=session_id,
+          fork_session=True,
+          max_turns=5,
+      ),
+  ):
+      if isinstance(message, ResultMessage):
+          forked_id = message.session_id  # The fork's ID, distinct from session_id
+          if message.subtype == "success":
+              print(message.result)
 
-  session_id = "..."  # The ID you captured in the previous example
+  print(f"Forked session: {forked_id}")
 
-
-  async def main():
-      # Fork: branch from session_id into a new session
-      forked_id = None
-      try:
-          async for message in query(
-              prompt="Instead of JWT, outline how OAuth2 would work for the auth module",
-              options=ClaudeAgentOptions(
-                  resume=session_id,
-                  fork_session=True,
-                  max_turns=5,
-              ),
-          ):
-              if isinstance(message, ResultMessage):
-                  forked_id = message.session_id  # The fork's ID, distinct from session_id
-                  if message.subtype == "success":
-                      print(message.result)
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result. If the
-          # failure was an error result, forked_id was already captured by the
-          # loop above; connection or process failures yield no result message.
-          print(f"Session ended with an error: {error}")
-
-      print(f"Forked session: {forked_id}")
-
-      # Original session is untouched; resuming it continues the JWT thread
-      try:
-          async for message in query(
-              prompt="Continue with the JWT approach",
-              options=ClaudeAgentOptions(resume=session_id),
-          ):
-              if isinstance(message, ResultMessage) and message.subtype == "success":
-                  print(message.result)
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result.
-          print(f"Session ended with an error: {error}")
-
-
-  asyncio.run(main())
+  # Original session is untouched; resuming it continues the JWT thread
+  async for message in query(
+      prompt="Continue with the JWT approach",
+      options=ClaudeAgentOptions(resume=session_id),
+  ):
+      if isinstance(message, ResultMessage) and message.subtype == "success":
+          print(message.result)
   ```
 
   ```typescript TypeScript theme={null}
@@ -340,64 +305,56 @@ This example builds on [Capture the session ID](#capture-the-session-id): you've
   // Fork: branch from sessionId into a new session
   let forkedId: string | undefined;
 
-  try {
-    for await (const message of query({
-      prompt: "Instead of JWT, outline how OAuth2 would work for the auth module",
-      options: {
-        resume: sessionId,
-        forkSession: true,
-        maxTurns: 5
-      }
-    })) {
-      if (message.type === "system" && message.subtype === "init") {
-        forkedId = message.session_id; // The fork's ID, distinct from sessionId
-      }
-      if (message.type === "result" && message.subtype === "success") {
-        console.log(message.result);
-      }
+  for await (const message of query({
+    prompt: "Instead of JWT, outline how OAuth2 would work for the auth module",
+    options: {
+      resume: sessionId,
+      forkSession: true,
+      maxTurns: 5
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result. If the
-    // failure was an error result, forkedId was already captured by the loop
-    // above; connection or process failures yield no result message.
-    console.error(`Session ended with an error: ${error}`);
+  })) {
+    if (message.type === "system" && message.subtype === "init") {
+      forkedId = message.session_id; // The fork's ID, distinct from sessionId
+    }
+    if (message.type === "result" && message.subtype === "success") {
+      console.log(message.result);
+    }
   }
 
   console.log(`Forked session: ${forkedId}`);
 
   // Original session is untouched; resuming it continues the JWT thread
-  try {
-    for await (const message of query({
-      prompt: "Continue with the JWT approach",
-      options: { resume: sessionId }
-    })) {
-      if (message.type === "result" && message.subtype === "success") {
-        console.log(message.result);
-      }
+  for await (const message of query({
+    prompt: "Continue with the JWT approach",
+    options: { resume: sessionId }
+  })) {
+    if (message.type === "result" && message.subtype === "success") {
+      console.log(message.result);
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result.
-    console.error(`Session ended with an error: ${error}`);
   }
   ```
 </CodeGroup>
 
-You should see that `forkedId` differs from the original session ID. Resuming the original session still continues the JWT thread, which confirms the fork did not modify the original history.
+您应该看到 `forkedId` 与原始会话 ID 不同。恢复原始会话仍然继续 JWT 线程，这证实了 fork 没有修改原始历史记录。
 
-## Resume across hosts
+<h2 id="resume-across-hosts">
+  跨主机恢复
+</h2>
 
-Session files are local to the machine that created them. To resume a session on a different host (CI workers, ephemeral containers, serverless), you have two options:
+会话文件是创建它们的机器的本地文件。要在不同的主机上恢复会话（CI 工作者、临时容器、无服务器），您有两个选项：
 
-* **Move the session file.** Persist `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl` from the first run and restore it to the same path on the new host before calling `resume`. The `cwd` must match.
-* **Don't rely on session resume.** Capture the results you need (analysis output, decisions, file diffs) as application state and pass them into a fresh session's prompt. This is often more robust than shipping transcript files around.
+* **移动会话文件。** 从第一次运行中保持 `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`，并在调用 `resume` 之前将其恢复到新主机上的相同路径。`cwd` 必须匹配。
+* **不依赖会话恢复。** 捕获您需要的结果（分析输出、决定、文件差异）作为应用状态，并将其传递到新会话的提示中。这通常比在周围运送记录文件更强大。
 
-Both SDKs expose functions for enumerating sessions on disk and reading their messages: [`listSessions()`](/docs/en/agent-sdk/typescript#listsessions) and [`getSessionMessages()`](/docs/en/agent-sdk/typescript#getsessionmessages) in TypeScript, [`list_sessions()`](/docs/en/agent-sdk/python#list_sessions) and [`get_session_messages()`](/docs/en/agent-sdk/python#get_session_messages) in Python. Use them to build custom session pickers, cleanup logic, or transcript viewers.
+两个 SDK 都公开了用于枚举磁盘上的会话和读取其消息的函数：TypeScript 中的 [`listSessions()`](/docs/zh-CN/agent-sdk/typescript#listsessions) 和 [`getSessionMessages()`](/docs/zh-CN/agent-sdk/typescript#getsessionmessages)，Python 中的 [`list_sessions()`](/docs/zh-CN/agent-sdk/python#list_sessions) 和 [`get_session_messages()`](/docs/zh-CN/agent-sdk/python#get_session_messages)。使用它们来构建自定义会话选择器、清理逻辑或记录查看器。
 
-Both SDKs also expose functions for looking up and mutating individual sessions: [`get_session_info()`](/docs/en/agent-sdk/python#get_session_info), [`rename_session()`](/docs/en/agent-sdk/python#rename_session), and [`tag_session()`](/docs/en/agent-sdk/python#tag_session) in Python, and [`getSessionInfo()`](/docs/en/agent-sdk/typescript#getsessioninfo), [`renameSession()`](/docs/en/agent-sdk/typescript#renamesession), and [`tagSession()`](/docs/en/agent-sdk/typescript#tagsession) in TypeScript. Use them to organize sessions by tag or give them human-readable titles.
+两个 SDK 也公开了用于查找和改变单个会话的函数：Python 中的 [`get_session_info()`](/docs/zh-CN/agent-sdk/python#get_session_info)、[`rename_session()`](/docs/zh-CN/agent-sdk/python#rename_session) 和 [`tag_session()`](/docs/zh-CN/agent-sdk/python#tag_session)，以及 TypeScript 中的 [`getSessionInfo()`](/docs/zh-CN/agent-sdk/typescript#getsessioninfo)、[`renameSession()`](/docs/zh-CN/agent-sdk/typescript#renamesession) 和 [`tagSession()`](/docs/zh-CN/agent-sdk/typescript#tagsession)。使用它们按标签组织会话或给它们人类可读的标题。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* [How the agent loop works](/docs/en/agent-sdk/agent-loop): Understand turns, messages, and context accumulation within a session
-* [File checkpointing](/docs/en/agent-sdk/file-checkpointing): Snapshot and revert file changes the agent made within a session
-* [Python `ClaudeAgentOptions`](/docs/en/agent-sdk/python#claudeagentoptions): Full session option reference for Python
-* [TypeScript `Options`](/docs/en/agent-sdk/typescript#options): Full session option reference for TypeScript
+* [代理循环如何工作](/docs/zh-CN/agent-sdk/agent-loop)：了解会话中的轮次、消息和上下文累积
+* [文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing)：快照和还原代理在会话中所做的文件更改
+* [Python `ClaudeAgentOptions`](/docs/zh-CN/agent-sdk/python#claudeagentoptions)：Python 的完整会话选项参考
+* [TypeScript `Options`](/docs/zh-CN/agent-sdk/typescript#options)：TypeScript 的完整会话选项参考

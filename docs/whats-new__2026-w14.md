@@ -2,34 +2,34 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Week 14 · March 30 – April 3, 2026
+# 第 14 周 · 3 月 30 日 – 4 月 3 日，2026 年
 
-> Computer use in the CLI, interactive in-product lessons, flicker-free rendering, per-tool MCP result-size overrides, and plugin executables on PATH.
+> CLI 中的计算机使用、交互式产品内课程、无闪烁渲染、按工具 MCP 结果大小覆盖以及 PATH 上的插件可执行文件。
 
 <div className="digest-meta">
-  <span>Releases <a href="/docs/docs/en/changelog#2-1-86">v2.1.86 → v2.1.91</a></span>
-  <span>5 features · March 30 – April 3</span>
+  <span>发布版本 <a href="/docs/docs/en/changelog#2-1-86">v2.1.86 → v2.1.91</a></span>
+  <span>5 项功能 · 3 月 30 日 – 4 月 3 日</span>
 </div>
 
 <div className="digest-feature">
   <div className="digest-feature-header">
-    <span className="digest-feature-title">Computer use in the CLI</span>
-    <span className="digest-feature-pill">research preview</span>
+    <span className="digest-feature-title">CLI 中的计算机使用</span>
+    <span className="digest-feature-pill">研究预览</span>
   </div>
 
-  <p className="digest-feature-lede">Last week computer use landed in the Desktop app. This week it's in the CLI: Claude can open native apps, click through UI, test its own changes, and fix what breaks, all from your terminal. Web apps already had verification loops; native iOS, macOS, and other GUI-only apps didn't. Now they do. Best for closing the loop on apps and tools where there's no API to call. Still early; expect rough edges.</p>
+  <p className="digest-feature-lede">上周计算机使用功能登陆了桌面应用。本周它进入了 CLI：Claude 可以打开原生应用、点击 UI、测试自己的更改，以及修复损坏的内容，所有这些都可以从你的终端完成。Web 应用已经有验证循环；原生 iOS、macOS 和其他仅限 GUI 的应用没有。现在有了。最适合在没有 API 可调用的应用和工具上闭合循环。仍处于早期阶段；预期会有粗糙的边缘。</p>
 
   <Frame>
     <video autoPlay muted loop playsInline className="w-full" src="https://mintcdn.com/claude-code/CfffsX01JHFnIKvD/images/whats-new/cli-computer-use.mp4?fit=max&auto=format&n=CfffsX01JHFnIKvD&q=85&s=c17a337902308d7c9121013ded0494db" data-path="images/whats-new/cli-computer-use.mp4" />
   </Frame>
 
-  <p className="digest-feature-try">Requires macOS and a Pro or Max plan; otherwise, <code>computer-use</code> won't appear in <code>/mcp</code>. Run <code>/mcp</code>, find <code>computer-use</code>, and toggle it on. Then ask Claude to verify a change end to end:</p>
+  <p className="digest-feature-try">需要 macOS 和 Pro 或 Max 计划；否则，<code>computer-use</code> 不会出现在 <code>/mcp</code> 中。运行 <code>/mcp</code>，找到 <code>computer-use</code>，然后将其打开。然后要求 Claude 端到端验证更改：</p>
 
-  ```text title="Claude Code" wrap theme={null}
-  Open the iOS simulator, tap through onboarding, and screenshot each step
+  ```text Claude Code theme={null}
+  > Open the iOS simulator, tap through onboarding, and screenshot each step
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/computer-use">Computer use guide</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/computer-use">计算机使用指南</a>
 </div>
 
 <div className="digest-feature">
@@ -38,52 +38,52 @@
     <span className="digest-feature-pill">v2.1.90</span>
   </div>
 
-  <p className="digest-feature-lede">Interactive lessons that teach Claude Code features through animated demos, right inside your terminal. Claude Code releases frequently, and features that would have changed how you work last month can slip by. Run <code>/powerup</code> once and you'll know what's there.</p>
+  <p className="digest-feature-lede">交互式课程，通过动画演示教授 Claude Code 功能，直接在你的终端内进行。Claude Code 发布频繁，上个月会改变你工作方式的功能可能会被遗漏。运行一次 <code>/powerup</code>，你就会知道有什么功能。</p>
 
   <Frame>
     <video autoPlay muted loop playsInline className="w-full" src="https://mintcdn.com/claude-code/CfffsX01JHFnIKvD/images/whats-new/powerup.mp4?fit=max&auto=format&n=CfffsX01JHFnIKvD&q=85&s=fb88beddc0ecc8029da5ab029e4b28f1" data-path="images/whats-new/powerup.mp4" />
   </Frame>
 
-  <p className="digest-feature-try">Run it:</p>
+  <p className="digest-feature-try">运行它：</p>
 
-  ```text title="Claude Code" wrap theme={null}
-  /powerup
+  ```text Claude Code theme={null}
+  > /powerup
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/commands">Commands reference</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/commands">命令参考</a>
 </div>
 
 <div className="digest-feature">
   <div className="digest-feature-header">
-    <span className="digest-feature-title">Flicker-free rendering</span>
+    <span className="digest-feature-title">无闪烁渲染</span>
     <span className="digest-feature-pill">v2.1.89</span>
   </div>
 
-  <p className="digest-feature-lede">Opt into a new alt-screen renderer with virtualized scrollback. The prompt input stays pinned to the bottom, mouse selection works across long conversations, and the flicker on redraw is gone. Unset <code>CLAUDE\_CODE\_NO\_FLICKER</code> to roll back.</p>
+  <p className="digest-feature-lede">选择加入新的替代屏幕渲染器，具有虚拟化的回滚。提示输入保持固定在底部，鼠标选择可跨长对话工作，重绘时的闪烁消失了。取消设置 <code>CLAUDE\_CODE\_NO\_FLICKER</code> 以回滚。</p>
 
   <Frame>
     <video autoPlay muted loop playsInline className="w-full" src="https://mintcdn.com/claude-code/CfffsX01JHFnIKvD/images/whats-new/flicker-free.mp4?fit=max&auto=format&n=CfffsX01JHFnIKvD&q=85&s=7719e35e52a3f9734b0cf69edac333ad" data-path="images/whats-new/flicker-free.mp4" />
   </Frame>
 
-  <p className="digest-feature-try">Set the env var and restart Claude Code:</p>
+  <p className="digest-feature-try">设置环境变量并重启 Claude Code：</p>
 
   ```bash theme={null}
   export CLAUDE_CODE_NO_FLICKER=1
   claude
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/fullscreen">Fullscreen rendering</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/fullscreen">全屏渲染</a>
 </div>
 
 <div className="digest-feature">
   <div className="digest-feature-header">
-    <span className="digest-feature-title">MCP result-size override</span>
+    <span className="digest-feature-title">MCP 结果大小覆盖</span>
     <span className="digest-feature-pill">v2.1.91</span>
   </div>
 
-  <p className="digest-feature-lede">MCP server authors can now raise the truncation cap on a specific tool by setting <code>anthropic/maxResultSizeChars</code> in the tool's <code>tools/list</code> entry, up to a hard ceiling of 500K characters. The cap used to be global, so tools that occasionally returned inherently large payloads like database schemas or full file trees hit the default limit and got persisted to disk with a file reference. Per-tool overrides keep those results inline when the tool really needs them.</p>
+  <p className="digest-feature-lede">MCP 服务器作者现在可以通过在工具的 <code>tools/list</code> 条目中设置 <code>anthropic/maxResultSizeChars</code> 来提高特定工具的截断上限，最高可达 500K 字符的硬上限。上限曾经是全局的，所以偶尔返回数据库架构或完整文件树等固有大型有效负载的工具会达到默认限制，并被持久化到磁盘，带有文件引用。按工具覆盖在工具真正需要时将这些结果保持内联。</p>
 
-  <p className="digest-feature-try">Annotate the tool in your server's <code>tools/list</code> response:</p>
+  <p className="digest-feature-try">在你的服务器的 <code>tools/list</code> 响应中注释工具：</p>
 
   ```json highlight={5} theme={null}
   {
@@ -95,18 +95,18 @@
   }
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/mcp#raise-the-limit-for-a-specific-tool">MCP reference</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/mcp#raise-the-limit-for-a-specific-tool">MCP 参考</a>
 </div>
 
 <div className="digest-feature">
   <div className="digest-feature-header">
-    <span className="digest-feature-title">Plugin executables on PATH</span>
+    <span className="digest-feature-title">PATH 上的插件可执行文件</span>
     <span className="digest-feature-pill">v2.1.91</span>
   </div>
 
-  <p className="digest-feature-lede">Place an executable in a <code>bin/</code> directory at your plugin root and Claude Code adds that directory to the Bash tool's <code>PATH</code> while the plugin is enabled. Claude can then invoke the binary as a bare command from any Bash tool call, with no absolute path or wrapper script needed. Handy for packaging CLI helpers next to the commands, agents, and hooks that call them.</p>
+  <p className="digest-feature-lede">在插件根目录的 <code>bin/</code> 目录中放置可执行文件，Claude Code 会在启用插件时将该目录添加到 Bash 工具的 <code>PATH</code>。Claude 随后可以从任何 Bash 工具调用中将二进制文件作为裸命令调用，无需绝对路径或包装脚本。便于将 CLI 助手与调用它们的命令、代理和钩子一起打包。</p>
 
-  <p className="digest-feature-try">Add a <code>bin/</code> directory at the plugin root:</p>
+  <p className="digest-feature-try">在插件根目录添加 <code>bin/</code> 目录：</p>
 
   ```text highlight={4, 5} theme={null}
   my-plugin/
@@ -116,23 +116,23 @@
       └── my-tool
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/plugins-reference#file-locations-reference">Plugins reference</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/plugins-reference#file-locations-reference">插件参考</a>
 </div>
 
 <div className="digest-wins">
-  <p className="digest-wins-title">Other wins</p>
+  <p className="digest-wins-title">其他成就</p>
 
   <div className="digest-wins-grid">
-    <div>Auto mode follow-ups: new <code>PermissionDenied</code> hook fires on classifier denials (return <code>retry: true</code> to let Claude try a different approach), and <code>/permissions</code> → Recently denied lets you retry manually with <code>r</code></div>
-    <div>New <code>defer</code> value for <code>permissionDecision</code> in <code>PreToolUse</code> hooks: <code>-p</code> sessions pause at a tool call and exit with a <code>deferred\_tool\_use</code> payload so an SDK app or custom UI can surface it, then resume with <code>--resume</code></div>
-    <div><code>/buddy</code>: hatch a small creature that watches you code. An April Fools' joke, no longer available</div>
-    <div><code>disableSkillShellExecution</code> setting blocks inline shell from skills, slash commands, and plugin commands</div>
-    <div>Edit tool now works on files viewed via <code>cat</code> or <code>sed -n</code> without a separate Read</div>
-    <div>Hook output over 50K saved to disk with a path + preview instead of injected into context</div>
-    <div>Thinking summaries off by default in interactive sessions (<code>showThinkingSummaries: true</code> to restore)</div>
-    <div>Voice mode: push-to-talk modifier combos, Windows WebSocket, macOS Apple Silicon mic permission</div>
-    <div><code>claude-cli://</code> deep links accept multi-line prompts (encoded <code>%0A</code>)</div>
+    <div>自动模式后续：新的 <code>PermissionDenied</code> 钩子在分类器拒绝时触发（返回 <code>retry: true</code> 让 Claude 尝试不同的方法），<code>/permissions</code> → 最近拒绝让你用 <code>r</code> 手动重试</div>
+    <div><code>PreToolUse</code> 钩子中 <code>permissionDecision</code> 的新 <code>defer</code> 值：<code>-p</code> 会话在工具调用处暂停并以 <code>deferred\_tool\_use</code> 有效负载退出，以便 SDK 应用或自定义 UI 可以显示它，然后用 <code>--resume</code> 恢复</div>
+    <div><code>/buddy</code>：孵化一个小生物来观看你编码。一个愚人节玩笑，不再可用</div>
+    <div><code>disableSkillShellExecution</code> 设置阻止来自技能、斜杠命令和插件命令的内联 shell</div>
+    <div>编辑工具现在可以在通过 <code>cat</code> 或 <code>sed -n</code> 查看的文件上工作，无需单独的读取</div>
+    <div>超过 50K 的钩子输出保存到磁盘，带有路径和预览，而不是注入到上下文中</div>
+    <div>思考摘要在交互式会话中默认关闭（<code>showThinkingSummaries: true</code> 以恢复）</div>
+    <div>语音模式：按住说话修饰符组合、Windows WebSocket、macOS Apple Silicon 麦克风权限</div>
+    <div><code>claude-cli://</code> 深层链接接受多行提示（编码 <code>%0A</code>）</div>
   </div>
 </div>
 
-[Full changelog for v2.1.86–v2.1.91 →](/docs/en/changelog#2-1-86)
+[v2.1.86–v2.1.91 的完整更改日志 →](/docs/en/changelog#2-1-86)

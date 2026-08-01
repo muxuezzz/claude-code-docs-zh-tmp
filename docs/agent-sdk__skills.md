@@ -2,51 +2,53 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Agent Skills in the SDK
+# SDK 中的 Agent Skills
 
-> Extend Claude with specialized capabilities using Agent Skills in the Claude Agent SDK
+> 使用 Claude Agent SDK 中的 Agent Skills 扩展 Claude 的专业能力
 
-## Overview
+<h2 id="overview">
+  概述
+</h2>
 
-Agent Skills extend Claude with specialized capabilities that Claude autonomously invokes when relevant. Skills are packaged as `SKILL.md` files containing instructions, descriptions, and optional supporting resources.
+Agent Skills 通过专业能力扩展 Claude，Claude 会在相关时自动调用这些能力。Skills 被打包为 `SKILL.md` 文件，包含说明、描述和可选的支持资源。
 
-For comprehensive information about Skills, including benefits, architecture, and authoring guidelines, see the [Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
+有关 Skills 的全面信息，包括优势、架构和编写指南，请参阅 [Agent Skills 概述](https://platform.claude.com/docs/zh-CN/agents-and-tools/agent-skills/overview)。
 
-## How Skills Work with the SDK
+<h2 id="how-skills-work-with-the-sdk">
+  Skills 如何与 SDK 配合使用
+</h2>
 
-When using the Claude Agent SDK, Skills are:
+使用 Claude Agent SDK 时，Skills 的工作方式如下：
 
-1. **Defined as filesystem artifacts**: you create each Skill as a `SKILL.md` file in its own directory, such as `.claude/skills/<name>/SKILL.md`
-2. **Loaded from filesystem**: the SDK loads Skills from the filesystem locations governed by `settingSources` (TypeScript) or `setting_sources` (Python)
-3. **Automatically discovered**: once filesystem settings load, the SDK discovers Skill metadata at startup from user and project directories, and loads the full content when Claude invokes the Skill
-4. **Model-invoked**: Claude autonomously chooses when to use them based on context
-5. **Filtered via the `skills` option**: discovered skills are enabled by default. Pass a list of skill names, `"all"`, or `[]` to control which are available in the session
+1. **定义为文件系统工件**：在特定目录（`.claude/skills/`）中创建为 `SKILL.md` 文件
+2. **从文件系统加载**：Skills 从由 `settingSources`（TypeScript）或 `setting_sources`（Python）管理的文件系统位置加载
+3. **自动发现**：加载文件系统设置后，在启动时从用户和项目目录发现 Skill 元数据；触发时加载完整内容
+4. **由模型调用**：Claude 根据上下文自动选择何时使用它们
+5. **通过 `skills` 选项过滤**：发现的 Skills 默认启用。传递 Skill 名称列表、`"all"` 或 `[]` 来控制会话中可用的 Skills
 
-Unlike subagents (which can be defined programmatically), Skills must be created as filesystem artifacts. The SDK does not provide a programmatic API for registering Skills.
+与子代理（可以通过编程方式定义）不同，Skills 必须创建为文件系统工件。SDK 不提供用于注册 Skills 的编程 API。
 
 <Note>
-  Skills are discovered through the filesystem setting sources. With default `query()` options, the SDK loads user and project sources, so skills in `~/.claude/skills/`, `<cwd>/.claude/skills/`, and `.claude/skills/` in any parent directory of `<cwd>` up to the repository root are available. If you set `settingSources` explicitly, include `'user'` or `'project'` to keep skill discovery, or use the [`plugins` option](/docs/en/agent-sdk/plugins) to load skills from a specific path.
+  Skills 通过文件系统设置源发现。使用默认 `query()` 选项时，SDK 加载用户和项目源，因此 `~/.claude/skills/`、`<cwd>/.claude/skills/` 和 `<cwd>` 到存储库根目录之间任何父目录中的 `.claude/skills/` 中的 Skills 可用。如果显式设置 `settingSources`，请包含 `'user'` 或 `'project'` 以保持 Skill 发现，或使用 [`plugins` 选项](/docs/zh-CN/agent-sdk/plugins) 从特定路径加载 Skills。
 </Note>
 
-## Using Skills with the SDK
+<h2 id="using-skills-with-the-sdk">
+  在 SDK 中使用 Skills
+</h2>
 
-Set the `skills` option on `query()` to control which Skills are available to the session. When omitted, discovered Skills are enabled and the Skill tool is available, matching CLI behavior. Pass `"all"` to enable every discovered Skill, a list of Skill names to enable only those, or `[]` to disable all. When you set `skills`, the SDK adds the Skill tool to `allowedTools` automatically. If you also pass an explicit `tools` list, include `"Skill"` in that list so Claude can invoke skills.
+在 `query()` 上设置 `skills` 选项以控制会话中可用的 Skills。省略时，发现的 Skills 启用且 Skill 工具可用，与 CLI 行为匹配。传递 `"all"` 以启用每个发现的 Skill，传递 Skill 名称列表以仅启用那些，或传递 `[]` 以禁用所有。设置 `skills` 时，SDK 自动将 Skill 工具添加到 `allowedTools`。如果您还传递显式 `tools` 列表，请在该列表中包含 `"Skill"`，以便 Claude 可以调用 skills。
 
-Once configured, Claude automatically discovers Skills from the filesystem and invokes them when relevant to the user's request.
-
-The following example sets `cwd` to the process's current working directory, so run it from inside a project that has a `.claude/skills/` directory in the current directory or any parent up to the repository root:
+配置后，Claude 自动从文件系统发现 Skills 并在与用户请求相关时调用它们。
 
 <CodeGroup>
   ```python Python theme={null}
   import asyncio
-  import os
-
   from claude_agent_sdk import query, ClaudeAgentOptions
 
 
   async def main():
       options = ClaudeAgentOptions(
-          cwd=os.getcwd(),  # .claude/skills/ here or in a parent directory
+          cwd="/path/to/project",  # Project with .claude/skills/
           setting_sources=["user", "project"],  # Load Skills from filesystem
           skills="all",  # Enable every discovered Skill
           allowed_tools=["Read", "Write", "Bash"],
@@ -67,7 +69,7 @@ The following example sets `cwd` to the process's current working directory, so 
   for await (const message of query({
     prompt: "Help me process this PDF document",
     options: {
-      cwd: process.cwd(), // .claude/skills/ here or in a parent directory
+      cwd: "/path/to/project", // Project with .claude/skills/
       settingSources: ["user", "project"], // Load Skills from filesystem
       skills: "all", // Enable every discovered Skill
       allowedTools: ["Read", "Write", "Bash"]
@@ -78,13 +80,7 @@ The following example sets `cwd` to the process's current working directory, so 
   ```
 </CodeGroup>
 
-Near the start of the stream, the SDK yields a system message with subtype `init`. Check its `skills` array to confirm your Skills loaded before Claude starts working. The array lists user-invocable Skills only. A Skill with [`user-invocable: false`](/docs/en/skills#control-who-invokes-a-skill) in its frontmatter loads and remains available to Claude but doesn't appear in the array.
-
-To enable only specific Skills, pass their names. Names match the `name` field in `SKILL.md` or the Skill's directory name. Use `plugin:skill` for plugin-provided Skills.
-
-<Note>
-  Import statements from the first example are assumed in the following code snippets.
-</Note>
+要仅启用特定 Skills，请传递它们的名称。名称与 `SKILL.md` 中的 `name` 字段或 Skill 的目录名称匹配。对于插件提供的 Skills，使用 `plugin:skill`。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -96,41 +92,51 @@ To enable only specific Skills, pass their names. Names match the `name` field i
   ```
 </CodeGroup>
 
-The `skills` option is a context filter, not a sandbox. Unlisted Skills are hidden from the model and rejected by the Skill tool, but their files remain on disk and are reachable through Read and Bash.
+`skills` 选项是上下文过滤器，不是沙箱。未列出的 Skills 对模型隐藏，并被 Skill 工具拒绝，但它们的文件仍在磁盘上，可通过 Read 和 Bash 访问。
 
-## Skill Locations
+<h2 id="skill-locations">
+  Skill 位置
+</h2>
 
-Skills are loaded from filesystem directories based on your `settingSources`/`setting_sources` configuration:
+Skills 根据您的 `settingSources`/`setting_sources` 配置从文件系统目录加载：
 
-* **Project Skills** (`.claude/skills/`): Shared with your team via git - loaded when `setting_sources` includes `"project"`
-* **User Skills** (`~/.claude/skills/`): Personal Skills across all projects - loaded when `setting_sources` includes `"user"`
-* **Plugin Skills**: Bundled with installed Claude Code plugins
+* **项目 Skills**（`.claude/skills/`）：通过 git 与您的团队共享 - 当 `setting_sources` 包含 `"project"` 时加载
+* **用户 Skills**（`~/.claude/skills/`）：跨所有项目的个人 Skills - 当 `setting_sources` 包含 `"user"` 时加载
+* **插件 Skills**：与已安装的 Claude Code 插件捆绑
 
-## Creating Skills
+<h2 id="creating-skills">
+  创建 Skills
+</h2>
 
-Create each Skill as a directory containing a `SKILL.md` file with YAML frontmatter and Markdown content. The `description` field determines when Claude invokes your Skill.
+Skills 定义为包含带有 YAML frontmatter 和 Markdown 内容的 `SKILL.md` 文件的目录。`description` 字段确定 Claude 何时调用您的 Skill。
 
-**Example directory structure**:
+**示例目录结构**：
 
-```text theme={null}
+```bash theme={null}
 .claude/skills/processing-pdfs/
 └── SKILL.md
 ```
 
-For complete guidance on creating Skills, including SKILL.md structure, multi-file Skills, and examples, see:
+有关创建 Skills 的完整指导，包括 SKILL.md 结构、多文件 Skills 和示例，请参阅：
 
-* [Agent Skills in Claude Code](/docs/en/skills): Complete guide with examples
-* [Agent Skills Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): Authoring guidelines and naming conventions
+* [Claude Code 中的 Agent Skills](/docs/zh-CN/skills)：包含示例的完整指南
+* [Agent Skills 最佳实践](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)：编写指南和命名约定
 
-## Tool Restrictions
+<h2 id="tool-restrictions">
+  工具限制
+</h2>
 
 <Note>
-  The `allowed-tools` frontmatter field in SKILL.md is only supported when using Claude Code CLI directly. **It does not apply when using Skills through the SDK**.
+  SKILL.md 中的 `allowed-tools` frontmatter 字段仅在直接使用 Claude Code CLI 时受支持。**通过 SDK 使用 Skills 时不适用**。
 
-  When using the SDK, control tool access through the main `allowedTools` option in your query configuration.
+  使用 SDK 时，通过查询配置中的主 `allowedTools` 选项控制工具访问。
 </Note>
 
-To control tool access for Skills in SDK applications, use `allowedTools` to pre-approve specific tools. Without a `canUseTool` callback, anything not in the list is denied:
+要在 SDK 应用程序中控制 Skills 的工具访问，使用 `allowedTools` 预先批准特定工具。没有 `canUseTool` 回调时，列表中没有的任何内容都被拒绝：
+
+<Note>
+  假设第一个示例中的导入语句在以下代码片段中。
+</Note>
 
 <CodeGroup>
   ```python Python theme={null}
@@ -138,16 +144,10 @@ To control tool access for Skills in SDK applications, use `allowedTools` to pre
       setting_sources=["user", "project"],  # Load Skills from filesystem
       skills="all",
       allowed_tools=["Read", "Grep", "Glob"],
-      permission_mode="dontAsk",  # Deny anything not pre-approved instead of prompting
   )
 
-
-  async def main():
-      async for message in query(prompt="Analyze the codebase structure", options=options):
-          print(message)
-
-
-  asyncio.run(main())
+  async for message in query(prompt="Analyze the codebase structure", options=options):
+      print(message)
   ```
 
   ```typescript TypeScript theme={null}
@@ -157,7 +157,7 @@ To control tool access for Skills in SDK applications, use `allowedTools` to pre
       settingSources: ["user", "project"], // Load Skills from filesystem
       skills: "all",
       allowedTools: ["Read", "Grep", "Glob"],
-      permissionMode: "dontAsk" // Deny anything not pre-approved instead of prompting
+      permissionMode: "dontAsk" // Deny anything not in allowedTools
     }
   })) {
     console.log(message);
@@ -165,27 +165,28 @@ To control tool access for Skills in SDK applications, use `allowedTools` to pre
   ```
 </CodeGroup>
 
-## Discovering Available Skills
+<h2 id="discovering-available-skills">
+  发现可用的 Skills
+</h2>
 
-To see which Skills are available in your SDK application, ask Claude. The example below sets only the `skills` option and omits `settingSources`/`setting_sources`. When you leave `settingSources`/`setting_sources` unset, the SDK still loads Skills from the user and project sources, so the `skills` option set to `"all"` on its own makes them available to list.
+要查看 SDK 应用程序中可用的 Skills，只需询问 Claude：
 
 <CodeGroup>
   ```python Python theme={null}
-  options = ClaudeAgentOptions(skills="all")
+  options = ClaudeAgentOptions(
+      setting_sources=["user", "project"],  # Load Skills from filesystem
+      skills="all",
+  )
 
-
-  async def main():
-      async for message in query(prompt="What Skills are available?", options=options):
-          print(message)
-
-
-  asyncio.run(main())
+  async for message in query(prompt="What Skills are available?", options=options):
+      print(message)
   ```
 
   ```typescript TypeScript theme={null}
   for await (const message of query({
     prompt: "What Skills are available?",
     options: {
+      settingSources: ["user", "project"], // Load Skills from filesystem
       skills: "all"
     }
   })) {
@@ -194,35 +195,32 @@ To see which Skills are available in your SDK application, ask Claude. The examp
   ```
 </CodeGroup>
 
-Claude will list the available Skills based on your current working directory and installed plugins.
+Claude 将根据您当前的工作目录和已安装的插件列出可用的 Skills。
 
-## Testing Skills
+<h2 id="testing-skills">
+  测试 Skills
+</h2>
 
-Test Skills by asking questions that match their descriptions:
+通过提出与其描述匹配的问题来测试 Skills：
 
 <CodeGroup>
   ```python Python theme={null}
   options = ClaudeAgentOptions(
-      cwd=os.getcwd(),
+      cwd="/path/to/project",
       setting_sources=["user", "project"],  # Load Skills from filesystem
       skills="all",
       allowed_tools=["Read", "Bash"],
   )
 
-
-  async def main():
-      async for message in query(prompt="Extract text from invoice.pdf", options=options):
-          print(message)
-
-
-  asyncio.run(main())
+  async for message in query(prompt="Extract text from invoice.pdf", options=options):
+      print(message)
   ```
 
   ```typescript TypeScript theme={null}
   for await (const message of query({
     prompt: "Extract text from invoice.pdf",
     options: {
-      cwd: process.cwd(),
+      cwd: "/path/to/project",
       settingSources: ["user", "project"], // Load Skills from filesystem
       skills: "all",
       allowedTools: ["Read", "Bash"]
@@ -233,13 +231,17 @@ Test Skills by asking questions that match their descriptions:
   ```
 </CodeGroup>
 
-Claude automatically invokes the relevant Skill if the description matches your request.
+如果描述与您的请求匹配，Claude 会自动调用相关的 Skill。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Skills Not Found
+<h3 id="skills-not-found">
+  找不到 Skills
+</h3>
 
-**Check settingSources configuration**: Skills are discovered through the `user` and `project` setting sources. If you set `settingSources`/`setting_sources` explicitly and omit those sources, skills are not loaded:
+**检查 settingSources 配置**：Skills 通过 `user` 和 `project` 设置源发现。如果显式设置 `settingSources`/`setting_sources` 并省略这些源，Skills 不会加载：
 
 <CodeGroup>
   ```python Python theme={null}
@@ -255,22 +257,22 @@ Claude automatically invokes the relevant Skill if the description matches your 
 
   ```typescript TypeScript theme={null}
   // Skills not loaded: settingSources excludes user and project
-  const optionsWithoutSkills = {
+  const options = {
     settingSources: [],
     skills: "all"
   };
 
   // Skills loaded: user and project sources included
-  const optionsWithSkills = {
+  const options = {
     settingSources: ["user", "project"],
     skills: "all"
   };
   ```
 </CodeGroup>
 
-For more details on `settingSources`/`setting_sources`, see the [TypeScript SDK reference](/docs/en/agent-sdk/typescript#settingsource) or [Python SDK reference](/docs/en/agent-sdk/python#settingsource).
+有关 `settingSources`/`setting_sources` 的更多详情，请参阅 [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript#settingsource) 或 [Python SDK 参考](/docs/zh-CN/agent-sdk/python#settingsource)。
 
-**Check working directory**: The SDK loads Skills from `.claude/skills/` in the `cwd` option and in every parent directory up to the repository root. Ensure `cwd` points at or below the directory containing `.claude/skills/`, within the same repository:
+**检查工作目录**：SDK 从 `cwd` 选项中的 `.claude/skills/` 以及直到仓库根目录的每个父目录加载 Skills。确保 `cwd` 指向包含 `.claude/skills/` 的目录或其下方目录，且在同一仓库内：
 
 <CodeGroup>
   ```python Python theme={null}
@@ -292,9 +294,9 @@ For more details on `settingSources`/`setting_sources`, see the [TypeScript SDK 
   ```
 </CodeGroup>
 
-See the "Using Skills with the SDK" section above for the complete pattern.
+有关完整模式，请参阅上面的"在 SDK 中使用 Skills"部分。
 
-**Verify filesystem location**:
+**验证文件系统位置**：
 
 ```bash theme={null}
 # Check project Skills
@@ -304,29 +306,39 @@ ls .claude/skills/*/SKILL.md
 ls ~/.claude/skills/*/SKILL.md
 ```
 
-### Skill Not Being Used
+<h3 id="skill-not-being-used">
+  Skill 未被使用
+</h3>
 
-**Check the `skills` option**: If you passed a `skills` list, confirm the skill's name is included. Passing `[]` disables all skills.
+**检查 `skills` 选项**：如果传递了 `skills` 列表，确认 Skill 的名称已包含。传递 `[]` 会禁用所有 Skills。
 
-**Check the description**: Ensure it's specific and includes relevant keywords. See [Agent Skills Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#writing-effective-descriptions) for guidance on writing effective descriptions.
+**检查描述**：确保它具体且包含相关关键字。有关编写有效描述的指导，请参阅 [Agent Skills 最佳实践](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#writing-effective-descriptions)。
 
-### Additional Troubleshooting
+<h3 id="additional-troubleshooting">
+  其他故障排除
+</h3>
 
-For general Skills troubleshooting (YAML syntax, debugging, etc.), see the [Claude Code Skills troubleshooting section](/docs/en/skills#troubleshooting).
+有关一般 Skills 故障排除（YAML 语法、调试等），请参阅 [Claude Code Skills 故障排除部分](/docs/zh-CN/skills#troubleshooting)。
 
-## Related Documentation
+<h2 id="related-documentation">
+  相关文档
+</h2>
 
-### Skills Guides
+<h3 id="skills-guides">
+  Skills 指南
+</h3>
 
-* [Agent Skills in Claude Code](/docs/en/skills): Complete Skills guide with creation, examples, and troubleshooting
-* [Agent Skills Overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview): Conceptual overview, benefits, and architecture
-* [Agent Skills Best Practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): Authoring guidelines for effective Skills
-* [Agent Skills Cookbook](https://platform.claude.com/cookbook/skills-notebooks-01-skills-introduction): Example Skills and templates
+* [Claude Code 中的 Agent Skills](/docs/zh-CN/skills)：包含创建、示例和故障排除的完整 Skills 指南
+* [Agent Skills 概述](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)：概念概述、优势和架构
+* [Agent Skills 最佳实践](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)：有效 Skills 的编写指南
+* [Agent Skills 食谱](https://platform.claude.com/cookbook/skills-notebooks-01-skills-introduction)：示例 Skills 和模板
 
-### SDK Resources
+<h3 id="sdk-resources">
+  SDK 资源
+</h3>
 
-* [Subagents in the SDK](/docs/en/agent-sdk/subagents): Similar filesystem-based agents with programmatic options
-* [Slash Commands in the SDK](/docs/en/agent-sdk/slash-commands): User-invoked commands
-* [SDK Overview](/docs/en/agent-sdk/overview): General SDK concepts
-* [TypeScript SDK Reference](/docs/en/agent-sdk/typescript): Complete API documentation
-* [Python SDK Reference](/docs/en/agent-sdk/python): Complete API documentation
+* [SDK 中的子代理](/docs/zh-CN/agent-sdk/subagents)：具有编程选项的类似文件系统代理
+* [SDK 中的 Slash Commands](/docs/zh-CN/agent-sdk/slash-commands)：用户调用的命令
+* [SDK 概述](/docs/zh-CN/agent-sdk/overview)：常规 SDK 概念
+* [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript)：完整 API 文档
+* [Python SDK 参考](/docs/zh-CN/agent-sdk/python)：完整 API 文档

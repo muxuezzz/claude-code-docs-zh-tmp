@@ -2,68 +2,76 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Roll out an LLM gateway for your organization
+# 为您的组织推出 LLM 网关
 
-> Deploy a gateway product for Claude Code: configure it to forward what Claude Code sends, issue developer credentials, distribute the configuration through managed settings, and verify the rollout.
+> 为 Claude Code 部署网关产品：配置它以转发 Claude Code 发送的内容，颁发开发者凭证，通过托管设置分发配置，并验证推出。
 
-This page walks an administrator through rolling out an LLM gateway for Claude Code. It assumes you have a gateway product deployed that meets the [gateway requirements](#gateway-requirements). Deploying or operating any specific product isn't covered here; deploy yours following its vendor's documentation.
+本页面指导管理员为 Claude Code 推出 LLM 网关。它假设您已部署了满足[网关要求](#gateway-requirements)的网关产品。本页面不涵盖部署或运营任何特定产品；请按照您的供应商文档部署您的产品。
 
 <Note>
-  * To connect Claude Code on your own machine to an existing gateway, see [Connect Claude Code to an LLM gateway](/docs/en/llm-gateway-connect)
-  * For what Claude Code sends to a gateway and what to forward, see the [gateway protocol reference](/docs/en/llm-gateway-protocol)
+  * 要将您自己机器上的 Claude Code 连接到现有网关，请参阅[将 Claude Code 连接到 LLM 网关](/docs/zh-CN/llm-gateway-connect)
+  * 有关 Claude Code 发送到网关的内容以及要转发的内容，请参阅[网关协议参考](/docs/zh-CN/llm-gateway-protocol)
 </Note>
 
-## Prerequisites
+<h2 id="prerequisites">
+  前置条件
+</h2>
 
-To complete the rollout, you'll need:
+要完成推出，您需要：
 
-* A gateway deployed on your infrastructure, serving HTTPS at the exact address you'll distribute to developers, not an address that redirects to it, and configured to route Claude model names to your provider
-* A provider credential for the gateway to forward with:
-  * For the Anthropic API: an API key from the [Claude Console](https://platform.claude.com/settings/keys)
-  * For a cloud provider: cloud credentials with model access. See the prerequisites on the [Amazon Bedrock](/docs/en/amazon-bedrock#prerequisites), [Google Cloud's Agent Platform](/docs/en/google-vertex-ai#prerequisites), or [Microsoft Foundry](/docs/en/microsoft-foundry#prerequisites) page
-* A way to deliver settings files to developer machines, such as MDM or configuration management
-  * If you don't have one yet, [how settings reach devices](/docs/en/admin-setup#decide-how-settings-reach-devices) compares the options
+* 在您的基础设施上部署的网关，在您将分发给开发者的确切地址上提供 HTTPS，而不是重定向到它的地址，并配置为将 Claude 模型名称路由到您的提供商
+* 网关转发的提供商凭证：
+  * 对于 Anthropic API：来自 [Claude 控制台](https://platform.claude.com/settings/keys)的 API 密钥
+  * 对于云提供商：具有模型访问权限的云凭证。请参阅 [Amazon Bedrock](/docs/zh-CN/amazon-bedrock#prerequisites)、[Google Cloud 的 Agent Platform](/docs/zh-CN/google-vertex-ai#prerequisites) 或 [Microsoft Foundry](/docs/zh-CN/microsoft-foundry#prerequisites) 页面上的前置条件
+* 一种向开发者机器交付设置文件的方式，例如 MDM 或配置管理
+  * 如果您还没有，[设置如何到达设备](/docs/zh-CN/admin-setup#decide-how-settings-reach-devices)比较了各种选项
 
-### Gateway requirements
+<h3 id="gateway-requirements">
+  网关要求
+</h3>
 
-Whichever product provides the gateway, it must:
+无论哪种产品提供网关，它必须：
 
-* **Accept a supported API format**: one of the formats in the [API formats table](/docs/en/llm-gateway-protocol#api-formats). The rollout steps below assume the Anthropic Messages API at `POST /v1/messages`, which most gateways serve
-* **Stream responses**: pass server-sent events through as they arrive instead of buffering the whole response
-* **Route Claude model names**: map each name developers use to an upstream model. Claude Code sends a model name such as `claude-sonnet-4-6` in each request; in most gateway products the mapping is a model list or routing table in the gateway's own configuration
-* **Forward headers and body unchanged**: pass `anthropic-beta`, `anthropic-version`, and the request body through in both directions; the [feature pass-through table](/docs/en/llm-gateway-protocol#feature-pass-through) maps each to the feature that breaks without it
-* **Return upstream errors unmodified**: Claude Code's automatic recovery matches on error wording, so wrapping errors in the gateway's own envelope breaks it
-* **Exempt the path from request-body WAF inspection**: Claude Code prompts carry source code and XML-style tags that match cross-site-scripting body rules; a WAF in front of the gateway returns `403` on real sessions while short test requests pass
+* **接受支持的 API 格式**：[API 格式表](/docs/zh-CN/llm-gateway-protocol#api-formats)中的格式之一。下面的推出步骤假设 Anthropic Messages API 位于 `POST /v1/messages`，大多数网关都提供此格式
+* **流式传输响应**：按到达时传递服务器发送的事件，而不是缓冲整个响应
+* **路由 Claude 模型名称**：将开发者使用的每个名称映射到上游模型。Claude Code 在每个请求中发送模型名称，例如 `claude-sonnet-4-6`；在大多数网关产品中，映射是网关自己配置中的模型列表或路由表
+* **转发标头和正文不变**：在两个方向上传递 `anthropic-beta`、`anthropic-version` 和请求正文；[功能传递表](/docs/zh-CN/llm-gateway-protocol#feature-pass-through)将每个映射到没有它就会中断的功能
+* **返回未修改的上游错误**：Claude Code 的自动恢复与错误措辞匹配，因此在网关自己的信封中包装错误会破坏它
+* **豁免路径免受请求正文 WAF 检查**：Claude Code 提示包含源代码和 XML 样式标签，与跨站脚本正文规则匹配；网关前面的 WAF 在真实会话中返回 `403`，而短测试请求通过
 
-Optionally, serve `GET /v1/models` so Claude Code can populate the model picker from your gateway with [model discovery](/docs/en/llm-gateway-protocol#model-discovery). {/* min-version: 2.1.129 */}
+可选地，提供 `GET /v1/models` 以便 Claude Code 可以使用[模型发现](/docs/zh-CN/llm-gateway-protocol#model-discovery)从您的网关填充模型选择器。{/* min-version: 2.1.129 */}
 
-## Rollout steps
+<h2 id="rollout-steps">
+  推出步骤
+</h2>
 
-The rollout takes five steps, each with a checkpoint:
+推出分为五个步骤，每个步骤都有一个检查点：
 
-1. [Confirm the gateway routes your models](#confirm-the-gateway-routes-your-models)
-2. [Issue each developer a credential](#issue-developer-credentials)
-3. [Test Claude Code against the gateway](#test-claude-code-against-the-gateway)
-4. [Distribute the base URL and credentials](#distribute-the-configuration)
-5. [Verify from a developer machine](#verify-the-rollout)
+1. [确认网关路由您的模型](#confirm-the-gateway-routes-your-models)
+2. [为每个开发者颁发凭证](#issue-developer-credentials)
+3. [针对网关测试 Claude Code](#test-claude-code-against-the-gateway)
+4. [分发基础 URL 和凭证](#distribute-the-configuration)
+5. [从开发者机器验证](#verify-the-rollout)
 
-The steps involve three different credentials, and the checkpoints name them by placeholder so you can tell which one is at fault when something fails:
+这些步骤涉及三个不同的凭证，检查点用占位符命名它们，以便您可以在出现问题时判断哪个有问题：
 
-| Credential                        | Who holds it                                                                                         | Placeholder in checkpoints                                  |
-| :-------------------------------- | :--------------------------------------------------------------------------------------------------- | :---------------------------------------------------------- |
-| Provider credential               | The gateway, which forwards it to the upstream provider                                              | Configured on the gateway; never appears in client commands |
-| Gateway administrative credential | You, if your gateway product issues one for its admin or test interface                              | `<gateway-key>`                                             |
-| Developer key                     | Each developer, issued by the gateway in [Issue developer credentials](#issue-developer-credentials) | `<developer-key>`                                           |
+| 凭证     | 谁持有它                                                 | 检查点中的占位符           |
+| :----- | :--------------------------------------------------- | :----------------- |
+| 提供商凭证  | 网关，它将其转发给上游提供商                                       | 在网关上配置；从不出现在客户端命令中 |
+| 网关管理凭证 | 您，如果您的网关产品为其管理或测试界面颁发一个                              | `<gateway-key>`    |
+| 开发者密钥  | 每个开发者，由网关在[颁发开发者凭证](#issue-developer-credentials)中颁发 | `<developer-key>`  |
 
-### Confirm the gateway routes your models
+<h3 id="confirm-the-gateway-routes-your-models">
+  确认网关路由您的模型
+</h3>
 
-Your gateway should already be configured with your provider credential, listening at its base URL, and forwarding requests to your provider's API. Test that the path works end to end with a minimal request, substituting two values from your deployment:
+您的网关应该已经配置了您的提供商凭证，在其基础 URL 上侦听，并将请求转发到您的提供商的 API。使用最小请求测试路径是否端到端工作，替换来自您的部署的两个值：
 
-* `<gateway-key>` is whatever credential lets you call the gateway right now: an administrative key, a test key, or your own developer key if you've already issued one. Not every gateway product has a separate admin credential; if yours doesn't, issue yourself a developer key in [Issue developer credentials](#issue-developer-credentials) first
-* `model` is a Claude model name your gateway is configured to route. The example uses `claude-sonnet-4-6`; substitute a name you've configured
+* `<gateway-key>` 是任何让您现在调用网关的凭证：管理密钥、测试密钥或您自己的开发者密钥（如果您已经颁发了一个）。并非每个网关产品都有单独的管理凭证；如果您的没有，请先在[颁发开发者凭证](#issue-developer-credentials)中为自己颁发开发者密钥
+* `model` 是您的网关配置为路由的 Claude 模型名称。示例使用 `claude-sonnet-4-6`；替换为您配置的名称
 
 <Tabs>
-  <Tab title="Bash or Zsh">
+  <Tab title="Bash 或 Zsh">
     ```bash theme={null}
     curl -X POST "https://llm-gateway.example.com/v1/messages" \
       -H "Authorization: Bearer <gateway-key>" \
@@ -83,22 +91,24 @@ Your gateway should already be configured with your provider credential, listeni
   </Tab>
 </Tabs>
 
-**Checkpoint**: a `200` with a `content` field means the gateway reached the provider with that model name. A `404` means that name isn't routed at the gateway; a `401` from the provider means the gateway's provider credential is wrong.
+**检查点**：带有 `content` 字段的 `200` 意味着网关以该模型名称到达了提供商。`404` 意味着该名称在网关处未路由；来自提供商的 `401` 意味着网关的提供商凭证错误。
 
-Repeat the request once per Claude model name in your gateway's routing configuration. A name the gateway doesn't route returns `404` to any developer who selects it, so test every name before rollout.
+对网关路由配置中的每个 Claude 模型名称重复请求一次。网关不路由的名称会向选择它的任何开发者返回 `404`，因此在推出前测试每个名称。
 
 <Note>
-  Avoid serving the gateway behind a redirect. A redirect can drop the request body or strip the credential header on inference requests, and [model discovery](/docs/en/llm-gateway-protocol#model-discovery) treats any redirect as a failure so the credential cannot leak to a redirect target.
+  避免在重定向后提供网关。重定向可能会在推理请求上丢弃请求正文或剥离凭证标头，[模型发现](/docs/zh-CN/llm-gateway-protocol#model-discovery)将任何重定向视为失败，因此凭证无法泄露到重定向目标。
 </Note>
 
-### Issue developer credentials
+<h3 id="issue-developer-credentials">
+  颁发开发者凭证
+</h3>
 
-Each developer needs their own gateway key to authenticate. Create a credential per developer at the gateway, following your product's credential management documentation.
+每个开发者需要自己的网关密钥来进行身份验证。按照您的产品的凭证管理文档在网关处为每个开发者创建凭证。
 
-Confirm a freshly issued key works against the gateway with the same request as [Confirm the gateway routes your models](#confirm-the-gateway-routes-your-models), replacing `<gateway-key>` with the new `<developer-key>`:
+使用与[确认网关路由您的模型](#confirm-the-gateway-routes-your-models)相同的请求确认新颁发的密钥对网关有效，将 `<gateway-key>` 替换为新的 `<developer-key>`：
 
 <Tabs>
-  <Tab title="Bash or Zsh">
+  <Tab title="Bash 或 Zsh">
     ```bash theme={null}
     curl -X POST "https://llm-gateway.example.com/v1/messages" \
       -H "Authorization: Bearer <developer-key>" \
@@ -118,16 +128,18 @@ Confirm a freshly issued key works against the gateway with the same request as 
   </Tab>
 </Tabs>
 
-**Checkpoint**: a `200` with a `content` field means the developer key reaches the gateway and the gateway forwards it. A `401` here, when [the previous step](#confirm-the-gateway-routes-your-models) succeeded, means the developer key is wrong or hasn't taken effect at the gateway yet.
+**检查点**：带有 `content` 字段的 `200` 意味着开发者密钥到达网关，网关转发它。当[前一步](#confirm-the-gateway-routes-your-models)成功时，这里的 `401` 意味着开发者密钥错误或尚未在网关处生效。
 
-Issuing one key per developer rather than a shared key is what makes per-developer usage attribution and individual offboarding work. The environment variable that holds the key depends on which header the gateway reads. For a gateway that checks credentials in the `Authorization: Bearer` header, developers set their key in `ANTHROPIC_AUTH_TOKEN`. For a gateway that reads keys from the `x-api-key` header, developers set `ANTHROPIC_API_KEY` instead; the [credential table](/docs/en/llm-gateway-connect#set-the-credential-variable) covers the mapping.
+为每个开发者颁发一个密钥而不是共享密钥是使每个开发者使用归因和个人离职工作的原因。保存密钥的环境变量取决于网关读取的标头。对于在 `Authorization: Bearer` 标头中检查凭证的网关，开发者在 `ANTHROPIC_AUTH_TOKEN` 中设置他们的密钥。对于从 `x-api-key` 标头读取密钥的网关，开发者改为设置 `ANTHROPIC_API_KEY`；[凭证表](/docs/zh-CN/llm-gateway-connect#set-the-credential-variable)涵盖了映射。
 
-### Test Claude Code against the gateway
+<h3 id="test-claude-code-against-the-gateway">
+  针对网关测试 Claude Code
+</h3>
 
-Run Claude Code through the gateway yourself before distributing anything, using the same configuration the rollout will deliver fleet-wide. Type these directly in a terminal, not in a `.env` or settings file; they last only for this terminal session, so closing it returns your machine to its normal configuration. Use `ANTHROPIC_API_KEY` instead of `ANTHROPIC_AUTH_TOKEN` if your gateway reads the `x-api-key` header:
+在分发任何内容之前，使用推出将交付的相同配置自己通过网关运行 Claude Code。直接在终端中键入这些，而不是在 `.env` 或设置文件中；它们仅在此终端会话中持续，因此关闭它会将您的机器返回到其正常配置。如果您的网关读取 `x-api-key` 标头，请使用 `ANTHROPIC_API_KEY` 而不是 `ANTHROPIC_AUTH_TOKEN`：
 
 <Tabs>
-  <Tab title="Bash or Zsh">
+  <Tab title="Bash 或 Zsh">
     ```bash theme={null}
     export ANTHROPIC_BASE_URL=https://llm-gateway.example.com
     export ANTHROPIC_AUTH_TOKEN="<developer-key>"
@@ -142,41 +154,46 @@ Run Claude Code through the gateway yourself before distributing anything, using
   </Tab>
 </Tabs>
 
-Then send a one-shot prompt through the gateway:
+然后通过网关发送一次性提示：
 
 ```bash theme={null}
 claude -p "Reply with one word: connected"
 ```
 
-**Checkpoint**: the prompt returns a response, and the request appears in the gateway's log as a `POST` to the `/v1/messages` path with status `200`. Claude Code appends a query string such as `?beta=true`, so match on the path, not the full URL. Two failure messages point in different directions:
+**检查点**：提示返回响应，请求在网关日志中显示为对 `/v1/messages` 路径的 `POST`，状态为 `200`。Claude Code 附加查询字符串，例如 `?beta=true`，因此匹配路径，而不是完整 URL。两条失败消息指向不同的方向：
 
-* `Not logged in`: check the gateway log to tell the two causes apart. If it's empty, no credential reached the session and no request left the machine; re-run the exports in the shell you're testing from. If it shows a rejected request with `x-api-key` in the `401` body, the gateway expects keys in that header instead; switch to `ANTHROPIC_API_KEY`
-* `Failed to authenticate. API Error: 401` means a credential was sent and rejected, and the gateway log says where: a `401` naming `api.anthropic.com` or your provider's endpoint means the gateway reached the upstream but its provider credential was rejected, so the developer key worked and the provider credential the gateway holds is wrong or a placeholder
+* `Not logged in`：检查网关日志以区分两个原因。如果它是空的，没有凭证到达会话，没有请求离开机器；在您测试的 shell 中重新运行导出。如果它显示在 `401` 正文中带有 `x-api-key` 的被拒绝请求，网关期望密钥在该标头中；切换到 `ANTHROPIC_API_KEY`
+* `Failed to authenticate. API Error: 401` 意味着凭证被发送并被拒绝，网关日志说明了在哪里：命名 `api.anthropic.com` 或您的提供商端点的 `401` 意味着网关到达了上游但其提供商凭证被拒绝，因此开发者密钥有效，网关持有的提供商凭证错误或是占位符
 
-A wrong or unreachable base URL produces a different symptom: Claude Code [retries the connection with backoff](/docs/en/errors#automatic-retries) and can sit with no output for several minutes before reporting an error. If the command appears to hang, check the gateway log instead of waiting; no arriving request means `ANTHROPIC_BASE_URL` doesn't point at the gateway.
+错误或无法到达的基础 URL 会产生不同的症状：Claude Code [以退避方式重试连接](/docs/zh-CN/errors#automatic-retries)，在报告错误之前可能会坐着没有输出几分钟。如果命令似乎挂起，请检查网关日志而不是等待；没有到达的请求意味着 `ANTHROPIC_BASE_URL` 不指向网关。
 
-### Distribute the configuration
+<h3 id="distribute-the-configuration">
+  分发配置
+</h3>
 
-Every developer machine needs the gateway address and a credential. You can distribute them centrally through [managed settings](/docs/en/settings#settings-files), so developers configure nothing, or hand developers the values to set themselves.
+每个开发者机器都需要网关地址和凭证。您可以通过[托管设置](/docs/zh-CN/settings#settings-files)集中分发它们，以便开发者不配置任何内容，或者手动向开发者提供值以自己设置。
 
-#### What to distribute
+<h4 id="what-to-distribute">
+  要分发的内容
+</h4>
 
-The same set of variables applies whichever path you choose. Most rollouts only need `ANTHROPIC_BASE_URL` and a credential; include the conditional rows when your gateway setup calls for them.
+无论您选择哪条路径，都适用相同的变量集。大多数推出只需要 `ANTHROPIC_BASE_URL` 和凭证；当您的网关设置需要时包括条件行。
 
-| Variable or setting                                                                                                                                                                                                              | What it does                                                                                                                                                                                                                   | Include when                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ANTHROPIC_BASE_URL`                                                                                                                                                                                                             | Sends Claude Code's API requests to the gateway instead of `api.anthropic.com`                                                                                                                                                 | Always                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `apiKeyHelper`, or a credential in `ANTHROPIC_AUTH_TOKEN` or `ANTHROPIC_API_KEY`                                                                                                                                                 | Authenticates each request to the gateway. The helper runs a command to fetch the key; the variables hold a static key, sent as `Authorization: Bearer` and `x-api-key` respectively                                           | Always; one of the three                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `ANTHROPIC_CUSTOM_HEADERS`                                                                                                                                                                                                       | Adds extra HTTP headers to every API request                                                                                                                                                                                   | Your gateway requires a tenant or routing header on every request                                                                                                                                                                                                                                                                                                                                                                                        |
-| `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY`                                                                                                                                                                                     | Queries the gateway's `/v1/models` at startup and adds the returned names to the `/model` picker                                                                                                                               | Your gateway serves `/v1/models` and you want developers' pickers populated from it                                                                                                                                                                                                                                                                                                                                                                      |
-| `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`                                                                                                                                                                                         | Stops Claude Code sending pre-release capability headers and body fields                                                                                                                                                       | Your gateway forwards to an Amazon Bedrock or Google Cloud's Agent Platform upstream that rejects beta fields; see [Gateway requirements](#gateway-requirements)                                                                                                                                                                                                                                                                                         |
-| `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS` or `CLAUDE_CODE_SKIP_FAST_MODE_ORG_CHECK`                                                                                                                                            | Restores [fast mode](/docs/en/fast-mode) when its availability check, which calls `api.anthropic.com` directly rather than following `ANTHROPIC_BASE_URL`, fails, is intercepted, or is skipped for lack of an Anthropic credential | Your organization uses fast mode, and developers authenticate with `ANTHROPIC_AUTH_TOKEN` alone, with a gateway-issued key in `ANTHROPIC_API_KEY` or from an `apiKeyHelper`, or your network blocks or intercepts direct requests to `api.anthropic.com`; [use fast mode behind proxies and LLM gateways](/docs/en/fast-mode#use-fast-mode-behind-proxies-and-llm-gateways) covers which of the two variables matches your configuration                      |
-| `ANTHROPIC_MODEL` or [`ANTHROPIC_DEFAULT_HAIKU_MODEL`](/docs/en/model-config)                                                                                                                                                         | Set which model name Claude Code requests for the main session and for background traffic                                                                                                                                      | Your gateway routes model names that don't match Claude Code's defaults, or you route [background functionality](/docs/en/costs#background-token-usage) to a different model. Route both the override names and the built-in model IDs Claude Code requests when no override is set, since some background sub-calls request a built-in ID regardless of the override; [model configuration](/docs/en/model-config) covers which model each part of a session uses |
-| `ANTHROPIC_BEDROCK_BASE_URL`, `ANTHROPIC_VERTEX_BASE_URL`, `ANTHROPIC_FOUNDRY_BASE_URL`, or `ANTHROPIC_AWS_BASE_URL` with the [variables for that provider](/docs/en/llm-gateway-connect#route-to-a-cloud-provider-through-a-gateway) | Point Claude Code at the gateway through a provider-specific base URL. Amazon Bedrock and Google Cloud's Agent Platform also switch to those providers' native request format                                                  | Your gateway fronts Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or the Claude Platform on AWS; see [API formats](/docs/en/llm-gateway-protocol#api-formats)                                                                                                                                                                                                                                                                             |
+| 变量或设置                                                                                                                                                                                                | 它的作用                                                                                   | 包括时间                                                                                                                                                                                    |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_BASE_URL`                                                                                                                                                                                 | 将 Claude Code 的 API 请求发送到网关而不是 `api.anthropic.com`                                     | 总是                                                                                                                                                                                      |
+| `apiKeyHelper`，或 `ANTHROPIC_AUTH_TOKEN` 或 `ANTHROPIC_API_KEY` 中的凭证                                                                                                                                   | 对网关的每个请求进行身份验证。助手运行命令来获取密钥；变量保存静态密钥，分别作为 `Authorization: Bearer` 和 `x-api-key` 发送      | 总是；三个中的一个                                                                                                                                                                               |
+| `ANTHROPIC_CUSTOM_HEADERS`                                                                                                                                                                           | 向每个 API 请求添加额外的 HTTP 标头                                                                | 您的网关在每个请求上需要租户或路由标头                                                                                                                                                                     |
+| `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY`                                                                                                                                                         | 在启动时查询网关的 `/v1/models` 并将返回的名称添加到 `/model` 选择器                                         | 您的网关提供 `/v1/models` 并且您希望开发者的选择器从中填充                                                                                                                                                    |
+| `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`                                                                                                                                                             | 停止 Claude Code 发送预发布功能标头和正文字段                                                          | 您的网关转发到拒绝 beta 字段的 Amazon Bedrock 或 Google Cloud 的 Agent Platform 上游；请参阅[网关要求](#gateway-requirements)                                                                                   |
+| `ANTHROPIC_MODEL` 或 [`ANTHROPIC_DEFAULT_HAIKU_MODEL`](/docs/zh-CN/model-config)                                                                                                                           | 设置 Claude Code 为主会话和后台流量请求的模型名称                                                        | 您的网关路由与 Claude Code 默认值不匹配的模型名称，或您将[后台功能](/docs/zh-CN/costs#background-token-usage)路由到不同的模型。在网关处路由覆盖名称和 Claude Code 的默认名称，因为某些子调用可以请求默认名称，无论覆盖如何；[模型配置](/docs/zh-CN/model-config)涵盖了会话的每个部分使用哪个模型 |
+| `ANTHROPIC_BEDROCK_BASE_URL`、`ANTHROPIC_VERTEX_BASE_URL`、`ANTHROPIC_FOUNDRY_BASE_URL` 或 `ANTHROPIC_AWS_BASE_URL` 以及[该提供商的变量](/docs/zh-CN/llm-gateway-connect#route-to-a-cloud-provider-through-a-gateway) | 通过网关将 Claude Code 指向网关。Amazon Bedrock 和 Google Cloud 的 Agent Platform 也切换到这些提供商的本机请求格式 | 您的网关前置 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 或 AWS 上的 Claude 平台；请参阅 [API 格式](/docs/zh-CN/llm-gateway-protocol#api-formats)                                          |
 
-#### Distribute through managed settings
+<h4 id="distribute-through-managed-settings">
+  通过托管设置分发
+</h4>
 
-Deliver the variables through the `env` block of a [managed settings file](/docs/en/settings#settings-files), pushed by MDM, registry policy, or configuration management:
+通过[托管设置文件](/docs/zh-CN/settings#settings-files)的 `env` 块交付变量，由 MDM、注册表策略或配置管理推送：
 
 ```json theme={null}
 {
@@ -187,39 +204,43 @@ Deliver the variables through the `env` block of a [managed settings file](/docs
 }
 ```
 
-Add the conditional variables from the table to the same `env` block. A managed `ANTHROPIC_BASE_URL` is enforced and cannot be overridden by a developer's shell export, since Claude Code applies it over the process environment and lower-precedence settings.
+将表中的条件变量添加到相同的 `env` 块。托管的 `ANTHROPIC_BASE_URL` 被强制执行，不能被开发者的 shell 导出覆盖，因为 Claude Code 在进程环境和较低优先级设置上应用它。
 
-Do not include `forceLoginMethod` or `forceLoginOrgUUID` in managed settings alongside a gateway credential. On Claude Code v2.1.146 and later, either key, with any value, blocks `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, and `apiKeyHelper` at startup, so developers see `This machine's managed settings require a first-party login` and cannot proceed. {/* min-version: 2.1.146 */}
+不要在托管设置中与网关凭证一起包括 `forceLoginMethod` 或 `forceLoginOrgUUID`。在 Claude Code v2.1.146 及更高版本上，任一密钥在启动时阻止 `ANTHROPIC_API_KEY`、`ANTHROPIC_AUTH_TOKEN` 和 `apiKeyHelper`，因此开发者看到 `This machine's managed settings require a first-party login` 并且无法继续。{/* min-version: 2.1.146 */}
 
-[Server-managed settings](/docs/en/server-managed-settings#platform-availability) delivery requires a direct connection to `api.anthropic.com`, so it does not reach gateway-routed sessions. Gateway deployments use this file-based managed settings path, which enforces the same keys.
+[服务器管理的设置](/docs/zh-CN/server-managed-settings#platform-availability)交付需要直接连接到 `api.anthropic.com`，因此它不会到达网关路由的会话。网关部署使用这个基于文件的托管设置路径，它强制执行相同的密钥。
 
-For the credential, distribute one [`apiKeyHelper`](/docs/en/llm-gateway-connect#rotate-credentials-with-apikeyhelper) command in the managed settings file as shown above; the command authenticates to your secrets store as the local developer, so each machine receives its own key. Alternatively, deliver each developer their key through your existing secrets process and have them set `ANTHROPIC_AUTH_TOKEN` themselves.
+对于凭证，在托管设置文件中分发一个 [`apiKeyHelper`](/docs/zh-CN/llm-gateway-connect#rotate-credentials-with-apikeyhelper) 命令，如上所示；该命令作为本地开发者对您的秘密存储进行身份验证，因此每台机器都接收自己的密钥。或者，通过您现有的秘密流程向每个开发者交付他们的密钥，并让他们自己设置 `ANTHROPIC_AUTH_TOKEN`。
 
-Some environments need separate delivery:
+某些环境需要单独的交付：
 
-* The desktop app reads gateway routing from its third-party inference configuration, not from managed settings; deploy that file through MDM alongside managed settings so desktop sessions route through the gateway too. See the [desktop third-party configuration docs](https://claude.com/docs/third-party/claude-desktop/configuration) and the [desktop gateway docs](https://claude.com/docs/third-party/claude-desktop/gateway)
-* CI runners need `ANTHROPIC_BASE_URL` and the credential set in the [runner's environment](/docs/en/llm-gateway-connect#configure-each-surface)
-* WSL on managed Windows machines reads the Windows managed settings only when [`wslInheritsWindowsSettings`](/docs/en/settings#available-settings) is `true`
+* 桌面应用仅从其 MDM 交付的第三方推理配置读取网关路由；部署该文件以及托管设置，以便桌面会话也通过网关路由。请参阅[桌面第三方配置文档](https://claude.com/docs/third-party/claude-desktop/configuration)和[桌面网关文档](https://claude.com/docs/third-party/claude-desktop/gateway)
+* CI 运行器需要在[运行器的环境](/docs/zh-CN/llm-gateway-connect#configure-each-surface)中设置 `ANTHROPIC_BASE_URL` 和凭证
+* 托管 Windows 机器上的 WSL 仅在 [`wslInheritsWindowsSettings`](/docs/zh-CN/settings#available-settings) 为 `true` 时读取 Windows 托管设置
 
-#### Hand developers the values to set themselves
+<h4 id="hand-developers-the-values-to-set-themselves">
+  手动向开发者提供值以自己设置
+</h4>
 
-If you don't have managed-settings distribution in place, send each developer what they need to follow the [connect page](/docs/en/llm-gateway-connect#configure-claude-code-yourself):
+如果您没有托管设置分发，请向每个开发者发送他们需要的内容以遵循[连接页面](/docs/zh-CN/llm-gateway-connect#configure-claude-code-yourself)：
 
-* The gateway URL
-* Their personal credential
-* **Which variable to put the credential in**: `ANTHROPIC_AUTH_TOKEN` for a bearer-token gateway, or `ANTHROPIC_API_KEY` for an `x-api-key` gateway. Telling developers which one saves them the trial-and-error described on the [connect page](/docs/en/llm-gateway-connect#set-the-credential-variable)
-* Any conditional variables from the [What to distribute table](#what-to-distribute), with their values
+* 网关 URL
+* 他们的个人凭证
+* **将凭证放在哪个变量中**：对于 bearer-token 网关为 `ANTHROPIC_AUTH_TOKEN`，或对于 `x-api-key` 网关为 `ANTHROPIC_API_KEY`。告诉开发者哪一个可以节省他们在[连接页面](/docs/zh-CN/llm-gateway-connect#set-the-credential-variable)上描述的试错
+* [要分发的内容表](#what-to-distribute)中的任何条件变量，以及它们的值
 
-The [connect page](/docs/en/llm-gateway-connect#configure-claude-code-yourself) walks developers through setting each one.
+[连接页面](/docs/zh-CN/llm-gateway-connect#configure-claude-code-yourself)指导开发者设置每一个。
 
-**Checkpoint**: on a developer machine, `claude` starts a session without showing the login screen, since the distributed credential satisfies authentication. Then run `/status` and open the **Status** tab: the `Anthropic base URL` line shows the gateway address, and for managed distribution the `Setting sources` line includes managed settings. A login screen, or a missing `Anthropic base URL` line, means the configuration didn't reach the machine.
+**检查点**：在开发者机器上，`claude` 启动会话而不显示登录屏幕，因为分发的凭证满足身份验证。然后运行 `/status` 并打开**状态**选项卡：`Anthropic base URL` 行显示网关地址，对于托管分发，`Setting sources` 行包括托管设置。登录屏幕或缺少 `Anthropic base URL` 行意味着配置没有到达机器。
 
-### Verify the rollout
+<h3 id="verify-the-rollout">
+  验证推出
+</h3>
 
-Confirm everything works from a developer machine, not the gateway host, so the test covers the network path developers use. Send a streaming request, which checks the endpoint, streaming pass-through, and model routing at once:
+从开发者机器而不是网关主机确认一切工作，以便测试涵盖开发者使用的网络路径。发送流式请求，它一次检查端点、流式传输传递和模型路由：
 
 <Tabs>
-  <Tab title="Bash or Zsh">
+  <Tab title="Bash 或 Zsh">
     ```bash theme={null}
     curl -N -X POST "https://llm-gateway.example.com/v1/messages" \
       -H "Authorization: Bearer <developer-key>" \
@@ -241,33 +262,35 @@ Confirm everything works from a developer machine, not the gateway host, so the 
   </Tab>
 </Tabs>
 
-You should see `data:` lines arrive incrementally. The whole response arriving at once after a pause means the gateway is buffering, which stalls Claude Code; a `404` means the model name isn't routed. Repeat per model name.
+您应该看到 `data:` 行逐步到达。整个响应在暂停后一次到达意味着网关正在缓冲，这会停滞 Claude Code；`404` 意味着模型名称未路由。每个模型名称重复。
 
-Then start `claude` and send a message. Each symptom at this step has one cause:
+然后启动 `claude` 并发送消息。此步骤的每个症状都有一个原因：
 
-* A login prompt means a credential gap. Run `/status` and open the **Status** tab: when the `Setting sources` line doesn't include managed settings, the distribution didn't reach the machine; when it does, the developer credential wasn't delivered, so set `ANTHROPIC_AUTH_TOKEN` or the `apiKeyHelper`
-* `Failed to authenticate` errors mean the gateway is rejecting requests; its log says which credential failed. A rejection the gateway logs itself names the developer key, while a `401` from `api.anthropic.com` or your provider's endpoint means the provider credential the gateway holds was rejected
-* A one-time approval prompt for the key is expected on first use when the gateway expects keys in the `x-api-key` header, set as `ANTHROPIC_API_KEY`. With `ANTHROPIC_AUTH_TOKEN`, no prompt appears and the variable takes over silently; a previously saved claude.ai login is inactive for that session
+* 登录提示意味着凭证缺口。运行 `/status` 并打开**状态**选项卡：当 `Setting sources` 行不包括托管设置时，分发没有到达机器；当它包括时，开发者凭证没有被交付，因此设置 `ANTHROPIC_AUTH_TOKEN` 或 `apiKeyHelper`
+* `Failed to authenticate` 错误意味着网关拒绝请求；其日志说明了哪个凭证失败。网关自己记录的拒绝命名开发者密钥，而来自 `api.anthropic.com` 或您的提供商端点的 `401` 意味着网关持有的提供商凭证被拒绝
+* 当网关期望密钥在 `x-api-key` 标头中时，在首次使用时出现一次性批准提示是预期的，设置为 `ANTHROPIC_API_KEY`。使用 `ANTHROPIC_AUTH_TOKEN`，不会出现提示，变量会无声地接管；以前保存的 claude.ai 登录对该会话无效
 
-If your organization uses [fast mode](/docs/en/fast-mode), run `/fast` here too: the availability check calls `api.anthropic.com` directly rather than following the gateway base URL, so a gateway-routed session can report fast mode as unavailable or disabled even though inference works. [Use fast mode behind proxies and LLM gateways](/docs/en/fast-mode#use-fast-mode-behind-proxies-and-llm-gateways) maps each message to the variable that restores it, distributed with [the rest of the configuration](#distribute-the-configuration).
+最后，检查网关的日志以查看您发送的消息：凭证标识开发者，[`x-claude-code-session-id` 标头](/docs/zh-CN/llm-gateway-protocol#request-headers)按会话对请求进行分组。如果功能因[故障排除症状](/docs/zh-CN/llm-gateway-connect#troubleshoot-gateway-errors)而失败，网关正在剥离标头或重写错误；请参阅上面的[网关要求](#gateway-requirements)。
 
-Finally, check the gateway's logs for the message you sent: the credential identifies the developer, and the [`x-claude-code-session-id` header](/docs/en/llm-gateway-protocol#request-headers) groups requests by session. If features fail with the [troubleshooting symptoms](/docs/en/llm-gateway-connect#troubleshoot-gateway-errors), the gateway is stripping headers or rewriting errors; see the [gateway requirements](#gateway-requirements) above.
+<h2 id="maintain-the-gateway">
+  维护网关
+</h2>
 
-## Maintain the gateway
+推出后，三种变化会随着时间到达网关。每一种都有一个症状要观察和一个要采取的行动。
 
-After rollout, three kinds of change reach the gateway over time. Each has a symptom to watch for and an action to take.
+| 变化                                            | 当网关没有跟上时的症状                                                                                       | 行动                                                                                                                                  |
+| :-------------------------------------------- | :------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------- |
+| 新的 Claude Code 版本添加 `anthropic-beta` 值和请求正文字段 | 开发者在更新 Claude Code 后报告 `400` 错误，命名新字段；请参阅[功能传递](/docs/zh-CN/llm-gateway-protocol#feature-pass-through) | 逐字转发 `anthropic-*` 标头和请求正文，而不是允许列表；在新 Claude Code 版本到达开发者之前针对网关测试它们                                                                 |
+| 新的 Claude 模型变得可用                              | 开发者选择新模型名称得到 `404`；`/model` 选择器不列出它                                                               | 将模型名称添加到网关的路由配置，然后重新运行[路由检查](#confirm-the-gateway-routes-your-models)。如果您分发 `ANTHROPIC_MODEL` 或默认模型变量，更新托管设置                        |
+| 凭证过期或需要轮换                                     | 所有开发者请求开始从上游失败，出现 `401`                                                                           | 按照自己的计划轮换网关的提供商凭证；开发者密钥在网关处轮换，[`apiKeyHelper`](/docs/zh-CN/llm-gateway-connect#rotate-credentials-with-apikeyhelper) 处理每个开发者的轮换，无需重新分发设置 |
 
-| Change                                                                       | Symptom when the gateway hasn't kept up                                                                                                                    | Action                                                                                                                                                                                                                                                   |
-| :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| New Claude Code releases add `anthropic-beta` values and request body fields | Developers report `400` errors naming a new field after they update Claude Code; see [feature pass-through](/docs/en/llm-gateway-protocol#feature-pass-through) | Forward `anthropic-*` headers and request bodies verbatim rather than allowlisting; test new Claude Code releases against the gateway before they reach developers                                                                                       |
-| New Claude models become available                                           | Developers selecting a new model name get `404`; the `/model` picker doesn't list it                                                                       | Add the model name to the gateway's routing configuration, then re-run the [routing check](#confirm-the-gateway-routes-your-models). If you distribute `ANTHROPIC_MODEL` or the default-model variables, update the managed settings                     |
-| Credentials expire or need rotation                                          | All developer requests start failing with `401` from the upstream                                                                                          | Rotate the gateway's provider credential on its own schedule; developer keys rotate at the gateway, and an [`apiKeyHelper`](/docs/en/llm-gateway-connect#rotate-credentials-with-apikeyhelper) handles per-developer rotation without redistributing settings |
+在调整每个密钥的速率限制时，考虑客户端[重试瞬时故障](/docs/zh-CN/errors#automatic-retries)，包括 `429` 响应，最多 10 次，带有退避，遵守 `Retry-After`。将[协议参考](/docs/zh-CN/llm-gateway-protocol)保持为每个 Claude Code 版本发送的内容的合同。
 
-When sizing per-key rate limits, account for the client [retrying transient failures](/docs/en/errors#automatic-retries), including `429` responses, up to 10 times with backoff, honoring `Retry-After`. Keep the [protocol reference](/docs/en/llm-gateway-protocol) as the contract for what each Claude Code release sends.
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-## Related resources
-
-* [Connect Claude Code to an LLM gateway](/docs/en/llm-gateway-connect): the developer-facing setup steps, with per-surface configuration and a troubleshooting table you can hand to developers
-* [Gateway protocol reference](/docs/en/llm-gateway-protocol): the wire contract for gateway operators, covering endpoints, headers to forward, and the feature pass-through table
-* [Settings files and precedence](/docs/en/settings#settings-files): how managed, project, and user settings combine, and where the managed file goes on each platform
-* [Set up Claude Code for your organization](/docs/en/admin-setup): the wider rollout this gateway is one part of, including policy enforcement, usage visibility, and data handling
+* [将 Claude Code 连接到 LLM 网关](/docs/zh-CN/llm-gateway-connect)：面向开发者的设置步骤，具有每个表面的配置和您可以交给开发者的故障排除表
+* [网关协议参考](/docs/zh-CN/llm-gateway-protocol)：网关运营商的有线合同，涵盖端点、要转发的标头以及功能传递表
+* [设置文件和优先级](/docs/zh-CN/settings#settings-files)：托管、项目和用户设置如何组合，以及托管文件在每个平台上的位置
+* [为您的组织设置 Claude Code](/docs/zh-CN/admin-setup)：这个网关是其中一部分的更广泛推出，包括策略强制执行、使用可见性和数据处理

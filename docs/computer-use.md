@@ -2,210 +2,248 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Let Claude use your computer from the CLI
+# 让 Claude 从 CLI 使用您的计算机
 
-> Enable computer use in the Claude Code CLI so Claude can open apps, click, type, and see your screen on macOS. Test native apps, debug visual issues, and automate GUI-only tools without leaving your terminal.
+> 在 Claude Code CLI 中启用 computer use，使 Claude 能够在 macOS 上打开应用、点击、输入和查看您的屏幕。测试原生应用、调试视觉问题，以及自动化仅限 GUI 的工具，无需离开您的终端。
 
 <Note>
-  Computer use is a research preview on macOS that requires a Pro or Max plan. It is not available on Team or Enterprise plans. It requires an interactive session, so it is not available in non-interactive mode with the `-p` flag.
+  Computer use 是 macOS 上的研究预览版，需要 Pro 或 Max 计划。它在 Team 或 Enterprise 计划上不可用。它需要交互式会话，因此在使用 `-p` 标志的非交互式模式下不可用。
 </Note>
 
-Computer use lets Claude open apps, control your screen, and work on your machine the way you would. From the CLI, Claude can compile a Swift app, launch it, click through every button, and screenshot the result, all in the same conversation where it wrote the code.
+Computer use 让 Claude 能够打开应用、控制您的屏幕，并以您的方式在您的机器上工作。从 CLI 中，Claude 可以编译 Swift 应用、启动它、点击每个按钮，并截图结果，所有这些都在编写代码的同一对话中进行。
 
-This page covers how computer use works in the CLI. For the Desktop app on macOS or Windows, see [computer use in Desktop](/docs/en/desktop#let-claude-use-your-computer).
+本页面介绍 computer use 在 CLI 中的工作原理。对于 macOS 或 Windows 上的 Desktop 应用，请参阅 [Desktop 中的 computer use](/docs/zh-CN/desktop#let-claude-use-your-computer)。
 
-## What you can do with computer use
+<h2 id="what-you-can-do-with-computer-use">
+  您可以用 computer use 做什么
+</h2>
 
-Computer use handles tasks that require a GUI: anything you'd normally have to leave the terminal and do by hand.
+Computer use 处理需要 GUI 的任务：任何您通常必须离开终端并手动完成的事情。
 
-* **Build and validate native apps**: ask Claude to build a macOS menu bar app. Claude writes the Swift, compiles it, launches it, and clicks through every control to verify it works before you ever open it.
-* **End-to-end UI testing**: point Claude at a local Electron app and say "test the onboarding flow." Claude opens the app, clicks through signup, and screenshots each step. No Playwright config, no test harness.
-* **Debug visual and layout issues**: tell Claude "the modal is clipping on small windows." Claude resizes the window, reproduces the bug, screenshots it, patches the CSS, and verifies the fix. Claude sees what you see.
-* **Drive GUI-only tools**: interact with design tools, hardware control panels, the iOS Simulator, or proprietary apps that have no CLI or API.
+* **构建和验证原生应用**：要求 Claude 构建 macOS 菜单栏应用。Claude 编写 Swift、编译它、启动它，并点击每个控件来验证它是否有效，然后您才打开它。
+* **端到端 UI 测试**：将 Claude 指向本地 Electron 应用并说"测试入门流程"。Claude 打开应用、点击注册，并截图每一步。无需 Playwright 配置，无需测试工具。
+* **调试视觉和布局问题**：告诉 Claude"模态框在小窗口上被裁剪"。Claude 调整窗口大小、重现错误、截图、修补 CSS，并验证修复。Claude 看到您看到的内容。
+* **驱动仅限 GUI 的工具**：与设计工具、硬件控制面板、iOS 模拟器或没有 CLI 或 API 的专有应用交互。
 
-## When computer use applies
+<h2 id="when-computer-use-applies">
+  Computer use 何时适用
+</h2>
 
-Claude has several ways to interact with an app or service. Computer use is the broadest and slowest, so Claude tries the most precise tool first:
+Claude 有多种方式与应用或服务交互。Computer use 是最广泛和最慢的，所以 Claude 首先尝试最精确的工具：
 
-* If you have an [MCP server](/docs/en/mcp) for the service, Claude uses that.
-* If the task is a shell command, Claude uses Bash.
-* If the task is browser work and you have [Claude in Chrome](/docs/en/chrome) set up, Claude uses that.
-* If none of those apply, Claude uses computer use.
+* 如果您有该服务的 [MCP server](/docs/zh-CN/mcp)，Claude 会使用它。
+* 如果任务是 shell 命令，Claude 会使用 Bash。
+* 如果任务是浏览器工作且您已设置 [Claude in Chrome](/docs/zh-CN/chrome)，Claude 会使用它。
+* 如果以上都不适用，Claude 会使用 computer use。
 
-Screen control is reserved for things nothing else can reach: native apps, simulators, and tools without an API. In the Desktop app, running or testing an iOS app opens the dedicated [iOS Simulator pane](/docs/en/desktop-ios-simulator) rather than screen control; from the CLI, computer use is how Claude reaches the iOS Simulator.
+屏幕控制保留用于其他工具无法到达的事物：原生应用、模拟器和没有 API 的工具。
 
-## Enable computer use
+<h2 id="enable-computer-use">
+  启用 computer use
+</h2>
 
-Computer use is available as a built-in MCP server called `computer-use`. It's off by default until you enable it.
+Computer use 作为称为 `computer-use` 的内置 MCP server 可用。默认情况下它是关闭的，直到您启用它。
 
 <Steps>
-  <Step title="Open the MCP menu">
-    In an interactive Claude Code session, run:
+  <Step title="打开 MCP 菜单">
+    在交互式 Claude Code 会话中，运行：
 
     ```text theme={null}
     /mcp
     ```
 
-    Find `computer-use` in the server list. It shows as disabled.
+    在服务器列表中找到 `computer-use`。它显示为已禁用。
   </Step>
 
-  <Step title="Enable the server">
-    Select `computer-use` and choose **Enable**. The setting persists per project, so you only do this once for each project where you want computer use.
+  <Step title="启用服务器">
+    选择 `computer-use` 并选择**启用**。该设置按项目持久化，因此您只需为每个想要 computer use 的项目执行一次此操作。
   </Step>
 
-  <Step title="Grant macOS permissions">
-    The first time Claude tries to use your computer, you'll see a prompt to grant two macOS permissions:
+  <Step title="授予 macOS 权限">
+    Claude 第一次尝试使用您的计算机时，您会看到一个提示来授予两个 macOS 权限：
 
-    * **Accessibility**: lets Claude click, type, and scroll
-    * **Screen Recording**: lets Claude see what's on your screen
+    * **Accessibility**：让 Claude 点击、输入和滚动
+    * **Screen Recording**：让 Claude 看到您屏幕上的内容
 
-    The prompt includes links to open the relevant System Settings pane. Grant both, then select **Try again** in the prompt. macOS may require you to restart Claude Code after granting Screen Recording.
+    该提示包括打开相关系统设置窗格的链接。授予两者，然后在提示中选择**重试**。授予 Screen Recording 后，macOS 可能需要您重启 Claude Code。
   </Step>
 </Steps>
 
-After setup, ask Claude to do something that needs the GUI:
+设置后，要求 Claude 做需要 GUI 的事情：
 
 ```text theme={null}
-Build the app target, launch it, and click through each tab to make
-sure nothing crashes. Screenshot any error states you find.
+构建应用目标、启动它，并点击每个选项卡以确保
+没有任何内容崩溃。截图您找到的任何错误状态。
 ```
 
-## Approve apps per session
+<h2 id="approve-apps-per-session">
+  按会话批准应用
+</h2>
 
-Enabling the `computer-use` server doesn't grant Claude access to every app on your machine. The first time Claude needs a specific app in a session, a prompt appears in your terminal showing:
+启用 `computer-use` 服务器不会授予 Claude 访问您机器上每个应用的权限。Claude 在会话中第一次需要特定应用时，您的终端中会出现一个提示，显示：
 
-* Which apps Claude wants to control
-* Any extra permissions requested, such as clipboard access
-* How many other apps will be hidden while Claude works
+* Claude 想要控制哪些应用
+* 任何额外请求的权限，例如剪贴板访问
+* Claude 工作时将隐藏多少其他应用
 
-Choose **Allow for this session** or **Deny**. Approvals last for the current session. You can approve multiple apps at once when Claude requests them together.
+选择**允许此会话**或**拒绝**。批准持续当前会话。当 Claude 一起请求多个应用时，您可以一次批准多个应用。
 
-Apps with broad reach show an extra warning in the prompt so you know what approving them grants:
+具有广泛影响的应用在提示中显示额外警告，以便您知道批准它们授予什么：
 
-| Warning                    | Applies to                                                   |
-| :------------------------- | :----------------------------------------------------------- |
-| Equivalent to shell access | Terminal, iTerm, VS Code, Warp, and other terminals and IDEs |
-| Can read or write any file | Finder                                                       |
-| Can change system settings | System Settings                                              |
+| 警告           | 适用于                                    |
+| :----------- | :------------------------------------- |
+| 等同于 shell 访问 | Terminal、iTerm、VS Code、Warp 和其他终端和 IDE |
+| 可以读取或写入任何文件  | Finder                                 |
+| 可以更改系统设置     | System Settings                        |
 
-These apps aren't blocked. The warning lets you decide whether the task warrants that level of access.
+这些应用不被阻止。警告让您决定任务是否值得那个级别的访问。
 
-Claude's level of control also varies by app category: browsers and trading platforms are view-only, terminals and IDEs are click-only, and everything else gets full control. See [app permissions in Desktop](/docs/en/desktop#app-permissions) for the complete tier breakdown.
+Claude 的控制级别也因应用类别而异：浏览器和交易平台是仅查看的，终端和 IDE 是仅点击的，其他所有内容都获得完全控制。有关完整的分层细分，请参阅 [Desktop 中的应用权限](/docs/zh-CN/desktop#app-permissions)。
 
-## How Claude works on your screen
+<h2 id="how-claude-works-on-your-screen">
+  Claude 如何在您的屏幕上工作
+</h2>
 
-Understanding the flow helps you anticipate what Claude will do and how to intervene.
+理解流程有助于您预期 Claude 将做什么以及如何干预。
 
-### One session at a time
+<h3 id="one-session-at-a-time">
+  一次一个会话
+</h3>
 
-Computer use holds a machine-wide lock from the first computer use action until the session that took it exits. {/* min-version: 2.1.195 */}As of v2.1.195, finishing the task doesn't release the lock; only exiting the session does. If another Claude Code session is already using your computer, new attempts fail with a message telling you which session holds the lock. Exit that session first.
+Computer use 从第一个 computer use 操作开始持有机器范围的锁，直到执行该操作的会话退出。{/* min-version: 2.1.195 */}从 v2.1.195 开始，完成任务不会释放锁；只有退出会话才会释放锁。如果另一个 Claude Code 会话已在使用您的计算机，新的尝试会失败并显示一条消息，告诉您哪个会话持有锁。首先退出该会话。
 
-### Apps are hidden while Claude works
+<h3 id="apps-are-hidden-while-claude-works">
+  Claude 工作时应用被隐藏
+</h3>
 
-When Claude starts controlling your screen, other visible apps are hidden so Claude interacts with only the approved apps. Your terminal window stays visible and is excluded from screenshots, so you can watch the session and Claude never sees its own output.
+当 Claude 开始控制您的屏幕时，其他可见应用被隐藏，以便 Claude 仅与批准的应用交互。您的终端窗口保持可见并被排除在屏幕截图之外，因此您可以观看会话，Claude 永远看不到自己的输出。
 
-When Claude finishes the turn, hidden apps are restored automatically.
+当 Claude 完成轮次时，隐藏的应用会自动恢复。
 
-### Screenshots are downscaled automatically
+<h3 id="screenshots-are-downscaled-automatically">
+  屏幕截图自动缩小
+</h3>
 
-Claude Code downscales every screenshot before sending it to the model. You don't need to lower your display resolution or resize windows on Retina or other high-resolution displays. A 16-inch MacBook Pro at native Retina resolution captures at 3456×2234 and downscales to roughly 1372×887, preserving aspect ratio.
+Claude Code 在将每个屏幕截图发送到模型之前会缩小它。您不需要降低显示分辨率或在 Retina 或其他高分辨率显示器上调整窗口大小。16 英寸 MacBook Pro 以原生 Retina 分辨率捕获 3456×2234，并缩小到大约 1372×887，保持宽高比。
 
-There is no setting to change the target size. If on-screen text or controls are too small for Claude to read after downscaling, increase their size in the app rather than changing your display resolution.
+没有设置可以更改目标大小。如果屏幕上的文本或控件在缩小后对 Claude 来说太小而无法读取，请增加应用中的大小，而不是更改显示分辨率。
 
-### Stop at any time
+<h3 id="stop-at-any-time">
+  随时停止
+</h3>
 
-When Claude acquires the lock, a macOS notification appears: "Claude is using your computer · press Esc to stop." Press `Esc` anywhere to abort the current action immediately, or press `Ctrl+C` in the terminal. Either way, Claude stops, unhides your apps, and returns control to you. The session keeps the [computer use lock](#one-session-at-a-time) until it exits.
+当 Claude 获取锁时，会出现 macOS 通知："Claude is using your computer · press Esc to stop"。在任何地方按 `Esc` 立即中止当前操作，或在终端中按 `Ctrl+C`。无论哪种方式，Claude 都会停止、取消隐藏您的应用，并将控制权返回给您。会话保持 [computer use 锁](#one-session-at-a-time)，直到它退出。
 
-A second notification appears when Claude is done.
+当 Claude 完成时，会出现第二个通知。
 
-## Safety and the trust boundary
+<h2 id="safety-and-the-trust-boundary">
+  安全性和信任边界
+</h2>
 
 <Warning>
-  Unlike the [sandboxed Bash tool](/docs/en/sandboxing), computer use runs on your actual desktop with access to the apps you approve. Claude checks each action and flags potential prompt injection from on-screen content, but the trust boundary is different. See the [computer use safety guide](https://support.claude.com/en/articles/14128542) for best practices.
+  与 [sandboxed Bash tool](/docs/zh-CN/sandboxing) 不同，computer use 在您的实际桌面上运行，可以访问您批准的应用。Claude 检查每个操作并标记来自屏幕内容的潜在提示注入，但信任边界是不同的。有关最佳实践，请参阅 [computer use 安全指南](https://support.claude.com/en/articles/14128542)。
 </Warning>
 
-The built-in guardrails reduce risk without requiring configuration:
+内置的护栏在不需要配置的情况下降低风险：
 
-* **Per-app approval**: Claude can only control apps you've approved in the current session.
-* **Sentinel warnings**: apps that grant shell, filesystem, or system settings access are flagged before you approve.
-* **Terminal excluded from screenshots**: Claude never sees your terminal window, so on-screen prompts in your session can't feed back into the model.
-* **Global escape**: the `Esc` key aborts computer use from anywhere, and the key press is consumed so prompt injection can't use it to dismiss dialogs.
-* **Lock file**: only one session can control your machine at a time.
+* **按应用批准**：Claude 只能控制您在当前会话中批准的应用。
+* **哨兵警告**：授予 shell、文件系统或系统设置访问权限的应用在您批准之前被标记。
+* **终端被排除在屏幕截图之外**：Claude 永远看不到您的终端窗口，因此您会话中的屏幕提示无法反馈到模型中。
+* **全局转义**：`Esc` 键从任何地方中止 computer use，并且按键被消耗，因此提示注入无法使用它来关闭对话框。
+* **锁文件**：一次只有一个会话可以控制您的机器。
 
-## Example workflows
+<h2 id="example-workflows">
+  示例工作流
+</h2>
 
-These examples show common ways to combine computer use with coding tasks.
+这些示例展示了将 computer use 与编码任务结合的常见方式。
 
-### Validate a native build
+<h3 id="validate-a-native-build">
+  验证原生构建
+</h3>
 
-After making changes to a macOS or iOS app, have Claude compile and verify in one pass:
-
-```text theme={null}
-Build the MenuBarStats target, launch it, open the preferences window,
-and verify the interval slider updates the label. Screenshot the
-preferences window when you're done.
-```
-
-Claude runs `xcodebuild`, launches the app, interacts with the UI, and reports what it finds.
-
-### Reproduce a layout bug
-
-When a visual bug only appears at certain window sizes, let Claude find it:
+对 macOS 或 iOS 应用进行更改后，让 Claude 在一次通过中编译和验证：
 
 ```text theme={null}
-The settings modal clips its footer on narrow windows. Resize the app
-window down until you can reproduce it, screenshot the clipped state,
-then check the CSS for the modal container.
+构建 MenuBarStats 目标、启动它、打开首选项窗口，
+并验证间隔滑块更新标签。完成后截图首选项窗口。
 ```
 
-Claude resizes the window, captures the broken state, and reads the relevant stylesheets.
+Claude 运行 `xcodebuild`、启动应用、与 UI 交互，并报告它发现的内容。
 
-### Test a simulator flow
+<h3 id="reproduce-a-layout-bug">
+  重现布局错误
+</h3>
 
-Drive the iOS Simulator without writing XCTest:
+当视觉错误仅在某些窗口大小下出现时，让 Claude 找到它：
 
 ```text theme={null}
-Open the iOS Simulator, launch the app, tap through the onboarding
-screens, and tell me if any screen takes more than a second to load.
+设置模态框在窄窗口上裁剪其页脚。调整应用窗口大小
+直到您可以重现它、截图裁剪状态，然后检查模态框容器的 CSS。
 ```
 
-Claude controls the simulator the same way you would with a mouse. This flow applies to the CLI; in the Desktop app, the same request opens the [iOS Simulator pane](/docs/en/desktop-ios-simulator) instead of screen control.
+Claude 调整窗口大小、捕获损坏的状态，并读取相关的样式表。
 
-## Differences from the Desktop app
+<h3 id="test-a-simulator-flow">
+  测试模拟器流程
+</h3>
 
-The CLI and Desktop surfaces share the same computer use engine, with a few differences:
+无需编写 XCTest 即可驱动 iOS 模拟器：
 
-| Feature              | Desktop                                                  | CLI                             |
-| :------------------- | :------------------------------------------------------- | :------------------------------ |
-| Platforms            | macOS and Windows                                        | macOS only                      |
-| Enable               | Toggle in **Settings > General** (under **Desktop app**) | Enable `computer-use` in `/mcp` |
-| Denied apps list     | Configurable in Settings                                 | Not yet available               |
-| Auto-unhide toggle   | Optional                                                 | Always on                       |
-| Dispatch integration | Dispatch-spawned sessions can use computer use           | Not applicable                  |
+```text theme={null}
+打开 iOS 模拟器、启动应用、点击入门屏幕，
+并告诉我是否有任何屏幕加载时间超过一秒。
+```
 
-## Troubleshooting
+Claude 以您使用鼠标的方式控制模拟器。
 
-### "Computer use is in use by another Claude session"
+<h2 id="differences-from-the-desktop-app">
+  与 Desktop 应用的差异
+</h2>
 
-Another Claude Code session holds the lock, which it keeps until it exits. Exit that session. If the other session crashed, the lock is released automatically when Claude detects the process is no longer running.
+CLI 和 Desktop 表面共享相同的 computer use 引擎，有一些差异：
 
-### macOS permissions prompt keeps reappearing
+| 功能          | Desktop                                          | CLI                         |
+| :---------- | :----------------------------------------------- | :-------------------------- |
+| 平台          | macOS 和 Windows                                  | 仅 macOS                     |
+| 启用          | **Settings > General** 中的切换（在 **Desktop app** 下） | 在 `/mcp` 中启用 `computer-use` |
+| 拒绝应用列表      | 在设置中可配置                                          | 尚不可用                        |
+| 自动取消隐藏切换    | 可选                                               | 始终开启                        |
+| Dispatch 集成 | Dispatch 生成的会话可以使用 computer use                  | 不适用                         |
 
-macOS sometimes requires a restart of the requesting process after you grant Screen Recording. Quit Claude Code completely and start a new session. If the prompt persists, open **System Settings > Privacy & Security > Screen Recording** and confirm your terminal app is listed and enabled.
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### `computer-use` doesn't appear in `/mcp`
+<h3 id="computer-use-is-in-use-by-another-claude-session">
+  "Computer use is in use by another Claude session"
+</h3>
 
-The server only appears on eligible setups. Check that:
+另一个 Claude Code 会话持有锁，它会一直保持到该会话退出。退出该会话。如果另一个会话崩溃，当 Claude 检测到该进程不再运行时，锁会自动释放。
 
-* You're on macOS. Computer use in the CLI is not available on Linux or Windows. On Windows, use [computer use in Desktop](/docs/en/desktop#let-claude-use-your-computer) instead.
-* You're on a Pro or Max plan. Run `/status` to confirm your subscription.
-* You're authenticated through claude.ai. Computer use is not available with third-party providers like Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry. If you access Claude exclusively through a third-party provider, you need a separate claude.ai account to use this feature.
-* You're in an interactive session. Computer use is not available in non-interactive mode with the `-p` flag.
+<h3 id="macos-permissions-prompt-keeps-reappearing">
+  macOS 权限提示不断重新出现
+</h3>
 
-## See also
+授予 Screen Recording 后，macOS 有时需要重启请求进程。完全退出 Claude Code 并启动新会话。如果提示仍然存在，打开 **System Settings > Privacy & Security > Screen Recording** 并确认您的终端应用已列出并启用。
 
-* [Computer use in Desktop](/docs/en/desktop#let-claude-use-your-computer): the same capability with a graphical settings page
-* [Claude in Chrome](/docs/en/chrome): browser automation for web-based tasks
-* [MCP](/docs/en/mcp): connect Claude to structured tools and APIs
-* [Sandboxing](/docs/en/sandboxing): how Claude's Bash tool isolates filesystem and network access
-* [Computer use safety guide](https://support.claude.com/en/articles/14128542): best practices for safe computer use
+<h3 id="computer-use-doesn’t-appear-in-/mcp">
+  `computer-use` 不出现在 `/mcp` 中
+</h3>
+
+服务器仅在符合条件的设置上出现。检查：
+
+* 您在 macOS 上。Computer use 在 CLI 中在 Linux 或 Windows 上不可用。在 Windows 上，改用 [Desktop 中的 computer use](/docs/zh-CN/desktop#let-claude-use-your-computer)。
+* 您在 Pro 或 Max 计划上。运行 `/status` 来确认您的订阅。
+* 您通过 claude.ai 进行身份验证。Computer use 不适用于第三方提供商，如 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry。如果您仅通过第三方提供商访问 Claude，您需要单独的 claude.ai 账户来使用此功能。
+* 您在交互式会话中。Computer use 在使用 `-p` 标志的非交互式模式下不可用。
+
+<h2 id="see-also">
+  另请参阅
+</h2>
+
+* [Desktop 中的 Computer use](/docs/zh-CN/desktop#let-claude-use-your-computer)：具有图形设置页面的相同功能
+* [Claude in Chrome](/docs/zh-CN/chrome)：用于基于网络的任务的浏览器自动化
+* [MCP](/docs/zh-CN/mcp)：将 Claude 连接到结构化工具和 API
+* [Sandboxing](/docs/zh-CN/sandboxing)：Claude 的 Bash 工具如何隔离文件系统和网络访问
+* [Computer use 安全指南](https://support.claude.com/en/articles/14128542)：安全 computer use 的最佳实践

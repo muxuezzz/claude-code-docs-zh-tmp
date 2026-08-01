@@ -2,27 +2,29 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Stream responses in real-time
+# 实时流式传输响应
 
-> Get real-time responses from the Agent SDK as text and tool calls stream in
+> 当文本和工具调用流入时，从 Agent SDK 获取实时响应
 
-By default, the Agent SDK yields complete `AssistantMessage` objects after Claude finishes generating each response. To receive incremental updates as text and tool calls are generated, enable partial message streaming by setting `include_partial_messages` (Python) or `includePartialMessages` (TypeScript) to `true` in your options.
+默认情况下，Agent SDK 在 Claude 完成生成每个响应后会产生完整的 `AssistantMessage` 对象。要在文本和工具调用生成时接收增量更新，请通过在选项中将 `include_partial_messages`（Python）或 `includePartialMessages`（TypeScript）设置为 `true` 来启用部分消息流式传输。
 
 <Tip>
-  This page covers output streaming (receiving tokens in real-time). For input modes (how you send messages), see [Send messages to agents](/docs/en/agent-sdk/streaming-vs-single-mode). You can also [stream responses using the Agent SDK via the CLI](/docs/en/headless).
+  本页面涵盖输出流式传输（实时接收令牌）。有关输入模式（如何发送消息），请参阅[向代理发送消息](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)。您也可以[通过 CLI 使用 Agent SDK 流式传输响应](/docs/zh-CN/headless)。
 </Tip>
 
-## Enable streaming output
+<h2 id="enable-streaming-output">
+  启用流式输出
+</h2>
 
-To enable streaming, set `include_partial_messages` (Python) or `includePartialMessages` (TypeScript) to `true` in your options. This causes the SDK to yield `StreamEvent` messages containing raw API events as they arrive, in addition to the usual `AssistantMessage` and `ResultMessage`.
+要启用流式传输，请在选项中将 `include_partial_messages`（Python）或 `includePartialMessages`（TypeScript）设置为 `true`。这会导致 SDK 产生包含原始 API 事件的 `StreamEvent` 消息，这些事件在到达时产生，除了通常的 `AssistantMessage` 和 `ResultMessage` 之外。
 
-Your code then needs to:
+您的代码需要：
 
-1. Check each message's type to distinguish `StreamEvent` from other message types
-2. For `StreamEvent`, extract the `event` field and check its `type`
-3. Look for `content_block_delta` events where `delta.type` is `text_delta`, which contain the actual text chunks
+1. 检查每条消息的类型以区分 `StreamEvent` 和其他消息类型
+2. 对于 `StreamEvent`，提取 `event` 字段并检查其 `type`
+3. 查找 `content_block_delta` 事件，其中 `delta.type` 是 `text_delta`，这些事件包含实际的文本块
 
-The example below enables streaming and prints text chunks as they arrive. Notice the nested type checks: first for `StreamEvent`, then for `content_block_delta`, then for `text_delta`:
+下面的示例启用流式传输并在文本块到达时打印它们。注意嵌套的类型检查：首先是 `StreamEvent`，然后是 `content_block_delta`，最后是 `text_delta`：
 
 <CodeGroup>
   ```python Python theme={null}
@@ -71,75 +73,81 @@ The example below enables streaming and prints text chunks as they arrive. Notic
   ```
 </CodeGroup>
 
-## StreamEvent reference
+<h2 id="streamevent-reference">
+  StreamEvent 参考
+</h2>
 
-When partial messages are enabled, you receive raw Claude API streaming events wrapped in an object. The type has different names in each SDK:
+启用部分消息后，您会收到包装在对象中的原始 Claude API 流式事件。该类型在每个 SDK 中有不同的名称：
 
-* **Python**: `StreamEvent` (import from `claude_agent_sdk.types`)
-* **TypeScript**: `SDKPartialAssistantMessage` with `type: 'stream_event'`
+* **Python**: `StreamEvent`（从 `claude_agent_sdk.types` 导入）
+* **TypeScript**: `SDKPartialAssistantMessage`，其中 `type: 'stream_event'`
 
-Both contain raw Claude API events, not accumulated text. You need to extract and accumulate text deltas yourself. Here's the structure of each type:
+两者都包含原始 Claude API 事件，而不是累积的文本。您需要自己提取和累积文本增量。以下是每种类型的结构：
 
 <CodeGroup>
   ```python Python theme={null}
   @dataclass
   class StreamEvent:
-      uuid: str  # Unique identifier for this event
-      session_id: str  # Session identifier
-      event: dict[str, Any]  # The raw Claude API stream event
-      parent_tool_use_id: str | None  # Always None
+      uuid: str  # 此事件的唯一标识符
+      session_id: str  # 会话标识符
+      event: dict[str, Any]  # 原始 Claude API 流事件
+      parent_tool_use_id: str | None  # 始终为 None
   ```
 
   ```typescript TypeScript theme={null}
   type SDKPartialAssistantMessage = {
     type: "stream_event";
-    event: BetaRawMessageStreamEvent; // From Anthropic SDK
+    event: BetaRawMessageStreamEvent; // 来自 Anthropic SDK
     parent_tool_use_id: string | null;
     uuid: UUID;
     session_id: string;
-    ttft_ms?: number; // Time to first token in ms, present only on message_start events
+    ttft_ms?: number; // 首个令牌的时间（毫秒），仅在 message_start 事件中出现
   };
   ```
 </CodeGroup>
 
-The `parent_tool_use_id` field is always `None` in Python and `null` in TypeScript. Stream events are emitted for the main session only; token-level deltas from subagents aren't forwarded. To attribute output to a subagent, use complete messages, which carry `parent_tool_use_id`. See [Detect subagent invocation](/docs/en/agent-sdk/subagents#detect-subagent-invocation).
+`parent_tool_use_id` 字段在 Python 中始终为 `None`，在 TypeScript 中始终为 `null`。流事件仅针对主会话发出；来自子代理的令牌级增量不会被转发。要将输出归属于子代理，请使用完整消息，这些消息携带 `parent_tool_use_id`。请参阅[检测子代理调用](/docs/zh-CN/agent-sdk/subagents#detect-subagent-invocation)。
 
-The `event` field contains the raw streaming event from the [Claude API](https://platform.claude.com/docs/en/build-with-claude/streaming#event-types). Common event types include:
+`event` 字段包含来自 [Claude API](https://platform.claude.com/docs/en/build-with-claude/streaming#event-types) 的原始流事件。常见的事件类型包括：
 
-| Event Type            | Description                                     |
-| :-------------------- | :---------------------------------------------- |
-| `message_start`       | Start of a new message                          |
-| `content_block_start` | Start of a new content block (text or tool use) |
-| `content_block_delta` | Incremental update to content                   |
-| `content_block_stop`  | End of a content block                          |
-| `message_delta`       | Message-level updates (stop reason, usage)      |
-| `message_stop`        | End of the message                              |
+| 事件类型                  | 描述                 |
+| :-------------------- | :----------------- |
+| `message_start`       | 新消息的开始             |
+| `content_block_start` | 新内容块的开始（文本或工具使用）   |
+| `content_block_delta` | 内容的增量更新            |
+| `content_block_stop`  | 内容块的结束             |
+| `message_delta`       | 消息级别的更新（停止原因、使用情况） |
+| `message_stop`        | 消息的结束              |
 
-## Message flow
+<h2 id="message-flow">
+  消息流
+</h2>
 
-With partial messages enabled, you receive messages in this order:
+启用部分消息后，您会按以下顺序接收消息：
 
 ```text theme={null}
 StreamEvent (message_start)
-StreamEvent (content_block_start) - text block
-StreamEvent (content_block_delta) - text chunks...
+StreamEvent (content_block_start) - 文本块
+StreamEvent (content_block_delta) - 文本块...
 StreamEvent (content_block_stop)
-StreamEvent (content_block_start) - tool_use block
-StreamEvent (content_block_delta) - tool input chunks...
+StreamEvent (content_block_start) - tool_use 块
+StreamEvent (content_block_delta) - 工具输入块...
 StreamEvent (content_block_stop)
 StreamEvent (message_delta)
 StreamEvent (message_stop)
-AssistantMessage - complete message with all content
-... tool executes ...
-... more streaming events for next turn ...
-ResultMessage - final result
+AssistantMessage - 包含所有内容的完整消息
+... 工具执行 ...
+... 下一轮的更多流事件 ...
+ResultMessage - 最终结果
 ```
 
-Without partial messages enabled (`include_partial_messages` in Python, `includePartialMessages` in TypeScript), you receive all message types except `StreamEvent`. Common types include `SystemMessage` (session initialization), `AssistantMessage` (complete responses), `ResultMessage` (final result), and a compact boundary message indicating when conversation history was compacted (`SDKCompactBoundaryMessage` in TypeScript; `SystemMessage` with subtype `"compact_boundary"` in Python).
+未启用部分消息（Python 中的 `include_partial_messages`，TypeScript 中的 `includePartialMessages`）时，您会收到除 `StreamEvent` 之外的所有消息类型。常见类型包括 `SystemMessage`（会话初始化）、`AssistantMessage`（完整响应）、`ResultMessage`（最终结果）和指示何时压缩对话历史的紧凑边界消息（TypeScript 中的 `SDKCompactBoundaryMessage`；Python 中的 `SystemMessage`，子类型为 `"compact_boundary"`）。
 
-## Stream text responses
+<h2 id="stream-text-responses">
+  流式传输文本响应
+</h2>
 
-To display text as it's generated, look for `content_block_delta` events where `delta.type` is `text_delta`. These contain the incremental text chunks. The example below prints each chunk as it arrives:
+要在生成文本时显示它，请查找 `content_block_delta` 事件，其中 `delta.type` 是 `text_delta`。这些包含增量文本块。下面的示例在每个块到达时打印它：
 
 <CodeGroup>
   ```python Python theme={null}
@@ -157,10 +165,10 @@ To display text as it's generated, look for `content_block_delta` events where `
               if event.get("type") == "content_block_delta":
                   delta = event.get("delta", {})
                   if delta.get("type") == "text_delta":
-                      # Print each text chunk as it arrives
+                      # 在每个文本块到达时打印它
                       print(delta.get("text", ""), end="", flush=True)
 
-      print()  # Final newline
+      print()  # 最后的换行符
 
 
   asyncio.run(stream_text())
@@ -181,17 +189,19 @@ To display text as it's generated, look for `content_block_delta` events where `
     }
   }
 
-  console.log(); // Final newline
+  console.log(); // 最后的换行符
   ```
 </CodeGroup>
 
-## Stream tool calls
+<h2 id="stream-tool-calls">
+  流式传输工具调用
+</h2>
 
-Tool calls also stream incrementally. You can track when tools start, receive their input as it's generated, and see when they complete. The example below tracks the current tool being called and accumulates the JSON input as it streams in. It uses three event types:
+工具调用也会增量流式传输。您可以跟踪工具何时开始、在生成时接收其输入，以及查看它们何时完成。下面的示例跟踪当前被调用的工具并在流式传输时累积 JSON 输入。它使用三种事件类型：
 
-* `content_block_start`: tool begins
-* `content_block_delta` with `input_json_delta`: input chunks arrive
-* `content_block_stop`: tool call complete
+* `content_block_start`：工具开始
+* `content_block_delta`，带有 `input_json_delta`：输入块到达
+* `content_block_stop`：工具调用完成
 
 <CodeGroup>
   ```python Python theme={null}
@@ -206,7 +216,7 @@ Tool calls also stream incrementally. You can track when tools start, receive th
           allowed_tools=["Read", "Bash"],
       )
 
-      # Track the current tool and accumulate its input JSON
+      # 跟踪当前工具并累积其输入 JSON
       current_tool = None
       tool_input = ""
 
@@ -216,7 +226,7 @@ Tool calls also stream incrementally. You can track when tools start, receive th
               event_type = event.get("type")
 
               if event_type == "content_block_start":
-                  # New tool call is starting
+                  # 新工具调用开始
                   content_block = event.get("content_block", {})
                   if content_block.get("type") == "tool_use":
                       current_tool = content_block.get("name")
@@ -226,13 +236,13 @@ Tool calls also stream incrementally. You can track when tools start, receive th
               elif event_type == "content_block_delta":
                   delta = event.get("delta", {})
                   if delta.get("type") == "input_json_delta":
-                      # Accumulate JSON input as it streams in
+                      # 在流式传输时累积 JSON 输入
                       chunk = delta.get("partial_json", "")
                       tool_input += chunk
                       print(f"  Input chunk: {chunk}")
 
               elif event_type == "content_block_stop":
-                  # Tool call complete - show final input
+                  # 工具调用完成 - 显示最终输入
                   if current_tool:
                       print(f"Tool {current_tool} called with: {tool_input}")
                       current_tool = None
@@ -244,7 +254,7 @@ Tool calls also stream incrementally. You can track when tools start, receive th
   ```typescript TypeScript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
-  // Track the current tool and accumulate its input JSON
+  // 跟踪当前工具并累积其输入 JSON
   let currentTool: string | null = null;
   let toolInput = "";
 
@@ -259,7 +269,7 @@ Tool calls also stream incrementally. You can track when tools start, receive th
       const event = message.event;
 
       if (event.type === "content_block_start") {
-        // New tool call is starting
+        // 新工具调用开始
         if (event.content_block.type === "tool_use") {
           currentTool = event.content_block.name;
           toolInput = "";
@@ -267,13 +277,13 @@ Tool calls also stream incrementally. You can track when tools start, receive th
         }
       } else if (event.type === "content_block_delta") {
         if (event.delta.type === "input_json_delta") {
-          // Accumulate JSON input as it streams in
+          // 在流式传输时累积 JSON 输入
           const chunk = event.delta.partial_json;
           toolInput += chunk;
           console.log(`  Input chunk: ${chunk}`);
         }
       } else if (event.type === "content_block_stop") {
-        // Tool call complete - show final input
+        // 工具调用完成 - 显示最终输入
         if (currentTool) {
           console.log(`Tool ${currentTool} called with: ${toolInput}`);
           currentTool = null;
@@ -284,9 +294,11 @@ Tool calls also stream incrementally. You can track when tools start, receive th
   ```
 </CodeGroup>
 
-## Build a streaming UI
+<h2 id="build-a-streaming-ui">
+  构建流式 UI
+</h2>
 
-This example combines text and tool streaming into a cohesive UI. It tracks whether the agent is currently executing a tool (using an `in_tool` flag) to show status indicators like `[Using Read...]` while tools run. Text streams normally when not in a tool, and tool completion triggers a "done" message. This pattern is useful for chat interfaces that need to show progress during multi-step agent tasks.
+此示例将文本和工具流式传输结合到一个有凝聚力的 UI 中。它跟踪代理当前是否正在执行工具（使用 `in_tool` 标志）以显示状态指示器，如 `[Using Read...]`，同时工具运行。当不在工具中时文本正常流式传输，工具完成会触发"完成"消息。此模式对于需要在多步骤代理任务期间显示进度的聊天界面很有用。
 
 <CodeGroup>
   ```python Python theme={null}
@@ -302,7 +314,7 @@ This example combines text and tool streaming into a cohesive UI. It tracks whet
           allowed_tools=["Read", "Bash", "Grep"],
       )
 
-      # Track whether we're currently in a tool call
+      # 跟踪我们当前是否在工具调用中
       in_tool = False
 
       async for message in query(
@@ -315,26 +327,26 @@ This example combines text and tool streaming into a cohesive UI. It tracks whet
               if event_type == "content_block_start":
                   content_block = event.get("content_block", {})
                   if content_block.get("type") == "tool_use":
-                      # Tool call is starting - show status indicator
+                      # 工具调用开始 - 显示状态指示器
                       tool_name = content_block.get("name")
                       print(f"\n[Using {tool_name}...]", end="", flush=True)
                       in_tool = True
 
               elif event_type == "content_block_delta":
                   delta = event.get("delta", {})
-                  # Only stream text when not executing a tool
+                  # 仅在不执行工具时流式传输文本
                   if delta.get("type") == "text_delta" and not in_tool:
                       sys.stdout.write(delta.get("text", ""))
                       sys.stdout.flush()
 
               elif event_type == "content_block_stop":
                   if in_tool:
-                      # Tool call finished
+                      # 工具调用完成
                       print(" done", flush=True)
                       in_tool = False
 
           elif isinstance(message, ResultMessage):
-              # Agent finished all work
+              # 代理完成所有工作
               print(f"\n\n--- Complete ---")
 
 
@@ -344,7 +356,7 @@ This example combines text and tool streaming into a cohesive UI. It tracks whet
   ```typescript TypeScript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
-  // Track whether we're currently in a tool call
+  // 跟踪我们当前是否在工具调用中
   let inTool = false;
 
   for await (const message of query({
@@ -359,38 +371,42 @@ This example combines text and tool streaming into a cohesive UI. It tracks whet
 
       if (event.type === "content_block_start") {
         if (event.content_block.type === "tool_use") {
-          // Tool call is starting - show status indicator
+          // 工具调用开始 - 显示状态指示器
           process.stdout.write(`\n[Using ${event.content_block.name}...]`);
           inTool = true;
         }
       } else if (event.type === "content_block_delta") {
-        // Only stream text when not executing a tool
+        // 仅在不执行工具时流式传输文本
         if (event.delta.type === "text_delta" && !inTool) {
           process.stdout.write(event.delta.text);
         }
       } else if (event.type === "content_block_stop") {
         if (inTool) {
-          // Tool call finished
+          // 工具调用完成
           console.log(" done");
           inTool = false;
         }
       }
     } else if (message.type === "result") {
-      // Agent finished all work
+      // 代理完成所有工作
       console.log("\n\n--- Complete ---");
     }
   }
   ```
 </CodeGroup>
 
-## Known limitations
+<h2 id="known-limitations">
+  已知限制
+</h2>
 
-* **Structured output**: the JSON result appears only in the final `ResultMessage.structured_output`, not as streaming deltas. See [structured outputs](/docs/en/agent-sdk/structured-outputs) for details.
+* **结构化输出**：JSON 结果仅出现在最终 `ResultMessage.structured_output` 中，而不是作为流式增量。有关详细信息，请参阅[结构化输出](/docs/zh-CN/agent-sdk/structured-outputs)。
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-Now that you can stream text and tool calls in real-time, explore these related topics:
+现在您可以实时流式传输文本和工具调用，请探索这些相关主题：
 
-* [Interactive vs one-shot queries](/docs/en/agent-sdk/streaming-vs-single-mode): choose between input modes for your use case
-* [Structured outputs](/docs/en/agent-sdk/structured-outputs): get typed JSON responses from the agent
-* [Permissions](/docs/en/agent-sdk/permissions): control which tools the agent can use
+* [交互式与一次性查询](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)：为您的用例选择输入模式
+* [结构化输出](/docs/zh-CN/agent-sdk/structured-outputs)：从代理获取类型化的 JSON 响应
+* [权限](/docs/zh-CN/agent-sdk/permissions)：控制代理可以使用哪些工具

@@ -2,40 +2,48 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Share session output as artifacts
+# 将会话输出作为 artifacts 共享
 
-> Artifacts turn Claude Code's work into live, interactive pages on claude.ai that you can keep private, share with your organization, or publish to a public link.
+> Artifacts 将 Claude Code 的工作转化为实时交互式页面，可在 claude.ai 上保持私密、与您的组织共享或发布到公开链接。
+
+{/* plan-availability: feature=artifacts plans=pro,max,team,enterprise providers=anthropic */}
 
 <Note>
-  Artifacts are available on Pro, Max, Team, and Enterprise plans and require a session signed in with [`/login`](/docs/en/setup#authenticate). See [Availability](#availability) for the full set of requirements.
+  Artifacts 在 Pro、Max、Team 和 Enterprise 计划上可用，需要使用 [`/login`](/docs/zh-CN/setup#authenticate) 登录的会话。有关完整的要求集，请参阅 [可用性](#availability)。
 </Note>
 
-An artifact is a live, interactive web page that Claude Code publishes from your session to a private URL on claude.ai. You open it in a browser, and it updates in place as the session continues. Share it from the page header when you want someone else to see it too. For example, use an artifact to walk a reviewer through a pull request with annotated diffs, build a dashboard from session data, or keep an investigation timeline that fills in as Claude works.
+Artifact 是一个实时交互式网页，Claude Code 从您的会话发布到 claude.ai 上的私有 URL。您可以在浏览器中打开它，当会话继续时它会就地更新。当您想让其他人也看到它时，可以从页面标题中共享它。例如，使用 artifact 来引导审阅者查看带有注释的 diff 的拉取请求、从会话数据构建仪表板，或维护一个随着 Claude 工作而填充的调查时间线。
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/kaHIYYMIYMYPxQg9/images/artifacts-viewer.png?fit=max&auto=format&n=kaHIYYMIYMYPxQg9&q=85&s=dbfd671cdb0d15f49f808b9e89778fe1" alt="An artifact open in a browser at claude.ai/code/artifact. The viewer header shows the artifact title acme-funnel-fix, a Share button, and the author avatar. The Share menu is open with the Always share latest version toggle, a version picker reading Sharing version 2, an Everyone at Acme audience selector, and a Copy link button. Below the header, the artifact page shows two mobile mockups side by side, a funnel chart, and a row of metric cards." width="2511" height="1890" data-path="images/artifacts-viewer.png" />
+  <img src="https://mintcdn.com/claude-code/kaHIYYMIYMYPxQg9/images/artifacts-viewer.png?fit=max&auto=format&n=kaHIYYMIYMYPxQg9&q=85&s=dbfd671cdb0d15f49f808b9e89778fe1" alt="在 claude.ai/code/artifact 中打开的 artifact。查看器标题显示 artifact 标题 acme-funnel-fix、Share 按钮和作者头像。Share 菜单打开，显示'始终共享最新版本'切换、显示'共享版本 2'的版本选择器、'Acme 中的所有人'受众选择器和'复制链接'按钮。标题下方，artifact 页面显示两个并排的移动模型、一个漏斗图表和一行指标卡。" width="2511" height="1890" data-path="images/artifacts-viewer.png" />
 </Frame>
 
-## When to use an artifact
+<h2 id="when-to-use-an-artifact">
+  何时使用 artifact
+</h2>
 
-Use an artifact when terminal text is the wrong medium for what Claude produced: output that is easier to look at and interact with than to read line by line. Claude builds the page from anything your session can reach, including your codebase and data it pulls through your [connected tools](/docs/en/mcp), so the page can show things that would take paragraphs to describe. For example, ask Claude to:
+当终端文本不是 Claude 生成的内容的合适媒介时，请使用 artifact：输出更容易查看和交互，而不是逐行阅读。Claude 从您的会话可以访问的任何内容构建页面，包括您的代码库和通过您的 [连接工具](/docs/zh-CN/mcp) 拉取的数据，因此页面可以显示需要段落才能描述的内容。例如，要求 Claude：
 
-* Walk a reviewer through a pull request with annotated diffs
-* Render a dashboard from data the session already pulled
-* Lay out several design or implementation options side by side
-* Keep an investigation timeline that fills in while a long task runs
-* Send a teammate a link instead of pasting output into Slack
-* Publish a status board that [pulls fresh data through MCP connectors](#pull-live-data-with-mcp-connectors) each time someone opens it
+* 引导审阅者查看带有注释的 diff 的拉取请求
+* 从会话已拉取的数据呈现仪表板
+* 并排布置多个设计或实现选项
+* 维护一个在长任务运行时填充的调查时间线
+* 向队友发送链接，而不是将输出粘贴到 Slack
+* 发布一个 [通过 MCP 连接器拉取新鲜数据](#pull-live-data-with-mcp-connectors) 的状态板，每次有人打开它时都会拉取新数据
 
-See [What you can build](#what-you-can-build) for prompts that match these, and [Pull live data with MCP connectors](#pull-live-data-with-mcp-connectors) for the connector-backed board's prompt.
+有关与这些选项匹配的提示，请参阅 [您可以构建的内容](#what-you-can-build)，以及 [通过 MCP 连接器拉取实时数据](#pull-live-data-with-mcp-connectors) 了解连接器支持的板的提示。
 
-### What an artifact is not
+<h3 id="what-an-artifact-is-not">
+  Artifact 不是什么
+</h3>
 
-An artifact is a capture of work, not an application. It is one self-contained page with no backend, so it can't store form input or serve multiple routes, and its only path to outside data when someone views it is [calling MCP connectors](#pull-live-data-with-mcp-connectors). For a hosted internal tool with a backend, deploy it on your own infrastructure instead. See [Page constraints](#page-constraints) for the full set of limits.
+Artifact 是工作的捕获，不是应用程序。它是一个自包含的页面，没有后端，因此无法存储表单输入或提供多个路由，当有人查看它时，它访问外部数据的唯一途径是 [调用 MCP 连接器](#pull-live-data-with-mcp-connectors)。对于具有后端的托管内部工具，请改为在您自己的基础设施上部署它。有关完整的限制集，请参阅 [页面约束](#page-constraints)。
 
-## Create an artifact
+<h2 id="create-an-artifact">
+  创建 artifact
+</h2>
 
-Claude may publish an artifact on its own when the output suits a page, or you can ask for one directly. To ask, name the feature or describe the visual output you want in plain language. A good candidate is anything easier to see than to read as text, such as an annotated diff, a chart, or a set of options to compare. The prompts below are two examples; see [What you can build](#what-you-can-build) for more patterns.
+当输出适合页面时，Claude 可能会自动发布 artifact，或者您可以直接要求一个。要请求，请用纯语言命名功能或描述您想要的视觉输出。任何比作为文本阅读更容易看到的内容都是很好的候选，例如注释的 diff、图表或一组要比较的选项。下面的提示是两个示例；有关更多模式，请参阅 [您可以构建的内容](#what-you-can-build)。
 
 ```text wrap theme={null}
 Make an artifact that walks through this PR with the diff annotated inline.
@@ -45,130 +53,156 @@ Make an artifact that walks through this PR with the diff annotated inline.
 Build a dashboard artifact of last week's deploy failures by service and keep it updated as you investigate.
 ```
 
-Claude writes the page to an HTML or Markdown file in your project, then publishes it. Before publishing a new artifact, Claude Code asks for permission; it might say something like `Claude wants to publish "Deploy failures by service" (deploy-failures.html) to a private page on claude.ai`. Republishing an artifact you have already approved does not prompt again.
+Claude 将页面写入项目中的 HTML 或 Markdown 文件，然后发布它。在发布新 artifact 之前，Claude Code 会要求权限；它可能会说类似 `Claude wants to publish "Deploy failures by service" (deploy-failures.html) to a private page on claude.ai` 的内容。重新发布您已经批准的 artifact 不会再次提示。
 
-Select **Yes** to publish. Claude prints the URL, and your browser opens to the new page. Press `Ctrl+]` at any time to reopen the most recent artifact from the terminal.
+选择 **Yes** 以发布。Claude 打印 URL，您的浏览器打开到新页面。随时按 `Ctrl+]` 从终端重新打开最近的 artifact。
 
-Claude picks the artifact's title and an emoji for its browser-tab icon. Both appear in your [gallery of artifacts](#share-an-artifact) on claude.ai and in shared links, so ask Claude to use a specific title or icon if you want one.
+Claude 为 artifact 选择标题和浏览器标签图标的表情符号。两者都出现在您在 claude.ai 上的 [artifacts 库](#share-an-artifact) 和共享链接中，因此如果您想要特定的标题或图标，请要求 Claude 使用它。
 
-To stop the browser from opening automatically when a new artifact is published, set `CLAUDE_CODE_ARTIFACT_AUTO_OPEN=0` in your environment.
+要在发布新 artifact 时停止浏览器自动打开，请在您的环境中设置 `CLAUDE_CODE_ARTIFACT_AUTO_OPEN=0`。
 
-If Claude responds that it cannot publish, or writes a local HTML file without a link, the tool is not enabled for your session. Check the [Availability](#availability) requirements.
+如果 Claude 响应它无法发布，或写入本地 HTML 文件而没有链接，则该工具未为您的会话启用。检查 [可用性](#availability) 要求。
 
-## Update an artifact
+<h2 id="update-an-artifact">
+  更新 artifact
+</h2>
 
-Ask Claude to revise the page, or let a long-running task republish as it makes progress. Claude edits the underlying file and publishes again to the same URL.
+要求 Claude 修改页面，或让长时间运行的任务在取得进展时重新发布。Claude 编辑基础文件并再次发布到相同的 URL。
 
 ```text wrap theme={null}
 Add a per-region breakdown below the summary chart and republish.
 ```
 
-Anyone with the page open sees the update in place. Each publish becomes a version, and from the **Share** control in the page header you can choose which version viewers see.
+任何打开页面的人都会看到就地更新。每次发布都会成为一个版本，从页面标题中的 **Share** 控件，您可以选择查看者看到哪个版本。
 
-To update an artifact from a different session, give Claude the artifact's URL and ask it to revise. Without the URL, a new session always creates a new artifact rather than updating an existing one.
+要从不同的会话更新 artifact，请向 Claude 提供 artifact 的 URL 并要求它修改。没有 URL，新会话总是创建新 artifact 而不是更新现有的。
 
 ```text wrap theme={null}
 Update https://claude.ai/code/artifact/5fbea6f3-... with today's numbers.
 ```
 
-## Share an artifact
+<h2 id="share-an-artifact">
+  分享一个artifact
+</h2>
 
-A new artifact is visible only to you. To share it, open the artifact in your browser and use the **Share** control in the page header. The header names you as the artifact's author, so anyone you share it with can see who published the page. It also links to your gallery at [claude.ai/code/artifacts](https://claude.ai/code/artifacts), which lists every artifact you have created.
+新的artifact仅对你可见。要分享它，请在浏览器中打开该artifact，并使用页面标题中的**Share**控件。标题中会显示你是该artifact的作者，因此与你分享的任何人都可以看到谁发布了该页面。它还链接到你的库，位于[claude.ai/code/artifacts](https://claude.ai/code/artifacts)，其中列出了你创建的每个artifact。
 
-Who you can share with depends on your plan:
+你可以与谁分享取决于你的计划：
 
-* **Within your organization**: on Team and Enterprise plans, grant access to specific people in your organization, or to everyone in it. Viewers sign in to claude.ai as members of your organization to see the page.
-* **Publicly**: share a link that anyone on the internet can open, with no claude.ai sign-in required. On Pro and Max plans, a public link is the only way to share an artifact. On Team and Enterprise plans, public sharing is off until an Owner [enables it for the organization](#control-public-sharing).
+* **在你的组织内**：在Team和Enterprise计划中，向你组织中的特定人员或整个组织授予访问权限。查看者以你组织的成员身份登录claude.ai以查看该页面。
+* **公开**：分享一个链接，互联网上的任何人都可以打开，无需登录claude.ai。在Pro和Max计划中，公开链接是分享artifact的唯一方式。在Team和Enterprise计划中，公开分享处于关闭状态，直到Owner[为组织启用它](#control-public-sharing)。
 
-### Let someone edit with you
+<h3 id="let-someone-edit-with-you">
+  让某人与你一起编辑
+</h3>
 
-People you share with are viewers by default: they see each version you publish but can't change the page. On Team and Enterprise plans, you can also make someone an editor. In the share dialog, add a person and switch their role from **viewer** to **editor**.
+与你分享的人默认是查看者：他们可以看到你发布的每个版本，但无法更改页面。在Team和Enterprise计划中，你也可以让某人成为编辑者。在分享对话框中，添加一个人并将其角色从**viewer**切换到**editor**。
 
-An editor publishes new versions the same way you [update the artifact from another session](#update-an-artifact): they give Claude the artifact's URL in their own session, and Claude pulls the current content and republishes with their changes. Everyone with the page open sees each update live.
+编辑者发布新版本的方式与你[从另一个会话更新artifact](#update-an-artifact)的方式相同：他们在自己的会话中向Claude提供artifact的URL，Claude会拉取当前内容并使用他们的更改重新发布。打开该页面的每个人都会实时看到每个更新。
 
-## Pull live data with MCP connectors
+<h2 id="pull-live-data-with-mcp-connectors">
+  使用 MCP 连接器拉取实时数据
+</h2>
 
 {/* plan-availability: feature=artifact-mcp plans=pro,max,team,enterprise providers=anthropic */}
 
-An artifact can call [MCP connectors](/docs/en/mcp#use-mcp-servers-from-claude-ai) each time someone views it, so the page shows current data rather than a snapshot from the session that built it. Connector calls from artifacts are available on Pro, Max, Team, and Enterprise plans and require Claude Code v2.1.209 or later. On earlier versions, Claude publishes the page with whatever data the session gathered while building it.
+artifact 可以在每次有人查看它时调用 [MCP 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)，因此页面显示的是当前数据而不是构建它的会话中的快照。来自 artifact 的连接器调用在 Pro、Max、Team 和 Enterprise 计划上可用，需要 Claude Code v2.1.209 或更高版本。在早期版本上，Claude 会发布该页面，其中包含会话在构建时收集的任何数据。
 
-To create a connector-backed page, name the connector and the data you want in your prompt:
+要创建一个由连接器支持的页面，请在提示中命名连接器和您想要的数据：
 
 ```text wrap theme={null}
 Build a dashboard artifact of our open pull requests that pulls the live list through my GitHub connector when the page loads.
 ```
 
-Claude declares which connectors the page may call as part of publishing, and the page can't call connectors outside that declaration. Only connectors from your claude.ai account qualify: Claude names them in the declaration, and when someone views the page, each call [runs through the viewing account's own connection](#how-connector-calls-work-for-viewers) to that connector. Local MCP servers you configure in Claude Code, such as servers from `.mcp.json`, can supply data while Claude builds the page, but the published page can't call them.
+Claude 在发布时声明页面可能调用的连接器，页面无法调用该声明之外的连接器。只有来自您 claude.ai 账户的连接器符合条件：Claude 在声明中命名它们，当有人查看页面时，每个调用都会 [通过查看账户自己的连接](#how-connector-calls-work-for-viewers) 运行到该连接器。您在 Claude Code 中配置的本地 MCP 服务器（例如来自 `.mcp.json` 的服务器）可以在 Claude 构建页面时提供数据，但已发布的页面无法调用它们。
 
-The page fetches data when it loads and can refresh on an interval or when a viewer uses a refresh control on the page. Responses are cached in the viewer's browser, so a reopened page renders from the cached responses immediately, then updates with fresh results.
+页面在加载时获取数据，可以按间隔刷新或当查看者在页面上使用刷新控件时刷新。响应缓存在查看者的浏览器中，因此重新打开的页面会立即从缓存的响应呈现，然后使用新结果更新。
 
-### How connector calls work for viewers
+<h3 id="how-connector-calls-work-for-viewers">
+  连接器调用如何为查看者工作
+</h3>
 
-When a published page calls a connector, the call uses the account of the person viewing the page, not the account of the person who published it:
+当已发布的页面调用连接器时，该调用使用查看页面的人的账户，而不是发布它的人的账户：
 
-* **Each viewer uses their own connectors**: calls go through the viewing account's connected tools, so two people opening the same dashboard can see different data depending on what their accounts can access. The page never sees anyone's credentials; claude.ai makes the calls on the page's behalf.
-* **Viewers approve access first**: claude.ai asks each viewer for permission before the page's first connector call. A viewer who declines, or who hasn't connected a connector the page uses, still sees the page without its live sections.
-* **Actions use the viewer's account too**: a page can offer controls that invoke connector tools with side effects, such as posting a message or updating an issue. The action goes through the account of whoever selects the control.
+* **每个查看者使用自己的连接器**：调用通过查看账户的已连接工具进行，因此两个打开同一仪表板的人可能会看到不同的数据，具体取决于他们的账户可以访问什么。页面永远看不到任何人的凭证；claude.ai 代表页面进行调用。
+* **查看者首先批准访问**：claude.ai 在页面的第一次连接器调用之前向每个查看者请求权限。拒绝的查看者或未连接页面使用的连接器的查看者仍然可以看到页面，但没有其实时部分。
+* **操作也使用查看者的账户**：页面可以提供控件，调用具有副作用的连接器工具，例如发布消息或更新问题。操作通过选择控件的人的账户进行。
 
-When you plan to share a connector-backed page, ask Claude to include a fallback message in each live section that names the connector it needs. A viewer who's missing the connection then sees what to connect instead of an empty section.
+当您计划共享由连接器支持的页面时，请要求 Claude 在每个实时部分中包含一条后备消息，该消息命名它需要的连接器。缺少连接的查看者随后会看到要连接的内容，而不是空白部分。
 
-An artifact that calls connectors can't be shared to a public link on any plan. On Team and Enterprise plans, you can keep it private or [share it within your organization](#share-an-artifact). On Pro and Max plans, where a public link is the only way to share, a connector-backed artifact stays private to you.
+调用连接器的 artifact 无法在任何计划上共享到公共链接。在 Team 和 Enterprise 计划上，您可以将其保持为私密或 [在您的组织内共享](#share-an-artifact)。在 Pro 和 Max 计划上，其中公共链接是唯一的共享方式，由连接器支持的 artifact 对您保持私密。
 
-### The page shows no live data for a viewer
+<h3 id="the-page-shows-no-live-data-for-a-viewer">
+  页面对查看者显示无实时数据
+</h3>
 
-When a connector-backed page renders but its live sections stay empty for someone you shared it with, work through these causes:
+当由连接器支持的页面呈现但其实时部分对您共享的某人保持空白时，请处理这些原因：
 
-* **The viewer hasn't connected the connector**: connectors are per-account, so each viewer needs their own connection to every connector the page calls. They can add one under **Settings > Connectors** on claude.ai, then reload the page.
-* **The viewer declined the permission ask**: a denial lasts for the rest of that page load. Reloading the page brings the permission ask back.
-* **Connector calls are turned off for the organization**: an Owner controls the [**Enable artifact connectors** toggle](#control-connector-calls-from-artifacts) in admin settings.
+* **查看者未连接连接器**：连接器是按账户的，因此每个查看者都需要自己连接到页面调用的每个连接器。他们可以在 claude.ai 上的 **Settings > Connectors** 下添加一个，然后重新加载页面。
+* **查看者拒绝了权限请求**：拒绝在该页面加载的其余时间内持续。重新加载页面会再次显示权限请求。
+* **为组织关闭了连接器调用**：所有者控制管理设置中的 [**Enable artifact connectors** 切换](#control-connector-calls-from-artifacts)。
 
-## What you can build
+<h2 id="what-you-can-build">
+  您可以构建的内容
+</h2>
 
-An artifact is a single HTML page, so anything you can express in HTML, CSS, and inline JavaScript is in scope. The patterns below come up most often.
+Artifact 是单个 HTML 页面，因此您可以用 HTML、CSS 和内联 JavaScript 表达的任何内容都在范围内。下面的模式最常出现。
 
-### Walk through a change
+<h3 id="walk-through-a-change">
+  逐步讲解更改
+</h3>
 
-Ask for a page that renders a diff or a design change with annotations beside the relevant lines, so reviewers can read your reasoning next to the code instead of reconstructing it from a description.
+要求一个页面，在相关行旁边呈现 diff 或设计更改并带有注释，以便审阅者可以在代码旁边阅读您的推理，而不是从描述中重建它。
 
 ```text wrap theme={null}
 Make an artifact that walks through this PR. Render the diff with margin annotations and color-code findings by severity.
 ```
 
-### Compare alternatives
+<h3 id="compare-alternatives">
+  比较替代方案
+</h3>
 
-Ask for several variants on one page so you can evaluate them against each other. This works for layouts, copy, API shapes, or implementation plans.
+要求在一个页面上有多个变体，以便您可以相互评估它们。这适用于布局、文案、API 形状或实现计划。
 
 ```text wrap theme={null}
 Make an artifact with four distinctly different layouts for the settings panel. Vary density and grouping, and lay them out as a grid with a one-line tradeoff under each.
 ```
 
-### Tune with interactive controls
+<h3 id="tune-with-interactive-controls">
+  使用交互式控件进行调整
+</h3>
 
-Ask for sliders, toggles, or input fields bound to whatever you are adjusting, so you can explore values directly instead of describing them.
+要求滑块、切换或输入字段绑定到您正在调整的任何内容，以便您可以直接探索值，而不是描述它们。
 
 ```text wrap theme={null}
 Build an artifact with sliders for the easing curve, duration, and delay so I can try values on this transition. Show the animation live as I move them.
 ```
 
-### Bring the result back to your session
+<h3 id="bring-the-result-back-to-your-session">
+  将结果带回您的会话
+</h3>
 
-An artifact can act as a lightweight editor for a decision you then hand back to Claude. Ask for an export control that produces text you can paste into the terminal, so the result of interacting with the page flows back into the session instead of staying on the page.
+Artifact 可以充当您随后交给 Claude 的决定的轻量级编辑器。要求一个导出控件，生成您可以粘贴到终端的文本，以便与页面交互的结果流回会话，而不是停留在页面上。
 
 ```text wrap theme={null}
 Make a triage board artifact with each open issue as a draggable card across Now, Next, Later, and Cut columns. Add a "Copy as prompt" button that gives me the final ordering to paste back here.
 ```
 
-### Track work in progress
+<h3 id="track-work-in-progress">
+  跟踪进行中的工作
+</h3>
 
-Ask Claude to keep an artifact current while a long task runs, so anyone with the link can follow along without reading the terminal.
+要求 Claude 在长任务运行时保持 artifact 最新，以便任何拥有链接的人都可以跟随，而无需阅读终端。
 
 ```text wrap theme={null}
 Turn this migration plan into a checklist artifact. Check items off as you complete them and add a note for anything you skip.
 ```
 
-## Improve the visual design
+<h2 id="improve-the-visual-design">
+  改进视觉设计
+</h2>
 
-{/* min-version: 2.1.182 */}Claude applies a built-in design skill when it builds an artifact, so pages get a deliberate palette, typography, and layout without extra prompting. Requires Claude Code v2.1.182 or later. That skill also looks for an existing design system in your project before choosing its own. Design tokens are the named color, typography, and spacing values your design system reuses. To keep artifacts consistent with your product's branding, record them where Claude can find them, such as the project's [CLAUDE.md](/docs/en/memory) or a theme file in your repository:
+从 Claude Code v2.1.183 开始，Claude 在构建 artifact 时应用内置设计技能，因此页面获得深思熟虑的调色板、排版和布局，无需额外提示。该技能还在选择自己的设计之前查找项目中的现有设计系统。要保持 artifacts 与您产品的品牌一致，请在 Claude 可以找到的地方记录您的设计令牌，例如项目的 [CLAUDE.md](/docs/zh-CN/memory) 或存储库中的主题文件：
 
 ```markdown theme={null}
 ## Design system
@@ -178,90 +212,114 @@ Turn this migration plan into a checklist artifact. Check items off as you compl
 - Spacing: 8px scale, 6px border radius
 ```
 
-Claude treats your design system as higher precedence than its own choices, and your prompt as higher precedence than both. The heading and format above are an example; any clear list of colors, fonts, and spacing works.
+Claude 将您的设计系统视为比其自己的选择更高的优先级，并将您的提示视为比两者都更高的优先级。上面的标题和格式是一个示例；任何清晰的颜色、字体和间距列表都有效。
 
-## Page constraints
+<h2 id="page-constraints">
+  页面约束
+</h2>
 
-Each artifact is one self-contained page. Claude Code wraps the file you publish in an HTML document shell and serves it under a strict Content Security Policy (CSP), which shapes what the page can do.
+每个 artifact 是一个自包含的页面。Claude Code 将您发布的文件包装在 HTML 文档 shell 中，并在严格的内容安全策略 (CSP) 下提供它，这决定了页面可以做什么。
 
-| Constraint           | Effect                                                                                                                                                                                                                                                                                                                                                                                               |
-| :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No external requests | The CSP blocks scripts, stylesheets, fonts, and images loaded from any other host, along with `fetch`, XHR, and WebSocket calls. Claude inlines CSS and JavaScript and embeds images as data URIs so the page renders without any external request. [Connector calls](#pull-live-data-with-mcp-connectors) are the exception: the page hands them to claude.ai, which makes the network call itself. |
-| No backend           | An artifact is a static page. It can't store data submitted through a form or authenticate viewers itself. Its only way to fetch data when someone views it is [calling MCP connectors](#pull-live-data-with-mcp-connectors), not an API of its own.                                                                                                                                                 |
-| Single page          | Relative links do not resolve, because nothing is deployed alongside the page. For multi-section content, Claude uses in-page anchors rather than separate files.                                                                                                                                                                                                                                    |
-| Source file types    | The published file must be `.html`, `.htm`, or `.md`. Markdown files render as styled HTML.                                                                                                                                                                                                                                                                                                          |
-| Rendered size        | The rendered page must be 16 MiB or smaller. Large embedded images are the usual cause when a publish fails for size.                                                                                                                                                                                                                                                                                |
+| 约束    | 效果                                                                                                                                                                                                       |
+| :---- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 无外部请求 | CSP 阻止从任何其他主机加载的脚本、样式表、字体和图像，以及 `fetch`、XHR 和 WebSocket 调用。Claude 内联 CSS 和 JavaScript，并将图像嵌入为数据 URI，以便页面呈现而无需任何外部请求。[Connector 调用](#pull-live-data-with-mcp-connectors)是例外：页面将它们交给 claude.ai，由它自己进行网络调用。 |
+| 无后端   | Artifact 是静态页面。它无法存储通过表单提交的数据或自行验证查看者。它在有人查看时获取数据的唯一方式是[调用 MCP connectors](#pull-live-data-with-mcp-connectors)，而不是它自己的 API。                                                                             |
+| 单页    | 相对链接不解析，因为没有任何内容与页面一起部署。对于多部分内容，Claude 使用页面内锚点而不是单独的文件。                                                                                                                                                  |
+| 源文件类型 | 发布的文件必须是 `.html`、`.htm` 或 `.md`。Markdown 文件呈现为样式化的 HTML。                                                                                                                                                 |
+| 呈现大小  | 呈现的页面必须为 16 MiB 或更小。大型嵌入图像是发布因大小失败的常见原因。                                                                                                                                                                 |
 
-Generating an artifact uses output tokens like any other response, and a styled page is more token-intensive than the same content as terminal text. Inline CSS, JavaScript for interactive controls, and especially images embedded as data URIs are the main contributors. To reduce an artifact's token cost:
+生成 artifact 使用输出令牌，就像任何其他响应一样，样式化页面比相同内容作为终端文本更耗费令牌。内联 CSS、用于交互式控件的 JavaScript，尤其是嵌入为数据 URI 的图像是主要贡献者。要减少 artifact 的令牌成本：
 
-* Prefer SVG, or HTML and CSS, for diagrams over embedded raster images
-* Omit interactivity you do not need
-* Have the page summarize large datasets rather than inline them in full
+* 对于图表，优先选择 SVG 或 HTML 和 CSS，而不是嵌入的光栅图像
+* 省略您不需要的交互性
+* 让页面汇总大型数据集，而不是完整内联它们
 
-## Availability
+<h2 id="availability">
+  可用性
+</h2>
 
-Artifacts require every condition below. When one is not met, Claude writes a local HTML file or says it cannot publish instead.
+Artifacts 需要以下所有条件。当不满足其中一个时，Claude 写入本地 HTML 文件或说它无法发布。
 
-| Requirement         | Available when                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Plan                | Pro, Max, Team, or Enterprise. On Pro and Max plans, artifacts are private to you until you share them, and no admin management applies. On Team plans, artifacts are on by default. On Enterprise plans, an Owner [enables them](#manage-artifacts-for-your-organization) in claude.ai admin settings.                                                                                                                                       |
-| Authentication      | The session is backed by a claude.ai account: sign in with `/login` in the CLI or desktop app. Claude Tag sessions are signed in through the agent's identity, so no step is needed there. Sessions using an API key, [gateway token](/docs/en/llm-gateway), or cloud-provider credential cannot publish.                                                                                                                                          |
-| Model provider      | Anthropic API. Not available on [Amazon Bedrock](/docs/en/amazon-bedrock), [Google Cloud's Agent Platform](/docs/en/google-vertex-ai), or [Microsoft Foundry](/docs/en/microsoft-foundry).                                                                                                                                                                                                                                                                   |
-| Organization policy | Customer-managed encryption keys (CMEK), HIPAA, and [Zero Data Retention](/docs/en/zero-data-retention) are not enabled for the organization.                                                                                                                                                                                                                                                                                                      |
-| Surface             | Claude Code CLI version 2.1.183 or later, or the Claude desktop app version 1.13576.0 or later. [Claude Tag](https://claude.com/docs/claude-tag/overview) sessions can also publish artifacts when both Claude Tag and artifacts are enabled for the organization. Off by default in [Agent SDK](/docs/en/agent-sdk/overview), GitHub Action, and MCP-server contexts, and when [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](/docs/en/env-vars) is set. |
+| 要求    | 可用时间                                                                                                                                                                                                                                                                                                                              |
+| :---- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 计划    | Pro、Max、Team 或 Enterprise。在 Pro 和 Max 计划上，artifacts 仅对您私有，不适用任何管理员管理。在 Team 计划上，artifacts 默认启用。在 Enterprise 计划上，Owner 在 claude.ai 管理设置中 [启用它们](#manage-artifacts-for-your-organization)。                                                                                                                                          |
+| 身份验证  | 会话由 claude.ai 账户支持：在 CLI 或桌面应用中使用 `/login` 登录。Claude Tag 会话通过代理的身份登录，因此不需要任何步骤。使用 API 密钥、[网关令牌](/docs/zh-CN/llm-gateway) 或云提供商凭证的会话无法发布。                                                                                                                                                                                               |
+| 模型提供商 | Anthropic API。在 [Amazon Bedrock](/docs/zh-CN/amazon-bedrock)、[Google Cloud 的 Agent Platform](/docs/zh-CN/google-vertex-ai) 或 [Microsoft Foundry](/docs/zh-CN/microsoft-foundry) 上不可用。                                                                                                                                                            |
+| 组织策略  | 客户管理的加密密钥 (CMEK)、HIPAA 和 [零数据保留](/docs/zh-CN/zero-data-retention) 未为组织启用。                                                                                                                                                                                                                                                              |
+| 表面    | Claude Code CLI 版本 2.1.183 或更高版本，或 Claude 桌面应用版本 1.13576.0 或更高版本。当 Claude Tag 和 artifacts 都为组织启用时，[Claude Tag](https://claude.com/docs/claude-tag/overview) 会话也可以发布 artifacts。在 [Agent SDK](/docs/zh-CN/agent-sdk/overview)、GitHub Action 和 MCP-server 上下文中默认关闭，以及当设置 [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](/docs/zh-CN/env-vars) 时。 |
 
-## Disable artifacts
+<h2 id="disable-artifacts">
+  禁用 artifacts
+</h2>
 
-To turn artifacts off for your own sessions regardless of your organization's setting, use any of:
+要根据您组织的设置为您自己的会话关闭 artifacts，请使用以下任何一种：
 
-| Method                               | Setting                              |
-| :----------------------------------- | :----------------------------------- |
-| [Settings file](/docs/en/settings)        | `"disableArtifact": true`            |
-| [Environment variable](/docs/en/env-vars) | `CLAUDE_CODE_DISABLE_ARTIFACT=1`     |
-| [Permission rule](/docs/en/permissions)   | Add `Artifact` to `permissions.deny` |
+| 方法                         | 设置                                  |
+| :------------------------- | :---------------------------------- |
+| [设置文件](/docs/zh-CN/settings)    | `"disableArtifact": true`           |
+| [环境变量](/docs/zh-CN/env-vars)    | `CLAUDE_CODE_DISABLE_ARTIFACT=1`    |
+| [权限规则](/docs/zh-CN/permissions) | 将 `Artifact` 添加到 `permissions.deny` |
 
-## Manage artifacts for your organization
+<h2 id="manage-artifacts-for-your-organization">
+  为您的组织管理 artifacts
+</h2>
 
-Owners on Team and Enterprise plans control artifacts from [claude.ai admin settings](https://claude.ai/admin-settings/claude-code). Artifact content is stored on Anthropic-operated infrastructure and is visible only to authenticated members of the publishing organization, unless the artifact is [shared publicly](#control-public-sharing).
+Team 和 Enterprise 计划上的管理员从 [claude.ai 管理设置](https://claude.ai/admin-settings/claude-code) 控制 artifacts。Artifact 内容存储在 Anthropic 运营的基础设施上，仅对发布组织的经过身份验证的成员可见，除非该 artifact 是[公开共享](#control-public-sharing)的。
 
-### Enable or disable artifacts
+<h3 id="enable-or-disable-artifacts">
+  启用或禁用 artifacts
+</h3>
 
-To enable or disable artifacts for the whole organization, go to [**Settings > Claude Code > Capabilities**](https://claude.ai/admin-settings/claude-code) and use the **Artifacts** toggle. On Enterprise plans with role-based access control, you can additionally scope artifacts to specific roles: go to [**Settings > Roles**](https://claude.ai/admin-settings/roles), edit a role, and set the **Artifacts** permission under the **Claude Code** group.
+要为整个组织启用或禁用 artifacts，请转到 **Settings > Claude Code > Capabilities** 并使用 **Artifacts** 切换。在具有基于角色的访问控制的 Enterprise 计划上，您还可以将 artifacts 限制到特定角色：转到 **Settings > Roles**，编辑角色，并在 **Claude Code** 组下设置 **Artifacts** 权限。
 
-### Control connector calls from artifacts
+<h3 id="control-connector-calls-from-artifacts">
+  控制来自 artifacts 的连接器调用
+</h3>
 
-[Connector calls from artifacts](#pull-live-data-with-mcp-connectors) have their own toggle, separate from the **Artifacts** toggle that turns artifacts on or off. Go to [**Settings > Capabilities**](https://claude.ai/admin-settings/capabilities) and use the **Enable artifact connectors** toggle. The same toggle governs connector calls from artifacts created in claude.ai conversations, which is why it sits under **Settings > Capabilities** rather than **Settings > Claude Code**.
+[来自 artifacts 的连接器调用](#pull-live-data-with-mcp-connectors)有自己的切换，与打开或关闭 artifacts 的 **Artifacts** 切换分开。转到 [**Settings > Capabilities**](https://claude.ai/admin-settings/capabilities) 并使用 **Enable artifact connectors** 切换。同一切换控制在 claude.ai 对话中创建的 artifacts 的连接器调用，这就是为什么它位于 **Settings > Capabilities** 而不是 **Settings > Claude Code** 下。
 
-### Control public sharing
+<h3 id="control-public-sharing">
+  控制公开共享
+</h3>
 
-Public sharing is off by default on Team and Enterprise plans, so members can share artifacts only within the organization until an Owner turns it on. To let members publish artifacts to public links that anyone can view without signing in, go to **Settings > Claude Code > Capabilities** and turn on **External sharing** under the **Artifacts** toggle. Turning it back off blocks access through existing public links without changing each artifact's audience; access resumes if you re-enable it.
+在 Team 和 Enterprise 计划上，公开共享默认处于关闭状态，因此成员只能在组织内共享 artifacts，直到管理员将其打开。要让成员将 artifacts 发布到任何人都可以查看而无需登录的公开链接，请转到 **Settings > Claude Code > Capabilities** 并在 **Artifacts** 切换下打开 **External sharing**。将其关闭会阻止通过现有公开链接的访问，而不会更改每个 artifact 的受众；如果您重新启用它，访问将恢复。
 
-### Set a retention policy
+<h3 id="set-a-retention-policy">
+  设置保留策略
+</h3>
 
-To set how long artifacts are kept before automatic deletion, go to [**Settings > Data & privacy controls**](https://claude.ai/admin-settings/data-privacy-controls). You can set separate retention periods for artifacts that are still private to their author and artifacts that have been shared.
+要设置在自动删除之前保留 artifacts 的时间长度，请转到 **Settings > Data & privacy controls**。您可以为仍然对其作者私有的 artifacts 和已共享的 artifacts 设置单独的保留期。
 
-### Review the audit log
+<h3 id="review-the-audit-log">
+  查看审计日志
+</h3>
 
-Publishing, sharing, and deleting an artifact each appear in your organization's audit log under the `claude_artifact_*` event types, the same family used for artifacts created in claude.ai conversations.
+发布、共享和删除 artifact 各自出现在您组织的审计日志中，位于 `claude_artifact_*` 事件类型下，这是用于在 claude.ai 对话中创建的 artifacts 的同一系列。
 
-### Allowlist the viewer domain
+<h3 id="allowlist-the-viewer-domain">
+  将查看器域列入允许列表
+</h3>
 
-The viewer on claude.ai loads each artifact from a sandboxed `*.claudeusercontent.com` origin. If your organization restricts outbound network access, add that domain to your allowlist alongside `claude.ai`. See [Network access requirements](/docs/en/network-config#network-access-requirements) for the full list.
+claude.ai 上的查看器从沙箱 `*.claudeusercontent.com` 源加载每个 artifact。如果您的组织限制出站网络访问，请将该域添加到您的允许列表中，与 `claude.ai` 一起。有关完整列表，请参阅 [网络访问要求](/docs/zh-CN/network-config#network-access-requirements)。
 
-### List and delete artifacts with the Compliance API
+<h3 id="list-and-delete-artifacts-with-the-compliance-api">
+  使用 Compliance API 列出和删除 artifacts
+</h3>
 
-The [Compliance API](https://docs.claude.com/en/api/compliance) provides endpoints to list an organization's artifacts, retrieve a specific version's content, and delete an artifact:
+[Compliance API](https://docs.claude.com/en/api/compliance) 提供端点来列出组织的 artifacts、检索特定版本的内容和删除 artifact：
 
-| Method   | Endpoint                                                            |
+| 方法       | 端点                                                                  |
 | :------- | :------------------------------------------------------------------ |
 | `GET`    | `/v1/compliance/code/artifacts`                                     |
 | `GET`    | `/v1/compliance/code/artifacts/{artifact_id}/versions/{version_id}` |
 | `DELETE` | `/v1/compliance/code/artifacts/{artifact_id}`                       |
 
-For the request and response schemas, see the [Compliance API reference](https://docs.claude.com/en/api/compliance/code/artifacts).
+有关请求和响应架构，请参阅 [Compliance API 参考](https://docs.claude.com/en/api/compliance/code/artifacts)。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* Browse [prompting patterns and workflows](/docs/en/prompt-library) that pair with artifacts
-* Turn an artifact prompt you reuse into a [skill](/docs/en/skills) so you can invoke it as a command
-* [Connect MCP servers](/docs/en/mcp) so Claude can pull data into an artifact while it builds the page
+* 浏览与 artifacts 配对的 [提示模式和工作流](/docs/zh-CN/prompt-library)
+* 将您重复使用的 artifact 提示转换为 [skill](/docs/zh-CN/skills)，以便您可以将其作为命令调用
+* [连接 MCP 服务器](/docs/zh-CN/mcp)，以便 Claude 可以在构建页面时将数据拉入 artifact

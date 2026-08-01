@@ -4,192 +4,220 @@
 
 # Champion kit
 
-> A playbook for engineers advocating Claude Code internally: what to share, how to answer questions, and how to grow adoption on your team.
+> 工程师在内部倡导 Claude Code 的行动手册：分享什么、如何回答问题以及如何在团队中推动采用。
 
-This page is for individual engineers who are already using Claude Code and want to help their team adopt it. It covers what to share, how to answer the questions you will get, a thirty-day playbook, and responses to common concerns.
+本页面适用于已经在使用 Claude Code 并希望帮助团队采用它的个人工程师。它涵盖了要分享的内容、如何回答你将收到的问题、三十天行动计划以及对常见顾虑的回应。
 
-Adoption of a developer tool rarely happens because of a rollout announcement. It happens because someone on the team begins using the tool well, talks about it openly, and makes it easy for others to follow. The work you do as a champion has a disproportionate effect: every example you share shortens the learning curve for the engineers who come after you, and every question you answer in public turns one person's experience into something the whole team can build on. You are acting as a multiplier for your team, not a help desk, and this guide is structured to keep the role sustainable on those terms.
+开发者工具的采用很少是因为推出公告而发生的。它发生在团队中有人开始很好地使用该工具、公开谈论它，并使其他人容易跟随的时候。你作为倡导者所做的工作具有不成比例的效果：你分享的每个例子都会缩短后来工程师的学习曲线，你公开回答的每个问题都会将一个人的经验转化为整个团队可以建立的东西。你是在充当团队的倍增器，而不是帮助台，本指南的结构是为了保持这个角色在这些条件下的可持续性。
 
-## The champion role
+<h2 id="the-champion-role">
+  倡导者角色
+</h2>
 
-The role consists of three behaviors that reinforce one another.
+该角色由三种相互强化的行为组成。
 
-| Behavior                 | What it looks like in practice                                                                                                                                                           | Why it matters                                                                                                                                                                          |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Share what you discover  | Post the prompts, screenshots, and small wins from your own work in the places your team already reads, such as an engineering channel, a standup thread, or a pull-request description. | Examples drawn from your own codebase are more persuasive than any external documentation, because colleagues can see exactly how the tool applies to the problems they share with you. |
-| Be the person people ask | When a colleague asks how you accomplished something, respond with the actual prompt you used so they can apply it directly to their own task.                                           | A concrete, runnable example removes the gap between curiosity and a first successful use, which is where most adoption efforts stall.                                                  |
-| Grow the circle          | Establish a small number of lightweight, recurring habits, such as a dedicated channel or a weekly thread, so that momentum continues even when your attention is elsewhere.             | Adoption that depends on a single person is fragile. Adoption that is carried by shared habits continues to compound on its own.                                                        |
+| 行为        | 实际表现                                            | 为什么重要                                                     |
+| --------- | ----------------------------------------------- | --------------------------------------------------------- |
+| 分享你的发现    | 在你的团队已经阅读的地方发布提示、截图和小胜利，例如工程频道、站会线程或拉取请求描述。     | 从你自己的代码库中提取的例子比任何外部文档都更有说服力，因为同事可以看到该工具如何准确地应用于他们与你共享的问题。 |
+| 成为人们提问的对象 | 当同事问你如何完成某事时，用你实际使用的提示来回应，这样他们可以直接将其应用于自己的任务。   | 一个具体的、可运行的例子消除了好奇心和第一次成功使用之间的差距，这是大多数采用工作停滞的地方。           |
+| 扩大圈子      | 建立少量轻量级的、定期的习惯，例如专用频道或每周线程，这样即使你的注意力在别处，势头也会继续。 | 依赖于单个人的采用是脆弱的。由共享习惯承载的采用会继续自我复合。                          |
 
-Most of this fits naturally inside the work you are already doing. The difference is a small amount of additional intention about where your discoveries are posted and how your answers travel.
+大多数这些工作自然地适应你已经在做的工作中。区别在于对你的发现发布位置和你的答案如何传播的少量额外意图。
 
-### What this should cost you
+<h3 id="what-this-should-cost-you">
+  这应该花费你多少
+</h3>
 
-Set expectations with yourself and with your lead. The activities below are intended to fit inside a normal working week, and the role should remain a multiplier on your existing work rather than an additional support responsibility.
+与自己和你的主管设定期望。下面的活动旨在适应正常的工作周，该角色应该保持为你现有工作的倍增器，而不是额外的支持责任。
 
-| Activity                                | Time per week    | Guidance                                                                                                                       |
-| --------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Posting wins and prompts                | About 15 minutes | Capture these in the moment with a screenshot and one or two sentences; avoid turning them into formal write-ups.              |
-| Answering questions in a shared channel | About 20 minutes | Answer publicly once, then link back to that answer when the question recurs.                                                  |
-| Hosting a weekly show-and-tell thread   | About 5 minutes  | You post the opening prompt; the team supplies the content.                                                                    |
-| Optional pairing or walkthroughs        | 0 to 30 minutes  | Reserve this for colleagues who are genuinely blocked, and offer the [Quickstart](/docs/en/quickstart) link before scheduling time. |
+| 活动          | 每周时间      | 指导                                                           |
+| ----------- | --------- | ------------------------------------------------------------ |
+| 发布胜利和提示     | 约 15 分钟   | 用截图和一两句话在当时捕捉这些；避免将它们变成正式的写作。                                |
+| 在共享频道中回答问题  | 约 20 分钟   | 公开回答一次，然后当问题再次出现时链接回该答案。                                     |
+| 主持每周展示和讲述线程 | 约 5 分钟    | 你发布开场提示；团队提供内容。                                              |
+| 可选的配对或演练    | 0 到 30 分钟 | 为真正被阻挡的同事保留此项，并在安排时间之前提供 [Quickstart](/docs/zh-CN/quickstart) 链接。 |
 
-## Share what you discover
+<h2 id="share-what-you-discover">
+  分享你的发现
+</h2>
 
-Your own experience is the most persuasive material your colleagues will encounter, because it is specific to the codebase, workflows, and problems you all share. Documentation tells people what is possible; your posts show them what is actually working in your environment.
+你自己的经验是你的同事将遇到的最有说服力的材料，因为它特定于你们都共享的代码库、工作流和问题。文档告诉人们什么是可能的；你的帖子向他们展示在你的环境中实际工作的东西。
 
-### What is worth sharing
+<h3 id="what-is-worth-sharing">
+  什么值得分享
+</h3>
 
-The most useful posts describe a technique a colleague can reuse tomorrow rather than an outcome that is already complete. Techniques compound as they spread through a team; status updates do not.
+最有用的帖子描述了同事明天可以重用的技术，而不是已经完成的结果。技术在团队中传播时会复合；状态更新则不会。
 
-Examples of reusable techniques:
+可重用技术的例子：
 
-* "I learned that @-mentioning a directory works. Pointing it at `@src/components/` and asking which were missing tests surfaced two I had overlooked."
-* "Plan mode (`Shift+Tab`) shows exactly which files will be touched before any edit is made, which is why I am comfortable using it on shared code."
-* "I configured a Stop hook so I receive a desktop notification when a long task completes. Configuration is in the thread."
-* "Running `/init` generates a `CLAUDE.md` from the repository so the assistant stops re-asking about our conventions."
+* "我了解到 @-提及目录有效。将其指向 `@src/components/` 并询问哪些缺少测试，这暴露了我忽略的两个。"
+* "Plan mode (`Shift+Tab`) 显示在进行任何编辑之前将触及哪些文件，这就是为什么我对在共享代码上使用它感到满意。"
+* "我配置了一个 Stop hook，以便在长任务完成时收到桌面通知。配置在线程中。"
+* "运行 `/init` 从存储库生成 `CLAUDE.md`，这样助手就不会再次询问我们的约定。"
 
-### Where to share it
+<h3 id="where-to-share-it">
+  在哪里分享
+</h3>
 
-Post wherever your team already reads. The goal is to place examples in the path of normal work rather than to create a destination.
+在你的团队已经阅读的地方发布。目标是将例子放在正常工作的路径中，而不是创建一个目的地。
 
-| Location                                        | Best suited for                                                            | Recommended format                                                                          |
-| ----------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| A `#claude-code` or general engineering channel | Discoveries, prompts, and "today I learned" moments                        | A screenshot accompanied by one or two sentences of context                                 |
-| Pull-request descriptions                       | Demonstrating the approach on real code that reviewers are already reading | A single line such as "Claude and I did this refactor; happy to walk through the approach." |
-| Standups or weekly written updates              | Normalizing usage with leads and skip-level managers                       | One sentence describing one concrete outcome                                                |
-| Team wiki or internal documentation             | Durable patterns, custom skills, and `CLAUDE.md` examples                  | A short page, linked from the channel topic so it remains discoverable                      |
+| 位置                     | 最适合                         | 推荐格式                             |
+| ---------------------- | --------------------------- | -------------------------------- |
+| `#claude-code` 或一般工程频道 | 发现、提示和"今天我学到"的时刻            | 一个截图，附带一两句上下文                    |
+| 拉取请求描述                 | 在审查者已经阅读的真实代码上演示该方法         | 一行，例如"Claude 和我做了这个重构；很乐意讲解该方法。" |
+| 站会或每周书面更新              | 与主管和跳级经理规范化使用               | 一句话描述一个具体的结果                     |
+| 团队 wiki 或内部文档          | 持久的模式、自定义技能和 `CLAUDE.md` 示例 | 一个短页面，从频道主题链接，以便它保持可发现性          |
 
-### The format that works
+<h3 id="the-format-that-works">
+  有效的格式
+</h3>
 
-A screenshot accompanied by a single line of context, or a brief before-and-after description, is generally the right level of detail. Keep each post short enough that someone scrolling past still absorbs the point. A long write-up tends to be saved for later and forgotten, whereas a short post with a screenshot tends to be copied and tried.
+一个截图附带一行上下文，或简短的前后描述，通常是正确的细节级别。保持每个帖子足够短，以便浏览的人仍然能够吸收要点。长篇写作往往会被保存以供以后使用并被遗忘，而带有截图的短帖子往往会被复制和尝试。
 
-The example posts below illustrate tone and length; adapt them rather than copying verbatim.
+下面的示例帖子说明了语气和长度；适应它们而不是逐字复制。
 
 ```text theme={null}
-Learned today that @-mentioning a directory works. I pointed it at
-@src/components/ and asked which components were missing tests, and it
-surfaced two I had forgotten about.
+今天学到 @-提及目录有效。我将其指向 @src/components/ 并询问哪些组件缺少测试，
+它暴露了我忘记的两个。
 ```
 
 ```text theme={null}
-I configured a Stop hook so I receive a desktop notification when a long
-task completes. I started a refactor, stepped away, and was notified when
-it finished. Configuration is in the thread.
+我配置了一个 Stop hook，以便在长任务完成时收到桌面通知。我开始了一个重构，
+走开了，当它完成时收到了通知。配置在线程中。
 ```
 
 ```text theme={null}
-Plan mode is the reason I am comfortable using this on code that matters.
-Press Shift+Tab until you see "plan"; it lays out exactly which files it
-intends to touch before changing anything.
+Plan mode 是我对在重要代码上使用它感到满意的原因。按 Shift+Tab 直到你看到
+"plan"；它准确地列出了它打算触及的文件，然后再改变任何东西。
 ```
 
-## Be the person people ask
+<h2 id="be-the-person-people-ask">
+  成为人们提问的对象
+</h2>
 
-Once you have shared a few examples, questions will follow. This is where the champion role has the greatest leverage, because a good answer to one person frequently unblocks several others who are watching the same channel.
+一旦你分享了几个例子，问题就会随之而来。这是倡导者角色具有最大杠杆作用的地方，因为对一个人的好答案经常会解除其他几个在同一频道中观看的人的阻碍。
 
-### Answer with a prompt rather than an explanation
+<h3 id="answer-with-a-prompt-rather-than-an-explanation">
+  用提示而不是解释来回答
+</h3>
 
-When a colleague asks how you accomplished something, the most useful response is the prompt you actually used. They will learn more from running that prompt against their own problem than from any description you could write, and it gives them something they can act on immediately.
+当同事问你如何完成某事时，最有用的回应是你实际使用的提示。他们会从针对自己的问题运行该提示中学到更多，而不是从你能写的任何描述中学到，它给了他们可以立即采取行动的东西。
 
 ```text theme={null}
-Colleague: How did you get it to find that race condition?
+同事：你是如何找到那个竞态条件的？
 
-Champion: I asked, "The test in @tests/scheduler.test.ts is flaky, figure
-out why," and it traced two unjoined promises in the scheduler. Try the
-same phrasing on your test.
+倡导者：我问，"@tests/scheduler.test.ts 中的测试不稳定，找出原因，"
+它追踪了调度程序中的两个未加入的承诺。在你的测试上尝试相同的措辞。
 ```
 
-### Point at the feature rather than the documentation
+<h3 id="point-at-the-feature-rather-than-the-documentation">
+  指向功能而不是文档
+</h3>
 
-A response such as "Try plan mode, press `Shift+Tab` until you see it" is more useful in the moment than a link to the documentation. If the person needs more depth later they will find it on their own; right now they need the single thing that unblocks them.
+"尝试 plan mode，按 `Shift+Tab` 直到你看到它"这样的回应在当时比文档链接更有用。如果这个人稍后需要更深入的内容，他们会自己找到；现在他们需要解除阻碍他们的单一东西。
 
-### Questions you are likely to hear
+<h3 id="questions-you-are-likely-to-hear">
+  你可能会听到的问题
+</h3>
 
-| Question                                           | Suggested response                                                                                                                                                                                                           | Follow-up resource                                      |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| "What should I try it on first?"                   | Recommend a real but contained task, ideally a bug or chore the person has been postponing because it is tedious rather than difficult.                                                                                      | [Common workflows](/docs/en/common-workflows)                |
-| "How do I trust it with my code?"                  | Introduce plan mode: pressing `Shift+Tab` cycles into it, Claude proposes exactly what it intends to change, and nothing is modified until the user approves.                                                                | [Permissions](/docs/en/permissions)                          |
-| "Is the setup worth the effort?"                   | Installation takes roughly two minutes, runs in the terminal, and requires no IDE extension. Running `/init` once is sufficient to begin working.                                                                            | [Quickstart](/docs/en/quickstart)                            |
-| "It produced an incorrect result."                 | Encourage them to provide the failure back to Claude. Pasting the error message or failing test is far more effective than rephrasing the original request.                                                                  | [Common workflows](/docs/en/common-workflows)                |
-| "It does not understand our codebase conventions." | Suggest running `/init` to generate a `CLAUDE.md` file, then adding the team's conventions, test commands, and any directories that should be avoided.                                                                       | [Memory](/docs/en/memory)                                    |
-| "Is this just autocomplete?"                       | Offer a brief demonstration in which Claude explains an unfamiliar file, traces a bug across services, or drafts a migration plan. These tasks require reasoning across the repository rather than completing a single line. | A two-minute live demonstration                         |
-| "What about security and data handling?"           | Refer this question to your administrator. Your organization's deployment and data-handling policy is already configured, and champions should not improvise this answer.                                                    | [Security](/docs/en/security) · [Data usage](/docs/en/data-usage) |
+| 问题              | 建议的回应                                                                     | 后续资源                                                          |
+| --------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| "我应该首先在什么上尝试它？" | 推荐一个真实但有限的任务，最好是一个你一直在推迟的错误或琐事，因为它很繁琐而不是困难。                               | [Common workflows](/docs/zh-CN/common-workflows)                   |
+| "我如何相信它处理我的代码？" | 介绍 plan mode：按 `Shift+Tab` 循环进入它，Claude 准确地提议它打算改变什么，在用户批准之前不会修改任何东西。     | [Permissions](/docs/zh-CN/permissions)                             |
+| "设置值得付出努力吗？"    | 安装大约需要两分钟，在终端中运行，不需要 IDE 扩展。运行一次 `/init` 足以开始工作。                          | [Quickstart](/docs/zh-CN/quickstart)                               |
+| "它产生了不正确的结果。"   | 鼓励他们将失败提供给 Claude。粘贴错误消息或失败的测试远比重新表述原始请求更有效。                              | [Common workflows](/docs/zh-CN/common-workflows)                   |
+| "它不理解我们的代码库约定。" | 建议运行 `/init` 生成 `CLAUDE.md` 文件，然后添加团队的约定、测试命令和任何应该避免的目录。                  | [Memory](/docs/zh-CN/memory)                                       |
+| "这只是自动完成吗？"     | 提供一个简短的演示，其中 Claude 解释一个不熟悉的文件、跨服务追踪一个错误或起草迁移计划。这些任务需要在存储库中进行推理，而不是完成单一行。 | 一个两分钟的现场演示                                                    |
+| "安全和数据处理呢？"     | 将此问题转介给你的管理员。你的组织的部署和数据处理政策已经配置，倡导者不应该即兴回答这个问题。                           | [Security](/docs/zh-CN/security) · [Data usage](/docs/zh-CN/data-usage) |
 
-## Grow the circle
+<h2 id="grow-the-circle">
+  扩大圈子
+</h2>
 
-The objective is not to build a program or to own a rollout. It is to establish a small number of lightweight habits that allow momentum to continue after you have stopped actively driving it. When questions in the channel are being answered by people other than you, the role has done its job.
+目标不是建立一个程序或拥有一个推出。它是建立少量轻量级的习惯，允许势头在你停止主动推动它之后继续。当频道中的问题被除你之外的人回答时，该角色已经完成了它的工作。
 
-### Patterns that tend to work
+<h3 id="patterns-that-tend-to-work">
+  倾向于有效的模式
+</h3>
 
-| Pattern                                    | How to run it                                                                                                                                                                                                                                     | Effort required                            |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| A dedicated channel                        | Create a `#claude-code` channel (or a recurring thread in an existing one), pin the [Quickstart](/docs/en/quickstart) link and one strong example, and answer questions publicly so each answer benefits everyone watching.                            | About five minutes to set up, then ambient |
-| A weekly show-and-tell thread              | Each Friday, post "What did Claude help you with this week?" No preparation, slides, or meeting are required; screenshots and short descriptions are sufficient.                                                                                  | About two minutes per week                 |
-| Share a custom skill                       | Post your most useful `.claude/skills/<name>/SKILL.md` file, for example a `/ship` skill that runs tests and lint before committing, with a one-line description. Because skills are plain Markdown, colleagues can adopt them immediately.       | About five minutes per skill               |
-| Generate a setup guide from your own usage | Run `/team-onboarding` in a project you have spent real time in. Claude scans your recent sessions, commands, and MCP servers, then produces a guide a new teammate can paste as their first message to replay your setup. Pin it in the channel. | About two minutes                          |
-| Pair on a first task                       | Offer a single fifteen-minute pairing session to anyone getting started. One successful outcome on their own code is more persuasive than any presentation.                                                                                       | About fifteen minutes per person           |
-| Identify the next champion                 | The colleague who asks you the most questions is usually ready to take on this role. Forward them this page and divide the channel responsibilities between you.                                                                                  | Negligible                                 |
+| 模式            | 如何运行它                                                                                                         | 所需的努力          |
+| ------------- | ------------------------------------------------------------------------------------------------------------- | -------------- |
+| 专用频道          | 创建一个 `#claude-code` 频道（或现有频道中的定期线程），固定 [Quickstart](/docs/zh-CN/quickstart) 链接和一个强大的例子，并公开回答问题，以便每个答案都能使观看的每个人受益。  | 大约五分钟的设置，然后是环境 |
+| 每周展示和讲述线程     | 每个星期五，发布"Claude 本周帮助你做了什么？"不需要准备、幻灯片或会议；截图和简短描述就足够了。                                                          | 每周约两分钟         |
+| 分享自定义技能       | 发布你最有用的 `.claude/skills/<name>/SKILL.md` 文件，例如一个 `/ship` 技能，在提交前运行测试和 lint，附带一行描述。因为技能是纯 Markdown，同事可以立即采用它们。 | 每个技能约五分钟       |
+| 从你自己的使用生成设置指南 | 在你花费了真实时间的项目中运行 `/team-onboarding`。Claude 扫描你最近的会话、命令和 MCP 服务器，然后生成一个新队友可以粘贴为他们的第一条消息以重放你的设置的指南。在频道中固定它。      | 约两分钟           |
+| 在第一个任务上配对     | 为任何入门的人提供一个单一的十五分钟配对会话。他们自己代码上的一个成功结果比任何演示都更有说服力。                                                             | 每人约十五分钟        |
+| 识别下一个倡导者      | 问你最多问题的同事通常已经准备好承担这个角色。将此页面转发给他们，并在你之间分担频道责任。                                                                 | 可忽略不计          |
 
-### Thirty-day playbook
+<h3 id="thirty-day-playbook">
+  三十天行动计划
+</h3>
 
-If a loose plan is helpful, the sequence below reflects what tends to work across most teams. Adjust freely to fit your context.
+如果一个宽松的计划有帮助，下面的序列反映了在大多数团队中倾向于有效的东西。根据你的背景自由调整。
 
 <Steps>
-  <Step title="Week 1: Seed the channel">
-    Create the channel, pin the [Quickstart](/docs/en/quickstart), and post two or three of your own examples with the prompts included.
+  <Step title="第 1 周：为频道播种">
+    创建频道，固定 [Quickstart](/docs/zh-CN/quickstart)，并发布两三个你自己的例子，包括提示。
 
-    **Signal that it is working:** a few colleagues react or reply, and at least one question is asked in the channel.
+    **表明它有效的信号：** 几个同事做出反应或回复，至少有一个问题在频道中被提出。
   </Step>
 
-  <Step title="Week 2: Start the rhythm">
-    Start the weekly show-and-tell thread, answer every question publicly, and share one custom skill or `CLAUDE.md` snippet.
+  <Step title="第 2 周：开始节奏">
+    开始每周展示和讲述线程，公开回答每个问题，并分享一个自定义技能或 `CLAUDE.md` 片段。
 
-    **Signal that it is working:** someone other than you posts an example of their own.
+    **表明它有效的信号：** 除你之外的人发布了他们自己的例子。
   </Step>
 
-  <Step title="Week 3: Pair and consolidate">
-    Offer two or three short pairing sessions and consolidate the most common questions and answers into a pinned FAQ message.
+  <Step title="第 3 周：配对和巩固">
+    提供两三个短配对会话，并将最常见的问题和答案整合到一个固定的常见问题解答消息中。
 
-    **Signal that it is working:** you see repeat usage, with the same colleagues returning rather than trying once and stopping.
+    **表明它有效的信号：** 你看到重复使用，同样的同事返回而不是尝试一次然后停止。
   </Step>
 
-  <Step title="Week 4: Hand off">
-    Identify a second champion and share a brief summary of what is working and what is not with your lead or administrator.
+  <Step title="第 4 周：交接">
+    识别第二个倡导者，并与你的主管或管理员分享一个关于什么有效和什么无效的简要总结。
 
-    **Signal that it is working:** questions in the channel are being answered by people other than you.
+    **表明它有效的信号：** 频道中的问题由除你之外的人回答。
   </Step>
 </Steps>
 
-### When someone wants to go deeper
+<h3 id="when-someone-wants-to-go-deeper">
+  当有人想深入了解时
+</h3>
 
-You are the warm introduction rather than the onboarding program. When a colleague moves past "should I try this" into "how do I become effective with it," point them to the [Quickstart](/docs/en/quickstart) and [Common workflows](/docs/en/common-workflows) pages. They contain short sections covering the features that are genuinely useful but difficult to discover on your own.
+你是温暖的介绍而不是入职计划。当同事从"我应该尝试这个吗"进入"我如何有效地使用它"时，将他们指向 [Quickstart](/docs/zh-CN/quickstart) 和 [Common workflows](/docs/zh-CN/common-workflows) 页面。它们包含涵盖真正有用但难以自己发现的功能的短部分。
 
-## Respond to common concerns
+<h2 id="respond-to-common-concerns">
+  回应常见顾虑
+</h2>
 
-Healthy skepticism is expected; engineers should be cautious about tools that touch their code. The most effective response is rarely to argue the general case. Instead, acknowledge the concern, offer a brief reframe, and propose one concrete demonstration on the person's own code. Most concerns are resolved by a single successful experience.
+健康的怀疑是预期的；工程师应该对接触他们代码的工具保持谨慎。最有效的回应很少是论证一般情况。相反，承认顾虑，提供简短的重新框架，并在这个人自己的代码上提议一个具体的演示。大多数顾虑通过一次成功的经历得到解决。
 
-| Concern                                       | Suggested response                                                                                                                                                                                 | Evidence to offer                                         |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| "I am faster without it."                     | That is likely true for code the person writes routinely. Suggest trying it on the work they tend to avoid: legacy files, unfamiliar services, or test scaffolding, where the leverage is highest. | Time one tedious task both ways and compare.              |
-| "I do not trust AI to touch production code." | Agree that no change should land unread. Plan mode combined with normal diff review means nothing is applied that the engineer has not inspected, the same standard as any pull request.           | Demonstrate plan mode on a real file.                     |
-| "It will make junior engineers weaker."       | Used well, it is an effective explainer. Encourage junior engineers to ask Claude to explain a file and its call sites before asking it to change anything.                                        | Run "Explain @file and where it is called from" together. |
-| "I tried it once and it hallucinated."        | This is usually a context problem rather than a model problem. @-mentioning the relevant files, running `/init`, and providing the actual error output typically resolves it.                      | Re-run their original prompt with proper `@`-context.     |
-| "We do not have time to learn another tool."  | Claude Code is a terminal command rather than a platform. If it does not return value within the first session, it is reasonable to set it aside.                                                  | A two-minute install followed by one real bug.            |
+| 顾虑                | 建议的回应                                                                    | 提供的证据                     |
+| ----------------- | ------------------------------------------------------------------------ | ------------------------- |
+| "我没有它会更快。"        | 这对于这个人日常编写的代码可能是真的。建议在他们倾向于避免的工作上尝试它：遗留文件、不熟悉的服务或测试脚手架，其中杠杆最高。           | 以两种方式计时一个繁琐的任务并比较。        |
+| "我不相信 AI 接触生产代码。" | 同意没有变化应该在未读的情况下登陆。Plan mode 结合正常的 diff 审查意味着没有应用工程师没有检查的东西，与任何拉取请求相同的标准。 | 在真实文件上演示 plan mode。       |
+| "它会使初级工程师变弱。"     | 使用得当，它是一个有效的解释器。鼓励初级工程师在要求它改变任何东西之前要求 Claude 解释一个文件及其调用站点。               | 一起运行"解释 @file 以及它从哪里被调用"。 |
+| "我尝试过一次，它产生了幻觉。"  | 这通常是上下文问题而不是模型问题。@-提及相关文件、运行 `/init` 和提供实际错误输出通常会解决它。                    | 用适当的 `@` 上下文重新运行他们的原始提示。  |
+| "我们没有时间学习另一个工具。"  | Claude Code 是一个终端命令而不是一个平台。如果它在第一个会话中没有返回价值，将其搁置是合理的。                    | 两分钟的安装，然后是一个真实的错误。        |
 
-## Quick-reference sheet
+<h2 id="quick-reference-sheet">
+  快速参考表
+</h2>
 
-The techniques below are the ones that most reliably move someone from a first trial to daily use. Pin this table in a channel or share it on its own.
+下面的技术是最可靠地将某人从第一次试验转移到日常使用的技术。在频道中固定此表或单独分享它。
 
-| Technique                        | How to apply it                                                                                                                                                  |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Provide the right context        | Use `@file` or `@directory/` references, or paste the error or log output directly. Supplying relevant context is more effective than elaborate prompting.       |
-| Review the plan before the edit  | Press `Shift+Tab` to enter plan mode. Claude will describe the intended changes for your approval before executing them.                                         |
-| Teach it your repository         | Run `/init` to generate a `CLAUDE.md` file, then add your conventions, test commands, and any directories that should not be modified. See [Memory](/docs/en/memory). |
-| Reuse a workflow                 | Save a `SKILL.md` file in `.claude/skills/<name>/` to create a `/name` skill that the entire team can use. See [Skills](/docs/en/skills).                             |
-| Stay informed during long tasks  | Configure a Stop hook to receive a desktop notification when a long-running task completes. See [Hooks](/docs/en/hooks-guide).                                        |
-| Recover from an incorrect result | Rather than rephrasing the request, paste the failing test or stack trace back to Claude and ask it to address that specific failure.                            |
-| Keep edits surgical              | Ask for a diff, or specify "only change X." Claude respects scope when scope is stated.                                                                          |
+| 技术         | 如何应用它                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------- |
+| 提供正确的上下文   | 使用 `@file` 或 `@directory/` 引用，或直接粘贴错误或日志输出。提供相关上下文比精心设计的提示更有效。                                  |
+| 在编辑前审查计划   | 按 `Shift+Tab` 进入 Plan Mode。Claude 将在执行之前描述预期的更改以供你批准。                                           |
+| 教它你的存储库    | 运行 `/init` 生成 `CLAUDE.md` 文件，然后添加你的约定、测试命令和任何不应该修改的目录。参见 [Memory](/docs/zh-CN/memory)。               |
+| 重用工作流      | 在 `.claude/skills/<name>/` 中保存 `SKILL.md` 文件以创建整个团队可以使用的 `/name` 技能。参见 [Skills](/docs/zh-CN/skills)。 |
+| 在长任务期间保持知情 | 配置一个 Stop hook 以在长时间运行的任务完成时收到桌面通知。参见 [Hooks](/docs/zh-CN/hooks-guide)。                              |
+| 从不正确的结果中恢复 | 与其重新表述请求，不如将失败的测试或堆栈跟踪粘贴回 Claude，并要求它解决该特定失败。                                                   |
+| 保持编辑手术性    | 要求一个 diff，或指定"仅改变 X。"Claude 在陈述范围时尊重范围。                                                         |
 
 <Tip>
-  Claude Code is updated frequently. Verify version-specific details against the [documentation home page](/docs/en/overview) before distributing this material internally.
+  Claude Code 经常更新。在内部分发此材料之前，根据 [documentation home page](/docs/zh-CN/overview) 验证版本特定的详细信息。
 </Tip>

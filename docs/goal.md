@@ -2,151 +2,160 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Keep Claude working toward a goal
+# 让 Claude 朝着目标工作
 
-> Set a completion condition with /goal and Claude keeps working across turns until the condition is met.
+> 使用 /goal 设置完成条件，Claude 会在多个回合中持续工作，直到条件满足。
 
 <Note>
-  `/goal` requires Claude Code v2.1.139 or later.
+  `/goal` 需要 Claude Code v2.1.139 或更高版本。
 </Note>
 
-The `/goal` command sets a completion condition and Claude keeps working toward it without you prompting each step. After each turn, a small fast model checks whether the condition holds. If not, Claude starts another turn instead of returning control to you. The goal clears automatically once the condition is met.
+`/goal` 命令设置一个完成条件，Claude 会在没有你逐步提示的情况下持续朝着这个目标工作。每个回合后，一个小型快速模型会检查条件是否满足。如果不满足，Claude 会开始另一个回合，而不是将控制权返回给你。一旦条件满足，目标会自动清除。
 
-Use a goal for substantial work with a verifiable end state:
+对于具有可验证的最终状态的实质性工作，使用目标：
 
-* Migrating a module to a new API until every call site compiles and tests pass
-* Implementing a design doc until all acceptance criteria hold
-* Splitting a large file into focused modules until each is under a size budget
-* Working through a labeled issue backlog until the queue is empty
+* 将模块迁移到新 API，直到每个调用站点都能编译并通过测试
+* 实现设计文档，直到所有验收标准都满足
+* 将大文件拆分为专注的模块，直到每个模块都在大小预算内
+* 处理标记的问题积压，直到队列为空
 
-## Compare ways to keep a session running
+<h2 id="compare-ways-to-keep-a-session-running">
+  比较保持会话运行的方式
+</h2>
 
-Three approaches keep the current session running between prompts. Pick based on what should start the next turn:
+三种方法可以在提示之间保持当前会话运行。根据应该启动下一个回合的内容进行选择：
 
-| Approach                                                            | Next turn starts when      | Stops when                                      |
-| :------------------------------------------------------------------ | :------------------------- | :---------------------------------------------- |
-| `/goal`                                                             | The previous turn finishes | A model confirms the condition is met           |
-| [`/loop`](/docs/en/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop) | A time interval elapses    | You stop it, or Claude decides the work is done |
-| [Stop hook](/docs/en/hooks-guide#prompt-based-hooks)                     | The previous turn finishes | Your own script or prompt decides               |
+| 方法                                                                     | 下一个回合何时开始 | 停止条件                 |
+| :--------------------------------------------------------------------- | :-------- | :------------------- |
+| `/goal`                                                                | 前一个回合完成时  | 模型确认条件已满足            |
+| [`/loop`](/docs/zh-CN/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop) | 时间间隔过去时   | 你停止它，或 Claude 决定工作完成 |
+| [Stop hook](/docs/zh-CN/hooks-guide#prompt-based-hooks)                     | 前一个回合完成时  | 你自己的脚本或提示决定          |
 
-`/goal` and a Stop hook both fire after every turn. `/goal` is a session-scoped shortcut: you type a condition and it's active for the current session only. A Stop hook lives in your settings file, applies to every session in its scope, and can run a script for deterministic checks or a prompt for model-evaluated ones.
+`/goal` 和 Stop hook 都在每个回合后触发。`/goal` 是一个会话范围的快捷方式：你输入一个条件，它仅在当前会话中活跃。Stop hook 存在于你的设置文件中，适用于其范围内的每个会话，可以运行脚本进行确定性检查或运行提示进行模型评估的检查。
 
-[Auto mode](/docs/en/auto-mode-config) on its own approves tool calls within a single turn but doesn't start a new one. Claude stops when it judges the work done. `/goal` adds a separate evaluator that checks your condition after every turn, so completion is decided by a fresh model rather than the one doing the work. The two are complementary: auto mode removes per-tool prompts, and `/goal` removes per-turn prompts.
+[Auto mode](/docs/zh-CN/auto-mode-config) 本身在单个回合内批准工具调用，但不会启动新的回合。Claude 在判断工作完成时停止。`/goal` 添加了一个单独的评估器，在每个回合后检查你的条件，因此完成由一个新鲜的模型而不是执行工作的模型决定。这两者是互补的：auto mode 消除了每个工具的提示，`/goal` 消除了每个回合的提示。
 
 <Tip>
-  The approaches above keep the current session running. You can also schedule work that runs independent of any open session, such as nightly tests or morning triage. See [scheduling options](/docs/en/scheduled-tasks#compare-scheduling-options) for cloud routines and desktop scheduled tasks.
+  上述方法保持当前会话运行。你也可以安排独立于任何打开的会话运行的工作，例如夜间测试或早晨分类。有关云例程和桌面计划任务的选项，请参阅[调度选项](/docs/zh-CN/scheduled-tasks#compare-scheduling-options)。
 </Tip>
 
-## Use `/goal`
+<h2 id="use-/goal">
+  使用 `/goal`
+</h2>
 
-One goal can be active per session. The same command sets, checks, and clears it depending on the argument.
+每个会话可以有一个活跃的目标。同一命令根据参数设置、检查和清除它。
 
-### Set a goal
+<h3 id="set-a-goal">
+  设置目标
+</h3>
 
-Run `/goal` followed by the condition you want satisfied. If a goal is already active, the new one replaces it.
+运行 `/goal` 后跟你想要满足的条件。如果已经有一个活跃的目标，新目标会替换它。
 
 ```text theme={null}
 /goal all tests in test/auth pass and the lint step is clean
 ```
 
-Setting a goal starts a turn immediately, with the condition itself as the directive. You don't need to send a separate prompt. While the goal is active, a `◎ /goal active` indicator shows how long the goal has been running.
+设置目标会立即启动一个回合，条件本身作为指令。你不需要发送单独的提示。当目标活跃时，`◎ /goal active` 指示器显示目标已运行多长时间。
 
-A goal doesn't change permissions. In the default permission mode, Claude still asks before tool calls that your settings don't already allow, such as the test command above. To let goal turns run unattended, pair `/goal` with [auto mode](/docs/en/auto-mode-config).
+目标不会改变权限。在默认权限模式下，Claude 在进行工具调用前仍会询问，这些工具调用是你的设置不允许的，例如上面的测试命令。要让目标回合无人值守地运行，请将 `/goal` 与[自动模式](/docs/zh-CN/auto-mode-config)配对。
 
-After each turn, the evaluator returns a short reason explaining why the condition is or isn't met. The most recent reason appears in the status view and in the transcript so you can see what Claude is working toward next.
+每个回合后，评估器返回一个简短的原因，解释条件是否满足。最近的原因出现在状态视图和记录中，所以你可以看到 Claude 接下来要朝着什么工作。
 
 <Note>
-  A goal keeps running until the condition is met or you run `/goal clear`. Run `/goal` with no argument to see turns and tokens spent so far.
+  目标会一直运行，直到条件满足或你运行 `/goal clear`。运行不带参数的 `/goal` 可以查看到目前为止花费的回合和令牌。
 </Note>
 
-### Write an effective condition
+<h3 id="write-an-effective-condition">
+  编写有效的条件
+</h3>
 
-The [evaluator](#how-evaluation-works) judges your condition against what Claude has surfaced in the conversation. It doesn't run commands or read files independently, so write the condition as something Claude's own output can demonstrate. "All tests in `test/auth` pass" works because Claude runs the tests and the result lands in the transcript for the evaluator to read.
+[评估器](#how-evaluation-works)根据 Claude 在对话中呈现的内容来判断你的条件。它不会独立运行命令或读取文件，所以将条件写成 Claude 自己的输出可以演示的内容。"所有 `test/auth` 中的测试都通过"之所以有效，是因为 Claude 运行测试，结果出现在记录中供评估器读取。
 
-A condition that holds up across many turns usually has:
+在许多回合中保持的条件通常具有：
 
-* **One measurable end state**: a test result, a build exit code, a file count, an empty queue
-* **A stated check**: how Claude should prove it, such as "`npm test` exits 0" or "`git status` is clean"
-* **Constraints that matter**: anything that must not change on the way there, such as "no other test file is modified"
+* **一个可测量的最终状态**：测试结果、构建退出代码、文件计数、空队列
+* **一个陈述的检查**：Claude 应该如何证明它，例如"`npm test` 退出 0"或"`git status` 是干净的"
+* **重要的约束**：在此过程中必须不改变的任何内容，例如"没有其他测试文件被修改"
 
-The condition can be up to 4,000 characters.
+条件最多可以是 4,000 个字符。
 
-To bound how long a goal runs, include a turn or time clause in the condition, such as `or stop after 20 turns`. Claude reports progress against that clause each turn and the evaluator judges it from the conversation.
+要限制目标运行的时间，在条件中包含一个回合或时间子句，例如 `or stop after 20 turns`。Claude 每个回合都会针对该子句报告进度，评估器从对话中判断它。
 
-### Check status
+<h3 id="check-status">
+  检查状态
+</h3>
 
-Run `/goal` with no arguments to see the current state.
+运行不带参数的 `/goal` 可以查看当前状态。
 
 ```text theme={null}
 /goal
 ```
 
-If a goal is active, the status shows:
+如果目标活跃，状态显示：
 
-* The condition
-* How long it has been running
-* How many turns have been evaluated
-* The current token spend
-* The evaluator's most recent reason
+* 条件
+* 已运行多长时间
+* 已评估多少个回合
+* 当前令牌支出
+* 评估器最近的原因
 
-The turn count and the most recent reason appear after the first evaluation has run.
+如果没有活跃的目标，但在会话早期实现了一个目标，状态显示已实现的条件及其持续时间、回合计数和令牌支出。
 
-If no goal is active but one was achieved earlier in the session, the status shows the achieved condition along with its duration, turn count, and token spend.
+<h3 id="clear-a-goal">
+  清除目标
+</h3>
 
-### Clear a goal
-
-Run `/goal clear` to remove an active goal before its condition is met.
+运行 `/goal clear` 可以在条件满足之前移除活跃的目标。
 
 ```text theme={null}
 /goal clear
 ```
 
-Claude prints `Goal cleared:` followed by the condition to confirm, or `No goal set` if nothing was active.
+`stop`、`off`、`reset`、`none` 和 `cancel` 被接受为 `clear` 的别名。运行 `/clear` 启动新对话也会移除任何活跃的目标。
 
-`stop`, `off`, `reset`, `none`, and `cancel` are accepted as aliases for `clear`. Running `/clear` to start a new conversation also removes any active goal.
+<h3 id="resume-with-an-active-goal">
+  使用活跃目标恢复
+</h3>
 
-### Resume with an active goal
+当会话结束时仍然活跃的目标会在你使用 `--resume` 或 `--continue` 恢复该会话时恢复。条件会保留，但回合计数、计时器和令牌支出基线在恢复时都会重置。已经实现或清除的目标不会恢复。
 
-A goal that was still active when a session ended is restored when you resume that session with `--resume` or `--continue`. The condition carries over, but the turn count, timer, and token-spend baseline all reset on resume. A goal that was already achieved or cleared is not restored.
+<h3 id="run-non-interactively">
+  非交互式运行
+</h3>
 
-### Run non-interactively
-
-`/goal` works in [non-interactive mode](/docs/en/headless), in the [desktop app](/docs/en/desktop), and through [Remote Control](/docs/en/remote-control). Setting a goal with `-p` runs the loop to completion in a single invocation:
+`/goal` 在[非交互式模式](/docs/zh-CN/headless)、[桌面应用](/docs/zh-CN/desktop)中工作，并通过[远程控制](/docs/zh-CN/remote-control)工作。使用 `-p` 设置目标会在单个调用中运行循环至完成：
 
 ```bash theme={null}
 claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"
 ```
 
-With the default text output, nothing prints until the condition is met, so a goal that runs many turns can look stuck. Add `--output-format stream-json --verbose` to emit each message as the loop runs.
+使用默认文本输出时，在条件满足之前不会打印任何内容，所以运行许多回合的目标可能看起来卡住了。添加 `--output-format stream-json --verbose` 以在循环运行时发出每条消息。
 
-Interrupt the process with Ctrl+C to stop a non-interactive goal before the condition is met.
+使用 Ctrl+C 中断进程以在条件满足之前停止非交互式目标。
 
-## How evaluation works
+<h2 id="how-evaluation-works">
+  评估如何工作
+</h2>
 
-`/goal` is a wrapper around a session-scoped [prompt-based Stop hook](/docs/en/hooks#prompt-based-hooks). Each time Claude finishes a turn, Claude Code sends the condition and the conversation so far to your configured [small fast model](/docs/en/model-config), which defaults to Haiku on the Claude API; on a third-party provider, check your [provider page](/docs/en/third-party-integrations) for the platform's default. The model answers yes or no and gives a short reason.
+`/goal` 是会话范围的[基于提示的 Stop hook](/docs/zh-CN/hooks#prompt-based-hooks)的包装器。每次 Claude 完成一个回合时，条件和到目前为止的对话都会发送到你配置的[小型快速模型](/docs/zh-CN/model-config)，默认为 Haiku。模型返回一个是或否的决定和一个简短的原因。"否"告诉 Claude 继续工作，并包括原因作为下一个回合的指导。"是"清除目标并在记录中记录一个已实现的条目。
 
-* **No**: Claude keeps working and takes the reason as guidance for the next turn.
-* **Yes**: Claude Code clears the goal and records an achieved entry in the transcript.
-
-To evaluate on a different model, set [`ANTHROPIC_DEFAULT_HAIKU_MODEL`](/docs/en/model-config#environment-variables).
-
-<Warning>
-  Claude Code reads `ANTHROPIC_DEFAULT_HAIKU_MODEL` everywhere it uses the small fast model, not only for `/goal` evaluation. When you set it, Claude Code also resolves the [`haiku` alias](/docs/en/model-config#model-aliases) to that model and runs [background functionality](/docs/en/costs#background-token-usage), such as conversation summarization, on it.
-</Warning>
-
-The evaluator runs on whichever provider your session is configured for. It does not call tools, so it can only judge what Claude has already surfaced in the conversation.
+评估器在你的会话配置的任何提供商上运行。它不调用工具，所以它只能判断 Claude 已经在对话中呈现的内容。
 
 <Note>
-  Evaluation tokens are billed on the small fast model configured for your provider and are typically negligible compared to main-turn spend.
+  评估令牌在为你的提供商配置的小型快速模型上计费，与主回合支出相比通常可以忽略不计。
 </Note>
 
-## Requirements
+<h2 id="requirements">
+  要求
+</h2>
 
-`/goal` runs only in workspaces where you have accepted the trust dialog, because the evaluator is part of the hooks system. `/goal` is also unavailable when [`disableAllHooks`](/docs/en/hooks#disable-or-remove-hooks) is set at any settings level or when [`allowManagedHooksOnly`](/docs/en/settings#hook-configuration) is set in managed settings. In each case, the command tells you why instead of silently doing nothing.
+`/goal` 仅在你已接受信任对话框的工作区中运行，因为评估器是 hooks 系统的一部分。当在任何设置级别设置了 [`disableAllHooks`](/docs/zh-CN/hooks#disable-or-remove-hooks) 时，或当在托管设置中设置了 [`allowManagedHooksOnly`](/docs/zh-CN/settings#hook-configuration) 时，`/goal` 也不可用。在每种情况下，命令会告诉你原因，而不是默默地什么都不做。
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Run a prompt repeatedly with `/loop`](/docs/en/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop): re-run on a time interval instead of until a condition holds
-* [Prompt-based hooks](/docs/en/hooks-guide#prompt-based-hooks): write your own Stop hook when you need custom evaluation logic
-* [Auto mode](/docs/en/auto-mode-config): approve tool calls automatically so each goal turn runs unattended
-* [Scheduling comparison](/docs/en/scheduled-tasks#compare-scheduling-options): run work on a schedule independent of any open session
+* [使用 `/loop` 重复运行提示](/docs/zh-CN/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop)：按时间间隔重新运行，而不是直到条件满足
+* [基于提示的 hooks](/docs/zh-CN/hooks-guide#prompt-based-hooks)：当你需要自定义评估逻辑时编写你自己的 Stop hook
+* [自动模式](/docs/zh-CN/auto-mode-config)：自动批准工具调用，以便每个目标回合无人值守运行
+* [调度比较](/docs/zh-CN/scheduled-tasks#compare-scheduling-options)：独立于任何打开的会话按计划运行工作

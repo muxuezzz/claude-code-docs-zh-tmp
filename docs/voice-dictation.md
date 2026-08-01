@@ -2,52 +2,56 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Voice dictation
+# 语音听写
 
-> Speak your prompts in the Claude Code CLI with hold-to-record or tap-to-record voice dictation.
+> 在 Claude Code CLI 中使用按住录音或点击录音的语音听写功能来说出你的提示词。
 
-Speak your prompts instead of typing them in the Claude Code CLI. Your speech is transcribed live into the prompt input, so you can mix voice and typing in the same message. Enable dictation with `/voice`, then either hold a key while you speak or tap once to start and again to send.
+在 Claude Code CLI 中说出你的提示词，而不是输入它们。你的语音会实时转录到提示词输入中，所以你可以在同一条消息中混合使用语音和输入。使用 `/voice` 启用听写，然后要么在说话时按住一个键，要么点击一次开始，再点击一次发送。
 
 <Note>
-  Tap mode requires Claude Code v2.1.116 or later. Check your version with `claude --version`.
+  点击模式需要 Claude Code v2.1.116 或更高版本。使用 `claude --version` 检查你的版本。
 </Note>
 
-Dictation also works in [agent view](/docs/en/agent-view#peek-and-reply). Hold or tap your push-to-talk key while the dispatch input or a peek-panel reply is focused to dictate to a background session.
+听写功能也适用于[代理视图](/docs/zh-CN/agent-view#peek-and-reply)。在调度输入或窥视面板回复获得焦点时，按住或点击你的按键通话键，以便向后台会话进行听写。
 
-## Requirements
+<h2 id="requirements">
+  要求
+</h2>
 
-Voice dictation streams your recorded audio to Anthropic's servers for transcription. Audio is not processed locally. It needs all of the following:
+语音听写将你录制的音频流传输到 Anthropic 的服务器进行转录。音频不在本地处理。它需要以下所有条件：
 
-* **A Claude.ai account**: the speech-to-text service is only available when you authenticate with one, and is not available when Claude Code is configured to use an Anthropic API key directly, Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry.
-* **An organization without HIPAA compliance enabled**: `/voice` shows `Voice mode is disabled by your organization's policy` when this restriction applies.
-* **A local microphone**: voice dictation does not work in remote environments such as [Claude Code on the web](/docs/en/claude-code-on-the-web) or SSH sessions.
-* **WSLg, if you run Claude Code in WSL**: WSLg is included with WSL2 when installed from the Microsoft Store on Windows 10 or 11. If WSLg is not available, for example on WSL1, run Claude Code in native Windows instead.
+* **一个 Claude.ai 账户**：语音转文本服务仅在你使用 Claude.ai 账户进行身份验证时可用，当 Claude Code 配置为直接使用 Anthropic API 密钥、Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 时不可用。
+* **一个未启用 HIPAA 合规性的组织**：当此限制适用时，`/voice` 显示 `Voice mode is disabled by your organization's policy`。
+* **一个本地麦克风**：语音听写在远程环境中不起作用，例如[网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)或 SSH 会话。
+* **如果你在 WSL 中运行 Claude Code，则需要 WSLg**：WSLg 包含在 Windows 10 或 11 上从 Microsoft Store 安装的 WSL2 中。如果 WSLg 不可用，例如在 WSL1 上，改为在本机 Windows 中运行 Claude Code。
 
-Transcription does not consume Claude messages or tokens and does not count toward the limits shown in `/usage`. See [data usage](/docs/en/data-usage) for how Anthropic handles your data.
+转录不消耗 Claude 消息或令牌，也不计入 `/usage` 中显示的限制。有关 Anthropic 如何处理你的数据，请参阅[数据使用](/docs/zh-CN/data-usage)。
 
-Audio recording uses a built-in native module on macOS, Linux, and Windows. On Linux, if the native module cannot load, Claude Code falls back to `arecord` from ALSA utils or `rec` from SoX. If neither is available, `/voice` prints an install command for your package manager.
+音频录制在 macOS、Linux 和 Windows 上使用内置的本机模块。在 Linux 上，如果本机模块无法加载，Claude Code 会回退到 ALSA utils 中的 `arecord` 或 SoX 中的 `rec`。如果两者都不可用，`/voice` 会打印你的包管理器的安装命令。
 
-The Claude Code [VS Code extension](/docs/en/vs-code) also supports voice dictation with the same Claude.ai account requirement. It is not available in VS Code Remote sessions, including SSH, Dev Containers, and Codespaces, because the microphone is on your local machine and the extension runs on the remote host.
+Claude Code [VS Code 扩展](/docs/zh-CN/vs-code)也支持语音听写，具有相同的 Claude.ai 账户要求。它在 VS Code Remote 会话中不可用，包括 SSH、Dev Containers 和 Codespaces，因为麦克风在你的本地机器上，而扩展在远程主机上运行。
 
-## Enable voice dictation
+<h2 id="enable-voice-dictation">
+  启用语音听写
+</h2>
 
-Run `/voice` to enable dictation. The first time you enable it, Claude Code runs a microphone check. On macOS, this triggers the system microphone permission prompt for your terminal if it has never been granted.
+运行 `/voice` 启用听写。第一次启用时，Claude Code 会运行麦克风检查。在 macOS 上，这会触发系统麦克风权限提示，如果之前从未授予过权限。
 
 ```
 /voice
 Voice mode enabled (hold). Hold space to record. Dictation language: en (/config to change).
 ```
 
-`/voice` accepts an optional mode argument:
+`/voice` 接受一个可选的模式参数：
 
-| Command       | Effect                                        |
-| :------------ | :-------------------------------------------- |
-| `/voice`      | Toggle on or off, keep the current mode       |
-| `/voice hold` | Enable in [hold mode](#hold-to-record)        |
-| `/voice tap`  | Enable in [tap mode](#tap-to-record-and-send) |
-| `/voice off`  | Disable                                       |
+| 命令            | 效果                                  |
+| :------------ | :---------------------------------- |
+| `/voice`      | 切换开或关，保持当前模式                        |
+| `/voice hold` | 在[按住模式](#hold-to-record)中启用         |
+| `/voice tap`  | 在[点击模式](#tap-to-record-and-send)中启用 |
+| `/voice off`  | 禁用                                  |
 
-Voice dictation persists across sessions. Set it directly in your [user settings file](/docs/en/settings) instead of running `/voice`:
+语音听写在会话之间持续。直接在你的[用户设置文件](/docs/zh-CN/settings)中设置它，而不是运行 `/voice`：
 
 ```json theme={null}
 {
@@ -58,23 +62,25 @@ Voice dictation persists across sessions. Set it directly in your [user settings
 }
 ```
 
-While voice dictation is enabled, the input footer shows a `hold space to speak` hint when the prompt is empty. The hint reflects your current `voice:pushToTalk` binding and updates if you [rebind the dictation key](#rebind-the-dictation-key). The hint text is the same in both modes, and it does not appear if you have a [custom status line](/docs/en/statusline) configured.
+启用语音听写时，当提示词为空时，输入页脚会显示 `hold space to speak` 提示。提示文本反映你当前的 `voice:pushToTalk` 快捷键绑定，如果你[重新绑定听写键](#rebind-the-dictation-key)，它会更新。提示文本在两种模式中都相同，如果你配置了[自定义状态行](/docs/zh-CN/statusline)，则不会显示。
 
-Transcription is tuned for coding vocabulary in both modes. Common development terms like `regex`, `OAuth`, `JSON`, and `localhost` are recognized correctly, and your current project name and git branch name are added as recognition hints automatically.
+转录在两种模式中都针对编码词汇进行了调整。常见的开发术语如 `regex`、`OAuth`、`JSON` 和 `localhost` 被正确识别，你当前的项目名称和 git 分支名称会自动添加为识别提示。
 
-## Hold to record
+<h2 id="hold-to-record">
+  按住录音
+</h2>
 
-Hold mode is push-to-talk: recording runs while you hold the key and stops when you release it. This is the default mode.
+按住模式是按键通话：当你按住键时录制运行，释放时停止。这是默认模式。
 
-Hold `Space` to start recording. Claude Code detects a held key by watching for rapid key-repeat events from your terminal, so there is a brief warmup before recording begins. The footer shows `keep holding…` during warmup, then switches to a live waveform once recording is active.
+按住 `Space` 开始录制。Claude Code 通过监视来自你的终端的快速按键重复事件来检测按住的键，因此在录制开始之前有一个简短的预热。页脚在预热期间显示 `keep holding…`，然后在录制激活后切换到实时波形。
 
-The first couple of key-repeat characters type into the input during warmup and are removed automatically when recording activates. A single `Space` tap still types a space, since hold detection only triggers on rapid repeat.
+前几个按键重复字符在预热期间输入到输入中，当录制激活时会自动删除。单个 `Space` 点击仍然会输入一个空格，因为按住检测仅在快速重复时触发。
 
 <Tip>
-  To skip the warmup, switch to [tap mode](#tap-to-record-and-send) with `/voice tap`, or [rebind to a modifier combination](#rebind-the-dictation-key) like `meta+k`. Modifier combos start recording on the first keypress.
+  要跳过预热，使用 `/voice tap` 切换到[点击模式](#tap-to-record-and-send)，或[重新绑定到修饰符组合](#rebind-the-dictation-key)，如 `meta+k`。修饰符组合在第一次按键时开始录制。
 </Tip>
 
-Your speech appears in the prompt as you speak, dimmed until the transcript is finalized. Release `Space` to stop recording and finalize the text. The transcript is inserted at your cursor position and the cursor stays at the end of the inserted text, so you can mix typing and dictation in any order. Hold `Space` again to append another recording, or move the cursor first to insert speech elsewhere in the prompt:
+你的语音在你说话时出现在提示词中，在转录最终确定之前会变暗。释放 `Space` 停止录制并最终确定文本。转录被插入到你的光标位置，光标保持在插入文本的末尾，所以你可以以任何顺序混合输入和听写。再次按住 `Space` 追加另一个录制，或先移动光标以在提示词中的其他地方插入语音：
 
 ```
 > refactor the auth middleware to ▮
@@ -82,50 +88,54 @@ Your speech appears in the prompt as you speak, dimmed until the transcript is f
 > refactor the auth middleware to use the new token validation helper▮
 ```
 
-By default, when you release the key, Claude Code inserts the transcript and waits for you to press `Enter`. Set `"autoSubmit": true` in the `voice` settings object to send the prompt automatically when you release the key, as long as the transcript is at least three words long.
+默认情况下，释放键会插入转录并等待你按 `Enter`。在 `voice` 设置对象中设置 `"autoSubmit": true` 以在释放键时自动发送提示词，只要转录至少有三个单词。
 
-## Tap to record and send
+<h2 id="tap-to-record-and-send">
+  点击录音并发送
+</h2>
 
-Tap mode toggles recording with a single keypress: tap once to start, speak, then tap again to send the prompt. There is no warmup, and you don't need to keep the key held.
+点击模式使用单个按键切换录制：点击一次开始，说话，然后再点击一次发送提示词。没有预热，你不需要保持键被按住。
 
-Enable tap mode with `/voice tap`. With the prompt input empty, tap `Space` to start recording. The footer shows a live waveform while recording. Tap `Space` again to stop.
+使用 `/voice tap` 启用点击模式。当提示词输入为空时，点击 `Space` 开始录制。页脚在录制时显示实时波形。再次点击 `Space` 停止。
 
-Claude Code inserts the transcript and submits the prompt automatically when the transcript is at least three words long. Shorter transcripts are inserted but not submitted, so an accidental tap does not send a stray word.
+Claude Code 插入转录并在转录至少有三个单词时自动提交提示词。较短的转录被插入但不提交，所以意外点击不会发送一个杂散的单词。
 
-The three-word threshold counts words for languages written without spaces. As of v2.1.195, Japanese, Chinese, and Thai transcripts count individual words, so they auto-submit in tap mode and in hold mode with `autoSubmit`. Earlier versions counted a transcript with no spaces as one word and never submitted it automatically.
+三个单词的阈值计算不使用空格书写的语言中的单词。从 v2.1.195 开始，日语、中文和泰语转录计算单个单词，所以它们在点击模式和带有 `autoSubmit` 的保持模式下自动提交。早期版本将没有空格的转录计为一个单词，从不自动提交。
 
-The first tap only starts recording when the prompt input is empty, so you can still type spaces normally while composing a message. The second tap stops recording regardless of input contents. Recording also stops automatically after 15 seconds of silence or two minutes total.
+第一次点击仅在提示词输入为空时开始录制，所以你仍然可以在撰写消息时正常输入空格。第二次点击停止录制，无论输入内容如何。录制也会在 15 秒无声或总共两分钟后自动停止。
 
-## Change the dictation language
+<h2 id="change-the-dictation-language">
+  更改听写语言
+</h2>
 
-Voice dictation uses the same [`language` setting](/docs/en/settings) that controls Claude's response language. If that setting is empty, dictation defaults to English. In the VS Code extension, if `language` is empty, dictation uses VS Code's `accessibility.voice.speechLanguage` setting before defaulting to English.
+语音听写使用与控制 Claude 响应语言相同的[`language` 设置](/docs/zh-CN/settings)。如果该设置为空，听写默认为英语。在 VS Code 扩展中，如果 `language` 为空，听写在默认为英语之前使用 VS Code 的 `accessibility.voice.speechLanguage` 设置。
 
-<Accordion title="Supported dictation languages">
-  | Language   | Code |
-  | :--------- | :--- |
-  | Czech      | `cs` |
-  | Danish     | `da` |
-  | Dutch      | `nl` |
-  | English    | `en` |
-  | French     | `fr` |
-  | German     | `de` |
-  | Greek      | `el` |
-  | Hindi      | `hi` |
-  | Indonesian | `id` |
-  | Italian    | `it` |
-  | Japanese   | `ja` |
-  | Korean     | `ko` |
-  | Norwegian  | `no` |
-  | Polish     | `pl` |
-  | Portuguese | `pt` |
-  | Russian    | `ru` |
-  | Spanish    | `es` |
-  | Swedish    | `sv` |
-  | Turkish    | `tr` |
-  | Ukrainian  | `uk` |
+<Accordion title="支持的听写语言">
+  | 语言     | 代码   |
+  | :----- | :--- |
+  | 捷克语    | `cs` |
+  | 丹麦语    | `da` |
+  | 荷兰语    | `nl` |
+  | 英语     | `en` |
+  | 法语     | `fr` |
+  | 德语     | `de` |
+  | 希腊语    | `el` |
+  | 印地语    | `hi` |
+  | 印度尼西亚语 | `id` |
+  | 意大利语   | `it` |
+  | 日语     | `ja` |
+  | 韩语     | `ko` |
+  | 挪威语    | `no` |
+  | 波兰语    | `pl` |
+  | 葡萄牙语   | `pt` |
+  | 俄语     | `ru` |
+  | 西班牙语   | `es` |
+  | 瑞典语    | `sv` |
+  | 土耳其语   | `tr` |
+  | 乌克兰语   | `uk` |
 </Accordion>
 
-Set the language in `/config` or directly in settings. You can use either the [BCP 47 language code](https://en.wikipedia.org/wiki/IETF_language_tag) or the language name:
+在 `/config` 中或直接在设置中设置语言。你可以使用 [BCP 47 语言代码](https://en.wikipedia.org/wiki/IETF_language_tag)或语言名称：
 
 ```json theme={null}
 {
@@ -133,11 +143,13 @@ Set the language in `/config` or directly in settings. You can use either the [B
 }
 ```
 
-If your `language` setting is not in the supported list, `/voice` warns you on enable and falls back to English for dictation. Claude's text responses are not affected by this fallback.
+如果你的 `language` 设置不在支持的列表中，`/voice` 在启用时会警告你，并为听写回退到英语。Claude 的文本响应不受此回退的影响。
 
-## Rebind the dictation key
+<h2 id="rebind-the-dictation-key">
+  重新绑定听写键
+</h2>
 
-The dictation key is bound to `voice:pushToTalk` in the `Chat` context and defaults to `Space`. The same binding controls both hold and tap modes. Rebind it in [`~/.claude/keybindings.json`](/docs/en/keybindings):
+听写键在 `Chat` 上下文中绑定到 `voice:pushToTalk`，默认为 `Space`。相同的绑定控制按住和点击模式。在 [`~/.claude/keybindings.json`](/docs/zh-CN/keybindings) 中重新绑定它：
 
 ```json theme={null}
 {
@@ -153,55 +165,61 @@ The dictation key is bound to `voice:pushToTalk` in the `Chat` context and defau
 }
 ```
 
-The `voice:pushToTalk` action uses one key at a time. When you bind a custom key, it replaces the default `Space` binding rather than adding a second trigger, so the `"space": null` line in this example is for clarity and can be omitted without changing behavior.
+`voice:pushToTalk` 操作一次使用一个键。当你绑定自定义键时，它会替换默认的 `Space` 绑定，而不是添加第二个触发器，所以此示例中的 `"space": null` 行是为了清晰起见，可以省略而不改变行为。
 
-In hold mode, avoid binding a bare letter key like `v` since hold detection relies on key-repeat and the letter types into the prompt during warmup. Use `Space`, or use a modifier combination like `meta+k` to start recording on the first keypress with no warmup. Tap mode has no warmup, so most keys work.
+在按住模式中，避免绑定裸字母键如 `v`，因为按住检测依赖于按键重复，字母在预热期间输入到提示词中。使用 `Space`，或使用修饰符组合如 `meta+k` 在第一次按键时开始录制，无需预热。点击模式没有预热，所以大多数键都可以。
 
-Some keys are not delivered to terminal applications and can't be bound at all. For example, `Caps Lock` shows an error if you try to bind it. See [customize keyboard shortcuts](/docs/en/keybindings) for the full keybinding syntax and the list of reserved shortcuts.
+某些键不会传递到终端应用程序，根本无法绑定。例如，如果你尝试绑定 `Caps Lock`，会显示错误。有关完整的快捷键语法和保留快捷键列表，请参阅[自定义键盘快捷键](/docs/zh-CN/keybindings)。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-Common issues when voice dictation does not activate or record:
+语音听写不激活或不录制时的常见问题：
 
-* **`Voice mode requires a Claude.ai account`**: you are authenticated with an API key or a third-party provider. Run `/login` to sign in with a Claude.ai account.
-* **`Voice mode is disabled by your organization's policy`**: your organization's compliance configuration disables voice dictation, as described in [Requirements](#requirements). Contact your organization administrator to confirm whether voice dictation is available for your organization.
-* **`Microphone access is denied`**: grant microphone permission to your terminal in system settings. On macOS, go to System Settings → Privacy & Security → Microphone and enable your terminal app, then run `/voice` again. On Windows, go to Settings → Privacy & security → Microphone and turn on microphone access for desktop apps, then run `/voice` again. If your terminal isn't listed in the macOS settings, see [Terminal not listed in macOS Microphone settings](#terminal-not-listed-in-macos-microphone-settings).
-* **`No audio recording tool found` on Linux**: the native audio module could not load and no fallback is installed. Install SoX with the command shown in the error message, for example `sudo apt-get install sox`.
-* **`Voice mode requires a microphone, but SoX could not open an audio capture device`**: SoX is installed, but the host has no audio capture device, for example a headless server or a container. Run Claude Code on a machine with a microphone. {/* min-version: 2.1.195 */}As of v2.1.195, Claude Code on Linux reports this message in that situation; earlier versions asked you to install SoX even when it was already installed.
-* **`Voice mode could not find a working audio recorder in WSL`**: WSLg routes audio through PulseAudio rather than an ALSA device, so SoX needs its PulseAudio backend installed explicitly. Run `sudo apt install sox libsox-fmt-pulse`. Installing `sox` alone pulls in the ALSA backend, which cannot record on WSL because there is no `/dev/snd` device.
-* **`Voice input is failing repeatedly and has been paused`**: voice dictation hit several capture failures in a row and stopped attempting new sessions until one succeeds. A failure counts whether the microphone fails to start or the recorder starts and then stops without producing any audio. This usually means the microphone or audio stack on this host can't capture audio, for example a headless server, a remote shell with no audio passthrough, or a denied microphone permission. Confirm a working input device, fix the underlying cause from the entries above, then trigger voice again. {/* min-version: 2.1.202 */}Before v2.1.202, only start-up failures counted toward the pause.
-* **Nothing happens when holding `Space` in hold mode**: watch the prompt input while you hold. If spaces keep accumulating, voice dictation is likely off; run `/voice hold` to enable it. If only one or two spaces appear and then nothing, voice dictation is on but hold detection is not triggering. Hold detection requires your terminal to send key-repeat events, so it can't detect a held key if key-repeat is disabled at the OS level. Switch to tap mode with `/voice tap` to avoid the key-repeat requirement.
-* **Tapping `Space` types a space instead of recording in tap mode**: the first tap only starts recording when the prompt input is empty. Clear the input first, or check that you are in tap mode by running `/voice tap`.
-* **`No audio detected from microphone`**: recording started but captured silence. Confirm the correct input device is set as the system default and that its input level is not muted or near zero. On Windows, open Settings → System → Sound → Input and select your microphone. On macOS, open System Settings → Sound → Input.
-* **`Voice connection failed`**: your recording never reached the transcription service because the connection failed. Check your network and try again. {/* min-version: 2.1.200 */}A recording that captures no audio reports `No audio detected from microphone` instead of this message. Before v2.1.200, a silent microphone could report a connection failure, which suggested a network problem when the actual issue was the input device.
-* **`No speech detected`**: audio reached the transcription service but no words were recognized. Speak closer to the microphone, reduce background noise, and confirm your [dictation language](#change-the-dictation-language) matches the language you are speaking.
-* **Transcription is garbled or in the wrong language**: dictation defaults to English. If you are dictating in another language, set it in `/config` first. See [Change the dictation language](#change-the-dictation-language).
+* **`Voice mode requires a Claude.ai account`**：你使用 API 密钥或第三方提供商进行了身份验证。运行 `/login` 以使用 Claude.ai 账户登录。
+* **`Voice mode is disabled by your organization's policy`**：你的组织的合规配置禁用了语音听写，如[要求](#requirements)中所述。联系你的组织管理员以确认你的组织是否可以使用语音听写。
+* **`Microphone access is denied`**：在系统设置中授予你的终端麦克风权限。在 macOS 上，转到系统设置 → 隐私和安全 → 麦克风并启用你的终端应用，然后再次运行 `/voice`。在 Windows 上，转到设置 → 隐私和安全 → 麦克风并为桌面应用打开麦克风访问，然后再次运行 `/voice`。如果你的终端未在 macOS 设置中列出，请参阅[终端未在 macOS 麦克风设置中列出](#terminal-not-listed-in-macos-microphone-settings)。
+* **Linux 上的 `No audio recording tool found`**：本机音频模块无法加载，没有安装回退。使用错误消息中显示的命令安装 SoX，例如 `sudo apt-get install sox`。
+* **`Voice mode requires a microphone, but SoX could not open an audio capture device`**：SoX 已安装，但主机没有音频捕获设备，例如无头服务器或容器。在有麦克风的机器上运行 Claude Code。{/* min-version: 2.1.195 */}从 v2.1.195 开始，Linux 上的 Claude Code 在这种情况下报告此消息；早期版本即使已安装 SoX 也会要求你安装 SoX。
+* **`Voice mode could not find a working audio recorder in WSL`**：WSLg 通过 PulseAudio 而不是 ALSA 设备路由音频，因此 SoX 需要显式安装其 PulseAudio 后端。运行 `sudo apt install sox libsox-fmt-pulse`。单独安装 `sox` 会拉入 ALSA 后端，它无法在 WSL 上录制，因为没有 `/dev/snd` 设备。
+* **`Voice input is failing repeatedly and has been paused`**：语音听写连续遇到多个启动失败，并停止尝试新会话，直到一个成功。失败计数无论麦克风无法启动还是录音机启动然后停止而不产生任何音频。这通常意味着此主机上的麦克风或音频堆栈无法捕获音频，例如无头服务器、没有音频直通的远程 shell 或被拒绝的麦克风权限。确认工作输入设备，从上面的条目中修复根本原因，然后再次触发语音。{/* min-version: 2.1.202 */}在 v2.1.202 之前，只有启动失败计入暂停。
+* **在按住模式中按住 `Space` 时没有任何反应**：在按住时观察提示词输入。如果空格不断累积，语音听写可能已关闭；运行 `/voice hold` 启用它。如果只出现一两个空格然后没有任何反应，语音听写已打开但按住检测未触发。按住检测需要你的终端发送按键重复事件，所以如果在操作系统级别禁用了按键重复，它无法检测按住的键。使用 `/voice tap` 切换到点击模式以避免按键重复要求。
+* **在点击模式中点击 `Space` 输入空格而不是录制**：第一次点击仅在提示词输入为空时开始录制。先清除输入，或通过运行 `/voice tap` 检查你是否处于点击模式。
+* **`No audio detected from microphone`**：录制开始但捕获了静音。确认正确的输入设备设置为系统默认值，其输入级别未静音或接近零。在 Windows 上，打开设置 → 系统 → 声音 → 输入并选择你的麦克风。在 macOS 上，打开系统设置 → 声音 → 输入。
+* **`Voice connection failed`**：你的录制从未到达转录服务，因为连接失败。检查你的网络并重试。{/* min-version: 2.1.200 */}捕获无音频的录制报告 `No audio detected from microphone` 而不是此消息。在 v2.1.200 之前，静音麦克风可能报告连接失败，这表示网络问题，而实际问题是输入设备。
+* **`No speech detected`**：音频到达转录服务但未识别任何单词。靠近麦克风说话，减少背景噪音，并确认你的[听写语言](#change-the-dictation-language)与你说话的语言匹配。
+* **转录是乱码或使用了错误的语言**：听写默认为英语。如果你用另一种语言听写，请先在 `/config` 中设置它。请参阅[更改听写语言](#change-the-dictation-language)。
 
-### Terminal not listed in macOS Microphone settings
+<h3 id="terminal-not-listed-in-macos-microphone-settings">
+  终端未在 macOS 麦克风设置中列出
+</h3>
 
-If your terminal app does not appear under System Settings → Privacy & Security → Microphone, there is no toggle you can enable. Reset the permission state for your terminal so the next `/voice` run triggers a fresh macOS permission prompt.
+如果你的终端应用未出现在系统设置 → 隐私和安全 → 麦克风下，则没有你可以启用的切换。重置你的终端的权限状态，以便下一次 `/voice` 运行触发新的 macOS 权限提示。
 
 <Steps>
-  <Step title="Reset the microphone permission for your terminal">
-    Run `tccutil reset Microphone <bundle-id>`, replacing `<bundle-id>` with your terminal's identifier: `com.apple.Terminal` for the built-in Terminal, or `com.googlecode.iterm2` for iTerm2. For other terminals, look up the identifier with `osascript -e 'id of app "AppName"'`.
+  <Step title="重置你的终端的麦克风权限">
+    运行 `tccutil reset Microphone <bundle-id>`，将 `<bundle-id>` 替换为你的终端的标识符：内置终端为 `com.apple.Terminal`，或 iTerm2 为 `com.googlecode.iterm2`。对于其他终端，使用 `osascript -e 'id of app "AppName"'` 查找标识符。
 
     <Warning>
-      You can run `tccutil reset Microphone` without a bundle ID, but it revokes microphone access from every app on your Mac, including apps like Zoom or Slack. Each app will need to re-request access on next use, so don't run it during an active call.
+      你可以运行 `tccutil reset Microphone` 而不带 bundle ID，但这会撤销 Mac 上每个应用的麦克风访问权限，包括 Zoom 或 Slack 等应用。每个应用在下次使用时都需要重新请求访问权限，所以不要在活跃通话期间运行它。
     </Warning>
   </Step>
 
-  <Step title="Quit and relaunch your terminal">
-    macOS won't re-prompt a process that is already running. Quit the terminal app with Cmd+Q, not just close its windows, then open it again.
+  <Step title="退出并重新启动你的终端">
+    macOS 不会重新提示已在运行的进程。使用 Cmd+Q 退出终端应用，而不仅仅是关闭其窗口，然后再次打开它。
   </Step>
 
-  <Step title="Trigger a fresh prompt">
-    Start Claude Code and run `/voice`. macOS prompts for microphone access; allow it.
+  <Step title="触发新的提示">
+    启动 Claude Code 并运行 `/voice`。macOS 提示输入麦克风访问权限；允许它。
   </Step>
 </Steps>
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Customize keyboard shortcuts](/docs/en/keybindings): rebind `voice:pushToTalk` and other CLI keyboard actions
-* [Configure settings](/docs/en/settings): full reference for `voice`, `language`, and other settings keys
-* [Interactive mode](/docs/en/interactive-mode): keyboard shortcuts, input modes, and session controls
-* [Commands](/docs/en/commands): reference for `/voice`, `/config`, and all other commands
+* [自定义键盘快捷键](/docs/zh-CN/keybindings)：重新绑定 `voice:pushToTalk` 和其他 CLI 键盘操作
+* [配置设置](/docs/zh-CN/settings)：`voice`、`language` 和其他设置键的完整参考
+* [交互模式](/docs/zh-CN/interactive-mode)：键盘快捷键、输入模式和会话控制
+* [命令](/docs/zh-CN/commands)：`/voice`、`/config` 和所有其他命令的参考

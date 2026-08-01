@@ -2,39 +2,45 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# TypeScript SDK V2 session API (removed)
+# TypeScript SDK V2 session API（已移除）
 
-> Reference for the removed V2 TypeScript Agent SDK session API, with session-based send/stream patterns for multi-turn conversations.
+> 已移除的 V2 TypeScript Agent SDK session API 参考，具有用于多轮对话的基于会话的 send/stream 模式。
 
 <Warning>
-  The V2 session API is no longer supported. TypeScript Agent SDK 0.3.142 removes `unstable_v2_createSession`, `unstable_v2_resumeSession`, `unstable_v2_prompt`, and the `SDKSession` and `SDKSessionOptions` types.
+  V2 session API 不再受支持。TypeScript Agent SDK 0.3.142 移除了 `unstable_v2_createSession`、`unstable_v2_resumeSession`、`unstable_v2_prompt` 以及 `SDKSession` 和 `SDKSessionOptions` 类型。
 
-  To migrate, use the [`query()` API](/docs/en/agent-sdk/typescript) and the [session options](/docs/en/agent-sdk/sessions) it accepts. Pass an `AsyncIterable<SDKUserMessage>` for multi-turn conversations, or `options.resume` to continue a saved session. This page is kept for reference if you maintain code on Agent SDK 0.2.x or earlier.
+  要迁移，请使用 [`query()` API](/docs/zh-CN/agent-sdk/typescript) 和它接受的 [session 选项](/docs/zh-CN/agent-sdk/sessions)。为多轮对话传递 `AsyncIterable<SDKUserMessage>`，或使用 `options.resume` 继续已保存的会话。如果您在 Agent SDK 0.2.x 或更早版本上维护代码，此页面保留供参考。
 </Warning>
 
-V2 was an experimental session API that removed the need for async generators and yield coordination. Instead of managing generator state across turns, each turn was a separate `send()`/`stream()` cycle. The API surface reduced to three concepts:
+V2 是一个实验性的 session API，消除了对异步生成器和 yield 协调的需求。与其在各轮之间管理生成器状态，每一轮都是一个单独的 `send()`/`stream()` 周期。API 表面简化为三个概念：
 
-* `createSession()` / `resumeSession()`: Start or continue a conversation
-* `session.send()`: Send a message
-* `session.stream()`: Get the response
+* `createSession()` / `resumeSession()`：启动或继续对话
+* `session.send()`：发送消息
+* `session.stream()`：获取响应
 
-## Installation
+<h2 id="installation">
+  安装
+</h2>
 
-Agent SDK 0.2.x is the last version that includes the V2 interface. The package version jumped from 0.2.x directly to 0.3.142, so the removal version above and the install pin below describe the same boundary. To install the last V2-compatible release, pin the major and minor version:
+Agent SDK 0.2.x 是包含 V2 interface 的最后一个版本。包版本从 0.2.x 直接跳到 0.3.142，因此上面的移除版本和下面的安装固定版本描述的是同一个边界。要安装最后一个 V2 兼容版本，请固定主版本号和次版本号：
 
 ```bash theme={null}
 npm install @anthropic-ai/claude-agent-sdk@0.2
 ```
 
 <Note>
-  The SDK bundles a native Claude Code binary for your platform as an optional dependency, so you don't need to install Claude Code separately.
+  SDK 为您的平台捆绑了一个本地 Claude Code 二进制文件作为可选依赖项，因此您无需单独安装 Claude Code。
 </Note>
 
-## Quick start
+<h2 id="quick-start">
+  快速开始
+</h2>
 
-### One-shot prompt
+<h3 id="one-shot-prompt">
+  单次提示
+</h3>
 
-For simple single-turn queries where you don't need to maintain a session, use `unstable_v2_prompt()`. This example sends a math question and logs the answer:
+对于不需要维护会话的简单单轮查询，使用 `unstable_v2_prompt()`。此示例发送一个数学问题并记录答案：
 
 ```typescript theme={null}
 import { unstable_v2_prompt } from "@anthropic-ai/claude-agent-sdk";
@@ -48,7 +54,7 @@ if (result.subtype === "success") {
 ```
 
 <details>
-  <summary>See the same operation in V1</summary>
+  <summary>查看 V1 中的相同操作</summary>
 
   ```typescript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -66,16 +72,18 @@ if (result.subtype === "success") {
   ```
 </details>
 
-### Basic session
+<h3 id="basic-session">
+  基本会话
+</h3>
 
-For interactions beyond a single prompt, create a session. V2 separates sending and streaming into distinct steps:
+对于超出单个提示的交互，创建一个会话。V2 将发送和流式传输分为不同的步骤：
 
-* `send()` dispatches your message
-* `stream()` streams back the response
+* `send()` 分派您的消息
+* `stream()` 流式传输响应
 
-This explicit separation makes it easier to add logic between turns (like processing responses before sending follow-ups).
+这种明确的分离使得在轮次之间添加逻辑变得更容易（例如在发送后续消息之前处理响应）。
 
-The example below creates a session, sends "Hello!" to Claude, and prints the text response. It uses [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) (TypeScript 5.2+) to automatically close the session when the block exits. You can also call `session.close()` manually.
+下面的示例创建一个会话，向 Claude 发送"Hello!"，并打印文本响应。它使用 [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management)（TypeScript 5.2+）在块退出时自动关闭会话。您也可以手动调用 `session.close()`。
 
 ```typescript theme={null}
 import { unstable_v2_createSession } from "@anthropic-ai/claude-agent-sdk";
@@ -98,9 +106,9 @@ for await (const msg of session.stream()) {
 ```
 
 <details>
-  <summary>See the same operation in V1</summary>
+  <summary>查看 V1 中的相同操作</summary>
 
-  In V1, both input and output flow through a single async generator. For a basic prompt this looks similar, but adding multi-turn logic requires restructuring to use an input generator.
+  在 V1 中，输入和输出都通过单个异步生成器流动。对于基本提示，这看起来很相似，但添加多轮逻辑需要重新构造以使用输入生成器。
 
   ```typescript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -122,11 +130,13 @@ for await (const msg of session.stream()) {
   ```
 </details>
 
-### Multi-turn conversation
+<h3 id="multi-turn-conversation">
+  多轮对话
+</h3>
 
-Sessions persist context across multiple exchanges. To continue a conversation, call `send()` again on the same session. Claude remembers the previous turns.
+会话在多个交换中保持上下文。要继续对话，请在同一会话上再次调用 `send()`。Claude 会记住之前的轮次。
 
-This example asks a math question, then asks a follow-up that references the previous answer:
+此示例提出一个数学问题，然后提出一个引用前一个答案的后续问题：
 
 ```typescript theme={null}
 import { unstable_v2_createSession } from "@anthropic-ai/claude-agent-sdk";
@@ -162,7 +172,7 @@ for await (const msg of session.stream()) {
 ```
 
 <details>
-  <summary>See the same operation in V1</summary>
+  <summary>查看 V1 中的相同操作</summary>
 
   ```typescript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -201,11 +211,13 @@ for await (const msg of session.stream()) {
   ```
 </details>
 
-### Session resume
+<h3 id="session-resume">
+  会话恢复
+</h3>
 
-If you have a session ID from a previous interaction, you can resume it later. This is useful for long-running workflows or when you need to persist conversations across application restarts.
+如果您有来自之前交互的会话 ID，您可以稍后恢复它。这对于长时间运行的工作流或当您需要在应用程序重新启动时保持对话时很有用。
 
-This example creates a session, stores its ID, closes it, then resumes the conversation:
+此示例创建一个会话，存储其 ID，关闭它，然后恢复对话：
 
 ```typescript theme={null}
 import {
@@ -254,7 +266,7 @@ for await (const msg of resumedSession.stream()) {
 ```
 
 <details>
-  <summary>See the same operation in V1</summary>
+  <summary>查看 V1 中的相同操作</summary>
 
   ```typescript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -301,13 +313,13 @@ for await (const msg of resumedSession.stream()) {
   ```
 </details>
 
-### Cleanup
+<h3 id="cleanup">
+  清理
+</h3>
 
-Sessions can be closed manually or automatically using [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management), a TypeScript 5.2+ feature for automatic resource cleanup. If you're using an older TypeScript version or encounter compatibility issues, use manual cleanup instead.
+会话可以手动关闭或使用 [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management)（TypeScript 5.2+ 功能用于自动资源清理）自动关闭。如果您使用的是较旧的 TypeScript 版本或遇到兼容性问题，请改用手动清理。
 
-The examples below show only the cleanup pattern and don't send any messages, so running them produces no output.
-
-**Automatic cleanup (TypeScript 5.2+):**
+**自动清理（TypeScript 5.2+）：**
 
 ```typescript theme={null}
 import { unstable_v2_createSession } from "@anthropic-ai/claude-agent-sdk";
@@ -318,7 +330,7 @@ await using session = unstable_v2_createSession({
 // Session closes automatically when the block exits
 ```
 
-**Manual cleanup:**
+**手动清理：**
 
 ```typescript theme={null}
 import { unstable_v2_createSession } from "@anthropic-ai/claude-agent-sdk";
@@ -330,11 +342,15 @@ const session = unstable_v2_createSession({
 session.close();
 ```
 
-## API reference
+<h2 id="api-reference">
+  API 参考
+</h2>
 
-### `unstable_v2_createSession()`
+<h3 id="unstable_v2_createsession">
+  `unstable_v2_createSession()`
+</h3>
 
-Creates a new session for multi-turn conversations.
+为多轮对话创建新会话。
 
 ```typescript theme={null}
 function unstable_v2_createSession(options: {
@@ -343,9 +359,11 @@ function unstable_v2_createSession(options: {
 }): SDKSession;
 ```
 
-### `unstable_v2_resumeSession()`
+<h3 id="unstable_v2_resumesession">
+  `unstable_v2_resumeSession()`
+</h3>
 
-Resumes an existing session by ID.
+按 ID 恢复现有会话。
 
 ```typescript theme={null}
 function unstable_v2_resumeSession(
@@ -357,9 +375,11 @@ function unstable_v2_resumeSession(
 ): SDKSession;
 ```
 
-### `unstable_v2_prompt()`
+<h3 id="unstable_v2_prompt">
+  `unstable_v2_prompt()`
+</h3>
 
-One-shot convenience function for single-turn queries.
+用于单轮查询的单次便利函数。
 
 ```typescript theme={null}
 function unstable_v2_prompt(
@@ -371,7 +391,9 @@ function unstable_v2_prompt(
 ): Promise<SDKResultMessage>;
 ```
 
-### SDKSession interface
+<h3 id="sdksession-interface">
+  SDKSession interface
+</h3>
 
 ```typescript theme={null}
 interface SDKSession {
@@ -382,15 +404,19 @@ interface SDKSession {
 }
 ```
 
-## Feature availability
+<h2 id="feature-availability">
+  功能可用性
+</h2>
 
-The V2 session API does not support every V1 feature. The following require the [V1 SDK](/docs/en/agent-sdk/typescript):
+V2 session API 不支持所有 V1 功能。以下功能需要使用 [V1 SDK](/docs/zh-CN/agent-sdk/typescript)：
 
-* Session forking (`forkSession` option)
-* Some advanced streaming input patterns
+* 会话分叉（`forkSession` 选项）
+* 某些高级流式输入模式
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [TypeScript SDK reference (V1)](/docs/en/agent-sdk/typescript) - Full V1 SDK documentation
-* [SDK overview](/docs/en/agent-sdk/overview) - General SDK concepts
-* [V2 examples on GitHub](https://github.com/anthropics/claude-agent-sdk-demos/tree/main/hello-world-v2) - Working code examples
+* [TypeScript SDK 参考（V1）](/docs/zh-CN/agent-sdk/typescript) - 完整的 V1 SDK 文档
+* [SDK 概述](/docs/zh-CN/agent-sdk/overview) - 常规 SDK 概念
+* [GitHub 上的 V2 示例](https://github.com/anthropics/claude-agent-sdk-demos/tree/main/hello-world-v2) - 工作代码示例

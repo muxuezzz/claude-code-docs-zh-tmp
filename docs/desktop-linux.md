@@ -2,128 +2,146 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Claude Desktop on Linux (beta)
+# Linux 上的 Claude Desktop（测试版）
 
-> Install and update the Claude desktop app on Ubuntu and Debian
+> 在 Ubuntu 和 Debian 上安装和更新 Claude 桌面应用
 
 <Note>
-  Linux support for the Claude desktop app is in beta. The Chat, Cowork, and Code tabs are all available.
+  Claude 桌面应用的 Linux 支持处于测试版阶段。Chat、Cowork 和 Code 选项卡都可用。
 </Note>
 
-The desktop app on Linux gives you the same Chat, Cowork, and Claude Code experience as macOS and Windows: parallel sessions, visual diff review, an integrated terminal and editor, and live app preview. See [Use Claude Code Desktop](/docs/en/desktop) for the full feature reference.
+Linux 上的桌面应用提供与 macOS 和 Windows 相同的 Chat、Cowork 和 Claude Code 体验：并行会话、可视化差异审查、集成终端和编辑器以及实时应用预览。有关完整的功能参考，请参阅[使用 Claude Code Desktop](/docs/zh-CN/desktop)。
 
-## Requirements
+<h2 id="requirements">
+  要求
+</h2>
 
-* Ubuntu 22.04 or later, or Debian 12 or later
-* x86\_64 or arm64
+* Ubuntu 22.04 或更高版本，或 Debian 12 或更高版本
+* x86\_64 或 arm64
 
-Other Debian-based distributions that meet these requirements may work but aren't officially tested.
+其他满足这些要求的基于 Debian 的发行版可能可以工作，但未经过官方测试。
 
-## Install
+<h2 id="install">
+  安装
+</h2>
 
-Install from Anthropic's apt repository so that updates arrive through your system's regular package updates. Open a terminal and run the commands in each step.
+从 Anthropic 的 apt 存储库安装，以便更新通过系统的常规包更新到达。打开终端并运行每个步骤中的命令。
 
 <Steps>
-  <Step title="Add Anthropic's apt repository">
-    This step downloads the signing key with `curl` and verifies it with `gpg`, which fresh Debian and Ubuntu installations may not include. If either command reports `command not found`, install both first:
+  <Step title="添加 Anthropic 的 apt 存储库">
+    此步骤使用 `curl` 下载签名密钥，新的 Debian 和 Ubuntu 安装可能不包含此工具。如果下载命令失败并显示 `sudo: curl: command not found`，请先安装 curl：
 
     ```bash theme={null}
-    sudo apt install curl gnupg
+    sudo apt install curl
     ```
 
-    Download Anthropic's signing key:
+    下载 Anthropic 的签名密钥：
 
     ```bash theme={null}
     sudo curl -fsSLo /usr/share/keyrings/claude-desktop-archive-keyring.asc https://downloads.claude.ai/claude-desktop/key.asc
     ```
 
-    If this download fails, `apt update` later fails with `NO_PUBKEY BAA929FF1A7ECACE`. Confirm the key downloaded and belongs to Anthropic before continuing:
-
-    ```bash theme={null}
-    gpg --show-keys /usr/share/keyrings/claude-desktop-archive-keyring.asc
-    ```
-
-    The fingerprint gpg prints should be `31DDDE24DDFAB679F42D7BD2BAA929FF1A7ECACE`. If gpg reports that the file can't be opened or contains no valid OpenPGP data, the download failed or returned the wrong content: confirm your network can reach `downloads.claude.ai`, then rerun the download command.
-
-    Register the repository:
+    注册存储库：
 
     ```bash theme={null}
     echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/claude-desktop-archive-keyring.asc] https://downloads.claude.ai/claude-desktop/apt/stable stable main" | sudo tee /etc/apt/sources.list.d/claude-desktop.list
     ```
   </Step>
 
-  <Step title="Install the package">
+  <Step title="安装软件包">
     ```bash theme={null}
     sudo apt update && sudo apt install claude-desktop
     ```
   </Step>
 
-  <Step title="Launch and sign in">
-    Launch **Claude** from your application launcher, or run `claude-desktop` from a terminal, and sign in with your Anthropic account.
+  <Step title="启动并登录">
+    从应用启动器启动 **Claude**，或从终端运行 `claude-desktop`，然后使用您的 Anthropic 账户登录。
 
-    The Linux app signs in the same way as on macOS and Windows: with a claude.ai subscription, or through your organization's SSO. Desktop doesn't accept a Claude Console API key directly; use the [CLI](/docs/en/quickstart) for API-key authentication. For enterprise deployments that route Desktop to Google Cloud's Agent Platform or an LLM gateway, see [Claude Desktop on 3P](https://claude.com/docs/third-party/claude-desktop/overview) and [network configuration](/docs/en/network-config).
+    Linux 应用的登录方式与 macOS 和 Windows 上相同：使用 claude.ai 订阅或通过您组织的 SSO。Desktop 不直接接受 Claude Console API 密钥；请使用 [CLI](/docs/zh-CN/quickstart) 进行 API 密钥身份验证。对于路由 Desktop 到 Google Cloud 的 Agent Platform 或 LLM 网关的企业部署，请参阅 [Claude Desktop on 3P](https://claude.com/docs/third-party/claude-desktop/overview) 和 [网络配置](/docs/zh-CN/network-config)。
   </Step>
 </Steps>
 
-### Install from a downloaded file
+<Accordion title="验证签名密钥">
+  您可以确认下载的签名密钥属于 Anthropic：
 
-If you can't install through the apt repository, download the `.deb` package directly from the repository's package pool. This command looks up the newest package for your architecture in the repository index, then downloads it to the current directory:
+  ```bash theme={null}
+  gpg --show-keys /usr/share/keyrings/claude-desktop-archive-keyring.asc
+  ```
+
+  指纹应该是 `31DD DE24 DDFA B679 F42D 7BD2 BAA9 29FF 1A7E CACE`。
+</Accordion>
+
+<h3 id="install-from-a-downloaded-file">
+  从下载的文件安装
+</h3>
+
+如果您无法通过 apt 存储库安装，请直接从存储库的软件包池下载 `.deb` 软件包。此命令在存储库索引中查找您的架构的最新软件包，然后将其下载到当前目录：
 
 ```bash theme={null}
 curl -fLO "https://downloads.claude.ai/claude-desktop/apt/stable/$(curl -s "https://downloads.claude.ai/claude-desktop/apt/stable/dists/stable/main/binary-$(dpkg --print-architecture)/Packages" | grep '^Filename: pool/main/c/claude-desktop/claude-desktop_' | sort -V | tail -n 1 | cut -d' ' -f2)"
 ```
 
-If the command fails with `Remote file name has no length`, the lookup returned no package path. This can mean the repository index couldn't be fetched, for example when your network blocks `downloads.claude.ai`, or that no package exists for your architecture. Confirm that your network can reach `downloads.claude.ai` and that `dpkg --print-architecture` prints `amd64` or `arm64`; the repository doesn't publish packages for other architectures.
+如果命令失败并显示 `Remote file name has no length`，则查找未返回软件包路径。这可能意味着无法获取存储库索引，例如当您的网络阻止 `downloads.claude.ai` 时，或者您的架构不存在软件包。确认您的网络可以访问 `downloads.claude.ai`，并且 `dpkg --print-architecture` 输出 `amd64` 或 `arm64`；存储库不为其他架构发布软件包。
 
-Then open the downloaded file with your software installer, such as GNOME Software, or install it with apt from the directory that contains the downloaded file:
+然后使用软件安装程序（如 GNOME Software）打开下载的文件，或从包含下载文件的目录使用 apt 安装它：
 
 ```bash theme={null}
 sudo apt install ./claude-desktop_*.deb
 ```
 
-If apt reports `E: Unsupported file ./claude-desktop_*.deb given on commandline`, the pattern didn't match a `.deb` file in the current directory. Confirm the download completed, then run the command again from the directory that contains the file.
+如果 apt 报告 `E: Unsupported file ./claude-desktop_*.deb given on commandline`，则该模式与当前目录中的 `.deb` 文件不匹配。确认下载已完成，然后从包含该文件的目录再次运行该命令。
 
-A `.deb` installed this way doesn't receive updates. To get updates through apt, register the repository from the [Add Anthropic's apt repository](#install) step. The package also writes a commented-out repository entry to `/etc/apt/sources.list.d/claude-desktop.list`; uncommenting its `deb` line is equivalent.
+以这种方式安装的 `.deb` 不会接收更新。要通过 apt 获取更新，请从 [添加 Anthropic 的 apt 存储库](#install) 步骤注册存储库。该软件包还会向 `/etc/apt/sources.list.d/claude-desktop.list` 写入一个注释掉的存储库条目；取消注释其 `deb` 行等同于注册存储库。
 
-## Update
+<h2 id="update">
+  更新
+</h2>
 
-The desktop app doesn't update itself on Linux. Updates arrive with your system's regular package updates:
+桌面应用在 Linux 上不会自动更新。更新通过系统的常规包更新到达：
 
 ```bash theme={null}
 sudo apt update && sudo apt upgrade
 ```
 
-Your distribution's graphical software updater will also pick up new versions.
+您的发行版的图形软件更新程序也会获取新版本。
 
-## Uninstall
+<h2 id="uninstall">
+  卸载
+</h2>
 
 ```bash theme={null}
 sudo apt remove claude-desktop
 ```
 
-This removes the signing key along with the app, so if you added the repository entry during install, remove it too:
+这会删除签名密钥以及应用，因此如果您在安装期间添加了存储库条目，也要删除它：
 
 ```bash theme={null}
 sudo rm /etc/apt/sources.list.d/claude-desktop.list
 ```
 
-## Troubleshoot
+<h2 id="troubleshoot">
+  故障排除
+</h2>
 
-### Unable to locate package claude-desktop
+<h3 id="unable-to-locate-package-claude-desktop">
+  无法定位软件包 claude-desktop
+</h3>
 
-If `sudo apt install claude-desktop` fails with `E: Unable to locate package claude-desktop`, apt didn't find the repository you added. Check the following:
+如果 `sudo apt install claude-desktop` 失败并显示 `E: Unable to locate package claude-desktop`，说明 apt 没有找到您添加的存储库。请检查以下内容：
 
-* Confirm the repository entry was written. `cat /etc/apt/sources.list.d/claude-desktop.list` should show the `deb` line from the [Add Anthropic's apt repository](#install) step. If the file is empty or missing, run that step again.
-* Confirm your architecture is supported. `dpkg --print-architecture` should print `amd64` or `arm64`. The repository doesn't publish packages for other architectures.
-* Run `sudo apt update` again and check its output for errors related to `downloads.claude.ai`. A network or key error there means the repository was added but couldn't be reached or verified.
+* 确认存储库条目已写入。`cat /etc/apt/sources.list.d/claude-desktop.list` 应该显示来自[添加 Anthropic 的 apt 存储库](#install)步骤的 `deb` 行。如果文件为空或缺失，请再次运行该步骤。
+* 确认您的架构受支持。`dpkg --print-architecture` 应该打印 `amd64` 或 `arm64`。该存储库不为其他架构发布软件包。
+* 再次运行 `sudo apt update` 并检查其输出中是否有与 `downloads.claude.ai` 相关的错误。那里的网络或密钥错误意味着存储库已添加但无法访问或验证。
 
-If the repository is in place and reachable and the package is still not found, [install from a downloaded file](#install-from-a-downloaded-file) instead.
+如果存储库已就位且可访问，但仍然找不到该软件包，请改为[从下载的文件安装](#install-from-a-downloaded-file)。
 
-## What's not in the Linux beta yet
+<h2 id="what’s-not-in-the-linux-beta-yet">
+  Linux 测试版中尚未包含的内容
+</h2>
 
-* **Computer Use**: [app and screen control](/docs/en/desktop#let-claude-use-your-computer) isn't available on Linux.
-* **Dictation**: voice input isn't available in the Linux desktop app. Use [voice dictation](/docs/en/voice-dictation) in the CLI instead.
-* **Quick Entry global hotkey**: works on X11. On native Wayland it requires your desktop environment's GlobalShortcuts portal.
-* **Fedora and RHEL**: only Debian-based distributions are supported today. Support for additional distributions is coming in the future.
+* **Computer Use**：[应用和屏幕控制](/docs/zh-CN/desktop#let-claude-use-your-computer)在 Linux 上不可用。
+* **Dictation**：语音输入在 Linux 桌面应用中不可用。请改用 CLI 中的[语音听写](/docs/zh-CN/voice-dictation)。
+* **Quick Entry 全局热键**：在 X11 上有效。在原生 Wayland 上，它需要您的桌面环境的 GlobalShortcuts 门户。
+* **Fedora 和 RHEL**：目前仅支持基于 Debian 的发行版。对其他发行版的支持将在未来推出。
 
-For anything not yet available in the desktop app, the [CLI](/docs/en/quickstart) runs the same Claude Code engine and supports a wider range of Linux distributions; see the [system requirements](/docs/en/setup#system-requirements).
+对于桌面应用中尚未提供的任何功能，[CLI](/docs/zh-CN/quickstart) 运行相同的 Claude Code 引擎并支持更广泛的 Linux 发行版范围；请参阅[系统要求](/docs/zh-CN/setup#system-requirements)。

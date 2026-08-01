@@ -2,41 +2,45 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Deploy Claude apps gateway on Google Cloud
+# 在 Google Cloud 上部署 Claude apps gateway
 
-> A worked example of running Claude apps gateway on Google Cloud: Cloud Run or GKE, Cloud SQL for PostgreSQL, Secret Manager, and service-account auth to Google Cloud's Agent Platform.
+> 在 Google Cloud 上运行 Claude apps gateway 的实际示例：Cloud Run 或 GKE、Cloud SQL for PostgreSQL、Secret Manager 和 Agent Platform 的服务账户身份验证。
 
 <Note>
-  This page walks through one way to run Claude apps gateway on Google Cloud. The configuration is a working example for customer-managed infrastructure rather than a supported production deployment; use it to see how the pieces fit together before adapting it to your own environment. For the platform-agnostic requirements, see the [deployment guide](/docs/en/claude-apps-gateway-deploy).
+  本页介绍在 Google Cloud 上运行 Claude apps gateway 的一种方式。该配置是客户管理基础设施的工作示例，而不是受支持的生产部署；使用它来了解各个部分如何组合在一起，然后再根据您自己的环境进行调整。有关平台无关的要求，请参阅[部署指南](/docs/zh-CN/claude-apps-gateway-deploy)。
 </Note>
 
-This example provisions Claude apps gateway on Google Cloud with Google Cloud's Agent Platform as the model upstream, using either Cloud Run or GKE for compute. Google Workspace is the example identity provider (IdP), but any OpenID Connect (OIDC) compliant IdP works; only the `oidc` block changes. See [Identity provider setup](/docs/en/claude-apps-gateway-deploy#identity-provider-setup) for per-IdP details.
+此示例在 Google Cloud 上配置 Claude apps gateway，使用 Google Cloud 的 Agent Platform 作为模型上游，使用 Cloud Run 或 GKE 进行计算。Google Workspace 是示例身份提供商 (IdP)，但任何符合 OpenID Connect (OIDC) 的 IdP 都可以工作；只有 `oidc` 块会改变。有关每个 IdP 的详细信息，请参阅[身份提供商设置](/docs/zh-CN/claude-apps-gateway-deploy#identity-provider-setup)。
 
-## What you'll build
+<h2 id="what-you’ll-build">
+  您将构建的内容
+</h2>
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/-uq-4JE0W_JO5Er5/images/claude-gateway-gcp-architecture.svg?fit=max&auto=format&n=-uq-4JE0W_JO5Er5&q=85&s=cb705151c69128ac0da235852d5600ab" alt="Diagram of Claude apps gateway on Google Cloud: Claude Code clients connect over HTTPS to the gateway (Cloud Run or GKE), which runs inside a VPC alongside a private-IP Cloud SQL database for session state. The gateway signs users in via OIDC against Google Workspace, reads config and secrets from Secret Manager, forwards model requests to Google Cloud's Agent Platform, and pulls its image from Artifact Registry at deploy." width="760" height="400" data-path="images/claude-gateway-gcp-architecture.svg" />
+  <img src="https://mintcdn.com/claude-code/-uq-4JE0W_JO5Er5/images/claude-gateway-gcp-architecture.svg?fit=max&auto=format&n=-uq-4JE0W_JO5Er5&q=85&s=cb705151c69128ac0da235852d5600ab" alt="Google Cloud 上 Claude apps gateway 的图表：Claude Code 客户端通过 HTTPS 连接到网关（Cloud Run 或 GKE），网关在 VPC 内运行，旁边是用于会话状态的私有 IP Cloud SQL 数据库。网关通过 OIDC 针对 Google Workspace 对用户进行签名，从 Secret Manager 读取配置和机密，将模型请求转发到 Google Cloud 的 Agent Platform，并在部署时从 Artifact Registry 拉取其镜像。" width="760" height="400" data-path="images/claude-gateway-gcp-architecture.svg" />
 </Frame>
 
-The reference configuration provisions:
+参考配置配置以下内容：
 
-* **Cloud Run** service or **GKE** Deployment running the gateway container
-* **Artifact Registry** repository for the gateway image
-* **Cloud SQL for PostgreSQL** instance, private IP only, for the gateway's [store](/docs/en/claude-apps-gateway-config#store)
-* **Secret Manager** secrets for `gateway.yaml`, the JWT signing key, the OIDC client secret, and the Postgres URL
-* **Service account** with `roles/aiplatform.user`, attached directly on Cloud Run or bound via Workload Identity on GKE
-* **Internal Application Load Balancer** on Cloud Run, or an internal **GKE Ingress** of class `gce-internal` on GKE, for HTTPS
+* **Cloud Run** 服务或 **GKE** Deployment 运行网关容器
+* **Artifact Registry** 存储库用于网关镜像
+* **Cloud SQL for PostgreSQL** 实例，仅限私有 IP，用于网关的[存储](/docs/zh-CN/claude-apps-gateway-config#store)
+* **Secret Manager** 机密用于 `gateway.yaml`、JWT 签名密钥、OIDC 客户端机密和 Postgres URL
+* **服务账户**，具有 `roles/aiplatform.user`，直接附加到 Cloud Run 或通过 Workload Identity 绑定到 GKE
+* **内部应用负载均衡器**在 Cloud Run 上，或在 GKE 上的内部 **GKE Ingress**，类别为 `gce-internal`，用于 HTTPS
 
-## Prerequisites
+<h2 id="prerequisites">
+  前置条件
+</h2>
 
-* A GCP project with billing enabled, and permission to create the resources above
-* The `gcloud` CLI, authenticated with `gcloud auth login`, and Docker installed locally
-* For the GKE track: `kubectl`, and a GKE cluster on the VPC created in the walkthrough below
-* Access to the Claude models you need in Model Garden, in a region that publishes them
-* A Google Workspace OAuth 2.0 web-application client with redirect URI `https://<gateway-host>/oauth/callback`; see [Identity provider setup](/docs/en/claude-apps-gateway-deploy#identity-provider-setup)
-* A TLS hostname for the gateway, typically an internal DNS name pointing at the load balancer
+* 启用了计费的 GCP 项目，以及创建上述资源的权限
+* `gcloud` CLI，使用 `gcloud auth login` 进行身份验证，并在本地安装了 Docker
+* 对于 GKE 路径：`kubectl` 和在下面演练中创建的 VPC 上的 GKE 集群
+* 在 Model Garden 中访问您需要的 Claude 模型，在发布这些模型的区域中
+* Google Workspace OAuth 2.0 网络应用程序客户端，重定向 URI 为 `https://<gateway-host>/oauth/callback`；请参阅[身份提供商设置](/docs/zh-CN/claude-apps-gateway-deploy#identity-provider-setup)
+* 网关的 TLS 主机名，通常是指向负载均衡器的内部 DNS 名称
 
-Set the project and region once:
+设置项目和区域一次：
 
 ```bash theme={null}
 export PROJECT_ID=<your-project>
@@ -44,13 +48,15 @@ export REGION=us-east5   # a region where the Claude models you need are publish
 gcloud config set project "$PROJECT_ID"
 ```
 
-## Deploy the gateway
+<h2 id="deploy-the-gateway">
+  部署网关
+</h2>
 
-The steps below provision the full deployment with `gcloud` commands.
+下面的步骤使用 `gcloud` 命令配置完整的部署。
 
 <Steps>
-  <Step title="Enable APIs">
-    Enable the service APIs the walkthrough uses:
+  <Step title="启用 API">
+    启用演练使用的服务 API：
 
     ```bash theme={null}
     gcloud services enable \
@@ -66,15 +72,15 @@ The steps below provision the full deployment with `gcloud` commands.
       container.googleapis.com
     ```
 
-    The APIs you need depend on the deployment path:
+    您需要的 API 取决于部署路径：
 
-    * `compute` and `servicenetworking`: needed for the private-IP Cloud SQL path
-    * `run`: Cloud Run only
-    * `container`: GKE only
+    * `compute` 和 `servicenetworking`：私有 IP Cloud SQL 路径所需
+    * `run`：仅限 Cloud Run
+    * `container`：仅限 GKE
   </Step>
 
-  <Step title="Create the service account and grant IAM">
-    The gateway runs as a dedicated service account with permission to call Google Cloud's Agent Platform. It reaches Cloud SQL over the VPC with a password user, so no Cloud SQL IAM role is required:
+  <Step title="创建服务账户并授予 IAM">
+    网关作为专用服务账户运行，具有调用 Google Cloud 的 Agent Platform 的权限。它通过 VPC 使用密码用户到达 Cloud SQL，因此不需要 Cloud SQL IAM 角色：
 
     ```bash theme={null}
     gcloud iam service-accounts create claude-gateway --display-name="Claude apps gateway"
@@ -84,11 +90,11 @@ The steps below provision the full deployment with `gcloud` commands.
       --member="serviceAccount:${SA}" --role="roles/aiplatform.user" --condition=None
     ```
 
-    Then enable the Claude models for the project in Model Garden; models publish to specific regions, so check each model card.
+    然后在 Model Garden 中为项目启用 Claude 模型；模型发布到特定区域，因此请检查每个模型卡。
   </Step>
 
-  <Step title="Build and push the image to Artifact Registry">
-    Build the image per the [container image requirements](/docs/en/claude-apps-gateway-deploy#container-image), using the `linux-x64` glibc binary, and push it:
+  <Step title="构建镜像并将其推送到 Artifact Registry">
+    根据[容器镜像要求](/docs/zh-CN/claude-apps-gateway-deploy#container-image)构建镜像，使用 `linux-x64` glibc 二进制文件，并推送它：
 
     ```bash theme={null}
     gcloud artifacts repositories create claude-gateway \
@@ -103,8 +109,8 @@ The steps below provision the full deployment with `gcloud` commands.
     ```
   </Step>
 
-  <Step title="Provision Cloud SQL for PostgreSQL">
-    Create the instance on a VPC via Private Services Access so it has no public IP; this also satisfies projects where `constraints/sql.restrictPublicIp` is enforced:
+  <Step title="配置 Cloud SQL for PostgreSQL">
+    通过 Private Services Access 在 VPC 上创建实例，使其没有公共 IP；这也满足强制执行 `constraints/sql.restrictPublicIp` 的项目：
 
     ```bash theme={null}
     VPC=cc-gateway-vpc
@@ -131,26 +137,26 @@ The steps below provision the full deployment with `gcloud` commands.
     GATEWAY_POSTGRES_URL="postgres://gateway:${PGPASS}@${PRIVATE_IP}:5432/claude_gateway?sslmode=require"
     ```
 
-    The Cloud Run or GKE runtime must be on, or routed into, this VPC.
+    Cloud Run 或 GKE 运行时必须在此 VPC 上或路由到此 VPC。
   </Step>
 
-  <Step title="Write gateway.yaml">
-    The `upstreams` block points at Google Cloud's Agent Platform with `auth: {}`, so the gateway authenticates via Application Default Credentials from the runtime service account. See the [configuration reference](/docs/en/claude-apps-gateway-config) for every field.
+  <Step title="编写 gateway.yaml">
+    `upstreams` 块使用 `auth: {}` 指向 Google Cloud 的 Agent Platform，因此网关通过运行时服务账户的应用默认凭据进行身份验证。有关每个字段，请参阅[配置参考](/docs/zh-CN/claude-apps-gateway-config)。
 
-    Two `listen` fields depend on what fronts the gateway:
+    两个 `listen` 字段取决于什么在网关前面：
 
-    * `public_url`: required behind Cloud Run or a GKE Ingress. The gateway builds the IdP `redirect_uri` and its discovery document only from this value, never from `X-Forwarded-*` headers.
-    * `trusted_proxies`: the front end's source ranges. The gateway honors `X-Forwarded-For` only when the TCP peer is in this list, then walks the chain past trusted hops, so per-IP sign-in rate limits and audit events record developer IPs instead of the load balancer's.
+    * `public_url`：在 Cloud Run 或 GKE Ingress 后面时需要。网关仅从此值构建 IdP `redirect_uri` 和其发现文档，从不从 `X-Forwarded-*` 标头构建。
+    * `trusted_proxies`：前端的源范围。网关仅当 TCP 对等体在此列表中时才遵守 `X-Forwarded-For`，然后遍历链越过受信任的跳跃，因此按 IP 的登录速率限制和审计事件记录开发人员 IP 而不是负载均衡器的。
 
-    Set `trusted_proxies` to match your front end. An external GKE Ingress of class `gce` isn't listed: it provisions a public forwarding-rule address, which the `/login` [private-network check](/docs/en/claude-apps-gateway#prerequisites) rejects.
+    设置 `trusted_proxies` 以匹配您的前端。类别为 `gce` 的外部 GKE Ingress 未列出：它配置一个公共转发规则地址，`/login` [私有网络检查](/docs/zh-CN/claude-apps-gateway#prerequisites)拒绝该地址。
 
-    | Front end                                                | `trusted_proxies`                                   |
-    | -------------------------------------------------------- | --------------------------------------------------- |
-    | Cloud Run reached directly, no load balancer             | `[169.254.0.0/16]`                                  |
-    | Internal Application Load Balancer in front of Cloud Run | `169.254.0.0/16` plus your proxy-only subnet's CIDR |
-    | GKE internal Ingress, class `gce-internal`               | Your proxy-only subnet's CIDR                       |
+    | 前端                               | `trusted_proxies`                |
+    | -------------------------------- | -------------------------------- |
+    | 直接到达的 Cloud Run，无负载均衡器           | `[169.254.0.0/16]`               |
+    | Cloud Run 前面的内部应用负载均衡器           | `169.254.0.0/16` 加上您的仅代理子网的 CIDR |
+    | GKE 内部 Ingress，类别 `gce-internal` | 您的仅代理子网的 CIDR                    |
 
-    The example below uses the internal-load-balancer-in-front-of-Cloud-Run values.
+    下面的示例使用内部负载均衡器前面的 Cloud Run 值。
 
     ```yaml gateway.yaml theme={null}
     listen:
@@ -178,34 +184,34 @@ The steps below provision the full deployment with `gcloud` commands.
       - provider: vertex
         region: <your-region>                        # must match $REGION
         project_id: <your-project>
-        auth: {}                                     # ADC via the runtime service account
+        auth: {} # ADC via the runtime service account
     ```
 
     <Note>
-      Google id\_tokens carry no `groups` claim. To use group-based policies in [`managed.policies`](/docs/en/claude-apps-gateway-config#managed) with Google Workspace as the IdP, configure [`oidc.google_groups`](/docs/en/claude-apps-gateway-config#oidc), which looks up each user's groups through the Admin SDK Directory API using a service account with domain-wide delegation. Without it, match on `email_domain` instead.
+      Google id\_tokens 不携带 `groups` 声明。要在 [`managed.policies`](/docs/zh-CN/claude-apps-gateway-config#managed) 中使用基于组的策略，并将 Google Workspace 作为 IdP，请配置 [`oidc.google_groups`](/docs/zh-CN/claude-apps-gateway-config#oidc)，它使用具有域范围委派的服务账户通过 Admin SDK Directory API 查找每个用户的组。没有它，改为匹配 `email_domain`。
     </Note>
   </Step>
 
-  <Step title="Store secrets in Secret Manager">
-    Create four secrets and grant `roles/secretmanager.secretAccessor` to the `claude-gateway` service account:
+  <Step title="在 Secret Manager 中存储机密">
+    创建四个机密并授予 `roles/secretmanager.secretAccessor` 给 `claude-gateway` 服务账户：
 
-    | Secret                       | Source                                          |
-    | ---------------------------- | ----------------------------------------------- |
-    | `gateway-jwt-secret`         | `openssl rand -base64 32`                       |
-    | `gateway-oidc-client-secret` | Google Cloud Console → OAuth client             |
-    | `gateway-postgres-url`       | `$GATEWAY_POSTGRES_URL` from the Cloud SQL step |
-    | `gateway-config`             | the full `gateway.yaml` from the previous step  |
+    | 机密                           | 来源                                     |
+    | ---------------------------- | -------------------------------------- |
+    | `gateway-jwt-secret`         | `openssl rand -base64 32`              |
+    | `gateway-oidc-client-secret` | Google Cloud Console → OAuth 客户端       |
+    | `gateway-postgres-url`       | Cloud SQL 步骤中的 `$GATEWAY_POSTGRES_URL` |
+    | `gateway-config`             | 前一步中的完整 `gateway.yaml`                 |
 
-    How the secrets reach the container differs by track:
+    机密到达容器的方式因路径而异：
 
-    * On GKE they mount as files via the Secret Manager CSI driver, and `gateway.yaml` references `${file:/secrets/...}`.
-    * On Cloud Run, which can't mount multiple secrets into one directory, `gateway.yaml` mounts as a file and the other three inject as environment variables, so `gateway.yaml` references `${GATEWAY_JWT_SECRET}`, `${OIDC_CLIENT_SECRET}`, and `${GATEWAY_POSTGRES_URL}` instead.
+    * 在 GKE 上，它们通过 Secret Manager CSI 驱动程序作为文件挂载，`gateway.yaml` 引用 `${file:/secrets/...}`。
+    * 在 Cloud Run 上，它无法将多个机密挂载到一个目录中，`gateway.yaml` 作为文件挂载，其他三个作为环境变量注入，因此 `gateway.yaml` 改为引用 `${GATEWAY_JWT_SECRET}`、`${OIDC_CLIENT_SECRET}` 和 `${GATEWAY_POSTGRES_URL}`。
   </Step>
 
-  <Step title="Deploy">
+  <Step title="部署">
     <Tabs>
       <Tab title="Cloud Run">
-        The command below deploys for production behind an internal load balancer.
+        下面的命令在内部负载均衡器后面为生产部署。
 
         ```bash theme={null}
         gcloud run deploy claude-gateway \
@@ -220,31 +226,31 @@ The steps below provision the full deployment with `gcloud` commands.
           --no-invoker-iam-check
         ```
 
-        Direct VPC egress, via `--network`, `--subnet`, and `--vpc-egress=private-ranges-only`, lets the service reach the Cloud SQL private IP directly. Public egress to Google Cloud's Agent Platform endpoints and `accounts.google.com` goes directly to the internet rather than through the VPC, so no Cloud NAT is needed.
+        直接 VPC 出口，通过 `--network`、`--subnet` 和 `--vpc-egress=private-ranges-only`，让服务直接到达 Cloud SQL 私有 IP。到 Google Cloud 的 Agent Platform 端点和 `accounts.google.com` 的公共出口直接进入互联网，而不是通过 VPC，因此不需要 Cloud NAT。
 
-        The invoker IAM check must be open or disabled. The gateway runs its own OIDC and its clients carry no GCP token, so Cloud Run's invoker check has to admit unauthenticated requests. The gateway's OIDC sign-in authenticates the request once it reaches the container, with `allowed_email_domains` gating which domains may sign in.
+        调用者 IAM 检查必须打开或禁用。网关运行自己的 OIDC，其客户端不携带 GCP 令牌，因此 Cloud Run 的调用者检查必须允许未经身份验证的请求。网关的 OIDC 登录在请求到达容器后对其进行身份验证，使用 `allowed_email_domains` 限制哪些域可以登录。
 
-        Two flags admit unauthenticated requests:
+        两个标志允许未经身份验证的请求：
 
-        * `--no-invoker-iam-check`: disables the check with no `allUsers` binding to manage, and works under Domain Restricted Sharing
-        * `--allow-unauthenticated`: grants `allUsers` the `run.invoker` role; use it if your organization doesn't allow `--no-invoker-iam-check`
+        * `--no-invoker-iam-check`：禁用检查，无需管理 `allUsers` 绑定，并在域受限共享下工作
+        * `--allow-unauthenticated`：授予 `allUsers` `run.invoker` 角色；如果您的组织不允许 `--no-invoker-iam-check`，请使用它
 
-        Ingress restriction via `--ingress` is a separate, independent layer from the invoker check; keep it set to limit the service to your corporate network.
+        通过 `--ingress` 的入口限制是与调用者检查独立的单独层；保持设置以将服务限制在您的公司网络。
 
-        By default the Cloud Run `*.run.app` URL resolves to a public address, which the `/login` [private-network check](/docs/en/claude-apps-gateway#prerequisites) rejects. Two topologies give developers a privately resolvable hostname, and Cloud Run provisions neither for you:
+        默认情况下，Cloud Run `*.run.app` URL 解析为公共地址，`/login` [私有网络检查](/docs/zh-CN/claude-apps-gateway#prerequisites)拒绝该地址。两种拓扑为开发人员提供私有可解析的主机名，Cloud Run 都不为您配置：
 
-        * **Internal Application Load Balancer**, the topology the deploy command above assumes: deploy with `--ingress=internal-and-cloud-load-balancing`, provision an internal Application Load Balancer in front of the service with an internal DNS name and certificate, and set `listen.public_url` to that hostname.
-        * **Internal-only ingress with no load balancer**: deploy with `--ingress=internal` and leave `listen.public_url` as the `*.run.app` URL, the default in the [reference assets](#terraform-reference) below. For `*.run.app` to resolve privately, your network team must already operate a Private Service Connect endpoint for Google APIs, a Cloud DNS private zone resolving `*.run.app` to it, and on-premises routing to that endpoint.
+        * **内部应用负载均衡器**，上面部署命令假设的拓扑：使用 `--ingress=internal-and-cloud-load-balancing` 部署，在服务前面配置内部应用负载均衡器，具有内部 DNS 名称和证书，并将 `listen.public_url` 设置为该主机名。
+        * **仅限内部入口，无负载均衡器**：使用 `--ingress=internal` 部署，并将 `listen.public_url` 保留为 `*.run.app` URL，下面[参考资产](#terraform-reference)中的默认值。为了让 `*.run.app` 私有解析，您的网络团队必须已经运营 Google API 的 Private Service Connect 端点、解析 `*.run.app` 到它的 Cloud DNS 私有区域，以及到该端点的本地路由。
 
-        Google's [private networking guide for Cloud Run](https://cloud.google.com/run/docs/securing/private-networking) covers the infrastructure both options need. Verify sign-in once the gateway is serving on a private hostname; until then, confirm the container booted from its logs in Cloud Run.
+        Google 的 [Cloud Run 私有网络指南](https://cloud.google.com/run/docs/securing/private-networking)涵盖了两个选项都需要的基础设施。在网关在私有主机名上提供服务后验证登录；在那之前，从 Cloud Run 中的日志确认容器启动。
 
-        Update the OAuth client's authorized redirect URI to `<public_url>/oauth/callback` before the first sign-in. Redeploy after changing `public_url`, because the gateway builds its public origin only from that setting and ignores `X-Forwarded-Host` and `X-Forwarded-Proto`. `X-Forwarded-For` is honored for client IPs only when `listen.trusted_proxies` is set.
+        在第一次登录前更新 OAuth 客户端的授权重定向 URI 为 `<public_url>/oauth/callback`。更改 `public_url` 后重新部署，因为网关仅从该设置构建其公共源，忽略 `X-Forwarded-Host` 和 `X-Forwarded-Proto`。`X-Forwarded-For` 仅在设置 `listen.trusted_proxies` 时才被遵守用于客户端 IP。
       </Tab>
 
       <Tab title="GKE">
-        The cluster must be on the `$VPC` created in the Cloud SQL step so pods can reach the database's private IP; VPC peering alone doesn't work, because Cloud SQL private IP is itself a peered network and peering is non-transitive. To create a new cluster on that VPC, pass `--network="$VPC" --subnetwork=cc-gateway-subnet` to `gcloud container clusters create`.
+        集群必须在 Cloud SQL 步骤中创建的 `$VPC` 上，以便 pod 可以到达数据库的私有 IP；仅 VPC 对等不起作用，因为 Cloud SQL 私有 IP 本身是对等网络，对等是非传递的。要在该 VPC 上创建新集群，请将 `--network="$VPC" --subnetwork=cc-gateway-subnet` 传递给 `gcloud container clusters create`。
 
-        Enable Workload Identity on the cluster and its node pools, then bind the Google service account to the Kubernetes service account so pods inherit its credentials:
+        在集群及其节点池上启用 Workload Identity，然后将 Google 服务账户绑定到 Kubernetes 服务账户，以便 pod 继承其凭据：
 
         ```bash theme={null}
         gcloud container clusters update <cluster> --region="$REGION" \
@@ -266,53 +272,59 @@ The steps below provision the full deployment with `gcloud` commands.
           iam.gke.io/gcp-service-account="claude-gateway@${PROJECT_ID}.iam.gserviceaccount.com"
         ```
 
-        Deploy the gateway as a standard Deployment plus a Service and an internal Ingress, class `gce-internal`, as described in [Kubernetes deployment](/docs/en/claude-apps-gateway-deploy#kubernetes), with:
+        将网关部署为标准 Deployment 加上 Service 和内部 Ingress，类别 `gce-internal`，如[Kubernetes 部署](/docs/zh-CN/claude-apps-gateway-deploy#kubernetes)中所述，具有：
 
         * `serviceAccountName: gateway`
-        * the Secret Manager CSI driver mounting secrets at `/secrets`
-        * the readiness probe pointed at `GET /readyz`
+        * Secret Manager CSI 驱动程序在 `/secrets` 处挂载机密
+        * 就绪探针指向 `GET /readyz`
 
-        Attach a BackendConfig with a raised `timeoutSec` to the gateway Service: the load balancer backend service behind GKE Ingress defaults to a 30-second timeout, which cuts off long streaming responses.
+        将具有提高的 `timeoutSec` 的 BackendConfig 附加到网关 Service：GKE Ingress 后面的负载均衡器后端服务默认为 30 秒超时，这会切断长流式响应。
 
-        Don't apply an egress NetworkPolicy that blocks `169.254.169.254` on a Workload Identity cluster; the pod must reach the metadata server for credentials. The gateway's built-in [SSRF guard](/docs/en/claude-apps-gateway-deploy#threat-model-summary) is the defense there.
+        不要在 Workload Identity 集群上应用阻止 `169.254.169.254` 的出口 NetworkPolicy；pod 必须到达元数据服务器以获取凭据。网关的内置 [SSRF 防护](/docs/zh-CN/claude-apps-gateway-deploy#threat-model-summary)是那里的防御。
 
-        The gateway logs a boot warning that the metadata endpoint is reachable and suggests applying an egress NetworkPolicy. Under Workload Identity that warning is expected, because the pod needs the endpoint.
+        网关记录启动警告，指出元数据端点可达，并建议应用出口 NetworkPolicy。在 Workload Identity 下，该警告是预期的，因为 pod 需要端点。
       </Tab>
     </Tabs>
   </Step>
 
-  <Step title="Push the gateway URL to developer machines">
-    The gateway is now running, but developers can't reach it from `/login` until the gateway URL is on their machines. Deploy the full [managed settings snippet](/docs/en/claude-apps-gateway#set-the-gateway-url), with `forceLoginMethod`, `forceLoginGatewayUrl`, and the `parentSettingsBehavior: "merge"` opt-in, to each device via MDM. There is no gateway option in the login picker for a developer to select manually.
+  <Step title="将网关 URL 推送到开发人员机器">
+    网关现在正在运行，但开发人员在网关 URL 在其机器上之前无法从 `/login` 到达它。在您通过 MDM 部署到每个设备的[托管设置文件](/docs/zh-CN/claude-apps-gateway#set-the-gateway-url)中设置 `forceLoginMethod` 和 `forceLoginGatewayUrl`。登录选择器中没有网关选项供开发人员手动选择。
   </Step>
 </Steps>
 
-## Terraform reference
+<h2 id="terraform-reference">
+  Terraform 参考
+</h2>
 
-The [reference deployment assets](https://github.com/anthropics/claude-code/tree/main/examples/gateway/gcp) automate the Cloud Run track on this page; the config and image assets apply to both tracks:
+[参考部署资产](https://github.com/anthropics/claude-code/tree/main/examples/gateway/gcp)自动化本页的 Cloud Run 路径；配置和镜像资产适用于两条路径：
 
-* `setup.sh`: an idempotent `gcloud` provisioner that walks the full Cloud Run path, from enabling APIs through the first deploy
-* `terraform/`: the same deployment as infrastructure-as-code, for a greenfield deploy: a targeted apply to create the Artifact Registry repo, then build and push the image, then a full apply
-* `gateway.yaml.example` and a `Dockerfile` for the distroless runtime image
+* `setup.sh`：一个幂等的 `gcloud` 配置程序，遍历完整的 Cloud Run 路径，从启用 API 到第一次部署
+* `terraform/`：相同的部署作为基础设施即代码，用于绿地部署：创建 Artifact Registry 存储库的目标应用，然后构建和推送镜像，然后完整应用
+* `gateway.yaml.example` 和用于 distroless 运行时镜像的 `Dockerfile`
 
-The artifacts default Cloud Run ingress to `internal`, so no load balancer is required. To match this page's production-behind-an-ALB deployment, run `setup.sh` with `INGRESS=internal-and-cloud-load-balancing`, or set the Terraform variable `ingress` to `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER`. The artifacts also default the invoker layer to an `allUsers` `run.invoker` grant rather than `--no-invoker-iam-check`, the inverse of this page's walkthrough; either works, and the choice depends on your organization's policy constraints.
+工件默认 Cloud Run 入口为 `internal`，因此不需要负载均衡器。要匹配本页的生产后面 ALB 部署，使用 `INGRESS=internal-and-cloud-load-balancing` 运行 `setup.sh`，或将 Terraform 变量 `ingress` 设置为 `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER`。工件还默认调用者层为 `allUsers` `run.invoker` 授予而不是 `--no-invoker-iam-check`，与本页演练相反；两者都有效，选择取决于您的组织的策略约束。
 
-The assets are provided as working examples, not as a supported production artifact; review and adapt them to your environment.
+资产作为工作示例提供，而不是受支持的生产工件；查看并根据您的环境调整它们。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-For gateway boot and login errors, see the platform-agnostic [troubleshooting table](/docs/en/claude-apps-gateway-deploy#troubleshooting). The entries below are specific to Google Cloud.
+有关网关启动和登录错误，请参阅平台无关的[故障排除表](/docs/zh-CN/claude-apps-gateway-deploy#troubleshooting)。下面的条目特定于 Google Cloud。
 
-| Symptom                                                                                  | Cause                                                                                                                               | Fix                                                                                                                                                                                                                         |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud Run returns `403 Forbidden` before reaching the container                          | The invoker IAM check is still enabled                                                                                              | Deploy with `--no-invoker-iam-check`, or grant `allUsers` the `run.invoker` role with `--allow-unauthenticated`                                                                                                             |
-| `--no-invoker-iam-check` rejected with `invoker_iam_disabled is not currently available` | Blocked by `constraints/run.managed.requireInvokerIam`                                                                              | Use `--allow-unauthenticated`. If Domain Restricted Sharing via `constraints/iam.allowedPolicyMemberDomains` blocks that too, use the GKE track, which exposes the gateway at the network layer with no `allUsers` binding. |
-| `Container manifest type … must support amd64/linux` at deploy                           | Image was built on a non-amd64 host, or buildx emitted an OCI image index                                                           | Build with `--platform=linux/amd64 --provenance=false`                                                                                                                                                                      |
-| Gateway boot exits with a Postgres connection-timeout error on Cloud Run                 | Service isn't attached to the VPC, or Cloud SQL has no private IP on that VPC; the store stops waiting after 5 seconds              | Deploy with `--network` and `--subnet` for Direct VPC egress, and create the Cloud SQL instance with `--no-assign-ip` and `--network` pointing at the same VPC                                                              |
-| Google Cloud's Agent Platform requests return `403 PERMISSION_DENIED`                    | Runtime isn't using the `claude-gateway` service account, or the model isn't enabled in Model Garden for the project                | Set `--service-account` on Cloud Run or bind Workload Identity on GKE, and enable each Claude model in Model Garden for the target region                                                                                   |
-| Streaming responses cut off after a fixed duration                                       | Front-end request timeout: the load balancer backend service behind GKE Ingress defaults to 30 seconds and Cloud Run to 300 seconds | Attach a BackendConfig with a raised `timeoutSec` on GKE, or deploy with `--timeout=3600` on Cloud Run                                                                                                                      |
+| 症状                                                                                | 原因                                                          | 修复                                                                                                                                |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud Run 在到达容器前返回 `403 Forbidden`                                                | 调用者 IAM 检查仍然启用                                              | 使用 `--no-invoker-iam-check` 部署，或使用 `--allow-unauthenticated` 授予 `allUsers` `run.invoker` 角色                                       |
+| `--no-invoker-iam-check` 被拒绝，显示 `invoker_iam_disabled is not currently available` | 被 `constraints/run.managed.requireInvokerIam` 阻止            | 使用 `--allow-unauthenticated`。如果通过 `constraints/iam.allowedPolicyMemberDomains` 的域受限共享也阻止了它，请使用 GKE 路径，它在网络层公开网关，无需 `allUsers` 绑定。 |
+| 部署时 `Container manifest type … must support amd64/linux`                          | 镜像在非 amd64 主机上构建，或 buildx 发出了 OCI 镜像索引                      | 使用 `--platform=linux/amd64 --provenance=false` 构建                                                                                 |
+| 网关启动在 Cloud Run 上以 Postgres 连接超时错误退出                                              | 服务未附加到 VPC，或 Cloud SQL 在该 VPC 上没有私有 IP；存储在 5 秒后停止等待         | 使用 `--network` 和 `--subnet` 部署以进行直接 VPC 出口，并使用 `--no-assign-ip` 和 `--network` 指向同一 VPC 创建 Cloud SQL 实例                            |
+| Google Cloud 的 Agent Platform 请求返回 `403 PERMISSION_DENIED`                        | 运行时未使用 `claude-gateway` 服务账户，或模型未在 Model Garden 中为项目启用      | 在 Cloud Run 上设置 `--service-account` 或在 GKE 上绑定 Workload Identity，并在 Model Garden 中为目标区域启用每个 Claude 模型                             |
+| 流式响应在固定持续时间后切断                                                                    | 前端请求超时：GKE Ingress 后面的负载均衡器后端服务默认为 30 秒，Cloud Run 默认为 300 秒 | 在 GKE 上附加具有提高的 `timeoutSec` 的 BackendConfig，或在 Cloud Run 上使用 `--timeout=3600` 部署                                                  |
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-* [Configuration reference](/docs/en/claude-apps-gateway-config): every `gateway.yaml` option, including `managed.policies` and `telemetry`
-* [Deployment and operations](/docs/en/claude-apps-gateway-deploy): IdP setup, health checks, JWT secret rotation, upgrades, and the security model
-* [Claude apps gateway overview](/docs/en/claude-apps-gateway): quickstart and connecting developers
+* [配置参考](/docs/zh-CN/claude-apps-gateway-config)：每个 `gateway.yaml` 选项，包括 `managed.policies` 和 `telemetry`
+* [部署和操作](/docs/zh-CN/claude-apps-gateway-deploy)：IdP 设置、健康检查、JWT 密钥轮换、升级和安全模型
+* [Claude apps gateway 概述](/docs/zh-CN/claude-apps-gateway)：快速入门和连接开发人员

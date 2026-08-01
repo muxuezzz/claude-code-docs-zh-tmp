@@ -2,194 +2,170 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Manage sessions
+# 管理会话
 
-> Name, resume, branch, and switch between Claude Code conversations. Covers `--continue`, `--resume`, `--from-pr`, the `/resume` picker, session naming, exporting transcripts, and where transcripts are stored.
+> 命名、恢复、分支和在 Claude Code 对话之间切换。涵盖 `--continue`、`--resume`、`--from-pr`、`/resume` 选择器、会话命名、导出文本记录和文本记录存储位置。
 
-A session is a saved conversation tied to a project directory. Claude Code stores it locally as you work, so you can resume where you left off, branch to try a different approach, or switch between tasks.
+会话是与项目目录关联的已保存对话。Claude Code 在您工作时将其本地存储，因此您可以从中断处恢复、分支以尝试不同的方法，或在任务之间切换。
 
-The [desktop app](/docs/en/desktop#work-in-parallel-with-sessions), [Claude Code on the web](/docs/en/claude-code-on-the-web), and the [VS Code extension](/docs/en/vs-code#resume-past-conversations) each maintain their own session history. This page covers the CLI.
+[桌面应用](/docs/zh-CN/desktop#work-in-parallel-with-sessions)、[网页版 Claude Code](/docs/zh-CN/claude-code-on-the-web) 和 [VS Code 扩展](/docs/zh-CN/vs-code#resume-past-conversations)各自维护自己的会话历史记录。本页涵盖 CLI。
 
-## Resume a session
+<h2 id="resume-a-session">
+  恢复会话
+</h2>
 
-Sessions are saved continuously to [local transcript files](#export-and-locate-session-data) as you work, so you can return to one after exiting or running `/clear`. Use these entry points:
+会话在您工作时持续保存到[本地文本记录文件](#export-and-locate-session-data)，因此您可以在退出或运行 `/clear` 后返回到一个会话。使用这些入口点：
 
-| Command                     | What it does                                                              |
-| :-------------------------- | :------------------------------------------------------------------------ |
-| `claude --continue`         | Resumes the most recent session in the current directory                  |
-| `claude --resume`           | Opens the [session picker](#use-the-session-picker)                       |
-| `claude --resume <name>`    | Resumes the named session directly                                        |
-| `claude --from-pr <number>` | Opens the session picker filtered to sessions linked to that pull request |
-| `/resume`                   | Switches to a different conversation from inside an active session        |
+| 命令                          | 功能                                 |
+| :-------------------------- | :--------------------------------- |
+| `claude --continue`         | 恢复当前目录中最近的会话                       |
+| `claude --resume`           | 打开[会话选择器](#use-the-session-picker) |
+| `claude --resume <name>`    | 直接恢复命名的会话                          |
+| `claude --from-pr <number>` | 恢复链接到该拉取请求的会话                      |
+| `/resume`                   | 从活跃会话内切换到不同的对话                     |
 
-Sessions created with [`claude -p`](/docs/en/headless) or the [Agent SDK](/docs/en/agent-sdk/overview) do not appear in the session picker, but you can still resume one by passing its session ID to `claude --resume <session-id>`. Run this from the directory the session was started in: session ID lookup is scoped to the current project directory and its git worktrees, so a session created elsewhere reports `No conversation found with session ID: <session-id>`.
+使用 [`claude -p`](/docs/zh-CN/headless) 或 [Agent SDK](/docs/zh-CN/agent-sdk/overview) 创建的会话不会出现在会话选择器中，但您仍然可以通过将其会话 ID 传递给 `claude --resume <session-id>` 来恢复它。从会话启动所在的目录运行此命令：会话 ID 查找的范围限于当前项目目录及其 git worktrees，因此在其他地方创建的会话会报告 `No conversation found with session ID: <session-id>`。
 
-### What a resumed session restores
+<h3 id="where-the-session-picker-looks">
+  会话选择器查看的位置
+</h3>
 
-A resumed session restores the conversation along with the state saved in it:
+会话按项目目录存储。默认情况下，会话选择器显示来自当前 worktree 的交互式会话，以及在其他地方启动但使用 `/add-dir` 添加了当前目录的会话。使用 `Ctrl+W` 扩展到存储库的所有 worktree，或使用 `Ctrl+A` 扩展到此计算机上的每个项目。
 
-* Conversation history: the full history, including tool calls and results.
-* Model: the session continues on the model it was using. The model isn't restored when it has been retired or isn't allowed by `availableModels`, when a `--model` flag or `ANTHROPIC_MODEL`-family environment variable picks one at launch, or on providers that use provider-specific deployment IDs, such as [Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry](/docs/en/third-party-integrations); see [model configuration](/docs/en/model-config#setting-your-model) for the resolution order.
-* Agent: a session started with [`--agent`](/docs/en/sub-agents#invoke-subagents-explicitly) or the `agent` setting continues as that agent, keeping its system prompt, tool restrictions, and model. Pass `--agent` when resuming to pick a different one. {/* min-version: 2.1.216 */}Claude Code looks for the agent in two places: the session's original directory, provided you have [trusted that workspace](/docs/en/permissions#project-allow-rules-and-workspace-trust), and then the directory you resume from, so a project-scoped agent still loads when you resume from another directory. If Claude Code doesn't find the agent in either place, the session resumes with the default tools and system prompt and shows a [warning naming the agent](/docs/en/errors#session-agent-no-longer-available).
-* Permission mode: the mode the session was in. `plan` and `bypassPermissions` are never restored; [bypassing permissions](/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) must be enabled again at launch, with one of its launch flags or `permissions.defaultMode: "bypassPermissions"` in [settings](/docs/en/settings#permission-settings). `auto` is restored only when your account still meets the [auto mode requirements](/docs/en/permission-modes#eliminate-prompts-with-auto-mode). Pass `--permission-mode` to override the restored mode.
-* Active goal: a [goal](/docs/en/goal#resume-with-an-active-goal) that was still active when the session ended carries over; its turn count, timer, and token-spend baseline reset.
-* Scheduled tasks: [tasks that haven't expired](/docs/en/scheduled-tasks#limitations) are restored. Background Bash and monitor tasks aren't.
+从 v2.1.169 开始，使用 [`/cd`](/docs/zh-CN/commands) 移动会话会将其重新定位到新目录的项目存储中，因此之后它会出现在该目录的选择器中。从 v2.1.196 开始，移动的会话在崩溃或强制退出后会保持不在旧目录的选择器中。在较早的版本中，当旧路径包含下划线等特殊字符时，在不干净的退出后，它也可能在旧目录的列表中重新出现。
 
-Not every configuration flag from the original launch is restored. If the session depended on `--mcp-config`, `--settings`, `--plugin-dir`, `--fallback-model`, or directories added with `--add-dir`, pass them again when you resume; directories added mid-session with `/add-dir` aren't restored either, though the session picker still uses them to locate the session. The standard settings files, such as `settings.json` and `settings.local.json`, are re-read at launch, so configuration that lives in them doesn't need to be passed again.
+从同一存储库的另一个 worktree 选择会话会在原地恢复它。从不相关项目选择会话会将 `cd` 和恢复命令复制到您的剪贴板。
 
-### Resume from a summary
+按名称恢复会跨当前存储库及其 worktree 解析。两种形式都查找精确匹配并直接恢复它，即使它位于不同的 worktree 中：
 
-On a Pro or Max plan, when you resume a session that has been inactive for more than about an hour and is over 100,000 tokens, Claude Code restores the conversation and then opens a dialog before you send your first message. The session's [prompt cache](/docs/en/prompt-caching#cache-lifetime) has expired by then, so the next request processes the full history once no matter which of the dialog's options you pick.
+| 命令                       | 精确匹配 | 模糊名称                           |
+| :----------------------- | :--- | :----------------------------- |
+| `claude --resume <name>` | 直接恢复 | 打开会话选择器，名称预填充为搜索词              |
+| `/resume <name>`         | 直接恢复 | 报告错误；运行不带参数的 `/resume` 打开会话选择器 |
 
-The dialog offers three ways to continue the session. They differ in how much of the conversation each one carries forward into later requests, which is a tradeoff between keeping every detail and sending fewer tokens per request:
+<h2 id="name-your-sessions">
+  命名您的会话
+</h2>
 
-* **Resume from summary**: runs [`/compact`](/docs/en/context-window#what-survives-compaction) immediately. Claude Code sends one summarization request over the full history, then replaces the history with the summary, your most recent exchanges, and up to five recently read files. Later requests carry the summary instead of the full history.
-* **Resume full session as-is**: loads the conversation unchanged. After you send your first message, Claude Code reprocesses and re-caches the full history, then re-reads it from the cache on later requests while the cache stays warm.
-* **Don't ask me again**: resumes the full session and stops showing the dialog on all future resumes.
+为会话提供描述性名称，以便在会话选择器中可以找到它们，并可以按名称恢复。当您并行处理多个任务时，这一点最重要。
 
-Resuming as-is keeps every detail of the conversation available, at a per-request cost that scales with the conversation's size. Resuming from the summary costs less on each later request because it carries the summary instead of the full history, but whatever the summary leaves out is no longer in Claude's context. See [why usage climbs in a long session](/docs/en/costs#why-usage-climbs-in-a-long-session) for where that per-request cost comes from.
+| 时间     | 如何设置名称                                                                                                   |
+| :----- | :------------------------------------------------------------------------------------------------------- |
+| 启动时    | `claude -n auth-refactor`                                                                                |
+| 在会话期间  | `/rename auth-refactor`。名称也会出现在提示栏上                                                                      |
+| 从会话选择器 | 突出显示会话并按 `Ctrl+R`                                                                                        |
+| 在计划接受时 | 在 [Plan Mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode) 中接受计划会从计划内容命名会话，除非您已经设置了一个 |
 
-### Where the session picker looks
+会话命名后，使用 `claude --resume <name>` 或 `/resume <name>` 返回到它。有关名称解析如何跨 worktrees 工作的信息，请参阅[恢复会话](#resume-a-session)。
 
-Claude Code stores sessions per project directory. By default the session picker shows:
+{/* min-version: 2.1.196 */}您从未命名的交互式会话在启动时仍会获得默认显示名称。需要 Claude Code v2.1.196 或更高版本。默认名称将工作目录的名称与两个字符的后缀组合在一起，例如 `my-app-3f`，并在运行会话的列表中标识会话，例如 [agent view](/docs/zh-CN/agent-view) 和 `claude agents --json` 输出。
 
-* Sessions from the current worktree, including [background sessions](/docs/en/agent-view), which are marked `bg` in the list
-* Sessions started elsewhere that added the current directory with `/add-dir`
+默认名称不是恢复句柄：`claude --resume <name>`、`/resume <name>` 和会话选择器仅匹配您设置的名称。命名会话会替换默认名称。
 
-Use `Ctrl+W` to widen to all worktrees of the repository or `Ctrl+A` to widen to every project on this machine.
+<h2 id="use-the-session-picker">
+  使用会话选择器
+</h2>
 
-{/* min-version: 2.1.211 */}Sessions whose first prompt was a [`/loop`](/docs/en/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop) command don't appear in the picker; running `/loop` later in a conversation doesn't hide the session. Before v2.1.211, a `/loop` run early in a conversation hid the session from the picker permanently.
+在会话内运行 `/resume`，或不带参数运行 `claude --resume`，以打开交互式会话选择器。使用这些快捷键导航、搜索和扩展列表：
 
-{/* min-version: 2.1.169 */}From v2.1.169, moving a session with [`/cd`](/docs/en/commands) relocates it to the new directory's project storage, so it appears in that directory's picker afterward. {/* min-version: 2.1.196 */}As of v2.1.196, a moved session stays out of the old directory's picker even after a crash or forced exit. On earlier versions, it could also reappear in the old directory's list after an exit that wasn't clean when the old path contained special characters such as underscores.
+| 快捷键                      | 操作                                                                               |
+| :----------------------- | :------------------------------------------------------------------------------- |
+| `↑` / `↓`                | 在会话之间导航                                                                          |
+| `→` / `←`                | 展开或折叠分组的会话                                                                       |
+| `Enter`                  | 恢复突出显示的会话                                                                        |
+| `Space`                  | 预览会话内容。在不将其捕获为粘贴的终端上也可以使用 `Ctrl+V`                                               |
+| `Ctrl+R`                 | 重命名突出显示的会话                                                                       |
+| `/` 或除 `Space` 外的任何可打印字符 | 进入搜索模式并过滤会话。粘贴 GitHub、GitHub Enterprise、GitLab 或 Bitbucket 拉取或合并请求 URL 以查找创建它的会话 |
+| `Ctrl+A`                 | 显示此计算机上所有项目的会话。再次按下以返回到当前存储库                                                     |
+| `Ctrl+W`                 | 显示当前存储库所有 worktrees 的会话。再次按下以返回到当前 worktree。仅在多 worktree 存储库中显示                  |
+| `Ctrl+B`                 | 过滤到当前 git 分支的会话。再次按下以显示所有分支                                                      |
+| `Esc`                    | 退出会话选择器或搜索模式                                                                     |
 
-When you select a session from another worktree of the same repository, Claude Code resumes it in place. When you select a session from an unrelated project, Claude Code copies a `cd` and resume command to your clipboard instead.
+每行显示会话名称（如果已设置），否则显示对话摘要或第一个提示，以及自上次活动以来的时间、消息计数和 git 分支。使用 `Ctrl+A` 扩展到所有项目后，项目路径会出现。
 
-Resuming by name resolves across the current repository and its worktrees. Both forms look for an exact match and resume it directly even if it lives in a different worktree:
+使用 `/branch`、`/rewind` 或 `--fork-session` 创建的分叉会话会分组在其根会话下。按 `→` 展开一个组。
 
-| Command                  | Exact match      | Ambiguous name                                                              |
-| :----------------------- | :--------------- | :-------------------------------------------------------------------------- |
-| `claude --resume <name>` | Resumes directly | Opens the session picker with the name pre-filled as a search term          |
-| `/resume <name>`         | Resumes directly | Reports an error; run `/resume` with no argument to open the session picker |
+<h2 id="branch-a-session">
+  分支会话
+</h2>
 
-## Name your sessions
+分支创建迄今为止对话的副本并将您切换到其中，保持原始对话完整。使用它来尝试不同的方法而不会丢失您所在的路径。
 
-Give sessions descriptive names so they're findable in the session picker and resumable by name. This matters most when you're working on several tasks in parallel.
-
-| When                    | How to set the name                                                                                                                                                |
-| :---------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| At startup              | `claude -n auth-refactor`                                                                                                                                          |
-| During a session        | `/rename auth-refactor`. The name also appears on the prompt bar                                                                                                   |
-| From the session picker | Highlight a session and press `Ctrl+R`                                                                                                                             |
-| On plan accept          | Accepting a plan in [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode) names the session from the plan content unless you've already set one |
-
-Once a session is named, return to it with `claude --resume <name>` or `/resume <name>`. See [Resume a session](#resume-a-session) for how name resolution behaves across worktrees.
-
-{/* min-version: 2.1.196 */}Interactive sessions you never name still get a default display name when they start. Requires Claude Code v2.1.196 or later. The default combines the working directory's name with a two-character suffix, for example `my-app-3f`, and identifies the session in listings of running sessions, such as [agent view](/docs/en/agent-view) and `claude agents --json` output.
-
-The default isn't a resume handle: `claude --resume <name>`, `/resume <name>`, and the session picker match only names you set. Naming the session replaces the default.
-
-If you don't name a session, Claude Code generates a session title for it: a short summary of your first prompt, written by a background request to the small/fast model, normally a Haiku-class model. Naming the session with `--name` or `/rename` replaces the generated title. You see the generated title in the [session picker](#use-the-session-picker) and in the statusline [`session_name`](/docs/en/statusline) field when no name is set; like the default display name, it isn't a resume handle.
-
-## Use the session picker
-
-Run `/resume` inside a session, or `claude --resume` with no arguments, to open the interactive session picker. Use these keyboard shortcuts to navigate, search, and widen the list:
-
-| Shortcut                                          | Action                                                                                                                                                       |
-| :------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `↑` / `↓`                                         | Navigate between sessions                                                                                                                                    |
-| `→` / `←`                                         | Expand or collapse grouped sessions                                                                                                                          |
-| `Enter`                                           | Resume the highlighted session                                                                                                                               |
-| `Space`                                           | Preview the session content. `Ctrl+V` also works on terminals that don't capture it as paste                                                                 |
-| `Ctrl+R`                                          | Rename the highlighted session                                                                                                                               |
-| `/` or any printable character other than `Space` | Enter search mode and filter sessions. Paste a GitHub, GitHub Enterprise, GitLab, or Bitbucket pull or merge request URL to find the session that created it |
-| `Ctrl+A`                                          | Show sessions from all projects on this machine. Press again to return to the current repository                                                             |
-| `Ctrl+W`                                          | Show sessions from all worktrees of the current repository. Press again to return to the current worktree. Only shown in multi-worktree repositories         |
-| `Ctrl+B`                                          | Filter to sessions from the current git branch. Press again to show all branches                                                                             |
-| `Esc`                                             | Exit the session picker or search mode                                                                                                                       |
-
-Each row shows the session name if you set one, otherwise the AI-generated session title, conversation summary, or first prompt, along with time since last activity, git branch, and file size. Widen to all projects with `Ctrl+A` to also see each session's project path.
-
-Sessions created with `/branch` or `--fork-session` get their own session IDs and appear as separate rows. When the picker finds more than one entry for the same session, it groups them under a single row. Press `→` to expand a group.
-
-If Claude Code can't load the session you select from the `claude --resume` picker, it prints [`Failed to resume the conversation`](/docs/en/errors#failed-to-resume-the-conversation) with a command to retry, then exits with code 1. From the `/resume` picker inside a session, Claude Code reports the failure and your current conversation keeps running.
-
-## Branch a session
-
-Branching creates a copy of the conversation so far and switches you into it, leaving the original intact. Use it to try a different approach without losing the path you were on.
-
-From inside a session, run `/branch` with an optional name:
+从会话内，运行带有可选名称的 `/branch`：
 
 ```text theme={null}
 /branch try-streaming-approach
 ```
 
-If you omit the name, Claude Code names the new branch after the first prompt in the conversation. As of v2.1.198 this also applies after [compaction](/docs/en/how-claude-code-works#when-context-fills-up); earlier versions fell back to the literal name `Branched conversation` instead of looking past the compaction summary to the original first prompt.
+如果您省略名称，Claude Code 会根据对话中的第一个提示为新分支命名。从 v2.1.198 开始，这也适用于 [compaction](/docs/zh-CN/how-claude-code-works#when-context-fills-up) 之后；较早的版本会回退到字面名称 `Branched conversation`，而不是查看 compaction 摘要之外的原始第一个提示。
 
-From the command line, combine `--continue` or `--resume` with `--fork-session`:
+从命令行，将 `--continue` 或 `--resume` 与 `--fork-session` 结合：
 
 ```bash theme={null}
 claude --continue --fork-session
 ```
 
-The `/branch` confirmation prints two session IDs: the new branch you are now in and the original. The original is unchanged on disk and remains in the session picker; return to it with `/resume <original-name>` or by passing its ID to `/resume`.
+原始会话保持不变，并在会话选择器中保持可用。`/branch` 确认打印两个会话 ID：您现在所在的新分支和原始分支。要返回到原始分支，将其 ID 传递给 `/resume`、使用会话选择器或运行 `/resume <original-name>`。您使用"允许此会话"批准的权限不会转移到新分支。如果您在两个终端中恢复同一会话而不分叉，来自两者的消息会交错到一个文本记录中。
 
-`/branch` copies the transcript and switches the running Claude Code process to write to it. That distinction determines what the branch inherits:
+对于单个会话内基于 checkpoint 的回退，请参阅 [Checkpointing](/docs/zh-CN/checkpointing)。
 
-| State                                                                                                                                                                    | After `/branch`                                                                                                                                                                                                 |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Conversation history                                                                                                                                                     | Copied into the branch up to the point you ran `/branch`                                                                                                                                                        |
-| "Allow for this session" permission grants                                                                                                                               | Carried over; the branch runs in the same process, so your existing grants still apply. If you fork into a separate process with `--fork-session`, the new process starts without them and you re-approve there |
-| In-flight [background subagents](/docs/en/sub-agents#run-subagents-in-foreground-or-background) and [background Bash commands](/docs/en/interactive-mode#background-bash-commands) | Keep running. Their output appears in the new branch you switched into, not in the original session                                                                                                             |
+<h2 id="manage-context-within-a-session">
+  管理会话内的上下文
+</h2>
 
-If you resume the same session in two terminals without forking, messages from both interleave into one transcript. For checkpoint-based rewind within a single session, see [Checkpointing](/docs/en/checkpointing).
+这些命令控制上下文窗口中的内容而不离开会话：
 
-## Manage context within a session
+* **`/clear`**：以空上下文重新开始。之前的对话已保存并可通过 `/resume` 恢复，或在同一个 Claude Code 进程中，{/* min-version: 2.1.191 */}从[倒带菜单的上一个会话条目](/docs/zh-CN/checkpointing#rewind-past-a-cleared-conversation)恢复
+* **`/compact [instructions]`**：用摘要替换历史记录，可选地专注于您指定的内容
+* **`/context`**：显示当前消耗的上下文
 
-These commands control what's in the context window without leaving the session:
+有关压缩如何与 CLAUDE.md、skills 和规则交互的信息，请参阅[上下文窗口指南](/docs/zh-CN/context-window)。有关何时清除与压缩的策略，请参阅[最佳实践](/docs/zh-CN/best-practices#manage-your-session)。
 
-* **`/clear`**: start fresh with an empty context. Claude Code saves the previous conversation; resume it with `/resume`, or, in the same Claude Code process, {/* min-version: 2.1.191 */}from [the rewind menu's previous-session entry](/docs/en/checkpointing#rewind-past-a-cleared-conversation). You keep a name you set with `--name` or `/rename` in the new conversation, but not an AI-generated session title
-* **`/compact [instructions]`**: replace history with a summary, optionally focused on what you specify
-* **`/context`**: show what is currently consuming context
+<h2 id="export-and-locate-session-data">
+  导出和定位会话数据
+</h2>
 
-For how compaction interacts with CLAUDE.md, skills, and rules, see the [context window guide](/docs/en/context-window). For strategies on when to clear versus compact, see [Best practices](/docs/en/best-practices#manage-your-session).
+运行 `/export` 打开一个菜单，让您将当前对话复制到剪贴板或将其保存为纯文本文件，消息和工具输出呈现为可读文本。传递文件名以跳过菜单并直接写入该文件。
 
-## Export and locate session data
+<h3 id="access-conversations-from-scripts">
+  从脚本访问对话
+</h3>
 
-Run `/export` to open a menu that lets you copy the current conversation to your clipboard or save it as a plain-text file, with messages and tool outputs rendered as readable text. Pass a filename to skip the menu and write directly to that file.
+`/export` 生成一个供人阅读的呈现文本记录。下面的接口生成结构化数据供脚本解析：运行的 JSON 结果、会话文本记录文件的路径或事件的实时流。根据触发脚本的内容选择：
 
-### Access conversations from scripts
+* **运行 Claude 一次并捕获结果**：使用 [`--output-format json` 或 `stream-json`](/docs/zh-CN/headless#get-structured-output) 调用 `claude -p` 以捕获非交互式运行的结果、会话 ID、使用情况和成本作为结构化 JSON。
+* **向现有会话提问**：将会话 ID 传递给 [`claude -p --resume`](/docs/zh-CN/headless#continue-conversations) 以发送后续提示（例如摘要请求），并捕获结构化响应。
+* **对会话事件做出反应**：读取 [hooks](/docs/zh-CN/hooks#common-input-fields) 和 [status line commands](/docs/zh-CN/statusline#available-data) 作为输入接收的 `transcript_path` 字段。`SessionEnd` hook 可以在会话结束时存档文本记录。
+* **在 TypeScript 或 Python 应用中嵌入 Claude**：使用 [Agent SDK](/docs/zh-CN/agent-sdk/overview) 以编程方式接收每条消息。
 
-`/export` produces a rendered transcript for a person to read. The interfaces below produce structured data for a script to parse: a JSON result from a run, the path to a session's transcript file, or a live stream of events. Pick by what triggers the script:
-
-* **Run Claude once and capture the result**: invoke `claude -p` with [`--output-format json` or `stream-json`](/docs/en/headless#get-structured-output) to capture the result, session ID, usage, and cost of a non-interactive run as structured JSON.
-* **Ask an existing session a question**: pass a session ID to [`claude -p --resume`](/docs/en/headless#continue-conversations) to send a follow-up prompt, such as a summary request, and capture the structured response.
-* **React to session events**: read the `transcript_path` field that [hooks](/docs/en/hooks#common-input-fields) and [status line commands](/docs/en/statusline#available-data) receive as input. A `SessionEnd` hook can archive the transcript when a session ends.
-* **Embed Claude in a TypeScript or Python app**: use the [Agent SDK](/docs/en/agent-sdk/overview) to receive each message programmatically.
-
-The example below uses the second interface. It sends a follow-up prompt to an existing session and reads the answer with `jq`:
+下面的示例使用第二个接口。它向现有会话发送后续提示，并使用 `jq` 读取答案：
 
 ```bash theme={null}
 claude -p --resume <session-id> --output-format json "summarize what we changed" | jq -r '.result'
 ```
 
-### Where transcripts are stored
+<h3 id="where-transcripts-are-stored">
+  文本记录存储位置
+</h3>
 
-By default, transcripts are stored as JSONL at `~/.claude/projects/<project>/<session-id>.jsonl`, where `<project>` is your working directory path with non-alphanumeric characters replaced by `-`. Each line is a JSON object for a message, tool use, or metadata entry. The entry format is internal to Claude Code and changes between versions, so scripts that parse these files directly can break on any release. To build on session data, use `/export` or the [script interfaces](#access-conversations-from-scripts) instead.
+默认情况下，文本记录存储为 JSONL，位置为 `~/.claude/projects/<project>/<session-id>.jsonl`，其中 `<project>` 是您的工作目录路径，非字母数字字符被替换为 `-`。每行是消息、工具使用或元数据条目的 JSON 对象。条目格式是 Claude Code 的内部格式，在版本之间会发生变化，因此直接解析这些文件的脚本可能在任何版本上中断。要基于会话数据构建，请改用 `/export` 或 [脚本接口](#access-conversations-from-scripts)。
 
-The location, retention, and write behavior are configurable:
+位置、保留期和写入行为是可配置的：
 
-| To                                          | Set                                                    | Where                     |
-| ------------------------------------------- | ------------------------------------------------------ | ------------------------- |
-| Move storage off `~/.claude`                | [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars)                    | Environment variable      |
-| Change the 30-day retention                 | [`cleanupPeriodDays`](/docs/en/settings#available-settings) | `settings.json`           |
-| Suppress transcript writes in all modes     | [`CLAUDE_CODE_SKIP_PROMPT_HISTORY`](/docs/en/env-vars)      | Environment variable      |
-| Suppress writes for one non-interactive run | [`--no-session-persistence`](/docs/en/cli-reference)        | CLI flag with `claude -p` |
+| 目的                | 设置                                                        | 位置                         |
+| ----------------- | --------------------------------------------------------- | -------------------------- |
+| 将存储移出 `~/.claude` | [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars)                    | 环境变量                       |
+| 更改 30 天保留期        | [`cleanupPeriodDays`](/docs/zh-CN/settings#available-settings) | `settings.json`            |
+| 在所有模式下禁止文本记录写入    | [`CLAUDE_CODE_SKIP_PROMPT_HISTORY`](/docs/zh-CN/env-vars)      | 环境变量                       |
+| 禁止一次非交互式运行的写入     | [`--no-session-persistence`](/docs/zh-CN/cli-reference)        | 与 `claude -p` 一起使用的 CLI 标志 |
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-These pages cover related session and parallelism mechanics:
+这些页面涵盖相关的会话和并行性机制：
 
-* [Worktrees](/docs/en/worktrees): run isolated parallel sessions on separate branches
-* [Checkpointing](/docs/en/checkpointing): rewind code and conversation to an earlier point
-* [Context window](/docs/en/context-window): what fills context and what survives compaction
-* [Non-interactive mode](/docs/en/headless): session behavior under `claude -p`
+* [Worktrees](/docs/zh-CN/worktrees)：在单独的分支上运行隔离的并行会话
+* [Checkpointing](/docs/zh-CN/checkpointing)：将代码和对话回退到较早的点
+* [Context window](/docs/zh-CN/context-window)：什么填充上下文以及什么在压缩中保留
+* [Non-interactive mode](/docs/zh-CN/headless)：`claude -p` 下的会话行为

@@ -2,145 +2,165 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Claude Code with GitHub Enterprise Server
+# Claude Code 与 GitHub Enterprise Server
 
-> Connect Claude Code to your self-hosted GitHub Enterprise Server instance for web sessions, code review, and plugin marketplaces.
+> 将 Claude Code 连接到自托管的 GitHub Enterprise Server 实例，用于网络会话、代码审查和插件市场。
 
 <Note>
-  GitHub Enterprise Server support is available for Team and Enterprise plans.
+  GitHub Enterprise Server 支持适用于 Team 和 Enterprise 计划。
 </Note>
 
-GitHub Enterprise Server (GHES) support lets your organization use Claude Code with repositories hosted on your self-managed GitHub instance instead of github.com. Once an Owner connects your GHES instance, developers can run web sessions and get automated code reviews without any per-repository configuration. Plugin marketplaces hosted on your instance are also supported; credential requirements vary by surface, as described in [Plugin marketplaces on GHES](#plugin-marketplaces-on-ghes).
+GitHub Enterprise Server (GHES) 支持让您的组织使用 Claude Code 处理托管在自管理 GitHub 实例上的存储库，而不是 github.com。一旦所有者连接您的 GHES 实例，开发人员可以运行网络会话和获得自动化代码审查，无需任何按存储库的配置。您实例上托管的插件市场也受支持；凭证要求因表面而异，如 [GHES 上的插件市场](#plugin-marketplaces-on-ghes) 中所述。
 
-For repositories on github.com, see [Claude Code on the web](/docs/en/claude-code-on-the-web) and [Code Review](/docs/en/code-review). To run Claude in your own CI infrastructure, see [GitHub Actions](/docs/en/github-actions).
+对于 github.com 上的存储库，请参阅 [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) 和 [代码审查](/docs/zh-CN/code-review)。要在您自己的 CI 基础设施中运行 Claude，请参阅 [GitHub Actions](/docs/zh-CN/github-actions)。
 
-## What works with GitHub Enterprise Server
+<h2 id="what-works-with-github-enterprise-server">
+  GitHub Enterprise Server 支持的功能
+</h2>
 
-The table below shows which Claude Code features support GHES and any differences from github.com behavior.
+下表显示了哪些 Claude Code 功能支持 GHES 以及与 github.com 行为的任何差异。
 
-| Feature                | GHES support    | Notes                                                                                                                          |
-| :--------------------- | :-------------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code on the web | ✅ Supported     | An Owner connects the GHES instance once; developers use `claude --cloud` or [claude.ai/code](https://claude.ai/code) as usual |
-| Code Review            | ✅ Supported     | Same automated PR reviews as github.com                                                                                        |
-| Claude Security        | ✅ Supported     | Available in public beta for Enterprise plans at [claude.ai/security](https://claude.ai/security)                              |
-| Teleport sessions      | ✅ Supported     | Move sessions between web and terminal with `--teleport`                                                                       |
-| Plugin marketplaces    | ✅ Supported     | Credential requirements differ by surface. See [Plugin marketplaces on GHES](#plugin-marketplaces-on-ghes)                     |
-| Contribution metrics   | ✅ Supported     | Delivered via webhooks to the [analytics dashboard](/docs/en/analytics)                                                             |
-| GitHub Actions         | ✅ Supported     | Requires manual workflow setup; `/install-github-app` is github.com only                                                       |
-| GitHub MCP server      | ❌ Not supported | The GitHub MCP server does not work with GHES instances                                                                        |
+| 功能                | GHES 支持 | 备注                                                                                      |
+| :---------------- | :------ | :-------------------------------------------------------------------------------------- |
+| 网络上的 Claude Code  | ✅ 支持    | 所有者连接 GHES 实例一次；开发人员像往常一样使用 `claude --cloud` 或 [claude.ai/code](https://claude.ai/code) |
+| 代码审查              | ✅ 支持    | 与 github.com 相同的自动化 PR 审查                                                               |
+| Claude Security   | ✅ 支持    | 在 [claude.ai/security](https://claude.ai/security) 为 Enterprise 计划提供公开测试版               |
+| Teleport 会话       | ✅ 支持    | 使用 `--teleport` 在网络和终端之间移动会话                                                            |
+| 插件市场              | ✅ 支持    | 凭证要求因表面而异。请参阅 [GHES 上的插件市场](#plugin-marketplaces-on-ghes)                               |
+| 贡献指标              | ✅ 支持    | 通过 webhook 传递到 [分析仪表板](/docs/zh-CN/analytics)                                                |
+| GitHub Actions    | ✅ 支持    | 需要手动工作流设置；`/install-github-app` 仅适用于 github.com                                         |
+| GitHub MCP server | ❌ 不支持   | GitHub MCP server 不适用于 GHES 实例                                                          |
 
-## Admin setup
+<h2 id="admin-setup">
+  管理员设置
+</h2>
 
-An Owner connects your GHES instance to Claude Code once. After that, developers in your organization can use GHES repositories without any additional configuration. You need the Owner or Primary Owner role in your Claude organization and permission to create GitHub Apps on your GHES instance.
+一个所有者将您的 GHES 实例连接到 Claude Code 一次。之后，您组织中的开发人员可以使用 GHES 存储库，无需任何额外配置。您需要在 Claude 组织中具有所有者或主要所有者角色，以及在 GHES 实例上创建 GitHub App 的权限。
 
-The guided setup generates a GitHub App manifest and redirects you to your GHES instance to create the app in one click. If your environment blocks the redirect flow, an [alternative manual setup](#manual-setup) is available.
+引导式设置生成 GitHub App 清单，并将您重定向到 GHES 实例以一键创建应用。如果您的环境阻止重定向流，可以使用 [替代手动设置](#manual-setup)。
 
 <Steps>
-  <Step title="Open Claude Code admin settings">
-    Go to [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) and find the GitHub Enterprise Server section.
+  <Step title="打开 Claude Code 管理员设置">
+    转到 [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) 并找到 GitHub Enterprise Server 部分。
   </Step>
 
-  <Step title="Start the guided setup">
-    Click **Connect**. Enter a display name for the connection and your GHES hostname, for example `github.example.com`. If your GHES instance uses a self-signed or private certificate authority, paste the CA certificate in the optional field.
+  <Step title="启动引导式设置">
+    点击 **连接**。输入连接的显示名称和您的 GHES 主机名，例如 `github.example.com`。如果您的 GHES 实例使用自签名或私有证书颁发机构，请在可选字段中粘贴 CA 证书。
   </Step>
 
-  <Step title="Create the GitHub App">
-    Click **Continue to GitHub Enterprise**. Your browser redirects to your GHES instance with a pre-filled app manifest. Review the configuration and click **Create GitHub App**. GHES redirects you back to Claude with the app credentials stored automatically.
+  <Step title="创建 GitHub App">
+    点击 **继续到 GitHub Enterprise**。您的浏览器重定向到您的 GHES 实例，并显示预填充的应用清单。审查配置并点击 **创建 GitHub App**。GHES 将您重定向回 Claude，应用凭证自动存储。
   </Step>
 
-  <Step title="Install the app on your repositories">
-    From the GitHub App page on your GHES instance, install the app on the repositories or organizations you want Claude to access. You can start with a subset and add more later.
+  <Step title="在您的存储库上安装应用">
+    从您的 GHES 实例上的 GitHub App 页面，在您希望 Claude 访问的存储库或组织上安装应用。您可以从一个子集开始，稍后添加更多。
   </Step>
 
-  <Step title="Enable features">
-    Return to [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) and enable [Code Review](/docs/en/code-review#set-up-code-review), Claude Security, and [contribution metrics](/docs/en/analytics#enable-contribution-metrics) for your GHES repositories using the same configuration as github.com.
+  <Step title="启用功能">
+    返回 [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) 并为您的 GHES 存储库启用 [代码审查](/docs/zh-CN/code-review#set-up-code-review)、Claude Security 和 [贡献指标](/docs/zh-CN/analytics#enable-contribution-metrics)，使用与 github.com 相同的配置。
   </Step>
 </Steps>
 
-### GitHub App permissions
+<h3 id="github-app-permissions">
+  GitHub App 权限
+</h3>
 
-The manifest configures the GitHub App with the permissions and webhook events Claude needs across web sessions, Code Review, Claude Security, and contribution metrics:
+清单使用 Claude 在网络会话、代码审查、Claude Security 和贡献指标中需要的权限和 webhook 事件配置 GitHub App：
 
-| Permission       | Access         | Used for                                    |
-| :--------------- | :------------- | :------------------------------------------ |
-| Contents         | Read and write | Cloning repositories and pushing branches   |
-| Pull requests    | Read and write | Creating PRs and posting review comments    |
-| Issues           | Read and write | Responding to issue mentions                |
-| Checks           | Read and write | Posting Code Review check runs              |
-| Actions          | Read           | Reading CI status for auto-fix              |
-| Repository hooks | Read and write | Receiving webhooks for contribution metrics |
-| Metadata         | Read           | Required by GitHub for all apps             |
+| 权限               | 访问 | 用途              |
+| :--------------- | :- | :-------------- |
+| Contents         | 读写 | 克隆存储库和推送分支      |
+| Pull requests    | 读写 | 创建 PR 和发布审查评论   |
+| Issues           | 读写 | 响应问题提及          |
+| Checks           | 读写 | 发布代码审查检查运行      |
+| Actions          | 读  | 读取 CI 状态以进行自动修复 |
+| Repository hooks | 读写 | 接收贡献指标的 webhook |
+| Metadata         | 读  | GitHub 对所有应用的要求 |
 
-The app subscribes to `pull_request`, `issue_comment`, `pull_request_review_comment`, `pull_request_review`, and `check_run` events.
+应用订阅 `pull_request`、`issue_comment`、`pull_request_review_comment`、`pull_request_review` 和 `check_run` 事件。
 
-### Manual setup
+<h3 id="manual-setup">
+  手动设置
+</h3>
 
-If the guided redirect flow is blocked by your network configuration, click **Add manually** instead of Connect. Create a GitHub App on your GHES instance with the [permissions and events above](#github-app-permissions), then enter the app credentials in the form: hostname, OAuth client ID and secret, GitHub App ID, client ID, client secret, webhook secret, and private key.
+如果引导式重定向流被您的网络配置阻止，请点击 **手动添加** 而不是连接。在您的 GHES 实例上创建 GitHub App，具有 [上述权限和事件](#github-app-permissions)，然后在表单中输入应用凭证：主机名、OAuth 客户端 ID 和密钥、GitHub App ID、客户端 ID、客户端密钥、webhook 密钥和私钥。
 
-### Network requirements
+<h3 id="network-requirements">
+  网络要求
+</h3>
 
-Your GHES instance must be reachable from Anthropic infrastructure so Claude can clone repositories and post review comments. If your GHES instance is behind a firewall, allowlist the [Anthropic API IP addresses](https://platform.claude.com/docs/en/api/ip-addresses).
+您的 GHES 实例必须可从 Anthropic 基础设施访问，以便 Claude 可以克隆存储库和发布审查评论。如果您的 GHES 实例在防火墙后面，请将 [Anthropic API IP 地址](https://platform.claude.com/docs/en/api/ip-addresses) 加入白名单。
 
-## Developer workflow
+<h2 id="developer-workflow">
+  开发人员工作流
+</h2>
 
-Once an Owner has connected the GHES instance, no developer-side configuration is needed. Claude Code detects your GHES hostname automatically from the git remote in your working directory.
+一旦您的管理员连接了 GHES 实例，就不需要开发人员端的配置。Claude Code 从您工作目录中的 git 远程自动检测您的 GHES 主机名。
 
-Clone a repository from your GHES instance as you normally would, replacing `github.example.com` and the repository path with your GHES hostname and repository:
+像往常一样从您的 GHES 实例克隆存储库：
 
 ```bash theme={null}
 git clone git@github.example.com:platform/api-service.git
 cd api-service
 ```
 
-Then start a web session. Claude detects the GHES host from your git remote and routes the session through your organization's configured instance:
+然后启动网络会话。Claude 从您的 git 远程检测 GHES 主机，并通过您组织的配置实例路由会话：
 
 ```bash theme={null}
 claude --cloud "Add retry logic to the payment webhook handler"
 ```
 
-The session runs on Anthropic infrastructure, clones your repository from GHES, and pushes changes back to a branch. Monitor progress with `/tasks` or at [claude.ai/code](https://claude.ai/code). See [Claude Code on the web](/docs/en/claude-code-on-the-web) for the full cloud session workflow including diff review, auto-fix, and routines.
+会话在 Anthropic 基础设施上运行，从 GHES 克隆您的存储库，并将更改推送回分支。使用 `/tasks` 或在 [claude.ai/code](https://claude.ai/code) 监控进度。有关完整的远程会话工作流（包括差异审查、自动修复和例程），请参阅 [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)。
 
-### Teleport sessions to your terminal
+<h3 id="teleport-sessions-to-your-terminal">
+  将会话 Teleport 到您的终端
+</h3>
 
-Pull a web session into your local terminal with `claude --teleport`. Teleport verifies you're in a checkout of the same GHES repository before fetching the branch and loading the session history. See [teleport requirements](/docs/en/claude-code-on-the-web#teleport-requirements) for details.
+使用 `claude --teleport` 将网络会话拉入您的本地终端。Teleport 在获取分支和加载会话历史之前验证您在同一 GHES 存储库的检出中。有关详细信息，请参阅 [teleport 要求](/docs/zh-CN/claude-code-on-the-web#teleport-requirements)。
 
-## Plugin marketplaces on GHES
+<h2 id="plugin-marketplaces-on-ghes">
+  GHES 上的插件市场
+</h2>
 
-Host plugin marketplaces on your GHES instance to distribute internal tooling across your organization. The marketplace structure is identical to github.com-hosted marketplaces, but installation works differently depending on where you add the marketplace, and credentials differ across surfaces:
+在您的 GHES 实例上托管插件市场，以在您的组织中分发内部工具。市场结构与 github.com 托管的市场相同，但安装方式因您添加市场的位置而异，并且凭证在不同的界面上有所不同：
 
-| Surface                                     | How installation works                                                                                                                                                                                                               | What each user needs                                                                                                                                                                                      |
-| :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code CLI and desktop                 | Claude Code clones the marketplace repository using the machine's existing git credentials                                                                                                                                           | Git access to your GHES host from their machine                                                                                                                                                           |
-| Managed settings (`extraKnownMarketplaces`) | Claude Code registers the entry and clones the repository using the machine's existing git credentials                                                                                                                               | Git access to your GHES host from their machine                                                                                                                                                           |
-| claude.ai organization plugin settings      | An Owner selects the GHES instance as the source; Anthropic's backend fetches and syncs the repository using the GitHub App from [admin setup](#admin-setup)                                                                         | Nothing per user once added. The Owner adding it needs their own GitHub Enterprise account connected as an access check, and the GitHub App must be installed on the marketplace repository               |
-| claude.ai user settings                     | Anthropic's backend fetches the repository using the submitting user's GitHub Enterprise connection                                                                                                                                  | Their own GitHub Enterprise account connected to Claude                                                                                                                                                   |
-| Claude Code on the web                      | Cloud sessions clone marketplaces inside the session sandbox. The sandbox can reach your GHES instance only when the session's repository is on that same instance, and its git credentials are scoped to the session's repositories | Not reliable for GHES-hosted marketplaces: a different host than the session's repository is not reachable, and even same-instance installs can fail. Use the CLI, managed settings, or claude.ai instead |
+| 界面                             | 安装方式                                                                                 | 每个用户需要什么                                                                          |
+| :----------------------------- | :----------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| Claude Code CLI 和桌面应用          | Claude Code 使用机器现有的 git 凭证克隆市场存储库                                                    | 从其机器对您的 GHES 主机的 Git 访问权限                                                         |
+| 托管设置（`extraKnownMarketplaces`） | Claude Code 注册条目并使用机器现有的 git 凭证克隆存储库                                                 | 从其机器对您的 GHES 主机的 Git 访问权限                                                         |
+| claude.ai 组织插件设置               | 所有者选择 GHES 实例作为源；Anthropic 的后端使用来自 [admin setup](#admin-setup) 的 GitHub App 获取并同步存储库 | 添加后每个用户无需任何操作。添加它的所有者需要连接自己的 GitHub Enterprise 账户作为访问检查，并且 GitHub App 必须安装在市场存储库上 |
+| claude.ai 用户设置                 | Anthropic 的后端使用提交用户的 GitHub Enterprise 连接获取存储库                                       | 连接到 Claude 的自己的 GitHub Enterprise 账户                                              |
+| Claude Code 网页版                | 云会话在会话沙箱内克隆市场。沙箱只有在会话的存储库位于同一实例上时才能访问您的 GHES 实例，其 git 凭证的范围限于会话的存储库                  | 对于 GHES 托管的市场不可靠：与会话存储库不同的主机无法访问，即使是同一实例的安装也可能失败。改用 CLI、托管设置或 claude.ai           |
 
 <Warning>
-  GitHub Enterprise connections on claude.ai are per user when a marketplace is added from user settings. The [admin setup](#admin-setup) connects your GHES instance to your organization, but it does not connect individual user accounts: each user who adds a GHES marketplace from their own settings must first connect their own GitHub Enterprise account, and one user's connection, including the Owner's, does not cover anyone else. Marketplaces added by an Owner in the organization plugin settings do not put this requirement on users, because ongoing fetches use the organization's GitHub App. The Owner adding the marketplace still needs their own GitHub Enterprise account connected at add time.
+  当从用户设置添加市场时，claude.ai 上的 GitHub Enterprise 连接是按用户的。[admin setup](#admin-setup) 将您的 GHES 实例连接到您的组织，但它不连接单个用户账户：每个从自己的设置添加 GHES 市场的用户必须首先连接自己的 GitHub Enterprise 账户，一个用户的连接（包括所有者的）不会覆盖任何其他人。由所有者在组织插件设置中添加的市场不会对用户施加此要求，因为持续的获取使用组织的 GitHub App。添加市场的所有者仍然需要在添加时连接自己的 GitHub Enterprise 账户。
 </Warning>
 
-### Add a GHES marketplace
+<h3 id="add-a-ghes-marketplace">
+  添加 GHES 市场
+</h3>
 
-The `owner/repo` shorthand always resolves to github.com. For GHES-hosted marketplaces, use the full git URL, replacing `github.example.com` and the repository path with your own. HTTPS URLs are recommended:
+`owner/repo` 简写始终解析为 github.com。对于 GHES 托管的市场，使用完整的 git URL。建议使用 HTTPS URL：
 
 ```bash theme={null}
 /plugin marketplace add https://github.example.com/platform/claude-plugins.git
 ```
 
-SSH URLs work if the machine already trusts your GHES host:
+如果机器已经信任您的 GHES 主机，SSH URL 也可以工作：
 
 ```bash theme={null}
 /plugin marketplace add git@github.example.com:platform/claude-plugins.git
 ```
 
-Claude Code runs git non-interactively and rejects SSH connections to hosts that are not in the machine's `known_hosts` file. An HTTPS URL with a git credential helper avoids the `known_hosts` requirement.
+Claude Code 以非交互方式运行 git，并拒绝连接到不在机器 `known_hosts` 文件中的主机的 SSH 连接。带有 git 凭证助手的 HTTPS URL 避免了 `known_hosts` 要求。
 
-See [Create and distribute a plugin marketplace](/docs/en/plugin-marketplaces) for the full guide to building marketplaces.
+有关构建市场的完整指南，请参阅 [创建和分发插件市场](/docs/zh-CN/plugin-marketplaces)。
 
-### Pre-register GHES marketplaces with managed settings
+<h3 id="pre-register-ghes-marketplaces-with-managed-settings">
+  使用托管设置预注册 GHES 市场
+</h3>
 
-The `extraKnownMarketplaces` setting pre-registers a marketplace so developers get it without manual setup. It works from [any settings file](/docs/en/settings#extraknownmarketplaces), including a repository's `.claude/settings.json`; managed settings deliver it organization-wide:
+`extraKnownMarketplaces` 设置预注册市场，以便开发人员无需手动设置即可获得它。它可以从 [任何设置文件](/docs/zh-CN/settings#extraknownmarketplaces) 工作，包括存储库的 `.claude/settings.json`；托管设置在整个组织范围内提供它：
 
 ```json theme={null}
 {
@@ -155,16 +175,18 @@ The `extraKnownMarketplaces` setting pre-registers a marketplace so developers g
 }
 ```
 
-Claude Code installs these marketplaces locally: it registers each entry and clones the repository with the machine's existing git credentials. This path does not go through claude.ai, so the per-user GitHub Enterprise connection is not required. For a successful rollout:
+Claude Code 在本地安装这些市场：它注册每个条目并使用机器现有的 git 凭证克隆存储库。此路径不经过 claude.ai，因此不需要按用户的 GitHub Enterprise 连接。为了成功推出：
 
-* **Use a full git URL.** The `owner/repo` shorthand always resolves to github.com and cannot reference a GHES host.
-* **Prefer HTTPS URLs.** SSH clones fail on machines that do not already trust your GHES host key. An HTTPS URL with your organization's standard git credential helper works on any machine with credentials configured.
-* **Confirm each machine can clone from your GHES host.** If a machine lacks credentials, the marketplace is registered but never installed, and its plugins report as not found instead of prompting for credentials.
-* **Confirm the setting reaches each machine.** A managed settings file only takes effect on machines it's deployed to, for example through your device management system. See [managed settings](/docs/en/settings#settings-files) for file locations.
+* **使用完整的 git URL。** `owner/repo` 简写始终解析为 github.com，无法引用 GHES 主机。
+* **优先使用 HTTPS URL。** SSH 克隆在不信任您的 GHES 主机密钥的机器上失败。带有您组织标准 git 凭证助手的 HTTPS URL 在任何配置了凭证的机器上都可以工作。
+* **确认每台机器都可以从您的 GHES 主机克隆。** 如果机器缺少凭证，市场会被注册但永远不会安装，其插件报告为未找到而不是提示输入凭证。
+* **确认设置到达每台机器。** 托管设置文件仅在部署到的机器上生效，例如通过您的设备管理系统。有关文件位置，请参阅 [托管设置](/docs/zh-CN/settings#settings-files)。
 
-### Allowlist GHES marketplaces in managed settings
+<h3 id="allowlist-ghes-marketplaces-in-managed-settings">
+  在托管设置中将 GHES 市场加入白名单
+</h3>
 
-If your organization uses [managed settings](/docs/en/settings) to restrict which marketplaces developers can add, use the `hostPattern` source type to allow all marketplaces from your GHES instance without enumerating each repository. See [settings files](/docs/en/settings#settings-files) for file locations on each platform. Add the JSON to your `managed-settings.json` file or equivalent MDM policy:
+如果您的组织使用 [托管设置](/docs/zh-CN/settings) 来限制开发人员可以添加哪些市场，请使用 `hostPattern` 源类型来允许来自您的 GHES 实例的所有市场，而无需枚举每个存储库：
 
 ```json theme={null}
 {
@@ -177,48 +199,58 @@ If your organization uses [managed settings](/docs/en/settings) to restrict whic
 }
 ```
 
-See the [strictKnownMarketplaces](/docs/en/settings#strictknownmarketplaces) and [extraKnownMarketplaces](/docs/en/settings#extraknownmarketplaces) settings reference for the complete schema.
+有关完整的架构，请参阅 [strictKnownMarketplaces](/docs/zh-CN/settings#strictknownmarketplaces) 和 [extraKnownMarketplaces](/docs/zh-CN/settings#extraknownmarketplaces) 设置参考。
 
-## Limitations
+<h2 id="limitations">
+  限制
+</h2>
 
-A few features behave differently on GHES than on github.com. The [feature table](#what-works-with-github-enterprise-server) summarizes support; this section covers the workarounds.
+一些功能在 GHES 上的行为与 github.com 上不同。[功能表](#what-works-with-github-enterprise-server) 总结了支持；本部分涵盖了解决方法。
 
-* **`/install-github-app` command**: follow the [admin setup](#admin-setup) flow on claude.ai instead. If you also want GitHub Actions workflows on GHES, adapt the [example workflow](https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml) manually.
-* **GitHub MCP server**: use the `gh` CLI configured for your GHES host instead. Run `gh auth login --hostname github.example.com` to authenticate, then Claude can use `gh` commands in sessions.
+* **`/install-github-app` 命令**：改为在 claude.ai 上遵循 [管理员设置](#admin-setup) 流程。如果您还想在 GHES 上使用 GitHub Actions 工作流，请手动调整 [示例工作流](https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml)。
+* **GitHub MCP server**：改为使用为您的 GHES 主机配置的 `gh` CLI。运行 `gh auth login --hostname github.example.com` 进行身份验证，然后 Claude 可以在会话中使用 `gh` 命令。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Web session fails to clone repository
+<h3 id="web-session-fails-to-clone-repository">
+  网络会话无法克隆存储库
+</h3>
 
-If `claude --cloud` fails with a clone error, verify that an Owner has completed setup for your GHES instance and that the GitHub App is installed on the repository you're working in. Ask the Owner who connected the instance to confirm that the hostname registered in Claude settings matches the hostname in your git remote.
+如果 `claude --cloud` 因克隆错误而失败，请验证 Owner 已完成您的 GHES 实例的设置，并且 GitHub App 已安装在您正在处理的存储库上。与连接该实例的 Owner 确认在 Claude 设置中注册的主机名与您的 git 远程中的主机名匹配。
 
-### Marketplace add fails with a policy error
+<h3 id="marketplace-add-fails-with-a-policy-error">
+  市场添加因策略错误而失败
+</h3>
 
-If `/plugin marketplace add` is blocked for your GHES URL, your organization has restricted marketplace sources. Ask your admin to add a `hostPattern` entry for your GHES hostname in [managed settings](#allowlist-ghes-marketplaces-in-managed-settings).
+如果 `/plugin marketplace add` 因您的 GHES URL 而被阻止，您的组织已限制市场源。要求您的管理员在 [托管设置](#allowlist-ghes-marketplaces-in-managed-settings) 中为您的 GHES 主机名添加 `hostPattern` 条目。
 
-### Marketplace add on claude.ai fails with a GitHub access error
+<h3 id="marketplace-add-on-claude-ai-fails-with-a-github-access-error">
+  claude.ai 上的市场添加因 GitHub 访问错误而失败
+</h3>
 
-If adding a GHES marketplace from your user settings fails with a generic error like "Marketplace couldn't be added", check your GitHub Enterprise connection first. This is what appears when your own GitHub Enterprise account is not connected to Claude, even if your organization's GHES instance is configured and other users are connected. The dialog does not point to the GitHub Enterprise connect flow, and the "Connect to GitHub" option on the Browse tab signs in to github.com, which does not grant access to GHES repositories.
+如果从您的用户设置添加 GHES 市场失败并出现通用错误（如"无法添加市场"），请先检查您的 GitHub Enterprise 连接。这是当您自己的 GitHub Enterprise 账户未连接到 Claude 时出现的情况，即使您的组织的 GHES 实例已配置且其他用户已连接。该对话框不会指向 GitHub Enterprise 连接流程，"浏览"选项卡上的"连接到 GitHub"选项会登录到 github.com，这不会授予对 GHES 存储库的访问权限。
 
-To connect your GitHub Enterprise account: the repository picker on [claude.ai/code](https://claude.ai/code) offers a connect option for each configured GHES instance, and Owners can also connect from the GitHub Enterprise section of the [Claude Code admin settings](https://claude.ai/admin-settings/claude-code). Then add the marketplace again. Alternatively, ask an Owner to add the marketplace in the organization plugin settings, which removes the per-user connection requirement.
+要连接您的 GitHub Enterprise 账户：[claude.ai/code](https://claude.ai/code) 上的存储库选择器为每个已配置的 GHES 实例提供连接选项，Owner 也可以从 [Claude Code 管理员设置](https://claude.ai/admin-settings/claude-code) 的 GitHub Enterprise 部分进行连接。然后再次添加市场。或者，要求 Owner 在组织插件设置中添加市场，这样可以消除每个用户的连接要求。
 
-On other claude.ai surfaces, a "Repository not found. If it's private, GitHub access is required" error on a GHES marketplace usually indicates the same missing connection. Connect your GitHub Enterprise account through one of the paths above, then try again.
+在其他 claude.ai 界面上，GHES 市场上的"找不到存储库。如果是私有的，需要 GitHub 访问"错误通常表示相同的缺失连接。通过上述路径之一连接您的 GitHub Enterprise 账户，然后重试。
 
-### GHES instance not reachable
+<h3 id="ghes-instance-not-reachable">
+  GHES 实例无法访问
+</h3>
 
-If reviews or web sessions time out, your GHES instance may not be reachable from Anthropic infrastructure. Confirm your firewall allows inbound connections from the [Anthropic API IP addresses](https://platform.claude.com/docs/en/api/ip-addresses).
+如果审查或网络会话超时，您的 GHES 实例可能无法从 Anthropic 基础设施访问。确认您的防火墙允许来自 [Anthropic API IP 地址](https://platform.claude.com/docs/zh-CN/api/ip-addresses) 的入站连接。
 
-### Session start fails with `Unable to get organization UUID`
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-Web sessions require a Team or Enterprise organization. Sign in with `/login` using your organization account. If you authenticate with an API key instead, web sessions fail earlier with a message asking you to run `/login`.
+这些页面更深入地涵盖了本指南中引用的功能：
 
-## Related resources
-
-These pages cover the features referenced throughout this guide in more depth:
-
-* [Claude Code on the web](/docs/en/claude-code-on-the-web): run Claude Code sessions on cloud infrastructure
-* [Code Review](/docs/en/code-review): automated PR reviews
-* [Plugin marketplaces](/docs/en/plugin-marketplaces): build and distribute plugin catalogs
-* [Analytics](/docs/en/analytics): track usage and contribution metrics
-* [Managed settings](/docs/en/settings): organization-wide policy configuration
-* [Network configuration](/docs/en/network-config): firewall and IP allowlist requirements
+* [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)：在云基础设施上运行 Claude Code 会话
+* [代码审查](/docs/zh-CN/code-review)：自动化 PR 审查
+* [插件市场](/docs/zh-CN/plugin-marketplaces)：构建和分发插件目录
+* [分析](/docs/zh-CN/analytics)：跟踪使用情况和贡献指标
+* [托管设置](/docs/zh-CN/settings)：组织范围的策略配置
+* [网络配置](/docs/zh-CN/network-config)：防火墙和 IP 白名单要求

@@ -2,39 +2,43 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Recommend your plugin from your CLI
+# 从您的 CLI 推荐您的插件
 
-> Emit a one-line marker from your CLI so Claude Code prompts users to install your official plugin.
+> 从您的 CLI 发出一行标记，以便 Claude Code 提示用户安装您的官方插件。
 
-If you maintain a CLI or SDK and have a plugin in the official Anthropic marketplace, your tool can prompt Claude Code users to install that plugin. Your CLI writes a one-line marker to stderr when it detects it is running inside Claude Code. Claude Code reads the marker, strips it from the output, and shows the user a one-time install prompt.
+如果您维护 CLI 或 SDK，并在官方 Anthropic 市场中拥有插件，您的工具可以提示 Claude Code 用户安装该插件。当您的 CLI 检测到它在 Claude Code 内运行时，会向 stderr 写入一行标记。Claude Code 读取该标记，将其从输出中删除，并向用户显示一次性安装提示。
 
-Claude Code strips the hint line from the command output before sending it to the model, so the marker never appears in the conversation and is not counted toward token usage. The protocol requires no extra commands and does not change what your CLI prints for users outside Claude Code.
+Claude Code 在将命令输出发送给模型之前会从命令输出中删除提示行，因此标记永远不会出现在对话中，也不会计入令牌使用量。该协议不需要额外命令，也不会改变您的 CLI 为 Claude Code 外部用户打印的内容。
 
-This page is for CLI and SDK maintainers. If you are looking to install plugins, see [Discover and install plugins](/docs/en/discover-plugins).
+本页面适用于 CLI 和 SDK 维护者。如果您正在寻找安装插件，请参阅[发现和安装插件](/docs/zh-CN/discover-plugins)。
 
-## How it works
+<h2 id="how-it-works">
+  工作原理
+</h2>
 
-Claude Code sets the [`CLAUDECODE`](/docs/en/env-vars) environment variable to `1` for every command it runs through the Bash and PowerShell tools, and for [hook](/docs/en/hooks) commands. {/* min-version: 2.1.172 */}From v2.1.172 it also sets [`CLAUDE_CODE_CHILD_SESSION`](/docs/en/env-vars) to `1` in those same subprocesses. When your CLI sees one of these variables, it writes a self-closing `<claude-code-hint />` tag to stderr. In hook commands the hint tag is stripped and ignored. Only Bash and PowerShell tool output triggers the install prompt.
+Claude Code 为通过 Bash 和 PowerShell 工具运行的每个命令以及 [hook](/docs/zh-CN/hooks) 命令设置 [`CLAUDECODE`](/docs/zh-CN/env-vars) 环境变量为 `1`。{/* min-version: 2.1.172 */}从 v2.1.172 开始，它还在这些相同的子进程中将 [`CLAUDE_CODE_CHILD_SESSION`](/docs/zh-CN/env-vars) 设置为 `1`。当您的 CLI 看到这些变量之一时，它会向 stderr 写入一个自闭合的 `<claude-code-hint />` 标签。在 hook 命令中，提示标签会被剥离并忽略。只有 Bash 和 PowerShell 工具输出会触发安装提示。
 
-When Claude Code receives the command output, it:
+当 Claude Code 接收到命令输出时，它会：
 
-1. Scans for hint lines and removes them before the output reaches the model
-2. Checks that the hint targets a plugin in an official Anthropic marketplace
-3. Checks that the plugin is not already installed and has not been prompted before
-4. Shows the user an install prompt that names the command that emitted the hint
+1. 扫描提示行并在输出到达模型之前将其删除
+2. 检查提示是否针对官方 Anthropic 市场中的插件
+3. 检查插件是否尚未安装且之前未提示过
+4. 向用户显示安装提示，其中包含发出提示的命令的名称
 
-Claude Code never installs a plugin automatically. The user always confirms.
+Claude Code 永远不会自动安装插件。用户始终需要确认。
 
-## Emit the hint
+<h2 id="emit-the-hint">
+  发出提示
+</h2>
 
-Hint prompts only fire for plugins listed in the official Anthropic marketplace. See [Get your plugin into the official marketplace](#get-your-plugin-into-the-official-marketplace) before you ship the integration.
+提示提示仅对官方 Anthropic 市场中列出的插件触发。在发布集成之前，请参阅[将您的插件纳入官方市场](#get-your-plugin-into-the-official-marketplace)。
 
-Gate emission on an environment variable so the marker is unlikely to appear when a human runs your CLI directly, then write the tag to stderr on its own line. Choose which variable to check:
+在环境变量上进行门控以发出提示，使标记不太可能在人类直接运行您的 CLI 时出现，然后将标签写入 stderr，单独占一行。选择要检查的变量：
 
-* `CLAUDECODE`: set on every Claude Code version, so it reaches the most sessions. It is also set in tmux sessions and stdio MCP server subprocesses that Claude Code starts. IDE extensions also set it in their integrated terminals, where a human may be running your CLI directly.
-* {/* min-version: 2.1.172 */}`CLAUDE_CODE_CHILD_SESSION`: set only in subprocesses Claude Code itself spawns, such as tool calls, hook commands, and [status line](/docs/en/statusline) commands, so the tag does not normally reach a human terminal. A long-lived process that was started inside a session, such as a tmux server, captures the variable, so shells later launched from that process still show the raw tag. Requires Claude Code v2.1.172 or later, so sessions on older versions miss the hint.
+* `CLAUDECODE`：在每个 Claude Code 版本上设置，因此可以到达最多的会话。它也在 tmux 会话和 Claude Code 启动的 stdio MCP 服务器子进程中设置，IDE 扩展在其集成终端中设置它，人类可能在那里直接运行您的 CLI。
+* {/* min-version: 2.1.172 */}`CLAUDE_CODE_CHILD_SESSION`：仅在 Claude Code 本身生成的子进程中设置，例如工具调用、hook 命令和[状态行](/docs/zh-CN/statusline)命令，因此标签通常不会到达人类终端。在会话内启动的长期进程（例如 tmux 服务器）会捕获该变量，因此从该进程启动的后续 shell 仍然显示原始标签。需要 Claude Code v2.1.172 或更高版本，因此较旧版本上的会话会错过提示。
 
-The following examples gate on `CLAUDECODE` for maximum reach and emit a hint for a plugin named `example-cli` in the official marketplace:
+以下示例在 `CLAUDECODE` 上进行门控以获得最大覆盖范围，并为官方市场中名为 `example-cli` 的插件发出提示：
 
 <CodeGroup>
   ```javascript Node.js theme={null}
@@ -63,28 +67,31 @@ The following examples gate on `CLAUDECODE` for maximum reach and emit a hint fo
   ```
 
   ```shell Shell theme={null}
-  if [ -n "$CLAUDECODE" ]; then
+  [ -n "$CLAUDECODE" ] &&
     printf '%s\n' '<claude-code-hint v="1" type="plugin" value="example-cli@claude-plugins-official" />' >&2
-  fi
   ```
 </CodeGroup>
 
-Replace `example-cli` with your plugin's name in the official marketplace.
+将 `example-cli` 替换为您在官方市场中的插件名称。
 
-## Choose where to emit
+<h2 id="choose-where-to-emit">
+  选择发出位置
+</h2>
 
-You control which code paths emit the hint. Claude Code deduplicates by plugin, so emitting on every invocation has no downside. Touchpoints that work well include:
+您可以控制哪些代码路径发出提示。Claude Code 按插件进行去重，因此在每次调用时发出提示没有缺点。效果良好的接触点包括：
 
-| Placement                 | Why it works                                               |
-| :------------------------ | :--------------------------------------------------------- |
-| `--help` output           | Claude often runs help when exploring an unfamiliar CLI    |
-| Unknown-subcommand errors | Reaches the moment Claude is confused about your interface |
-| Login or auth success     | The user is already in a setup mindset                     |
-| First-run welcome message | A natural onboarding moment                                |
+| 位置          | 为什么有效                      |
+| :---------- | :------------------------- |
+| `--help` 输出 | Claude 在探索不熟悉的 CLI 时经常运行帮助 |
+| 未知子命令错误     | 到达 Claude 对您的界面感到困惑的时刻     |
+| 登录或身份验证成功   | 用户已经处于设置心态                 |
+| 首次运行欢迎消息    | 自然的入门时刻                    |
 
-## What the user sees
+<h2 id="what-the-user-sees">
+  用户看到的内容
+</h2>
 
-When the hint passes all checks, Claude Code shows a prompt like the following:
+当提示通过所有检查时，Claude Code 会显示如下提示：
 
 ```text theme={null}
 ─────────────────────────────────────────────────────────────
@@ -104,52 +111,59 @@ When the hint passes all checks, Claude Code shows a prompt like the following:
 ─────────────────────────────────────────────────────────────
 ```
 
-The prompt names the command that produced the hint so users can spot a mismatch between the tool and the plugin it recommends. If the user doesn't respond within 30 seconds, Claude Code dismisses the prompt as **No**.
+提示会显示生成提示的命令的名称，以便用户可以发现工具与其推荐的插件之间的不匹配。如果用户在 30 秒内没有响应，提示会作为**否**关闭。
 
-Prompt frequency is bounded, and some sessions never prompt:
+提示频率受限：
 
-* **Once per plugin**: after the prompt is shown, Claude Code records the plugin and never prompts for it again, regardless of the user's answer.
-* **Once per session**: across all CLIs on the machine, at most one hint prompt appears per Claude Code session.
-* **Telemetry opt-outs**: sessions where analytics are disabled never show hint prompts. This includes sessions with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, and sessions on third-party providers such as Amazon Bedrock or Google Cloud's Agent Platform where the [automatic telemetry opt-out](/docs/en/data-usage#default-behaviors-by-api-provider) applies.
+* **每个插件一次**：显示提示后，Claude Code 会记录该插件，无论用户的答案如何，都不会再次提示该插件。
+* **每个会话一次**：在机器上的所有 CLI 中，每个 Claude Code 会话最多出现一个提示。
 
-Selecting **Yes** installs the plugin to user scope. Selecting **No, and don't show plugin installation hints again** disables all future hint prompts for the user.
+选择**是**会将插件安装到用户范围。选择**否，不再显示插件安装提示**会禁用用户的所有未来提示。
 
-## Hint format
+<h2 id="hint-format">
+  提示格式
+</h2>
 
-The hint is a self-closing tag with three required attributes.
+提示是一个具有三个必需属性的自闭合标签。
 
 ```text theme={null}
 <claude-code-hint v="1" type="plugin" value="example-cli@claude-plugins-official" />
 ```
 
-| Attribute | Required | Description                                       |
-| :-------- | :------- | :------------------------------------------------ |
-| `v`       | Yes      | Protocol version. `1` is the only supported value |
-| `type`    | Yes      | Hint kind. `plugin` is the only supported value   |
-| `value`   | Yes      | Plugin identifier in `name@marketplace` form      |
+| 属性      | 必需 | 描述                          |
+| :------ | :- | :-------------------------- |
+| `v`     | 是  | 协议版本。`1` 是唯一支持的值            |
+| `type`  | 是  | 提示类型。`plugin` 是唯一支持的值       |
+| `value` | 是  | `name@marketplace` 形式的插件标识符 |
 
-Attribute values may be quoted with double quotes or left unquoted. Unquoted values cannot contain whitespace. Escape sequences are not supported.
+属性值可以用双引号引用或不引用。未引用的值不能包含空格。不支持转义序列。
 
-## Requirements
+<h2 id="requirements">
+  要求
+</h2>
 
-Claude Code enforces two conditions before acting on a hint. Hints that fail either check are dropped:
+Claude Code 在对提示进行操作之前强制执行两个条件。未通过任一检查的提示将被丢弃：
 
-* **Own line**: the tag must occupy its own line. A tag embedded mid-line, for example inside a log statement, is ignored. Leading and trailing whitespace on the line is allowed.
-* **Official marketplace**: the `value` must reference a plugin in an Anthropic-controlled marketplace such as `claude-plugins-official`. Hints that point to other marketplaces are silently dropped.
+* **单独一行**：标签必须占据自己的一行。嵌入在行中间的标签，例如在日志语句内，会被忽略。允许行前后有空格。
+* **官方市场**：`value` 必须引用 Anthropic 控制的市场中的插件，例如 `claude-plugins-official`。指向其他市场的提示会被静默丢弃。
 
-The hint line is always removed from the output before it reaches the model, even when the version or type is unrecognized, so the marker is never counted toward token usage.
+提示行始终在到达模型之前从输出中删除，即使版本或类型无法识别，因此标记永远不会计入令牌使用量。
 
-The remaining guidance is recommended but not enforced. Claude Code cannot observe whether your CLI follows it:
+其余指导是推荐的但不强制的。Claude Code 无法观察您的 CLI 是否遵循它：
 
-* **Write to stderr**: stderr keeps the tag out of shell pipelines such as `example-cli deploy | jq`. Claude Code scans both streams, so stdout also works.
-* **Gate on an environment variable**: only emit when `CLAUDECODE` or `CLAUDE_CODE_CHILD_SESSION` is set. See [Emit the hint](#emit-the-hint) for how the two variables differ.
+* **写入 stderr**：stderr 将标签保留在 shell 管道之外，例如 `example-cli deploy | jq`。Claude Code 扫描两个流，因此 stdout 也可以工作。
+* **在环境变量上进行门控**：仅在设置 `CLAUDECODE` 或 `CLAUDE_CODE_CHILD_SESSION` 时发出。请参阅[发出提示](#emit-the-hint)了解这两个变量的区别。
 
-## Get your plugin into the official marketplace
+<h2 id="get-your-plugin-into-the-official-marketplace">
+  将您的插件放入官方市场
+</h2>
 
-The hint protocol only takes effect for plugins listed in the official Anthropic marketplace, `claude-plugins-official`. Anthropic curates that marketplace at its discretion, and the in-app submission forms add plugins to the [community marketplace](/docs/en/plugins#submit-your-plugin-to-the-community-marketplace) instead, which the hint protocol does not check. If you are working with an Anthropic partner contact, reach out to them to coordinate an official-marketplace listing.
+提示协议仅对在官方 Anthropic 市场 `claude-plugins-official` 中列出的插件生效。Anthropic 自行决定策划该市场，应用内提交表单会将插件添加到[社区市场](/docs/zh-CN/plugins#submit-your-plugin-to-the-community-marketplace)，提示协议不检查该市场。如果您正在与 Anthropic 合作伙伴联系合作，请与他们联系以协调官方市场列表。
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Create plugins](/docs/en/plugins): build the plugin your CLI recommends
-* [Create and distribute a plugin marketplace](/docs/en/plugin-marketplaces): host plugins outside the official marketplace
-* [Environment variables](/docs/en/env-vars): full reference for `CLAUDECODE` and related variables
+* [创建插件](/docs/zh-CN/plugins)：构建您的 CLI 推荐的插件
+* [创建和分发插件市场](/docs/zh-CN/plugin-marketplaces)：在官方市场外托管插件
+* [环境变量](/docs/zh-CN/env-vars)：`CLAUDECODE` 和相关变量的完整参考

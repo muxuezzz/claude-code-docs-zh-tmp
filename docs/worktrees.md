@@ -2,116 +2,65 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Run parallel sessions with worktrees
+# 使用 worktrees 运行并行会话
 
-> Isolate parallel Claude Code sessions in separate git worktrees so changes don't collide. Covers the `--worktree` flag, subagent isolation, `.worktreeinclude`, cleanup, and non-git VCS hooks.
+> 在单独的 git worktrees 中隔离并行 Claude Code 会话，以便更改不会相互冲突。涵盖 `--worktree` 标志、子代理隔离、`.worktreeinclude`、清理和非 git VCS hooks。
 
-A [git worktree](https://git-scm.com/docs/git-worktree) is a separate working directory with its own files and branch, sharing the same repository history and remote as your main checkout. Running each Claude Code session in its own worktree means edits in one session never touch files in another, so one session can build a feature while a second fixes a bug.
+[git worktree](https://git-scm.com/docs/git-worktree) 是一个单独的工作目录，具有自己的文件和分支，但与主检出共享相同的存储库历史和远程。在自己的 worktree 中运行每个 Claude Code 会话意味着一个会话中的编辑永远不会触及另一个会话中的文件，因此您可以让 Claude 在一个终端中构建功能，同时在第二个终端中修复错误。
 
-<Note>
-  Worktrees require a git repository; for other version control systems, [configure hooks to replace the git logic](#non-git-version-control). In the [desktop app](/docs/en/desktop#work-in-parallel-with-sessions), every new session gets its own worktree automatically.
-</Note>
+本页涵盖 CLI 中的 worktree 隔离。下面的所有内容都假设使用 git 存储库。对于其他版本控制系统，请参阅[非 git 版本控制](#non-git-version-control)。[桌面应用](/docs/zh-CN/desktop#work-in-parallel-with-sessions)会为每个新会话自动创建一个 worktree。
 
-Worktrees are one of several ways to run Claude in parallel. They isolate file edits, while [subagents](/docs/en/sub-agents) and [agent teams](/docs/en/agent-teams) coordinate the work itself. See [Run agents in parallel](/docs/en/agents) to compare the approaches, or skip ahead to [Isolate subagents with worktrees](#isolate-subagents-with-worktrees) to use worktrees and subagents together.
+Worktrees 是运行 Claude 并行的几种方式之一。它们隔离文件编辑，而[子代理](/docs/zh-CN/sub-agents)和[代理团队](/docs/zh-CN/agent-teams)协调工作本身。请参阅[并行运行代理](/docs/zh-CN/agents)来比较这些方法，或跳到[使用 worktrees 隔离子代理](#isolate-subagents-with-worktrees)以同时使用 worktrees 和子代理。
 
-Most sessions need only the first two sections: [start Claude in a worktree](#start-claude-in-a-worktree), then [clean up when you exit](#clean-up-worktrees). Return to the rest of the page when you need to [resume a session](#resume-a-worktree-session), [change how worktrees are created](#customize-worktree-creation), or [debug a failure](#troubleshooting).
+<h2 id="start-claude-in-a-worktree">
+  在 worktree 中启动 Claude
+</h2>
 
-## Start Claude in a worktree
-
-Pass `--worktree` or `-w` with a name to create an isolated worktree and start Claude in it. By default, the worktree is created under `.claude/worktrees/<name>/` at your repository root, on a new branch named `worktree-<name>`:
+传递 `--worktree` 或 `-w` 来创建隔离的 worktree 并在其中启动 Claude。默认情况下，worktree 在您的存储库根目录下的 `.claude/worktrees/<value>/` 下创建，在名为 `worktree-<value>` 的新分支上：
 
 ```bash theme={null}
 claude --worktree feature-auth
 ```
 
-Run the command again with a different name in another terminal to start a second isolated session. If you omit the name, Claude generates one such as `bright-running-fox`.
+要将 worktrees 放在其他地方，请配置 [`WorktreeCreate` hook](#non-git-version-control)。在另一个终端中使用不同的名称再次运行该命令以启动第二个隔离会话：
 
-Interactive runs require [workspace trust](/docs/en/security): if you haven't run Claude in the directory before, run `claude` once there to accept the trust dialog, or `--worktree` exits with an error prompting you to. Non-interactive runs with `-p` skip the trust check, so `claude -p --worktree` proceeds without it.
-
-<Tip>
-  Add `.claude/worktrees/` to your `.gitignore` so worktree contents don't appear as untracked files in your main checkout.
-</Tip>
-
-### Set up the worktree environment
-
-A worktree is a fresh checkout, so initialize your development environment there: ask Claude to install dependencies, or run your project's setup yourself in the worktree directory under `.claude/worktrees/`. To carry gitignored files such as `.env` into every new worktree automatically, add a [`.worktreeinclude` file](#copy-gitignored-files-into-worktrees).
-
-### Ask Claude to create a worktree
-
-You can also ask Claude to "work in a worktree" during a session, and it creates one with the [`EnterWorktree`](/docs/en/tools-reference) tool. Once in a worktree, Claude can switch directly to another one under `.claude/worktrees/` by calling `EnterWorktree` with the target path; the previous worktree stays on disk untouched.
-
-When Claude enters a path outside the repository's `.claude/worktrees/` directory, Claude Code asks for your approval first, because the move takes the session's working directory, write access, and project configuration such as `CLAUDE.md` and settings to that location. An `EnterWorktree` [permission rule](/docs/en/permissions) or choosing "don't ask again" doesn't suppress this prompt; only `bypassPermissions` mode skips it. Before v2.1.206, Claude could enter any existing worktree path without asking.
-
-## Clean up worktrees
-
-When you exit an interactive worktree session, Claude checks the worktree for work that removal would delete: changed or untracked files, and new commits.
-
-* **The worktree is clean**: for an unnamed session, Claude removes the worktree and its branch automatically. A [named](/docs/en/sessions#name-your-sessions) session prompts you first so you can keep the worktree for later
-* **The worktree has work in it**: Claude prompts you to keep or remove the worktree. Keeping preserves the directory and branch so you can return later. Removing deletes the worktree directory and its branch, along with all the work in them
-
-Non-interactive runs with `-p` have no exit prompt, so Claude doesn't clean up their worktrees. Remove them with `git worktree remove`.
-
-On Windows, removing a worktree doesn't delete files outside it. If a folder inside the worktree is really a link to somewhere else, such as an NTFS junction or a directory symlink, Claude Code deletes only the link and keeps the folder it points to. Before v2.1.205, removing a worktree with a link nested in a subdirectory could delete the folder it pointed to.
-
-## Resume a worktree session
-
-When you resume a session that was inside a worktree, Claude Code returns the session to that worktree. This holds for interactive resumes, for `--continue` and `--resume` in [non-interactive mode](/docs/en/headless) with `-p`, and for the Agent SDK. Back inside the worktree, Claude can still exit it with the [`ExitWorktree`](/docs/en/tools-reference) tool.
-
-A resume that forks the session with `--fork-session` starts in the directory you launched Claude from and leaves the original session's worktree untouched. If the worktree directory no longer exists, the session resumes in the directory you launched Claude from.
-
-<Note>
-  Before v2.1.212, a non-interactive resume stayed in the starting directory and `ExitWorktree` reported that there was no active worktree session to exit.
-</Note>
-
-{/* min-version: 2.1.198 */}When Claude enters or exits a worktree that Claude Code created with git, the transcript follows: Claude Code records the session under the session's new working directory, the same way [`/cd`](/docs/en/commands) does, so `/desktop` and `--resume` find it there. Exiting moves it back the same way. A worktree created by a [`WorktreeCreate` hook](#non-git-version-control) keeps its transcript at the launch directory. Requires Claude Code v2.1.198 or later.
-
-## Isolate subagents with worktrees
-
-Subagents can run in their own worktrees so parallel edits don't conflict. Ask Claude to "use worktrees for your agents", or make the isolation permanent for a [custom subagent](/docs/en/sub-agents#supported-frontmatter-fields) by adding `isolation: worktree` to its frontmatter.
-
-This subagent in `.claude/agents/` always runs in its own worktree:
-
-```markdown theme={null}
----
-name: refactorer
-description: Applies mechanical refactors across many files
-isolation: worktree
----
-
-Apply the requested refactor across every affected file, then run the tests
-and report the results.
+```bash theme={null}
+claude --worktree bugfix-123
 ```
 
-Each subagent gets a temporary worktree that Claude Code removes automatically when the subagent finishes without changes; a worktree with changes stays on disk until the [periodic sweep below](#clean-up-subagent-and-background-session-worktrees) can remove it without losing work.
+如果您省略名称，Claude 会生成一个名称，例如 `bright-running-fox`：
 
-Subagent worktrees use the same [base branch](#choose-the-base-branch) as `--worktree`, so they branch from your repository's default branch unless `worktree.baseRef` is set to `"head"`.
+```bash theme={null}
+claude --worktree
+```
 
-### Clean up subagent and background-session worktrees
+您也可以在会话期间要求 Claude "在 worktree 中工作"，它将使用 [`EnterWorktree`](/docs/zh-CN/tools-reference) 工具创建一个。一旦进入 worktree，Claude 可以通过调用 `EnterWorktree` 并指定目标路径，直接切换到 `.claude/worktrees/` 下的另一个 worktree。之前的 worktree 保留在磁盘上不变。
 
-A periodic sweep removes worktrees that Claude created for subagents and [background sessions](/docs/en/agent-view#how-file-edits-are-isolated) once they are older than your [`cleanupPeriodDays`](/docs/en/settings#available-settings) setting. The sweep skips a worktree that still holds work: changed or untracked files, or unpushed commits. It never removes worktrees you create with `--worktree`.
+进入存储库的 `.claude/worktrees/` 目录之外的路径首先会要求您的批准，因为它会移动会话的工作目录、写入访问权限和项目配置，例如 `CLAUDE.md` 和设置到该位置。`EnterWorktree` [权限规则](/docs/zh-CN/permissions)或选择"不再询问"不会抑制此提示；只有 `bypassPermissions` 模式会跳过它。在 v2.1.206 之前，Claude 可以进入任何现有的 worktree 路径而无需询问。
 
-While an agent is running, Claude runs `git worktree lock` on its worktree so that concurrent cleanup cannot remove it. The lock is released when the agent finishes.
+{/* min-version: 2.1.198 */}从 v2.1.198 开始，进入或退出 worktree 也会将会话记录重新定位到该目录的项目存储，与 [`/cd`](/docs/zh-CN/commands) 的方式相同，因此 `/desktop` 和 `--resume` 之后会在那里找到会话。由 [`WorktreeCreate` hook](#non-git-version-control) 创建的 Worktrees 被排除在外，并将记录保留在启动目录中。
 
-{/* min-version: 2.1.210 */}The sweep also releases a lock Claude Code set for a session whose process has exited, so a killed background session doesn't leave its worktree permanently locked. The sweep never releases a lock you set yourself with `git worktree lock`. Before v2.1.210, a lock left by a killed session stayed in place until you ran `git worktree unlock`.
+Worktrees 在启用[沙箱](/docs/zh-CN/sandboxing#filesystem-isolation)的情况下工作：沙箱允许写入主存储库的共享 `.git` 目录，以便 `git commit` 等命令可以从链接的 worktree 内部更新引用和索引。
 
-To clean up a worktree that the sweep keeps, run `git worktree remove`, adding `--force` if the worktree has uncommitted changes or untracked files.
+在首次在目录中使用 `--worktree` 之前，请通过在该目录中运行一次 `claude` 来接受工作区信任对话框。如果尚未接受信任，`--worktree` 将以错误退出并提示您首先在目录中运行 `claude`。使用 `-p` 的非交互式运行会跳过[信任检查](/docs/zh-CN/security)，因此 `claude -p --worktree` 会在没有信任检查的情况下进行。
 
-## Customize worktree creation
+如果 Claude Code 在启动时无法进入 worktree 目录，例如因为 [`WorktreeCreate` hook](/docs/zh-CN/hooks#worktreecreate) 打印了除了它创建的目录之外的其他内容，或者因为目录在设置后被删除，Claude Code 会打印一个错误，命名该路径并以代码 1 退出。在 v2.1.205 之前，这会导致会话崩溃，使用 `-p` 时会在大约 30 秒后停滞，然后以代码 0 退出。
 
-Claude Code's defaults for creating worktrees cover most sessions: it creates them under `.claude/worktrees/`, branches them from your repository's default branch, and checks out only tracked files. The options in this section change those defaults.
+{/* min-version: 2.1.200 */}从 Claude Code v2.1.200 开始，在主检出处从[项目范围](/docs/zh-CN/plugins-reference#plugin-installation-scopes)安装的插件也会在同一存储库的 worktrees 中加载，因此您无需为每个 worktree 重新安装它们。这适用于您是使用 `--worktree` 还是使用 `git worktree add` 创建 worktree。需要 Claude Code v2.1.200 或更高版本。
 
-### Choose the base branch
+<Tip>
+  将 `.claude/worktrees/` 添加到您的 `.gitignore`，以便 worktree 内容不会在您的主检出中显示为未跟踪的文件。
+</Tip>
 
-New worktrees branch from the repository's default branch, so most sessions don't need this setting. Set `worktree.baseRef` in [settings](/docs/en/settings#worktree-settings) to branch from your current work instead. The setting accepts two values:
+<h3 id="choose-the-base-branch">
+  选择基础分支
+</h3>
 
-* `"fresh"` (default): branch from the repository's default branch on the remote, usually `main`, so the worktree starts from a clean tree matching the remote.
-* `"head"`: branch from your current local `HEAD`, so the worktree carries your unpushed commits and feature-branch state. Use this when isolating subagents that need to operate on in-progress work. Inside a worktree, `"head"` resolves to that worktree's `HEAD`, not the main checkout's.
+Worktrees 从您的存储库的默认分支 `origin/HEAD` 分支，因此它们从与远程匹配的干净树开始。当在过去 24 小时内没有任何内容获取存储库时，Claude Code 会使用默认分支的获取来刷新 `origin/HEAD`，上限为 5 秒，如果获取失败，则使用本地缓存的引用。如果未配置远程，或 `origin/HEAD` 未在本地缓存且无法获取，worktree 会回退到您当前的本地 `HEAD`。
 
-You can't set `worktree.baseRef` to a branch name. To start a worktree from a specific existing branch, [create it with git directly](#manage-worktrees-manually).
+刷新需要 Claude Code v2.1.208 或更高版本；在此之前，新的 worktree 使用已经本地缓存的任何 `origin/HEAD`。
 
-For a `"fresh"` base, Claude Code keeps `origin/HEAD` current: when the repository hasn't been fetched in the last 24 hours, it fetches the default branch, capped at five seconds, and uses the locally cached ref if the fetch fails. If no remote is configured, or `origin/HEAD` isn't cached locally and can't be fetched, the worktree falls back to your current local `HEAD`. Before v2.1.208, a fresh worktree used whatever `origin/HEAD` was already cached locally.
-
-This example makes every new worktree branch from your current work:
+要始终从本地 `HEAD` 分支，请在[设置](/docs/zh-CN/settings#worktree-settings)中将 `worktree.baseRef` 设置为 `"head"`。将 `baseRef` 设置为 `"head"` 会使新 worktrees 携带您未推送的提交和功能分支状态，这在隔离需要在进行中的工作上操作的子代理时很有用。当会话在链接的 worktree 内运行时，`"head"` 解析为该 worktree 的 `HEAD`，而不是主检出的。该设置仅接受 `"fresh"` 或 `"head"`，不接受任意 git refs：
 
 ```json theme={null}
 {
@@ -121,21 +70,37 @@ This example makes every new worktree branch from your current work:
 }
 ```
 
-### Branch from a pull request
-
-To branch from a specific pull request, pass `--worktree` the PR number prefixed with `#`, or a full GitHub pull request URL. Claude Code fetches `pull/<number>/head` from `origin` and creates the worktree at `.claude/worktrees/pr-<number>`. Quote the argument so your shell doesn't treat `#` as the start of a comment:
+要从特定的拉取请求分支，请传递以 `#` 为前缀的 PR 编号或完整的 GitHub 拉取请求 URL。Claude Code 从 `origin` 获取 `pull/<number>/head` 并在 `.claude/worktrees/pr-<number>` 创建 worktree：
 
 ```bash theme={null}
 claude --worktree "#1234"
 ```
 
-### Copy gitignored files into worktrees
+要完全控制 worktrees 的创建方式，请配置 [`WorktreeCreate` hook](/docs/zh-CN/hooks#worktreecreate)，它完全替代默认的 `git worktree` 逻辑。
 
-A worktree is a fresh checkout, so untracked files like `.env` or `.env.local` from your main repository are not present. To copy them automatically when Claude creates a worktree, add a `.worktreeinclude` file to your project root.
+<h3 id="reuse-a-worktree-name">
+  重用 worktree 名称
+</h3>
 
-The file uses `.gitignore` syntax. Only files that match a pattern and are also gitignored are copied, so tracked files are never duplicated.
+重用已存在目录的 worktree 名称会恢复该 worktree。
 
-This `.worktreeinclude` copies two env files and a secrets config into each new worktree:
+当以下所有条件都成立时，恢复的 worktree 会重置为[当前基础](#choose-the-base-branch)，而不是在其旧提示处恢复：
+
+* 它没有未提交的更改或未跟踪的文件。
+* 它仍然在 Claude Code 为其创建的分支上。
+* 它从未提交，或其拉取请求已合并且其远程分支已删除。
+
+在 v2.1.208 之前，重用名称总是在其旧提示处恢复旧的 worktree。
+
+<h2 id="copy-gitignored-files-into-worktrees">
+  将 gitignored 文件复制到 worktrees
+</h2>
+
+Worktree 是一个新的检出，因此来自您主存储库的未跟踪文件（如 `.env` 或 `.env.local`）不存在。要在 Claude 创建 worktree 时自动复制它们，请将 `.worktreeinclude` 文件添加到您的项目根目录。
+
+该文件使用 `.gitignore` 语法。只有匹配模式且也被 gitignored 的文件才会被复制，因此跟踪的文件永远不会被重复。
+
+此 `.worktreeinclude` 将两个 env 文件和一个 secrets 配置复制到每个新 worktree：
 
 ```text .worktreeinclude theme={null}
 .env
@@ -143,78 +108,77 @@ This `.worktreeinclude` copies two env files and a secrets config into each new 
 config/secrets.json
 ```
 
-This applies to every worktree Claude Code creates with git: `--worktree` worktrees, [subagent worktrees](#isolate-subagents-with-worktrees), and parallel sessions in the [desktop app](/docs/en/desktop#work-in-parallel-with-sessions). With a [`WorktreeCreate` hook](#non-git-version-control), copy the files inside the hook script.
+这适用于使用 `--worktree` 创建的 worktrees、[子代理 worktrees](#isolate-subagents-with-worktrees) 和[桌面应用](/docs/zh-CN/desktop#work-in-parallel-with-sessions)中的并行会话。
 
-### Reuse a worktree name
+<h2 id="isolate-subagents-with-worktrees">
+  使用 worktrees 隔离子代理
+</h2>
 
-Passing `--worktree` a name whose directory already exists opens that existing worktree instead of creating a new one.
+子代理可以在自己的 worktrees 中运行，以便并行编辑不会冲突。要求 Claude "为您的代理使用 worktrees"，或通过向 frontmatter 添加 `isolation: worktree` 在[自定义子代理](/docs/zh-CN/sub-agents#supported-frontmatter-fields)上永久设置它。每个子代理都会获得一个临时 worktree，当子代理完成且没有更改时会自动删除。
 
-With the default `"fresh"` [base](#choose-the-base-branch), a reopened worktree resets to the repository's default branch instead of continuing at its old tip when all of the following hold:
+子代理 worktrees 使用与 `--worktree` 相同的[基础分支](#choose-the-base-branch)，因此它们从您的存储库的默认分支分支，除非 `worktree.baseRef` 设置为 `"head"`。
 
-* It has no uncommitted changes or untracked files.
-* It is still on the branch Claude Code created for it.
-* It has no commits of its own, or its pull request was merged and its remote branch deleted.
+<h2 id="clean-up-worktrees">
+  清理 worktrees
+</h2>
 
-Claude Code detects the merged case from git state alone: the remote branch the worktree pushed to no longer exists, and every commit in the worktree is already on the default branch.
+当您退出 worktree 会话时，清理取决于您是否进行了更改：
 
-Anything else reopens at the old tip: a worktree that fails any of the conditions, one whose state can't be verified, and any reuse when `worktree.baseRef` is `"head"` or the name is a pull request number. Before v2.1.208, a reused name always reopened the old worktree at its old tip.
+* **无未提交的更改、无未跟踪的文件且无新提交**：worktree 及其分支会自动删除。如果会话有[名称](/docs/zh-CN/sessions#name-your-sessions)，Claude 会提示您，以便您可以稍后保留 worktree
+* **存在未提交的更改、未跟踪的文件或新提交**：Claude 提示您保留或删除 worktree。保留会保留目录和分支，以便您稍后可以返回。删除会删除 worktree 目录及其分支，丢弃所有未提交的更改、未跟踪的文件和提交
+* **非交互式运行**：使用 `--worktree` 和 `-p` 创建的 worktrees 不会自动清理，因为没有退出提示。使用 `git worktree remove` 删除它们
 
-### Replace worktree creation with a hook
+Claude 为子代理和[后台会话](/docs/zh-CN/agent-view#how-file-edits-are-isolated)创建的 worktrees 一旦超过您的 [`cleanupPeriodDays`](/docs/zh-CN/settings#available-settings) 设置，就会自动删除，前提是它们没有未提交的更改、没有未跟踪的文件和没有未推送的提交。使用 `--worktree` 创建的 Worktrees 永远不会被此扫描删除。
 
-Configure a [`WorktreeCreate` hook](/docs/en/hooks#worktreecreate) to replace the default `git worktree` logic entirely, including placing worktrees somewhere other than `.claude/worktrees/`. For a complete example, see [Non-git version control](#non-git-version-control).
+当代理运行时，Claude 在其 worktree 上运行 `git worktree lock`，以便并发清理无法将其删除。当代理完成时，锁会被释放。要清理扫描保留的 worktree，请运行 `git worktree remove`，如果 worktree 有未提交的更改或未跟踪的文件，请添加 `--force`。
 
-## What worktrees share with the main checkout
+在 Windows 上，删除 worktree 之前，Claude Code 会将其内部任何深度的 NTFS 接合点或目录符号链接作为链接条目删除，以便删除 worktree 不会删除链接指向的文件。在 v2.1.205 之前，Claude Code 仅将顶级链接作为链接条目删除，删除包含嵌套在子目录中的接合点的 worktree 可能会删除 worktree 外链接指向的目录的内容。
 
-A worktree gets its own files and branch, but it shares the repository's `.git` directory, project-scope plugins, and saved permission approvals with the main checkout:
+<h2 id="manage-worktrees-manually">
+  手动管理 worktrees
+</h2>
 
-* **The repository's `.git` directory**: git commands in a worktree write to the main repository's shared `.git` directory, and [sandboxing](/docs/en/sandboxing#filesystem-isolation) allows those writes, so commands such as `git commit` work from inside a worktree with the sandbox enabled.
-* {/* min-version: 2.1.200 */}**Plugins**: plugins installed at [project scope](/docs/en/plugins-reference#plugin-installation-scopes) from the main checkout also load in worktrees of the same repository, so you don't need to reinstall them per worktree. Requires Claude Code v2.1.200 or later.
-* {/* min-version: 2.1.211 */}**Permission approvals**: choosing "Yes, don't ask again" for a Bash command in a worktree session saves the rule to the main checkout's `.claude/settings.local.json`, so it applies in the main checkout and in every other worktree of the repository, and it survives the worktree's removal. Before v2.1.211, an approval granted in a worktree was saved inside that worktree, didn't apply elsewhere, and was lost when the worktree was removed. See [where approvals are saved](/docs/en/permissions#permission-system).
+要完全控制 worktree 位置和分支配置，请直接使用 Git 创建 worktrees。当您需要检出特定的现有分支或将 worktree 放在存储库外时，这很有用。
 
-All three apply whether you create the worktree with `--worktree`, with `git worktree add`, or through the [desktop app](/docs/en/desktop#work-in-parallel-with-sessions).
-
-## Manage worktrees manually
-
-Create worktrees with Git directly when you need to check out a specific existing branch or place the worktree outside the repository.
-
-Create a worktree on a new branch:
+在新分支上创建 worktree：
 
 ```bash theme={null}
 git worktree add ../project-feature-a -b feature-a
 ```
 
-Create a worktree from an existing branch, replacing `fix-issue-456` with a branch that already exists in your repository:
+从现有分支创建 worktree：
 
 ```bash theme={null}
-git worktree add ../project-bugfix fix-issue-456
+git worktree add ../project-bugfix bugfix-123
 ```
 
-Start Claude in the worktree:
+在 worktree 中启动 Claude：
 
 ```bash theme={null}
-cd ../project-feature-a
-claude
+cd ../project-feature-a && claude
 ```
 
-List your worktrees:
+列出您的 worktrees：
 
 ```bash theme={null}
 git worktree list
 ```
 
-Remove one when you're done with it:
+完成后删除一个：
 
 ```bash theme={null}
 git worktree remove ../project-feature-a
 ```
 
-See the [Git worktree documentation](https://git-scm.com/docs/git-worktree) for the full command reference.
+有关完整的命令参考，请参阅 [Git worktree 文档](https://git-scm.com/docs/git-worktree)。记住在每个新 worktree 中初始化您的开发环境：安装依赖项、设置虚拟环境或运行您的项目设置所需的任何内容。
 
-## Non-git version control
+<h2 id="non-git-version-control">
+  非 git 版本控制
+</h2>
 
-Worktree isolation uses git by default. For SVN, Perforce, Mercurial, or other systems, configure [`WorktreeCreate` and `WorktreeRemove` hooks](/docs/en/hooks#worktreecreate) to provide custom creation and cleanup logic. Because the hook replaces the default git behavior, [`.worktreeinclude`](#copy-gitignored-files-into-worktrees) is not processed when you use `--worktree`. Copy any local configuration files inside your hook script instead.
+Worktree 隔离默认使用 git。对于 SVN、Perforce、Mercurial 或其他系统，请配置 [`WorktreeCreate` 和 `WorktreeRemove` hooks](/docs/zh-CN/hooks#worktreecreate) 以提供自定义创建和清理逻辑。因为 hook 替代了默认的 git 行为，当您使用 `--worktree` 时，[`.worktreeinclude`](#copy-gitignored-files-into-worktrees) 不会被处理。改为在您的 hook 脚本内复制任何本地配置文件。
 
-This `WorktreeCreate` hook reads the worktree name from the JSON on stdin with `jq`, checks out a fresh SVN working copy, and prints the directory path so Claude Code can use it as the session's working directory. Add the configuration to your [`settings.json`](/docs/en/settings#settings-files):
+此 `WorktreeCreate` hook 从 stdin 读取 worktree 名称，检出一个新的 SVN 工作副本，并打印目录路径，以便 Claude Code 可以将其用作会话的工作目录：
 
 ```json theme={null}
 {
@@ -233,25 +197,15 @@ This `WorktreeCreate` hook reads the worktree name from the JSON on stdin with `
 }
 ```
 
-Pair it with a `WorktreeRemove` hook to clean up when the session ends. See the [hooks reference](/docs/en/hooks#worktreecreate) for the input schema and a removal example.
+将其与 `WorktreeRemove` hook 配对以在会话结束时进行清理。有关输入架构和删除示例，请参阅 [hooks 参考](/docs/zh-CN/hooks#worktreecreate)。
 
-## Troubleshooting
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-The errors below occur when Claude Code creates a worktree or enters one at startup.
+Worktrees 处理文件隔离。下面的相关页面涵盖将工作委派到这些隔离的检出中以及在您创建的会话之间切换：
 
-### Claude Code can't enter the worktree at startup
-
-When Claude Code can't enter the worktree directory at startup, it prints an error naming the path and exits with code 1. This can happen when a [`WorktreeCreate` hook](/docs/en/hooks#worktreecreate) prints something other than the directory it created, or when the directory was deleted after it was set up. Before v2.1.205, this crashed the session, and with `-p` it stalled for about 30 seconds before exiting with code 0.
-
-### Worktree creation fails on a symlinked path
-
-Claude Code refuses to create a worktree when `.claude`, `.claude/worktrees`, or the worktree directory itself is a symlink, and the error names the symlinked path. Remove the symlink and retry. Before v2.1.212, if the repository already contained a committed symlink at one of those paths, worktree creation followed it and could create files outside the repository.
-
-## See also
-
-Worktrees handle file isolation. The related pages below cover delegating work into those isolated checkouts and switching between the sessions you create:
-
-* [Subagents](/docs/en/sub-agents): delegate work to isolated agents within a session
-* [Agent teams](/docs/en/agent-teams): coordinate multiple Claude sessions automatically
-* [Manage sessions](/docs/en/sessions): name, resume, and switch between conversations
-* [Desktop parallel sessions](/docs/en/desktop#work-in-parallel-with-sessions): worktree-backed sessions in the desktop app
+* [子代理](/docs/zh-CN/sub-agents)：在会话内将工作委派给隔离的代理
+* [代理团队](/docs/zh-CN/agent-teams)：自动协调多个 Claude 会话
+* [管理会话](/docs/zh-CN/sessions)：命名、恢复和在对话之间切换
+* [桌面并行会话](/docs/zh-CN/desktop#work-in-parallel-with-sessions)：桌面应用中由 worktree 支持的会话

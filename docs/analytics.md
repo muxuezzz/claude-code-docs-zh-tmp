@@ -2,227 +2,271 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Track team usage with analytics
+# 使用分析跟踪团队使用情况
 
-> View Claude Code usage metrics, track adoption, and measure engineering velocity in the analytics dashboard.
+> 在分析仪表板中查看 Claude Code 使用指标、跟踪采用情况并衡量工程速度。
 
-Claude Code provides analytics dashboards to help organizations understand developer usage patterns, track contribution metrics, and measure how Claude Code impacts engineering velocity. Access the dashboard for your plan:
+Claude Code 提供分析仪表板，帮助组织了解开发者使用模式、跟踪贡献指标，并衡量 Claude Code 对工程速度的影响。访问您计划的仪表板：
 
-| Plan                          | Dashboard URL                                                              | Includes                                                                              | Read more                                            |
-| ----------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Claude for Teams / Enterprise | [claude.ai/analytics/claude-code](https://claude.ai/analytics/claude-code) | Usage metrics, contribution metrics with GitHub integration, leaderboard, data export | [Details](#access-analytics-for-team-and-enterprise) |
-| API (Claude Console)          | [platform.claude.com/claude-code](https://platform.claude.com/claude-code) | Usage metrics, spend tracking, team insights                                          | [Details](#access-analytics-for-api-customers)       |
+| 计划                            | 仪表板 URL                                                                    | 包含内容                           | 了解更多                                            |
+| ----------------------------- | -------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
+| Claude for Teams / Enterprise | [claude.ai/analytics/claude-code](https://claude.ai/analytics/claude-code) | 使用指标、带 GitHub 集成的贡献指标、排行榜、数据导出 | [详情](#access-analytics-for-team-and-enterprise) |
+| API (Claude Console)          | [platform.claude.com/claude-code](https://platform.claude.com/claude-code) | 使用指标、支出跟踪、团队洞察                 | [详情](#access-analytics-for-api-customers)       |
 
-## Access analytics for Team and Enterprise
+<h2 id="access-analytics-for-team-and-enterprise">
+  访问 Team 和 Enterprise 分析
+</h2>
 
-Navigate to [claude.ai/analytics/claude-code](https://claude.ai/analytics/claude-code). Admins and Owners can view the dashboard.
+导航到 [claude.ai/analytics/claude-code](https://claude.ai/analytics/claude-code)。管理员和所有者可以查看仪表板。
 
-The Team and Enterprise dashboard includes:
+Team 和 Enterprise 仪表板包括：
 
-* **Usage metrics**: lines of code accepted, suggestion accept rate, daily active users and sessions
-* **Contribution metrics**: PRs and lines of code shipped with Claude Code assistance, with [GitHub integration](#enable-contribution-metrics)
-* **Leaderboard**: top contributors ranked by Claude Code usage
-* **Data export**: download contribution data as CSV for custom reporting
+* **使用指标**：接受的代码行数、建议接受率、日活跃用户和会话数
+* **贡献指标**：使用 Claude Code 协助的 PR 和已发布的代码行数，带有 [GitHub 集成](#enable-contribution-metrics)
+* **排行榜**：按 Claude Code 使用情况排名的顶级贡献者
+* **数据导出**：将贡献数据下载为 CSV 格式以进行自定义报告
 
-For per-user token counts and cost estimates, configure [OpenTelemetry export](/docs/en/monitoring-usage), or export the [spend report](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans) from your organization's analytics settings, which lists token usage and estimated usage-credit spend per user and per model.
+对于每个用户的令牌计数和成本估计，请配置 [OpenTelemetry 导出](/docs/zh-CN/monitoring-usage)，或从您组织的分析设置中导出 [支出报告](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans)，其中列出了每个用户和每个模型的令牌使用情况和估计的使用额度支出。
 
-### Enable contribution metrics
+<h3 id="enable-contribution-metrics">
+  启用贡献指标
+</h3>
 
 <Note>
-  Contribution metrics are in public beta and available on Claude for Teams and Claude for Enterprise plans. These metrics only cover users within your claude.ai organization. Usage through the Claude Console API or third-party integrations is not included.
+  贡献指标处于公开测试版，可用于 Claude for Teams 和 Claude for Enterprise 计划。这些指标仅涵盖您 claude.ai 组织内的用户。通过 Claude Console API 或第三方集成的使用不包括在内。
 </Note>
 
-Usage and adoption data is available for all Claude for Teams and Claude for Enterprise accounts. Contribution metrics require additional setup to connect your GitHub organization.
+使用和采用数据可用于所有 Claude for Teams 和 Claude for Enterprise 账户。贡献指标需要额外设置来连接您的 GitHub 组织。
 
-You need the Owner role to configure analytics settings. A GitHub admin must install the GitHub app.
+您需要所有者角色来配置分析设置。GitHub 管理员必须安装 GitHub 应用。
 
 <Warning>
-  Contribution metrics are not available for organizations with [Zero Data Retention](/docs/en/zero-data-retention) enabled. The analytics dashboard will show usage metrics only.
+  启用了 [Zero Data Retention](/docs/zh-CN/zero-data-retention) 的组织无法使用贡献指标。分析仪表板将仅显示使用指标。
 </Warning>
 
 <Steps>
-  <Step title="Install the GitHub app">
-    A GitHub admin installs the Claude GitHub app on your organization's GitHub account at [github.com/apps/claude](https://github.com/apps/claude).
+  <Step title="安装 GitHub 应用">
+    GitHub 管理员在您组织的 GitHub 账户上安装 Claude GitHub 应用，地址为 [github.com/apps/claude](https://github.com/apps/claude)。
   </Step>
 
-  <Step title="Enable Claude Code analytics">
-    A Claude Owner navigates to [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) and enables the Claude Code analytics feature.
+  <Step title="启用 Claude Code 分析">
+    Claude 所有者导航到 [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) 并启用 Claude Code 分析功能。
   </Step>
 
-  <Step title="Enable GitHub analytics">
-    On the same page, enable the "GitHub analytics" toggle.
+  <Step title="启用 GitHub 分析">
+    在同一页面上，启用"GitHub 分析"切换。
   </Step>
 
-  <Step title="Authenticate with GitHub">
-    Complete the GitHub authentication flow and select which GitHub organizations to include in the analysis.
+  <Step title="使用 GitHub 进行身份验证">
+    完成 GitHub 身份验证流程并选择要包含在分析中的 GitHub 组织。
   </Step>
 </Steps>
 
-Data typically appears within 24 hours after enabling, with daily updates. If no data appears, you may see one of these messages:
+启用后，数据通常在 24 小时内出现，并进行每日更新。如果没有数据出现，您可能会看到以下消息之一：
 
-* **"GitHub app required"**: install the GitHub app to view contribution metrics
-* **"Data processing in progress"**: check back in a few days and confirm the GitHub app is installed if data doesn't appear
+* **"GitHub 应用必需"**：安装 GitHub 应用以查看贡献指标
+* **"数据处理进行中"**：几天后重新检查，如果数据未出现，请确认 GitHub 应用已安装
 
-Contribution metrics support GitHub Cloud and GitHub Enterprise Server.
+贡献指标支持 GitHub Cloud 和 GitHub Enterprise Server。
 
-### Review summary metrics
-
-<Note>
-  These metrics are deliberately conservative and represent an underestimate of Claude Code's actual impact. Only lines and PRs where there is high confidence in Claude Code's involvement are counted.
-</Note>
-
-The dashboard displays these summary metrics at the top:
-
-* **PRs with CC**: total count of merged pull requests that contain at least one line of code written with Claude Code
-* **Lines of code with CC**: total lines of code across all merged PRs that were written with Claude Code assistance. Only "effective lines" are counted: lines with more than 3 characters after normalization, excluding empty lines and lines with only brackets or trivial punctuation.
-* **PRs with Claude Code (%)**: percentage of all merged PRs that contain Claude Code-assisted code
-* **Suggestion accept rate**: percentage of times users accept Claude Code's code editing suggestions, including Edit, Write, and NotebookEdit tool usage
-* **Lines of code accepted**: total lines of code written by Claude Code that users have accepted in their sessions. This excludes rejected suggestions and does not track subsequent deletions.
-
-### Explore the charts
-
-The dashboard includes several charts to visualize trends over time.
-
-#### Track adoption
-
-The Adoption chart shows daily usage trends:
-
-* **users**: daily active users
-* **sessions**: number of active Claude Code sessions per day
-
-#### Measure PRs per user
-
-This chart displays individual developer activity over time:
-
-* **PRs per user**: total number of PRs merged per day divided by daily active users
-* **users**: daily active users
-
-Use this to understand how individual productivity changes as Claude Code adoption increases.
-
-#### View pull requests breakdown
-
-The Pull requests chart shows a daily breakdown of merged PRs:
-
-* **PRs with CC**: pull requests containing Claude Code-assisted code
-* **PRs without CC**: pull requests without Claude Code-assisted code
-
-Toggle to **Lines of code** view to see the same breakdown by lines of code rather than PR count.
-
-#### Find top contributors
-
-The Leaderboard shows the top 10 users ranked by contribution volume. Toggle between:
-
-* **Pull requests**: shows PRs with Claude Code vs All PRs for each user
-* **Lines of code**: shows lines with Claude Code vs All lines for each user
-
-Click **Export all users** to download complete contribution data for all users as a CSV file. The export includes all users, not just the top 10 displayed.
-
-### PR attribution
-
-When contribution metrics are enabled, Claude Code analyzes merged pull requests to determine which code was written with Claude Code assistance. This is done by matching Claude Code session activity against the code in each PR.
-
-#### Tagging criteria
-
-PRs are tagged as "with Claude Code" if they contain at least one line of code written during a Claude Code session. The system uses conservative matching: only code where there is high confidence in Claude Code's involvement is counted as assisted.
-
-#### Attribution process
-
-When a pull request is merged:
-
-1. Added lines are extracted from the PR diff
-2. Claude Code sessions that edited matching files within a time window are identified
-3. PR lines are matched against Claude Code output using multiple strategies
-4. Metrics are calculated for AI-assisted lines and total lines
-
-Before comparison, lines are normalized: whitespace is trimmed, multiple spaces are collapsed, quotes are standardized, and text is converted to lowercase.
-
-Merged pull requests containing Claude Code-assisted lines are labeled as `claude-code-assisted` in GitHub.
-
-#### Time window
-
-Sessions from 21 days before to 2 days after the PR merge date are considered for attribution matching.
-
-#### Excluded files
-
-Certain files are automatically excluded from analysis because they are auto-generated:
-
-* Lock files: package-lock.json, yarn.lock, Cargo.lock, and similar
-* Generated code: Protobuf outputs, build artifacts, minified files
-* Build directories: dist/, build/, node\_modules/, target/
-* Test fixtures: snapshots, cassettes, mock data
-* Lines over 1,000 characters, which are likely minified or generated
-
-#### Attribution notes
-
-Keep these additional details in mind when interpreting attribution data:
-
-* Code substantially rewritten by developers, with more than 20% difference, is not attributed to Claude Code
-* Sessions outside the 21-day window are not considered
-* The algorithm does not consider the PR source or destination branch when performing attribution
-
-### Get the most from analytics
-
-Use contribution metrics to demonstrate ROI, identify adoption patterns, and find team members who can help others get started.
-
-#### Monitor adoption
-
-Track the Adoption chart and user counts to identify:
-
-* Active users who can share best practices
-* Overall adoption trends across your organization
-* Dips in usage that may indicate friction or issues
-
-#### Measure ROI
-
-Contribution metrics help answer "Is this tool worth the investment?" with data from your own codebase:
-
-* Track changes in PRs per user over time as adoption increases
-* Compare PRs and lines of code shipped with vs. without Claude Code
-* Use alongside [DORA metrics](https://dora.dev/), sprint velocity, or other engineering KPIs to understand changes from adopting Claude Code
-
-#### Identify power users
-
-The Leaderboard helps you find team members with high Claude Code adoption who can:
-
-* Share prompting techniques and workflows with the team
-* Provide feedback on what's working well
-* Help onboard new users
-
-#### Access data programmatically
-
-On the Enterprise plan, the [Claude Enterprise Analytics API](https://platform.claude.com/docs/en/api/admin/analytics) returns per-user engagement, usage, and cost reports for your organization across Claude surfaces, including Claude Code. A Primary Owner creates a key with the `read:analytics` scope at [claude.ai/analytics/api-keys](https://claude.ai/analytics/api-keys). The API is not available on the Teams plan.
-
-To query contribution data through GitHub instead, search for PRs labeled with `claude-code-assisted`.
-
-## Access analytics for API customers
-
-API customers using the Claude Console can access analytics at [platform.claude.com/claude-code](https://platform.claude.com/claude-code). You need the UsageView permission to access the dashboard, which is granted to Developer, Billing, Admin, Owner, and Primary Owner roles. To pull the same daily per-user metrics programmatically, use the [Claude Code Analytics API](https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api) with an Admin API key.
+<h3 id="review-summary-metrics">
+  查看摘要指标
+</h3>
 
 <Note>
-  Contribution metrics with GitHub integration are not currently available for API customers. The Console dashboard shows usage and spend metrics only.
+  这些指标故意保守，代表对 Claude Code 实际影响的低估。仅计算有高度信心涉及 Claude Code 的代码行和 PR。
 </Note>
 
-The Console dashboard displays:
+仪表板在顶部显示这些摘要指标：
 
-* **Lines of code accepted**: total lines of code written by Claude Code that users have accepted in their sessions. This excludes rejected suggestions and does not track subsequent deletions.
-* **Suggestion accept rate**: percentage of times users accept code editing tool usage, including Edit, Write, and NotebookEdit tools.
-* **Activity**: daily active users and sessions shown on a chart.
-* **Spend**: daily API costs in dollars alongside user count.
+* **带 CC 的 PR**：包含至少一行使用 Claude Code 编写的代码的已合并拉取请求的总计数
+* **带 CC 的代码行**：所有已合并 PR 中使用 Claude Code 协助编写的代码行总数。仅计算"有效行"：规范化后超过 3 个字符的行，不包括空行和仅包含括号或琐碎标点符号的行。
+* **带 Claude Code 的 PR (%)**：包含 Claude Code 协助代码的所有已合并 PR 的百分比
+* **建议接受率**：用户接受 Claude Code 代码编辑建议的次数百分比，包括 Edit、Write 和 NotebookEdit 工具使用
+* **接受的代码行**：Claude Code 编写且用户在其会话中接受的代码行总数。这不包括被拒绝的建议，也不跟踪后续删除。
 
-### View team insights
+<h3 id="explore-the-charts">
+  探索图表
+</h3>
 
-The team insights table shows per-user metrics:
+仪表板包括多个图表来可视化一段时间内的趋势。
 
-* **Members**: all users who have authenticated to Claude Code. API key users display by key identifier, OAuth users display by email address.
-* **Spend this month**: per-user total API costs for the current month.
-* **Lines this month**: per-user total of accepted code lines for the current month.
+<h4 id="track-adoption">
+  跟踪采用
+</h4>
+
+采用图表显示每日使用趋势：
+
+* **用户**：日活跃用户
+* **会话**：每天的活跃 Claude Code 会话数
+
+<h4 id="measure-prs-per-user">
+  衡量每个用户的 PR
+</h4>
+
+此图表显示一段时间内的个人开发者活动：
+
+* **每个用户的 PR**：每天合并的 PR 总数除以日活跃用户
+* **用户**：日活跃用户
+
+使用此功能了解随着 Claude Code 采用增加，个人生产力如何变化。
+
+<h4 id="view-pull-requests-breakdown">
+  查看拉取请求分解
+</h4>
+
+拉取请求图表显示已合并 PR 的每日分解：
+
+* **带 CC 的 PR**：包含 Claude Code 协助代码的拉取请求
+* **不带 CC 的 PR**：不包含 Claude Code 协助代码的拉取请求
+
+切换到**代码行**视图以按代码行而不是 PR 计数查看相同的分解。
+
+<h4 id="find-top-contributors">
+  查找顶级贡献者
+</h4>
+
+排行榜显示按贡献量排名的前 10 个用户。在以下之间切换：
+
+* **拉取请求**：显示每个用户的带 Claude Code 的 PR 与所有 PR
+* **代码行**：显示每个用户的带 Claude Code 的行与所有行
+
+单击**导出所有用户**以将所有用户的完整贡献数据下载为 CSV 文件。导出包括所有用户，而不仅仅是显示的前 10 个。
+
+<h3 id="pr-attribution">
+  PR 归属
+</h3>
+
+启用贡献指标后，Claude Code 会分析已合并的拉取请求，以确定哪些代码是使用 Claude Code 协助编写的。这是通过将 Claude Code 会话活动与每个 PR 中的代码进行匹配来完成的。
+
+<h4 id="tagging-criteria">
+  标记标准
+</h4>
+
+如果 PR 包含在 Claude Code 会话期间编写的至少一行代码，则将其标记为"带 Claude Code"。系统使用保守匹配：仅计算有高度信心涉及 Claude Code 的代码。
+
+<h4 id="attribution-process">
+  归属过程
+</h4>
+
+当拉取请求被合并时：
+
+1. 从 PR diff 中提取添加的行
+2. 识别在时间窗口内编辑匹配文件的 Claude Code 会话
+3. 使用多种策略将 PR 行与 Claude Code 输出进行匹配
+4. 计算 AI 协助行和总行的指标
+
+在比较之前，行被规范化：空格被修剪、多个空格被折叠、引号被标准化、文本被转换为小写。
+
+包含 Claude Code 协助行的已合并拉取请求在 GitHub 中被标记为 `claude-code-assisted`。
+
+<h4 id="time-window">
+  时间窗口
+</h4>
+
+PR 合并日期前 21 天到后 2 天的会话被考虑用于归属匹配。
+
+<h4 id="excluded-files">
+  排除的文件
+</h4>
+
+某些文件会自动从分析中排除，因为它们是自动生成的：
+
+* 锁定文件：package-lock.json、yarn.lock、Cargo.lock 等
+* 生成的代码：Protobuf 输出、构建工件、缩小的文件
+* 构建目录：dist/、build/、node\_modules/、target/
+* 测试夹具：快照、磁带、模拟数据
+* 超过 1,000 个字符的行，可能是缩小或生成的
+
+<h4 id="attribution-notes">
+  归属说明
+</h4>
+
+在解释归属数据时，请记住这些额外的细节：
+
+* 由开发者大幅重写的代码（差异超过 20%）不归属于 Claude Code
+* 不考虑 21 天窗口外的会话
+* 该算法在执行归属时不考虑 PR 源或目标分支
+
+<h3 id="get-the-most-from-analytics">
+  从分析中获得最大收益
+</h3>
+
+使用贡献指标来展示 ROI、识别采用模式，并找到可以帮助他人入门的团队成员。
+
+<h4 id="monitor-adoption">
+  监控采用
+</h4>
+
+跟踪采用图表和用户计数以识别：
+
+* 可以分享最佳实践的活跃用户
+* 整个组织的整体采用趋势
+* 可能表示摩擦或问题的使用下降
+
+<h4 id="measure-roi">
+  衡量 ROI
+</h4>
+
+贡献指标帮助回答"这个工具值得投资吗？"，使用来自您自己代码库的数据：
+
+* 随着采用增加，跟踪一段时间内每个用户的 PR 变化
+* 比较使用和不使用 Claude Code 发布的 PR 和代码行
+* 与 [DORA 指标](https://dora.dev/)、冲刺速度或其他工程 KPI 一起使用，以了解采用 Claude Code 的变化
+
+<h4 id="identify-power-users">
+  识别超级用户
+</h4>
+
+排行榜帮助您找到具有高 Claude Code 采用率的团队成员，他们可以：
+
+* 与团队分享提示技术和工作流
+* 提供关于什么运行良好的反馈
+* 帮助新用户入门
+
+<h4 id="access-data-programmatically">
+  以编程方式访问数据
+</h4>
+
+在 Enterprise 计划上，[Claude Enterprise Analytics API](https://platform.claude.com/docs/en/api/admin/analytics) 为您的组织返回每个用户的参与度、使用情况和成本报告，涵盖 Claude 的所有表面，包括 Claude Code。主要所有者在 [claude.ai/analytics/api-keys](https://claude.ai/analytics/api-keys) 处使用 `read:analytics` 范围创建密钥。该 API 在 Teams 计划上不可用。
+
+要通过 GitHub 查询贡献数据，请搜索标记为 `claude-code-assisted` 的 PR。
+
+<h2 id="access-analytics-for-api-customers">
+  访问 API 客户的分析
+</h2>
+
+使用 Claude Console 的 API 客户可以在 [platform.claude.com/claude-code](https://platform.claude.com/claude-code) 访问分析。您需要 UsageView 权限来访问仪表板，该权限授予开发者、计费、管理员、所有者和主要所有者角色。要以编程方式拉取相同的每日每用户指标，请使用 [Claude Code Analytics API](https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api) 和管理员 API 密钥。
 
 <Note>
-  Spend figures in the Console dashboard are estimates for analytics purposes. For actual costs, refer to your billing page.
+  贡献指标与 GitHub 集成目前不可用于 API 客户。Console 仪表板仅显示使用和支出指标。
 </Note>
 
-## Related resources
+Console 仪表板显示：
 
-* [Monitoring with OpenTelemetry](/docs/en/monitoring-usage): export real-time metrics and events to your observability stack
-* [Manage costs effectively](/docs/en/costs): set spend limits and optimize token usage
-* [Permissions](/docs/en/permissions): configure roles and permissions
+* **接受的代码行**：Claude Code 编写且用户在其会话中接受的代码行总数。这不包括被拒绝的建议，也不跟踪后续删除。
+* **建议接受率**：用户接受代码编辑工具使用的次数百分比，包括 Edit、Write 和 NotebookEdit 工具。
+* **活动**：图表上显示的日活跃用户和会话。
+* **支出**：每日 API 成本（美元）与用户计数一起显示。
+
+<h3 id="view-team-insights">
+  查看团队洞察
+</h3>
+
+团队洞察表显示每个用户的指标：
+
+* **成员**：所有已向 Claude Code 进行身份验证的用户。API 密钥用户按密钥标识符显示，OAuth 用户按电子邮件地址显示。
+* **本月支出**：每个用户当前月份的 API 成本总计。
+* **本月代码行**：每个用户当前月份接受的代码行总数。
+
+<Note>
+  Console 仪表板中的支出数字是用于分析目的的估计值。有关实际成本，请参阅您的计费页面。
+</Note>
+
+<h2 id="related-resources">
+  相关资源
+</h2>
+
+* [使用 OpenTelemetry 进行监控](/docs/zh-CN/monitoring-usage)：将实时指标和事件导出到您的可观测性堆栈
+* [有效管理成本](/docs/zh-CN/costs)：设置支出限制并优化令牌使用
+* [权限](/docs/zh-CN/permissions)：配置角色和权限

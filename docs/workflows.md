@@ -2,285 +2,291 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Orchestrate subagents at scale with dynamic workflows
+# 使用动态工作流大规模编排子代理
 
-> Dynamic workflows orchestrate many subagents from a script Claude writes and you can rerun. Use them for codebase audits, large migrations, and cross-checked research.
+> 动态工作流从 Claude 编写的脚本中编排许多子代理，您可以重新运行。用于代码库审计、大型迁移和交叉检查研究。
 
 {/* plan-availability: feature=workflows plans=pro,max,team,enterprise providers=all */}
 
 <Note>
-  Dynamic workflows require Claude Code v2.1.154 or later and are available on all paid plans, with Anthropic API access, and on Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry. On Pro, turn them on from the Dynamic workflows row in `/config`.
+  动态工作流需要 Claude Code v2.1.154 或更高版本，在所有付费计划上可用，具有 Anthropic API 访问权限，以及在 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上可用。在 Pro 上，从 `/config` 中的"Dynamic workflows"行启用它们。
 </Note>
 
-A dynamic workflow is a JavaScript script that orchestrates [subagents](/docs/en/sub-agents) at scale. Claude writes the script for the task you describe, and a runtime executes it in the background while your session stays responsive.
+动态工作流是一个 JavaScript 脚本，可大规模编排[子代理](/docs/zh-CN/sub-agents)。Claude 为您描述的任务编写脚本，运行时在后台执行它，同时您的会话保持响应。
 
-Reach for a workflow when a task needs more agents than one conversation can coordinate, or when you want the orchestration codified as a script you can read and rerun. Examples include a codebase-wide bug sweep, a 500-file migration, a research question that needs sources cross-checked against each other, and a hard plan worth drafting from several independent angles before you commit to one.
+当任务需要比一个对话能协调的更多代理时，或当您想将编排编纂为可以读取和重新运行的脚本时，请使用工作流。示例包括代码库范围的错误扫描、500 文件迁移、需要相互交叉检查来源的研究问题，以及在提交一个之前值得从多个独立角度起草的困难计划。
 
-## When to use a workflow
+<h2 id="when-to-use-a-workflow">
+  何时使用工作流
+</h2>
 
-[Subagents](/docs/en/sub-agents), [skills](/docs/en/skills), [agent teams](/docs/en/agent-teams), and workflows can all run a multi-step task. The difference is who holds the plan:
+[子代理](/docs/zh-CN/sub-agents)、[skills](/docs/zh-CN/skills)、[agent teams](/docs/zh-CN/agent-teams) 和工作流都可以运行多步骤任务。区别在于谁掌握计划：
 
-|                                 | Subagents                      | Skills                       | Agent teams                            | Workflows                            |
-| :------------------------------ | :----------------------------- | :--------------------------- | :------------------------------------- | :----------------------------------- |
-| What it is                      | A worker Claude spawns         | Instructions Claude follows  | A lead agent supervising peer sessions | A script the runtime executes        |
-| Who decides what runs next      | Claude, turn by turn           | Claude, following the prompt | The lead agent, turn by turn           | The script                           |
-| Where intermediate results live | Claude's context window        | Claude's context window      | A shared task list                     | Script variables                     |
-| What's repeatable               | The worker definition          | The instructions             | The team definition                    | The orchestration itself             |
-| Scale                           | A few delegated tasks per turn | Same as subagents            | A handful of long-running peers        | Dozens to hundreds of agents per run |
-| Interruption                    | Restarts the turn              | Restarts the turn            | Teammates keep running                 | Resumable in the same session        |
+|            | 子代理           | Skills        | Agent teams  | 工作流          |
+| :--------- | :------------ | :------------ | :----------- | :----------- |
+| 它是什么       | Claude 生成的工作者 | Claude 遵循的指令  | 监督对等会话的主导代理  | 运行时执行的脚本     |
+| 谁决定接下来运行什么 | Claude，逐轮     | Claude，遵循提示   | 主导代理，逐轮      | 脚本           |
+| 中间结果在哪里    | Claude 的上下文窗口 | Claude 的上下文窗口 | 共享任务列表       | 脚本变量         |
+| 什么是可重复的    | 工作者定义         | 指令            | 团队定义         | 编排本身         |
+| 规模         | 每轮几个委派任务      | 与子代理相同        | 少数几个长期运行的对等体 | 每次运行数十到数百个代理 |
+| 中断         | 重启轮次          | 重启轮次          | 队友继续运行       | 在同一会话中可恢复    |
 
-A workflow moves the plan into code. With subagents, skills, and agent teams, Claude is the orchestrator: it decides turn by turn what to spawn or assign next, and every result lands in a context window. A workflow script holds the loop, the branching, and the intermediate results itself, so Claude's context holds only the final answer.
+工作流将计划移入代码。使用子代理、skills 和 agent teams，Claude 是编排者：它逐轮决定接下来生成或分配什么，每个结果都进入上下文窗口。工作流脚本持有循环、分支和中间结果本身，所以 Claude 的上下文只持有最终答案。
 
-Moving the plan into code also lets a workflow apply a repeatable quality pattern, not just run more agents: it can have independent agents adversarially review each other's findings before they're reported, or draft a plan from several angles and weigh them against each other, so you get a more trustworthy result than a single pass.
+将计划移入代码也让工作流应用可重复的质量模式，而不仅仅是运行更多代理：它可以让独立代理在报告之前对彼此的发现进行对抗性审查，或从多个角度起草计划并相互权衡，所以您获得比单次通过更可信的结果。
 
-## Run a bundled workflow
+<h2 id="run-a-bundled-workflow">
+  运行捆绑工作流
+</h2>
 
-The quickest way to see a workflow in action is to run `/deep-research`, the [built-in workflow](#bundled-workflows) Claude Code includes for investigating a question across many sources. You'll see agents work through a set of phases in the background while your session stays free, and get one report at the end instead of a turn-by-turn transcript.
+查看工作流运行的最快方式是运行 `/deep-research`，这是 Claude Code 包含的[内置工作流](#bundled-workflows)，用于跨许多来源调查问题。您将看到代理在后台通过一组阶段工作，同时您的会话保持空闲，最后获得一份报告而不是逐轮记录。
 
 <Steps>
-  <Step title="Run the workflow">
-    Run `/deep-research` with a question you want investigated. It fans out web searches across several angles, fetches and cross-checks the sources it finds, and synthesizes a cited report.
+  <Step title="运行工作流">
+    使用您想要调查的问题运行 `/deep-research`。它在多个角度上扇出网络搜索，获取并交叉检查它找到的来源，并综合一份引用的报告。
 
-    ```text wrap theme={null}
+    ```text theme={null}
     /deep-research What changed in the Node.js permission model between v20 and v22?
     ```
   </Step>
 
-  <Step title="Allow workflows">
-    Claude Code asks whether to allow the workflow. Select **Yes** to continue. The exact prompt depends on your permission mode. See [Approve the plan before it runs](#approve-the-plan-before-it-runs) for the per-mode options.
+  <Step title="允许工作流">
+    Claude Code 询问是否允许工作流。选择**是**继续。确切的提示取决于您的权限模式。有关每种模式的选项，请参阅[在运行前批准计划](#approve-the-plan-before-it-runs)。
   </Step>
 
-  <Step title="Watch progress">
-    The run starts in the background. Run `/workflows`, use the arrow keys to select the run, and press Enter to open its progress view:
+  <Step title="观看进度">
+    运行在后台启动。运行 `/workflows`，使用箭头键选择运行，然后按 Enter 打开其进度视图：
 
-    ```text wrap theme={null}
+    ```text theme={null}
     /workflows
     ```
 
-    The view shows each phase with its agent count, token total, and elapsed time. Drill into any phase to see its agents and what each one found. See [Watch the run](#watch-the-run) for the full set of controls.
+    该视图显示每个阶段及其代理计数、令牌总数和经过的时间。深入任何阶段以查看其代理及每个代理发现的内容。有关完整的控制集，请参阅[观看运行](#watch-the-run)。
 
-    You can also watch from the task panel below the input box: a one-line progress summary appears there while the run is going. Press the down arrow to focus it, then Enter to expand.
+    您也可以从输入框下方的任务面板观看：运行进行时会出现一行进度摘要。按向下箭头聚焦它，然后按 Enter 展开。
   </Step>
 
-  <Step title="Read the report">
-    When the run finishes, the report lands in your session. It cites the sources each claim came from, with claims that didn't survive cross-checking already filtered out.
+  <Step title="阅读报告">
+    运行完成后，报告进入您的会话。它引用每个声明来自的来源，未通过交叉检查的声明已被过滤掉。
 
-    {/* min-version: 2.1.196 */}As of v2.1.196, when the verifier agents can't check a claim, such as after a rate limit or API error, the report lists that claim as unverified instead of counting it as refuted.
+    {/* min-version: 2.1.196 */}从 v2.1.196 开始，当验证代理无法检查声明时（例如在速率限制或 API 错误之后），报告将该声明列为未验证，而不是计为被驳回。
   </Step>
 </Steps>
 
-To run a workflow for your own task, [have Claude write one](#have-claude-write-a-workflow), and once a run does what you wanted you can [save it](#save-the-workflow-for-reuse) as a command of your own.
+要为您自己的任务运行工作流，[让 Claude 编写一个](#have-claude-write-a-workflow)，一旦运行完成您想要的操作，您可以[保存它](#save-the-workflow-for-reuse)作为您自己的命令。
 
-### Bundled workflows
+<h3 id="bundled-workflows">
+  捆绑工作流
+</h3>
 
-Claude Code includes `/deep-research` as a built-in workflow:
+Claude Code 包含 `/deep-research` 作为内置工作流：
 
-| Command                     | What it does                                                                                                                                                                                                                                                                                                      |
-| :-------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/deep-research <question>` | Fans out web searches on a question across several angles, fetches and cross-checks the sources it finds, votes on each claim, and returns a cited report with claims that didn't survive cross-checking filtered out. Requires the [WebSearch tool](/docs/en/tools-reference#websearch-tool-behavior) to be available |
+| 命令                          | 它做什么                                                                                                                                 |
+| :-------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `/deep-research <question>` | 在多个角度上扇出网络搜索问题，获取并交叉检查它找到的来源，对每个声明投票，并返回一份引用的报告，其中未通过交叉检查的声明已被过滤掉。需要[WebSearch 工具](/docs/zh-CN/tools-reference#websearch-tool-behavior)可用 |
 
-{/* min-version: 2.1.218 */}`/deep-research` runs only when you invoke it. Before v2.1.218, Claude could also start it on its own.
+[您自己保存的工作流](#save-the-workflow-for-reuse)以相同方式成为命令，并在 `/` 自动完成中与捆绑的工作流一起出现。
 
-[Workflows you save](#save-the-workflow-for-reuse) yourself become commands the same way and appear in `/` autocomplete alongside the bundled ones.
+<h3 id="watch-the-run">
+  观看运行
+</h3>
 
-### Watch the run
+工作流在后台运行，所以会话在代理工作时保持响应。随时运行 `/workflows` 列出运行中和已完成的工作流，然后选择一个打开其进度视图。
 
-Workflows run in the background, so the session stays responsive while agents work. Run `/workflows` at any time to list running and completed workflows, then select one to open its progress view.
-
-```text wrap theme={null}
+```text theme={null}
 /workflows
 ```
 
-The progress view shows each phase with its agent counts, token totals, and elapsed time. The footer lists the key for each action:
+进度视图显示每个阶段及其代理计数、令牌总数和经过的时间。页脚列出每个操作的键：
 
-| Key            | Action                                                                                                                      |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------- |
-| `↑` / `↓`      | Select a phase or agent                                                                                                     |
-| `Enter` or `→` | Drill into the selected phase, then into an agent to read its prompt, recent tool calls, and result                         |
-| `Esc` or `←`   | Back out one level. In v2.1.203 through v2.1.205, `←` didn't step back out of a phase or agent; use `Esc` on those versions |
-| `j` / `k`      | Scroll within the agent detail when it overflows                                                                            |
-| `f`            | {/* min-version: 2.1.186 */}Filter the agent list in the selected phase by status. Press again to cycle                     |
-| `p`            | Pause or resume the run                                                                                                     |
-| `x`            | Stop the selected agent, or stop the whole workflow when focus is on the run                                                |
-| `r`            | Restart the selected running agent                                                                                          |
-| `s`            | [Save](#save-the-workflow-for-reuse) the run's script as a command                                                          |
+| 键             | 操作                                                          |
+| :------------ | :---------------------------------------------------------- |
+| `↑` / `↓`     | 选择一个阶段或代理                                                   |
+| `Enter` 或 `→` | 深入选定的阶段，然后进入代理以读取其提示、最近的工具调用和结果                             |
+| `Esc` 或 `←`   | 返回一个级别。在 v2.1.203 至 v2.1.205 中，`←` 没有退出阶段或代理；在这些版本上使用 `Esc` |
+| `j` / `k`     | 当代理详情溢出时在其中滚动                                               |
+| `f`           | {/* min-version: 2.1.186 */}按状态过滤选定阶段中的代理列表。再次按下以循环         |
+| `p`           | 暂停或恢复运行                                                     |
+| `x`           | 停止选定的代理，或当焦点在运行上时停止整个工作流                                    |
+| `r`           | 重启选定的运行中代理                                                  |
+| `s`           | [保存](#save-the-workflow-for-reuse)运行的脚本作为命令                 |
 
-## Have Claude write a workflow
+<h2 id="have-claude-write-a-workflow">
+  让 Claude 编写工作流
+</h2>
 
-You can have Claude write a workflow for your task in two ways:
+您可以通过两种方式让 Claude 为您的任务编写工作流：
 
-* [Ask for a workflow](#ask-for-a-workflow-in-your-prompt) in your prompt, either in your own words or by including the keyword `ultracode`, and Claude writes one for the task.
-* [Let Claude decide with ultracode](#let-claude-decide-with-ultracode): set `/effort ultracode` and Claude plans a workflow for every substantive task in the session.
+* [在您的提示中请求工作流](#ask-for-a-workflow-in-your-prompt)，使用关键字 `ultracode`，Claude 为任务编写一个。
+* [让 Claude 使用 ultracode 决定](#let-claude-decide-with-ultracode)：设置 `/effort ultracode`，Claude 为会话中的每个实质性任务规划工作流。
 
-You can also run a workflow command that already exists: a [bundled workflow](#bundled-workflows) like `/deep-research`, or one you've [saved](#save-the-workflow-for-reuse).
+您也可以运行已存在的工作流命令：一个[捆绑工作流](#bundled-workflows)如 `/deep-research`，或一个您已[保存](#save-the-workflow-for-reuse)的。
 
-### Ask for a workflow in your prompt
+<h3 id="ask-for-a-workflow-in-your-prompt">
+  在您的提示中请求工作流
+</h3>
 
-To run a single task as a workflow without changing the session's effort level, include the keyword `ultracode` in your prompt. Asking in your own words, for example "use a workflow" or "run a workflow", also works: Claude treats a direct request as the same opt-in. Before v2.1.160 the literal trigger keyword was `workflow`; natural-language requests work in both versions.
+要在不改变会话的努力级别的情况下将单个任务作为工作流运行，在您的提示中包含关键字 `ultracode`。用您自己的话提问，例如"使用工作流"或"运行工作流"，也可以工作：Claude 将直接请求视为相同的选择加入。在 v2.1.160 之前，字面触发关键字是 `workflow`；自然语言请求在两个版本中都有效。
 
-```text wrap theme={null}
+```text theme={null}
 ultracode: audit every API endpoint under src/routes/ for missing auth checks
 ```
 
-Claude Code highlights the keyword in your input and Claude writes a workflow script for the task instead of working through it turn by turn. The keyword only chooses how Claude structures the work: a workflow started this way runs inside the session's existing [permission mode](/docs/en/permission-modes), and its agents' tool calls receive the same permission checks and [sandboxing](/docs/en/sandboxing) as any other tool call in the session.
+Claude Code 在您的输入中突出显示该关键字，Claude 为任务编写工作流脚本，而不是逐轮处理它。如果您不打算启动工作流，在 macOS 上按 `Option+W` 或在 Windows 和 Linux 上按 `Alt+W` 来忽略此提示的突出显示，或在突出显示的关键字后面的光标处按退格键。要完全停止该关键字触发，请在 `/config` 中关闭 Ultracode 关键字触发。
 
-If the run does what you wanted, you can [save it as a command](#save-the-workflow-for-reuse) afterward. If you already have an orchestrator built another way, such as a folder of subagent prompts or a skill that fans work out, you can point Claude at it and ask for a workflow that does the same thing.
+如果运行完成了您想要的操作，您可以之后[将其保存为命令](#save-the-workflow-for-reuse)。
 
-#### Dismiss or turn off the keyword
+如果您已经用另一种方式构建了编排器，例如子代理提示的文件夹或一个分散工作的技能，您可以指向 Claude 并要求一个执行相同操作的工作流。
 
-If you didn't mean to start a workflow, press `Option+W` on macOS or `Alt+W` on Windows and Linux to dismiss the highlight for this prompt, or press backspace while the cursor is right after the highlighted keyword. To stop the keyword from triggering at all, turn off Ultracode keyword trigger in `/config`.
+<h3 id="let-claude-decide-with-ultracode">
+  让 Claude 使用 ultracode 决定
+</h3>
 
-#### Where the keyword works
+Ultracode 是一个 Claude Code 设置，它结合了 `xhigh` [推理努力](/docs/zh-CN/model-config#adjust-effort-level)与自动工作流编排。启用它后，Claude 为每个实质性任务规划工作流，而不是等待您要求。
 
-The keyword is an opt-in only in a prompt you type yourself: at the interactive prompt, in an IDE extension panel, in a [Remote Control](/docs/en/remote-control) client, or in an Agent SDK application that stamps your keyboard input's [`origin`](/docs/en/agent-sdk/typescript#sdkmessageorigin) as `{ kind: "human" }`. It doesn't start a workflow when it reaches the session another way:
-
-* a prompt passed with `-p`
-* a prompt an Agent SDK application sends without stamping it as human input
-* a scheduled task prompt
-* a webhook payload or pull request comment relayed into the conversation
-
-<Note>
-  Before v2.1.210, the keyword started a workflow from any of these routes too, including a webhook payload or pull request comment relayed into the conversation.
-</Note>
-
-### Let Claude decide with ultracode
-
-Ultracode is a Claude Code setting that combines `xhigh` [reasoning effort](/docs/en/model-config#adjust-effort-level) with automatic workflow orchestration. With it on, Claude plans a workflow for each substantive task instead of waiting for you to ask.
-
-```text wrap theme={null}
+```text theme={null}
 /effort ultracode
 ```
 
-To start a session with ultracode already on, launch with `claude --effort ultracode`. Requires Claude Code v2.1.203 or later.
+要启动已启用 ultracode 的会话，请使用 `claude --effort ultracode` 启动。需要 Claude Code v2.1.203 或更高版本。
 
-With ultracode on, Claude decides when a task warrants a workflow. A single request can turn into several workflows in a row: one to understand the code, one to make the change, and one to verify it. This applies to every task in the session, so each request uses more tokens and takes longer than at lower effort levels.
+启用 ultracode 后，Claude 决定任务何时值得工作流。单个请求可以变成一系列工作流：一个理解代码，一个进行更改，一个验证它。这适用于会话中的每个任务，所以每个请求使用更多令牌并花费比较低努力级别更长的时间。
 
-Ultracode lasts for the current session and resets when you start a new one. Drop back with `/effort high` when you return to routine work. It's available on models that support `xhigh` [effort](/docs/en/model-config#adjust-effort-level); on other models the `/effort` menu doesn't offer it.
+Ultracode 持续当前会话，当您启动新会话时重置。当您返回日常工作时，使用 `/effort high` 下降。它在支持 `xhigh` [努力](/docs/zh-CN/model-config#adjust-effort-level)的模型上可用；在其他模型上，`/effort` 菜单不提供它。
 
-### Approve the plan before it runs
+<h3 id="approve-the-plan-before-it-runs">
+  在运行前批准计划
+</h3>
 
-In the CLI, the per-run prompt shows the planned phases and these options:
+在 CLI 中，每次运行的提示显示计划的阶段和这些选项：
 
-* **Yes, run it**: start the run
-* **Yes, and don't ask again for `<name>` in `<path>`**: start, and skip this prompt for this workflow in this project from now on
-* **View raw script**: read the script before deciding
-* **No**: cancel
+* **是，运行它**：启动运行
+* **是，不再为 `<path>` 中的 `<name>` 询问**：启动，并从现在起跳过此项目中此工作流的此提示
+* **查看原始脚本**：在决定前读取脚本
+* **否**：取消
 
-`Ctrl+G` opens the script in your editor. `Tab` lets you adjust the prompt before the run starts.
+`Ctrl+G` 在您的编辑器中打开脚本。`Tab` 让您在运行启动前调整提示。
 
-Whether you see this prompt depends on your [permission mode](/docs/en/permission-modes):
+您是否看到此提示取决于您的[权限模式](/docs/zh-CN/permission-modes)：
 
-| Permission mode                            | When you're prompted                                                                                                                                    |
-| :----------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Default, accept edits                      | Every run, unless you've selected **Yes, and don't ask again** for that workflow in this project                                                        |
-| Auto                                       | First launch only. Any **Yes** records consent in your user settings, and later launches start without prompting. Skipped entirely when ultracode is on |
-| Bypass permissions, `claude -p`, Agent SDK | Never. The run starts immediately                                                                                                                       |
+| 权限模式                       | 何时提示您                                                  |
+| :------------------------- | :----------------------------------------------------- |
+| 默认，接受编辑                    | 每次运行，除非您已为此项目中的该工作流选择**是，不再询问**                        |
+| 自动                         | 仅首次启动。任何**是**在您的用户设置中记录同意，之后启动无需提示。当 ultracode 启用时完全跳过 |
+| 绕过权限，`claude -p`，Agent SDK | 从不。运行立即启动                                              |
 
-In the Desktop app, an approval card shows the workflow name, the phase list, and a token-usage caution, with **Once**, **Always**, and **Deny** actions. The progress view appears in the Background tasks side pane.
+在桌面应用中，批准卡显示工作流名称、阶段列表和令牌使用警告，带有**一次**、**总是**和**拒绝**操作。进度视图出现在"后台任务"侧窗格中。
 
-Your permission mode controls only the launch prompt above. The subagents the workflow spawns always run in `acceptEdits` mode and inherit your [tool allowlist](/docs/en/settings#permission-settings), regardless of your session's mode. File edits are auto-approved.
+您的权限模式仅控制上面的启动提示。工作流生成的子代理始终在 `acceptEdits` 模式下运行，并继承您的[工具允许列表](/docs/zh-CN/settings#permission-settings)，无论您的会话模式如何。文件编辑自动批准。
 
-Shell commands, web fetches, and MCP tools that aren't in your allowlist can still prompt you mid-run. To avoid this on a long run, add the commands the agents need to your allowlist before starting.
+Shell 命令、网络获取和不在您的允许列表中的 MCP 工具仍然可以在运行中提示您。要在长时间运行中避免这种情况，在启动前将代理需要的命令添加到您的允许列表。
 
-In `claude -p` and the Agent SDK there is no one to prompt, so tool calls follow your configured permission rules without interactive confirmation.
+在 `claude -p` 和 Agent SDK 中没有人提示，所以工具调用遵循您配置的权限规则，无需交互式确认。
 
-### Save the workflow for reuse
+<h3 id="save-the-workflow-for-reuse">
+  保存工作流以供重用
+</h3>
 
-When Claude writes a workflow for a task you'll repeat, you can save that run's script as a command. A process like a review you run on every branch then runs the same orchestration each time.
+当 Claude 为您将重复的任务编写工作流时，您可以将该运行的脚本保存为命令。像您在每个分支上运行的审查这样的过程然后每次运行相同的编排。
 
-Run `/workflows`, select the run you want to keep, and press `s`. In the save dialog, Tab toggles between the two save locations:
+运行 `/workflows`，选择您想保留的运行，然后按 `s`。在保存对话中，Tab 在两个保存位置之间切换：
 
-* `.claude/workflows/` in your project: shared with everyone who clones the repo
-* `~/.claude/workflows/` in your home directory: available in every project, visible only to you. If you set [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars), this location is the `workflows/` directory under that path.
+* `.claude/workflows/` 在您的项目中：与克隆仓库的每个人共享
+* `~/.claude/workflows/` 在您的主目录中：在每个项目中可用，仅对您可见。如果您设置了 [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars)，此位置是该路径下的 `workflows/` 目录。
 
-{/* min-version: 2.1.208 */}The save dialog shows the resolved path for the personal location. Before v2.1.208, it showed `~/.claude/workflows/` even when `CLAUDE_CONFIG_DIR` was set; the file was still saved under the configured directory.
+{/* min-version: 2.1.208 */}保存对话显示个人位置的已解析路径。在 v2.1.208 之前，即使设置了 `CLAUDE_CONFIG_DIR`，它也显示 `~/.claude/workflows/`；文件仍然保存在配置的目录下。
 
-Press Enter to save. The workflow runs as `/<name>` in future sessions from either location.
+按 Enter 保存。工作流在未来会话中从任一位置作为 `/<name>` 运行。
 
-{/* min-version: 2.1.216 */}Claude Code checks the save location for symlinks before writing, and shows an error instead of writing through one. What it checks depends on where you save:
+{/* min-version: 2.1.178 */}在具有多个 `.claude/` 目录的单体仓库中，您可以将工作流保存在它们适用的包旁边。截至 v2.1.178，保存到项目位置会写入您的工作目录和仓库根之间已存在的最近的 `.claude/workflows/` 目录，或如果尚不存在则写入仓库根。项目工作流也从该路径上的每个 `.claude/workflows/` 加载，当多个定义相同名称时 Claude Code 运行最接近工作目录的那个。
 
-* Project location: Claude Code refuses if `.claude`, `.claude/workflows`, or the target file is a symlink.
-* Personal location: Claude Code refuses only if the target file itself is a symlink, so a `~/.claude` directory managed by a dotfiles tool still works.
+如果项目工作流和个人工作流共享名称，项目工作流运行。
 
-Before v2.1.216, Claude Code followed the link, which could place the file outside the location you chose.
+<h3 id="pass-input-to-a-saved-workflow">
+  将输入传递给保存的工作流
+</h3>
 
-{/* min-version: 2.1.178 */}In a monorepo with several `.claude/` directories, you can keep workflows alongside the package they apply to. As of v2.1.178, saving to the project location writes to the closest `.claude/workflows/` directory that already exists between your working directory and the repository root, or to the repository root if none exists yet. Project workflows also load from every `.claude/workflows/` along that path, and when more than one defines the same name Claude Code runs the one closest to the working directory.
+保存的工作流可以通过 `args` 参数接受输入。脚本将其读取为名为 `args` 的全局变量。使用此功能在调用时提供研究问题、目标路径列表或配置对象，而不是为每次运行编辑脚本。
 
-If a project workflow and a personal workflow share a name, the project one runs.
+以下提示使用问题编号列表运行保存的工作流：
 
-### Distribute a workflow in a plugin
-
-To share a workflow across teams or repositories, include it in a [plugin](/docs/en/plugins). Place the script in a `workflows/` directory at the plugin root, or point to a different location with the [`workflows` manifest field](/docs/en/plugins-reference#component-path-fields).
-
-Plugin workflows are namespaced by the plugin name. A plugin called `acme-tools` containing a script whose `meta.name` is `release-audit` runs as `/acme-tools:release-audit`.
-
-### Pass input to a saved workflow
-
-A saved workflow can accept input through the `args` parameter. The script reads it as a global named `args`. Use this to supply a research question, a list of target paths, or a configuration object at invocation time instead of editing the script for each run.
-
-The following prompt runs a saved workflow with a list of issue numbers:
-
-```text wrap theme={null}
-Run /triage-issues on issues 1024, 1025, and 1030
+```text theme={null}
+> Run /triage-issues on issues 1024, 1025, and 1030
 ```
 
-Claude passes the list as structured data, so the script can call array and object methods on `args` directly without parsing it first. If `args` is omitted, the global is `undefined` inside the script.
+Claude 将列表作为结构化数据传递，所以脚本可以直接在 `args` 上调用数组和对象方法，无需先解析它。如果省略 `args`，脚本内的全局变量为 `undefined`。
 
-## Example workflow prompts
+<h2 id="example-workflow-prompts">
+  工作流提示示例
+</h2>
 
-A workflow fits best when the task is larger than one agent can hold in context, or when the same step needs to run across many items. The prompts below show common shapes. Each one asks Claude to write and run a workflow for that task; you don't write the script yourself.
+工作流最适合当任务大于一个代理可以在上下文中容纳的情况，或当相同的步骤需要在许多项目中运行时。下面的提示显示常见的形状。每一个都要求 Claude 为该任务编写并运行工作流；您不自己编写脚本。
 
-### Audit many files for the same issue
+<h3 id="audit-many-files-for-the-same-issue">
+  审计许多文件以查找相同问题
+</h3>
 
-Fan out one agent per file, then collect and verify the findings.
+扇出每个文件一个代理，然后收集并验证发现。
 
-```text wrap theme={null}
-use a workflow to audit every route handler under src/routes/ for missing authentication checks, and adversarially verify each finding before reporting it
+```text theme={null}
+> use a workflow to audit every route handler under src/routes/ for missing authentication checks, and adversarially verify each finding before reporting it
 ```
 
-### Keep fixing until a check passes
+<h3 id="keep-fixing-until-a-check-passes">
+  保持修复直到检查通过
+</h3>
 
-Run a checker, fix what failed, and repeat until it passes or stops making progress.
+运行检查器，修复失败的内容，然后重复直到通过或停止取得进展。
 
-```text wrap theme={null}
-use a workflow to run npx tsc --noEmit and keep fixing the reported errors until the type check passes or two rounds in a row make no progress
+```text theme={null}
+> use a workflow to run npx tsc --noEmit and keep fixing the reported errors until the type check passes or two rounds in a row make no progress
 ```
 
-### Migrate many files in parallel
+<h3 id="migrate-many-files-in-parallel">
+  并行迁移许多文件
+</h3>
 
-Discover the files to migrate, transform each one in an isolated copy so edits don't conflict, and verify each result.
+发现要迁移的文件，在隔离的副本中转换每个文件，以便编辑不会冲突，并验证每个结果。
 
-```text wrap theme={null}
-use a workflow to migrate every component under src/components/ from styled-components to Tailwind, working on each file in its own isolated copy
+```text theme={null}
+> use a workflow to migrate every component under src/components/ from styled-components to Tailwind, working on each file in its own isolated copy
 ```
 
-### Review every changed file and write one summary
+<h3 id="review-every-changed-file-and-write-one-summary">
+  审查每个更改的文件并写一份摘要
+</h3>
 
-Run a reviewer per file, then hand all the findings to one agent that ranks and deduplicates them.
+为每个文件运行审查者，然后将所有发现交给一个代理，该代理对它们进行排名和去重。
 
-```text wrap theme={null}
-use a workflow to review every file changed in this PR for correctness issues, then merge the per-file findings into one ranked summary
+```text theme={null}
+> use a workflow to review every file changed in this PR for correctness issues, then merge the per-file findings into one ranked summary
 ```
 
-### Research a topic across many sources
+<h3 id="research-a-topic-across-many-sources">
+  跨许多来源研究一个主题
+</h3>
 
-Fan out readers across changelogs, issues, and docs, then synthesize. The bundled `/deep-research` workflow does this; you can also describe a narrower version.
+在更改日志、问题和文档中扇出读者，然后综合。捆绑的 `/deep-research` 工作流执行此操作；您也可以描述一个更狭窄的版本。
 
-```text wrap theme={null}
-use a workflow to research how our three competitors handle rate limiting: read their public docs and recent changelog entries in parallel, then compare the approaches
+```text theme={null}
+> use a workflow to research how our three competitors handle rate limiting: read their public docs and recent changelog entries in parallel, then compare the approaches
 ```
 
-### Find issues until the list stops growing
+<h3 id="find-issues-until-the-list-stops-growing">
+  查找问题直到列表停止增长
+</h3>
 
-Keep searching in rounds and stop when new rounds turn up nothing new.
+保持分轮搜索并在新轮次找不到任何新内容时停止。
 
-```text wrap theme={null}
-use a workflow to find flaky tests in this repo: run the suite repeatedly, record which tests fail intermittently, and stop once two rounds in a row find nothing new
+```text theme={null}
+> use a workflow to find flaky tests in this repo: run the suite repeatedly, record which tests fail intermittently, and stop once two rounds in a row find nothing new
 ```
 
-### What the saved script looks like
+<h3 id="what-the-saved-script-looks-like">
+  保存的脚本看起来像什么
+</h3>
 
-When you [save a workflow](#save-the-workflow-for-reuse), the file in `.claude/workflows/` holds a `meta` block followed by a script body that orchestrates subagents. You usually don't need to edit it, but here is the shape of a small one so you can recognize what Claude generated:
+当您[保存工作流](#save-the-workflow-for-reuse)时，`.claude/workflows/` 中的文件包含一个 `meta` 块，后跟编排子代理的脚本体。您通常不需要编辑它，但这是一个小的形状，所以您可以识别 Claude 生成的内容：
 
 ```javascript theme={null}
 export const meta = {
@@ -299,101 +305,102 @@ const audits = await pipeline(found.files, file =>
 return audits.filter(Boolean)
 ```
 
-The body is plain JavaScript with top-level `await`. `agent()` spawns one subagent and `pipeline()` runs one per item in a list. If you want to edit a script by hand, ask Claude to walk you through the change, or see the Workflow tool entry in the [Agent SDK reference](/docs/en/agent-sdk/typescript) for the full set of options.
+主体是带有顶级 `await` 的纯 JavaScript。`agent()` 生成一个子代理，`pipeline()` 为列表中的每个项目运行一个。如果您想手动编辑脚本，要求 Claude 引导您完成更改，或查看 [Agent SDK 参考](/docs/zh-CN/agent-sdk/typescript)中的 Workflow 工具条目以获取完整的选项集。
 
-## How a workflow runs
+<h2 id="how-a-workflow-runs">
+  工作流如何运行
+</h2>
 
-The workflow runtime executes the script in an isolated environment, separate from your conversation. Intermediate results stay in script variables instead of landing in Claude's context.
+工作流运行时在隔离环境中执行脚本，与您的对话分开。中间结果保留在脚本变量中，而不是进入 Claude 的上下文。
 
-Every run writes its script to a file under your session's directory in `~/.claude/projects/`. Claude receives the path when the run starts, so you can ask for it. You can open that file to read the orchestration Claude wrote, diff it against a previous run's script, or edit it and ask Claude to relaunch from the edited version.
+每次运行都会将其脚本写入您会话目录下 `~/.claude/projects/` 中的文件。运行开始时 Claude 会收到该路径，因此您可以要求它提供。您可以打开该文件来读取 Claude 编写的编排脚本，将其与之前运行的脚本进行对比，或编辑它并要求 Claude 从编辑后的版本重新启动。
 
-The runtime tracks each agent's result as the run progresses, which is what makes a run [resumable](#resume-after-a-pause) within the same session.
+运行时在运行进行时跟踪每个代理的结果，这是使运行在同一会话中[可恢复](#resume-after-a-pause)的原因。
 
-### Behavior and limits
+<h3 id="behavior-and-limits">
+  行为和限制
+</h3>
 
-The runtime applies the following constraints:
+运行时应用以下约束：
 
-| Constraint                                                           | Why                                                                                                            |
-| :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| No mid-run user input                                                | Only agent permission prompts can pause a run. For sign-off between stages, run each stage as its own workflow |
-| No direct filesystem or shell access from the workflow itself        | Agents read, write, and run commands. The script coordinates the agents                                        |
-| Up to 16 concurrent agents, fewer on machines with limited CPU cores | Bounds local resource use                                                                                      |
-| 1,000 agents total per run                                           | Prevents runaway loops                                                                                         |
+| 约束                           | 为什么                                      |
+| :--------------------------- | :--------------------------------------- |
+| 无中途用户输入                      | 仅代理权限提示可以暂停运行。对于阶段之间的签署，将每个阶段作为其自己的工作流运行 |
+| 无来自工作流本身的直接文件系统或 shell 访问    | 代理读取、写入和运行命令。脚本协调代理                      |
+| 最多 16 个并发代理，在 CPU 核心有限的机器上更少 | 限制本地资源使用                                 |
+| 每次运行 1,000 个代理总数             | 防止失控循环                                   |
 
-## Manage runs
+<h2 id="manage-runs">
+  管理运行
+</h2>
 
-Once a run starts, you manage it from the `/workflows` view, or by expanding its progress line in the task panel below the input box.
+运行启动后，您可以从 `/workflows` 视图管理它，或通过展开输入框下方任务面板中的其进度行来管理。
 
-### Resume after a pause
+<h3 id="resume-after-a-pause">
+  暂停后恢复
+</h3>
 
-If you stop a run, you can resume it. Agents that already completed usually return their cached results, and the rest run live.
+如果您停止运行，您可以恢复它：已完成的代理返回其缓存结果，其余的实时运行。从 `/workflows` 恢复暂停的运行，选择它并按 `p`，或要求 Claude 使用相同脚本重新启动工作流。
 
-Two rules decide which results survive:
+恢复在同一 Claude Code 会话中工作。如果您在工作流运行时退出 Claude Code，下一个会话将从头启动工作流。
 
-* An agent that was still running when you stopped isn't saved, so it starts over on resume.
-* Replay follows the order agents started. Cached results stop at the first agent that didn't finish, and every agent that started after that one runs again, even if it completed.
+<h3 id="cost">
+  成本
+</h3>
 
-The second rule is what makes stopping mid fan-out expensive. Say a script starts four agents, A, B, C, and D, in that order, and you stop the run while B is still going. On resume, A returns from cache. B runs again because it never finished. C and D run again too, because they started after B, even though both completed before you stopped.
+工作流生成许多代理，所以单次运行可以使用比在对话中处理相同任务更多的令牌。运行计入您的计划使用和速率限制，如任何其他会话。
 
-A workflow that fans work out across many small agents therefore preserves more progress than one long agent.
+要在提交大型任务前评估支出，请先在小范围上运行工作流：一个目录而不是整个仓库，或一个狭窄的问题而不是一个宽泛的问题。`/workflows` 视图显示每个代理的令牌使用情况，随着运行进行，您可以随时在那里停止运行而不会丢失已完成的工作。运行时的[代理上限](#behavior-and-limits)限制单次运行可以生成多少个代理，这限制了失控脚本的成本。要默认保持每次运行更小，在 `/config` 中[设置大小指南](#set-a-size-guideline)。
 
-Resume a paused run from `/workflows` by selecting it and pressing `p`, or ask Claude to relaunch the workflow with the same script.
+Claude Code 还会标记增长异常大的运行。当工作流调度超过 25 个代理，或其预计令牌总数超过 150 万时，输入框下方任务面板中的其进度行显示 `Large workflow` 警告。警告指向您可以停止运行的 [`/workflows`](#watch-the-run)。需要 Claude Code v2.1.203 或更高版本。
 
-Resume works within the same Claude Code session. If you exit Claude Code while a workflow is running, the next session starts the workflow fresh.
+警告是建议性的：它不会暂停或限制运行。当您看到它时，两个设置会改变：
 
-### Cost
+* 如果您[设置大小指南](#set-a-size-guideline)，指南的代理计数替换 25 个代理的阈值。
+* 启用[ultracode](#let-claude-decide-with-ultracode)的会话不显示警告，因为打开 ultracode 已经让您选择加入大型运行。
 
-A workflow spawns many agents, so a single run can use meaningfully more tokens than working through the same task in conversation. Runs count toward your plan's usage and rate limits like any other session.
+工作流中的每个代理使用您的会话模型，除非脚本将阶段路由到不同的模型，或设置了 [`CLAUDE_CODE_SUBAGENT_MODEL`](/docs/zh-CN/model-config#environment-variables) 环境变量，该变量会覆盖两者。要控制模型成本：
 
-To gauge the spend before committing to a large task, run the workflow on a small slice first: one directory instead of the whole repo, or a narrow question instead of a broad one. The `/workflows` view shows each agent's token usage as the run progresses, and you can stop the run there at any time, usually without losing completed work. [Resume after a pause](#resume-after-a-pause) covers what a stopped run keeps. The runtime's [agent caps](#behavior-and-limits) limit how many agents a single run can spawn, which bounds the cost of a runaway script. To keep runs to fewer agents, choose the `small` [size guideline](#set-a-size-guideline).
+* 在大型运行前检查 `/model`，如果您通常为日常工作切换到较小的模型
+* 当您描述任务时，要求 Claude 为不需要最强模型的阶段使用较小的模型
 
-Claude Code also flags a run that grows unusually large. When a workflow schedules more than 25 agents, or its projected token total passes 1.5 million, its progress line in the task panel below the input box shows a `Large workflow` warning. The warning points you to [`/workflows`](#watch-the-run), where you can stop the run. Requires Claude Code v2.1.203 or later.
+<h3 id="set-a-size-guideline">
+  设置大小指南
+</h3>
 
-The warning is advisory: it doesn't pause or limit the run. Two settings change when you see it:
+`/config` 中的 Dynamic workflow size 设置使 Claude 编写的工作流默认保持在较小规模。Claude Code 将该设置作为建议发送给 Claude，所以调用不同规模的提示仍然会覆盖它。需要 Claude Code v2.1.202 或更高版本。
 
-* If you choose a [size guideline](#set-a-size-guideline) yourself, its agent count replaces the 25-agent threshold. The built-in default guideline leaves the threshold at 25.
-* Sessions with [ultracode](#let-claude-decide-with-ultracode) on don't show the warning, because turning ultracode on already opts you in to large runs.
+每个值设置 Claude 在其编写的脚本中针对的代理计数。
 
-Every agent in a workflow uses your session's model unless the script routes a stage to a different one or the [`CLAUDE_CODE_SUBAGENT_MODEL`](/docs/en/model-config#environment-variables) environment variable is set, which overrides both. To control the model cost:
+| 值              | 发送给 Claude 的指导 |
+| :------------- | :------------- |
+| `unrestricted` | 无指南。这是默认值。     |
+| `small`        | 目标少于 5 个代理。    |
+| `medium`       | 目标少于 15 个代理。   |
+| `large`        | 目标少于 50 个代理。   |
 
-* Check `/model` before a large run if you usually switch to a smaller model for routine work
-* Ask Claude to use a smaller model for stages that don't need the strongest one when you describe the task
+更改在下一个提示时生效。[运行时代理上限](#behavior-and-limits)仍然适用，无论设置如何。
 
-### Set a size guideline
+<h3 id="turn-workflows-off">
+  关闭工作流
+</h3>
 
-A size guideline tells Claude how many agents to aim for when it writes a dynamic workflow. Claude Code sends the guideline to Claude as advice, not a cap, so a prompt that calls for a different scale still overrides it. Requires Claude Code v2.1.202 or later.
+工作流在 CLI、桌面应用、IDE 扩展、[非交互模式](/docs/zh-CN/headless)与 `claude -p` 和 [Agent SDK](/docs/zh-CN/agent-sdk/overview) 中可用。相同的禁用设置在每个表面上应用。
 
-Each value maps to an agent count:
+要为自己关闭工作流：
 
-| Value          | Agent count Claude aims for                         |
-| :------------- | :-------------------------------------------------- |
-| `unrestricted` | No guideline: Claude sizes the workflow to the task |
-| `small`        | Fewer than 5 agents                                 |
-| `medium`       | Fewer than 15 agents                                |
-| `large`        | Fewer than 50 agents                                |
+* 在 `/config` 中切换"Dynamic workflows"关闭。在会话中持续。
+* 在 `~/.claude/settings.json` 中设置 `"disableWorkflows": true`。在会话中持续。
+* 设置 `CLAUDE_CODE_DISABLE_WORKFLOWS=1`。在启动时读取，所以它在您设置它的任何地方应用。
 
-{/* min-version: 2.1.219 */}The default is `medium`. Until you choose a value, the `/config` row shows `medium (default)` and the workflow's `Running in background` line shows `medium size (/config)`. Requires Claude Code v2.1.219 or later; earlier versions default to `unrestricted`.
+要为整个组织关闭工作流，在[托管设置](/docs/zh-CN/server-managed-settings)中设置 `"disableWorkflows": true`，或使用[Claude Code 管理员设置](https://claude.ai/admin-settings/claude-code)页面上的切换。
 
-To change the guideline, pick a value for the Dynamic workflow size setting in `/config`, or run `/config workflowSizeGuideline=small`. {/* min-version: 2.1.219 */}On v2.1.219 and later, you can also set the [`workflowSizeGuideline` key](/docs/en/settings#available-settings) in any settings file; that value takes precedence over `/config`, and Claude Code hides the `/config` row while a settings file provides one.
+当工作流被禁用时，捆绑工作流命令不可用，`ultracode` 关键字不再触发运行，`ultracode` 从 `/effort` 菜单中移除。
 
-Changes take effect on the next prompt. The [runtime agent caps](#behavior-and-limits) still apply regardless of the setting.
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-### Turn workflows off
-
-Workflows are available in the CLI, the Desktop app, the IDE extensions, [non-interactive mode](/docs/en/headless) with `claude -p`, and the [Agent SDK](/docs/en/agent-sdk/overview). The same disable settings apply on every surface.
-
-To turn workflows off for yourself:
-
-* Toggle Dynamic workflows off in `/config`. Persists across sessions.
-* Set `"disableWorkflows": true` in `~/.claude/settings.json`. Persists across sessions.
-* Set `CLAUDE_CODE_DISABLE_WORKFLOWS=1`. Read at startup, so it applies wherever you set it.
-
-To turn workflows off for your whole organization, set `"disableWorkflows": true` in [managed settings](/docs/en/server-managed-settings), or use the toggle on the [Claude Code admin settings](https://claude.ai/admin-settings/claude-code) page.
-
-When workflows are disabled, the bundled workflow commands are unavailable, the `ultracode` keyword no longer triggers a run, and `ultracode` is removed from the `/effort` menu.
-
-## Related resources
-
-* [Run agents in parallel](/docs/en/agents): compare subagents, agent view, agent teams, and workflows
-* [Create custom subagents](/docs/en/sub-agents): the worker primitive workflows orchestrate
-* [Manage costs](/docs/en/costs): how multi-agent runs count toward usage limits
+* [并行运行代理](/docs/zh-CN/agents)：比较子代理、代理视图、代理团队和工作流
+* [创建自定义子代理](/docs/zh-CN/sub-agents)：工作流编排的工作者原语
+* [管理成本](/docs/zh-CN/costs)：多代理运行如何计入使用限制

@@ -2,181 +2,185 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Model configuration
+# 模型配置
 
-> Learn about the Claude Code model configuration, including model aliases like `opusplan`
+> 了解 Claude Code 模型配置，包括模型别名如 `opusplan`
 
-## Available models
+<h2 id="available-models">
+  可用模型
+</h2>
 
-For the `model` setting in Claude Code, you can configure either:
+对于 Claude Code 中的 `model` 设置，您可以配置以下任一项：
 
-* A **model alias**
-* A **model name**
-  * Anthropic API: a full **[model name](https://platform.claude.com/docs/en/about-claude/models/overview)**
-  * Amazon Bedrock: an inference profile ARN
-  * Microsoft Foundry: a deployment name
-  * Google Cloud's Agent Platform: a version name
+* 一个**模型别名**
+* 一个**模型名称**
+  * Anthropic API：完整的\*\*[模型名称](https://platform.claude.com/docs/zh-CN/about-claude/models/overview)\*\*
+  * Amazon Bedrock：推理配置文件 ARN
+  * Microsoft Foundry：部署名称
+  * Google Cloud 的 Agent Platform：版本名称
 
-For guidance on which model and effort level fit different kinds of work, see [Choosing a Claude model and effort level in Claude Code](https://claude.com/blog/claude-model-and-effort-level-in-claude-code) on the blog.
-
-<Note>
-  `ANTHROPIC_BASE_URL` changes where requests are sent, not which model answers them. To route Claude through an LLM gateway, see [LLM gateways](/docs/en/llm-gateway).
-</Note>
-
-### Model aliases
-
-Model aliases provide a convenient way to select model settings without
-remembering exact version numbers:
-
-| Model alias      | Behavior                                                                                                                                                                                                                                                                                                                                 |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`default`**    | Special value that clears any model override and reverts to the recommended model for your account type, or to the [organization default model](#organization-default-model) when an admin has set one. Not itself a model alias                                                                                                         |
-| **`best`**       | Uses Fable 5 where your organization has access to it, otherwise the latest Opus model                                                                                                                                                                                                                                                   |
-| **`fable`**      | Uses Claude Fable 5 for your hardest and longest-running tasks                                                                                                                                                                                                                                                                           |
-| **`sonnet`**     | Uses the latest Sonnet model for daily coding tasks                                                                                                                                                                                                                                                                                      |
-| **`opus`**       | Uses the latest Opus model for complex reasoning tasks                                                                                                                                                                                                                                                                                   |
-| **`haiku`**      | Uses the fast and efficient Haiku model for simple tasks                                                                                                                                                                                                                                                                                 |
-| **`sonnet[1m]`** | Uses Sonnet with a [1 million token context window](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model) for long sessions. No effect when `sonnet` already resolves to Sonnet 5 with its native 1M window; behind an [LLM gateway](/docs/en/llm-gateway), selects the 1M window for Sonnet 5 |
-| **`opus[1m]`**   | Uses Opus with a [1 million token context window](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model) for long sessions                                                                                                                                                                 |
-| **`opusplan`**   | Special mode that uses `opus` during plan mode, then switches to `sonnet` for execution                                                                                                                                                                                                                                                  |
-
-The version that the `opus` and `sonnet` aliases resolve to depends on the provider:
-
-| Provider                                             | `opus`   | `sonnet`   |
-| :--------------------------------------------------- | :------- | :--------- |
-| Anthropic API                                        | Opus 5   | Sonnet 5   |
-| [Claude Platform on AWS](/docs/en/claude-platform-on-aws) | Opus 5   | Sonnet 4.6 |
-| Amazon Bedrock, Google Cloud's Agent Platform        | Opus 5   | Sonnet 4.5 |
-| Microsoft Foundry                                    | Opus 4.6 | Sonnet 4.5 |
-
-Where an alias resolves to an older model, newer models are available by selecting the full model name explicitly or setting `ANTHROPIC_DEFAULT_OPUS_MODEL` or `ANTHROPIC_DEFAULT_SONNET_MODEL`.
-
-{/* min-version: 2.1.219 */}Before v2.1.219, `opus` resolved to Opus 4.8 on the Anthropic API from v2.1.154, and on Claude Platform on AWS, Amazon Bedrock, and Google Cloud's Agent Platform from v2.1.207. {/* min-version: 2.1.207 */}Before v2.1.207, `opus` resolved to Opus 4.7 on Claude Platform on AWS and to Opus 4.6 on Amazon Bedrock and Google Cloud's Agent Platform.
-
-Aliases point to the recommended version for your provider and update over time. To pin to a specific version, use the full model name, for example `claude-opus-5`, or set the corresponding environment variable like `ANTHROPIC_DEFAULT_OPUS_MODEL`.
+有关哪个模型和工作量级别适合不同类型工作的指导，请参阅博客上的 [Choosing a Claude model and effort level in Claude Code](https://claude.com/blog/claude-model-and-effort-level-in-claude-code)。
 
 <Note>
-  Opus 5 requires Claude Code v2.1.219 or later. Sonnet 5 requires v2.1.197 or later. Opus 4.8 requires v2.1.154 or later. Run `claude update` to upgrade.
+  `ANTHROPIC_BASE_URL` 改变请求发送的位置，而不是哪个模型回答它们。要通过 LLM 网关路由 Claude，请参阅 [LLM 网关](/docs/zh-CN/llm-gateway)。
 </Note>
 
-### Work with Fable 5
+<h3 id="model-aliases">
+  模型别名
+</h3>
 
-[Claude Fable 5](https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5) is the most capable model in Claude Code, suited to tasks larger than a single sitting. It sustains long autonomous sessions, investigates before acting, and verifies its work more often than smaller models.
+模型别名提供了一种便捷的方式来选择模型设置，无需记住确切的版本号：
 
-Fable 5 is not the default model. Select it with `/model fable`. Requests that its safety classifiers flag, most often in cybersecurity and biology domains, trigger [automatic model fallback](#automatic-model-fallback).
+| 模型别名             | 行为                                                                                                                                                                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`default`**    | 特殊值，清除任何模型覆盖并恢复到您的账户类型推荐的模型，或在管理员设置了[组织默认模型](#organization-default-model)时恢复到该模型。本身不是模型别名                                                                                                                                                |
+| **`best`**       | 在您的组织有权限的地方使用 Fable 5，否则使用最新的 Opus 模型                                                                                                                                                                                                    |
+| **`fable`**      | 使用 Claude Fable 5 处理您最困难和耗时最长的任务                                                                                                                                                                                                         |
+| **`sonnet`**     | 使用最新的 Sonnet 模型用于日常编码任务                                                                                                                                                                                                                  |
+| **`opus`**       | 使用最新的 Opus 模型用于复杂推理任务                                                                                                                                                                                                                    |
+| **`haiku`**      | 使用快速高效的 Haiku 模型用于简单任务                                                                                                                                                                                                                   |
+| **`sonnet[1m]`** | 使用 Sonnet 和[100 万令牌上下文窗口](https://platform.claude.com/docs/zh-CN/build-with-claude/context-windows#context-window-sizes-by-model)用于长会话。当 `sonnet` 已解析为具有原生 1M 窗口的 Sonnet 5 时无效；在 [LLM gateway](/docs/zh-CN/llm-gateway)后面，为 Sonnet 5 选择 1M 窗口 |
+| **`opus[1m]`**   | 使用 Opus 和[100 万令牌上下文窗口](https://platform.claude.com/docs/zh-CN/build-with-claude/context-windows#context-window-sizes-by-model)用于长会话                                                                                                     |
+| **`opusplan`**   | 特殊模式，在 Plan Mode 中使用 `opus`，然后在执行时切换到 `sonnet`                                                                                                                                                                                           |
 
-To get the most from Fable 5:
+`opus` 和 `sonnet` 别名解析为的版本取决于提供商：
 
-* **Describe the outcome, not the steps**: hand it the result you want and let it plan the path. To keep it working until that outcome holds, [set a goal](/docs/en/goal).
-* **Hand it ambiguous problems**: root-cause investigations, outage debugging, and architecture decisions are where the extra investigation and verification pay off.
-* **Skip the verification reminders**: it verifies its own work with less prompting, so reminders to test or check are usually unnecessary.
-* **Size up larger tasks**: give it work you would normally break into pieces. It holds long sessions without losing the thread.
+| 提供商                                                     | `opus`   | `sonnet`   |
+| :------------------------------------------------------ | :------- | :--------- |
+| Anthropic API                                           | Opus 4.8 | Sonnet 5   |
+| [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws) | Opus 4.8 | Sonnet 4.6 |
+| Amazon Bedrock、Google Cloud 的 Agent Platform            | Opus 4.8 | Sonnet 4.5 |
+| Microsoft Foundry                                       | Opus 4.6 | Sonnet 4.5 |
+
+当别名解析为较旧的模型时，可以通过显式选择完整模型名称或设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 或 `ANTHROPIC_DEFAULT_SONNET_MODEL` 来获得更新的模型。
+
+{/* min-version: 2.1.207 */}在 v2.1.207 之前，`opus` 在 Claude Platform on AWS 上解析为 Opus 4.7，在 Amazon Bedrock 和 Google Cloud 的 Agent Platform 上解析为 Opus 4.6。
+
+别名指向您的提供商推荐的版本，并随时间更新。要固定到特定版本，请使用完整模型名称（例如 `claude-opus-4-8`），或设置相应的环境变量，如 `ANTHROPIC_DEFAULT_OPUS_MODEL`。
 
 <Note>
-  Fable 5 requires Claude Code v2.1.170 or later. Older versions do not show Fable 5 in the model picker and cannot select it. Run `claude update` to upgrade. Fable 5 is not available under [zero data retention](/docs/en/zero-data-retention), where the `/model` picker either omits it or shows it disabled.
+  Sonnet 5 需要 Claude Code v2.1.197 或更高版本。Opus 4.8 需要 v2.1.154 或更高版本。运行 `claude update` 进行升级。
 </Note>
 
-On the Anthropic API, the `/model` picker lists Fable 5 only after the server reports it available for your organization. When you type `/model fable`, Claude Code checks availability with the server directly, so the selection can succeed before the picker lists the entry.
+<h3 id="work-with-fable-5">
+  使用 Fable 5
+</h3>
 
-### Setting your model
+[Claude Fable 5](https://platform.claude.com/docs/zh-CN/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5) 是 Claude Code 中最强大的模型，适合于超过单个会话的任务。它能够维持长时间的自主会话，在采取行动前进行调查，并比较小的模型更频繁地验证其工作。
 
-You can configure your model in several ways, listed in order of priority:
+Fable 5 不是默认模型。使用 `/model fable` 选择它。其安全分类器标记的请求，最常见于网络安全和生物学领域，会触发[自动模型回退](#automatic-model-fallback)。
 
-1. **During session**: use `/model <alias|name>` to switch immediately, or run `/model` with no argument to open the picker. The picker asks for confirmation when the conversation has prior output, since the next response re-reads the full history without cached context
-2. **At startup**: launch with `claude --model <alias|name>`
-3. **Environment variable**: set `ANTHROPIC_MODEL=<alias|name>`
-4. **Settings**: configure permanently in your settings file using the `model` field
+要充分利用 Fable 5：
 
-As of v2.1.153, `/model` saves your choice as the default for new sessions by writing the `model` field in your user settings. In the picker:
+* **描述结果，而不是步骤**：给它您想要的结果，让它规划路径。要让它继续工作直到该结果成立，[设置一个目标](/docs/zh-CN/goal)。
+* **交给它模糊的问题**：根本原因调查、故障排除和架构决策是额外调查和验证发挥作用的地方。
+* **跳过验证提醒**：它以更少的提示验证自己的工作，所以测试或检查的提醒通常是不必要的。
+* **规划更大的任务**：给它您通常会分成几部分的工作。它能够维持长会话而不失去思路。
 
-* `Enter`: switch model and save as your default
-* `s`: switch model for this session only
+<Note>
+  Fable 5 需要 Claude Code v2.1.170 或更高版本。较旧的版本在模型选择器中不显示 Fable 5，无法选择它。运行 `claude update` 进行升级。Fable 5 在[零数据保留](/docs/zh-CN/zero-data-retention)下不可用，其中 `/model` 选择器要么省略它，要么将其显示为禁用。
+</Note>
 
-Typing `/model <name>` directly behaves like `Enter`. {/* min-version: 2.1.205 */}A model set with `/model` in [non-interactive mode](/docs/en/headless), with the `-p` flag, applies to the current session only and isn't saved as your default. Project and managed settings still take precedence and reapply on the next launch. {/* min-version: 2.1.196 */}An [organization default model](#organization-default-model) that your admin has configured to override user selection also reapplies on the next launch.
+<h3 id="setting-your-model">
+  设置您的模型
+</h3>
 
-In v2.1.144 through v2.1.152, `/model` applied to the current session only and `d` in the picker saved a default.
+您可以通过多种方式配置模型，按优先级顺序列出：
 
-The `--model` flag and `ANTHROPIC_MODEL` environment variable apply only to the session you launch with them. To run different models in different terminals at the same time, launch each one with its own `--model` flag rather than switching with `/model`.
+1. **在会话期间**：使用 `/model <alias|name>` 立即切换，或运行不带参数的 `/model` 打开选择器。当对话有先前的输出时，选择器会要求确认，因为下一个响应会重新读取完整历史记录而不使用缓存的上下文
+2. **启动时**：使用 `claude --model <alias|name>` 启动
+3. **环境变量**：设置 `ANTHROPIC_MODEL=<alias|name>`
+4. **设置**：在设置文件中使用 `model` 字段永久配置
 
-Prices in the `/model` picker appear when Claude Code talks to the Anthropic API, directly or through an [LLM gateway](/docs/en/llm-gateway) that proxies it, and the price on a row is the price of the model that row selects. On [third-party providers](/docs/en/third-party-integrations) such as Amazon Bedrock and on the [Claude apps gateway](/docs/en/claude-apps-gateway), your provider or gateway determines what you pay, so picker rows show no price. The price is a display label only; it doesn't affect which model a row selects or what your provider bills. Before v2.1.206, [Claude Platform on AWS](/docs/en/claude-platform-on-aws) and gateway sessions showed Anthropic list prices, and a row could show the price of a different model than the one it selected.
+从 v2.1.153 开始，`/model` 通过在用户设置中写入 `model` 字段来将您的选择保存为新会话的默认值。在选择器中：
 
-Resumed sessions started with `claude --resume`, `--continue`, or the `/resume` picker keep the model they were using when the transcript was saved, regardless of the current `model` setting. If the restored model has been retired or is excluded by [`availableModels`](#restrict-model-selection), the session falls through to the normal precedence order. This prevents another session's `/model` choice from changing the model on resume. On providers that use provider-specific deployment IDs rather than Anthropic model IDs, such as Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, the transcript model isn't restored at all and the session resolves its model through the normal precedence order.
+* `Enter`：切换模型并保存为您的默认值
+* `s`：仅为此会话切换模型
 
-A model you pick for the new launch with `--model` or `ANTHROPIC_MODEL` still takes precedence over the restored model. {/* min-version: 2.1.195 */}As of v2.1.195, so does an [`ANTHROPIC_DEFAULT_OPUS_MODEL`](#environment-variables) family variable.
+直接输入 `/model <name>` 的行为类似于 `Enter`。{/* min-version: 2.1.205 */}在[非交互模式](/docs/zh-CN/headless)中使用 `-p` 标志通过 `/model` 设置的模型仅适用于当前会话，不会保存为您的默认值。项目和托管设置仍然优先级最高，并在下次启动时重新应用。{/* min-version: 2.1.196 */}您的管理员配置的[组织默认模型](#organization-default-model)也会在下次启动时重新应用。
 
-When the active model at startup comes from project or managed settings rather than your own selection, the startup header shows which settings file set it. Run `/model` to override; the project or managed setting reapplies on the next launch.
+在 v2.1.144 到 v2.1.152 中，`/model` 仅适用于当前会话，选择器中的 `d` 保存默认值。
 
-When a model switch is requested through the [Agent SDK](/docs/en/agent-sdk/overview) `setModel()` method or by an app such as the [Desktop app](/docs/en/desktop) that runs the Claude Code CLI for you, Claude Code checks that the string is one it recognizes before saving it. This check requires Claude Code v2.1.200 or later. On the Anthropic API, Claude Code recognizes:
+`--model` 标志和 `ANTHROPIC_MODEL` 环境变量仅适用于您启动它们的会话。要同时在不同终端中运行不同的模型，请使用各自的 `--model` 标志启动每个终端，而不是使用 `/model` 切换。
 
-* a model alias
-* an entry from the `/model` picker
-* any name that starts with `claude-`
-* a value you configured yourself as a [custom model option](#add-a-custom-model-option) or in [`modelOverrides`](#override-model-ids-per-version)
+当 Claude Code 与 Anthropic API 通信时，`/model` 选择器中会显示价格，直接或通过代理它的 [LLM gateway](/docs/zh-CN/llm-gateway)，行上的价格是该行选择的模型的价格。在 [Amazon Bedrock](/docs/zh-CN/third-party-integrations) 等第三方提供商上和在 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway) 上，您的提供商或网关决定您支付的费用，所以选择器行不显示价格。价格仅是显示标签；它不影响行选择哪个模型或您的提供商计费的内容。在 v2.1.206 之前，[Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws) 和网关会话显示 Anthropic 列表价格，一行可能显示与其选择的模型不同的模型的价格。
 
-Claude Code rejects an unrecognized string with `Model "<name>" is not a recognized model id.` and the session keeps its current model, instead of saving the string and failing on the next request. See [the error reference](/docs/en/errors#model-is-not-a-recognized-model-id) for recovery steps.
+使用 `claude --resume`、`--continue` 或 `/resume` 选择器启动的恢复会话会保持保存转录时使用的模型，无论当前 `model` 设置如何。如果该模型已被停用或被 [`availableModels`](#restrict-model-selection) 排除，会话会回退到正常的优先级顺序。这可以防止另一个会话的 `/model` 选择在恢复时改变模型。
 
-The check runs only on the Anthropic API. On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, [Claude Platform on AWS](/docs/en/claude-platform-on-aws), and behind an [LLM gateway](/docs/en/llm-gateway) or a custom `ANTHROPIC_BASE_URL`, your provider or gateway defines the model names, so Claude Code passes any string through without checking it. The check also doesn't cover the `--model` flag, the `ANTHROPIC_MODEL` environment variable, or the `model` setting; a mistyped value there produces [There's an issue with the selected model](/docs/en/errors#theres-an-issue-with-the-selected-model) on the first request instead.
+您为新启动选择的模型使用 `--model` 或 `ANTHROPIC_MODEL` 仍然优先于恢复的模型。{/* min-version: 2.1.195 */}从 v2.1.195 开始，[`ANTHROPIC_DEFAULT_OPUS_MODEL`](#environment-variables) 系列变量也是如此。
 
-When the requested model has a scheduled retirement date or is automatically remapped to a newer version, Claude Code shows a warning that names the requested model. Interactive sessions show it as a startup notice. From v2.1.182, the same warning is written to stderr in [non-interactive mode](/docs/en/headless) when using the default text output format. The check also covers a `model` set in [subagent frontmatter](/docs/en/sub-agents). The stderr warning is suppressed for `--output-format json` and `stream-json`; read the actual model from the `modelUsage` field of the [result message](/docs/en/headless#get-structured-output) instead.
+当启动时的活跃模型来自项目或托管设置而不是您自己的选择时，启动标题会显示哪个设置文件设置了它。运行 `/model` 以覆盖；项目或托管设置会在下次启动时重新应用。
 
-For example, start a session on Opus:
+当通过 [Agent SDK](/docs/zh-CN/agent-sdk/overview) `setModel()` 方法或由运行 Claude Code CLI 的应用程序（如 [Desktop app](/docs/zh-CN/desktop)）请求模型切换时，Claude Code 会检查该字符串是否是它识别的字符串，然后再保存它。此检查需要 Claude Code v2.1.200 或更高版本。在 Anthropic API 上，Claude Code 识别：
+
+* 一个模型别名
+* 来自 `/model` 选择器的条目
+* 任何以 `claude-` 开头的名称
+* 您自己配置为[自定义模型选项](#add-a-custom-model-option)或在 [`modelOverrides`](#override-model-ids-per-version) 中的值
+
+Claude Code 会拒绝无法识别的字符串，显示 `Model "<name>" is not a recognized model id.`，会话会保持其当前模型，而不是保存该字符串并在下一个请求时失败。有关恢复步骤，请参阅[错误参考](/docs/zh-CN/errors#model-is-not-a-recognized-model-id)。
+
+该检查仅在 Anthropic API 上运行。在 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry、[Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws) 和 [LLM 网关](/docs/zh-CN/llm-gateway)后面或自定义 `ANTHROPIC_BASE_URL` 上，您的提供商或网关定义模型名称，所以 Claude Code 会通过任何字符串而不检查它。该检查也不涵盖 `--model` 标志、`ANTHROPIC_MODEL` 环境变量或 `model` 设置；那里的拼写错误值会在第一个请求时产生[所选模型出现问题](/docs/zh-CN/errors#theres-an-issue-with-the-selected-model)。
+
+当请求的模型有计划的停用日期或自动重新映射到更新的版本时，Claude Code 会显示一个警告，命名请求的模型。交互式会话将其显示为启动通知。从 v2.1.182 开始，当使用默认文本输出格式在[非交互模式](/docs/zh-CN/headless)中时，相同的警告会写入 stderr。该检查还涵盖在[子代理 frontmatter](/docs/zh-CN/sub-agents) 中设置的 `model`。对于 `--output-format json` 和 `stream-json`，stderr 警告被抑制；改为从[结果消息](/docs/zh-CN/headless#get-structured-output)的 `modelUsage` 字段读取实际模型。
+
+使用示例：
 
 ```bash theme={null}
+# 使用 Opus 启动
 claude --model opus
-```
 
-Then switch models from within the session:
-
-```text theme={null}
+# 在会话期间切换到 Sonnet
 /model sonnet
 ```
 
-Example settings file:
+设置文件示例：
 
 ```json theme={null}
 {
     "permissions": {
-        "allow": ["Bash(npm run lint)"]
+        ...
     },
     "model": "opus"
 }
 ```
 
-## Restrict model selection
+<h2 id="restrict-model-selection">
+  限制模型选择
+</h2>
 
-Enterprise administrators can use `availableModels` in [managed or policy settings](/docs/en/settings#settings-files) to restrict which models users can select. Entries match a model family such as `sonnet`, a version prefix such as `claude-sonnet-4-5`, or a full model ID such as `claude-sonnet-4-5-20250929`.
+企业管理员可以在[托管或策略设置](/docs/zh-CN/settings#settings-files)中使用 `availableModels` 来限制用户可以选择的模型。条目可以匹配模型系列（如 `sonnet`）、版本前缀（如 `claude-sonnet-4-5`）或完整模型 ID（如 `claude-sonnet-4-5-20250929`）。
 
-When `availableModels` is set, the allowlist applies everywhere a user can specify a model:
+设置 `availableModels` 后，允许列表适用于用户可以指定模型的每个位置：
 
-* **Main session model**: `/model`, the `--model` flag, the `ANTHROPIC_MODEL` environment variable, the `model` setting, and the model restored when [resuming a session](#setting-your-model)
-* **Alias resolution**: {/* min-version: 2.1.176 */}the `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`, and `ANTHROPIC_DEFAULT_FABLE_MODEL` environment variables cannot redirect an allowed alias to a model outside the list
-* **Fast mode**: {/* min-version: 2.1.176 */}`/fast` refuses to toggle when it would implicitly switch to an Opus model outside the list, with the message "is not in your organization's allowed models"
-* **Subagent models**: the `model` field in [subagent](/docs/en/sub-agents#choose-a-model) frontmatter, the Agent tool's `model` parameter, `CLAUDE_CODE_SUBAGENT_MODEL`, and, on v2.1.197 and earlier, the model picker in the `/agents` wizard {/* max-version: 2.1.197 */}
-* **Skill and command models**: the `model` frontmatter in [skills and commands](/docs/en/skills)
-* **Advisor model**: the configured [`advisorModel`](/docs/en/advisor) setting and the `--advisor` flag
-* **Background agent model**: the model selected in the [dispatch picker](/docs/en/agent-view)
+* **主会话模型**：`/model`、`--model` 标志、`ANTHROPIC_MODEL` 环境变量、`model` 设置，以及[恢复会话](#setting-your-model)时恢复的模型
+* **别名解析**：{/* min-version: 2.1.176 */}`ANTHROPIC_DEFAULT_OPUS_MODEL`、`ANTHROPIC_DEFAULT_SONNET_MODEL`、`ANTHROPIC_DEFAULT_HAIKU_MODEL` 和 `ANTHROPIC_DEFAULT_FABLE_MODEL` 环境变量无法将允许的别名重定向到列表外的模型
+* **快速模式**：{/* min-version: 2.1.176 */}`/fast` 在隐式切换到列表外的 Opus 模型时拒绝切换，显示消息"不在您的组织允许的模型中"
+* **子代理模型**：[子代理](/docs/zh-CN/sub-agents#choose-a-model) frontmatter 中的 `model` 字段、Agent 工具的 `model` 参数、`CLAUDE_CODE_SUBAGENT_MODEL`，以及在 v2.1.197 及更早版本上，`/agents` 向导中的模型选择器{/* max-version: 2.1.197 */}
+* **技能和命令模型**：[技能和命令](/docs/zh-CN/skills)中的 `model` frontmatter
+* **顾问模型**：配置的 [`advisorModel`](/docs/zh-CN/advisor) 设置和 `--advisor` 标志
+* **后台代理模型**：[分派选择器](/docs/zh-CN/agent-view)中选择的模型
 
-On the Anthropic API and [Claude Platform on AWS](/docs/en/claude-platform-on-aws), a model family alias, `opus`, `sonnet`, `haiku`, or `fable`, resolves to the newest version of its family that the allowlist permits. When the allowlist pins specific versions, for example `["sonnet", "claude-opus-4-6"]`, both `/model opus` and `--model opus` select Claude Opus 4.6, the newest permitted Opus, and show a notice naming both the requested and substituted models. Before v2.1.205, an alias whose newest released version was outside the list was rejected or replaced like any other blocked selection, even when the list permitted an older version.
+在 Anthropic API 和 [AWS 上的 Claude Platform](/docs/zh-CN/claude-platform-on-aws) 上，模型系列别名 `opus`、`sonnet`、`haiku` 或 `fable` 解析为允许列表允许的该系列的最新版本。当允许列表固定特定版本时，例如 `["sonnet", "claude-opus-4-6"]`，`/model opus` 和 `--model opus` 都会选择 Claude Opus 4.6（最新允许的 Opus），并显示一条通知，命名请求的和替换的模型。在 v2.1.205 之前，其最新发布版本在列表外的别名会被拒绝或替换，就像任何其他被阻止的选择一样，即使列表允许较旧版本。
 
-Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and [Mantle](/docs/en/amazon-bedrock#use-the-mantle-endpoint) use provider-specific deployment IDs rather than Anthropic model IDs, so a blocked alias there follows the rejection and replacement behavior below.
+Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和 [Mantle](/docs/zh-CN/amazon-bedrock#use-the-mantle-endpoint) 使用特定于提供商的部署 ID 而不是 Anthropic 模型 ID，因此被阻止的别名在那里遵循下面的拒绝和替换行为。
 
-Claude Code handles any other blocked selection according to where the model was set:
+Claude Code 根据模型的设置位置处理任何其他被阻止的选择：
 
-* **`/model`**: the switch is rejected with an error
-* **`--model` flag, `ANTHROPIC_MODEL`, or the `model` setting**: the value is replaced at startup with a warning naming both the requested and substituted models, and the session starts on the default model
-* **Subagent, skill, or command override**: the override falls back to the inherited or default model rather than failing the request
-* **`advisorModel` setting**: the advisor is disabled for the session
-* **`--advisor` flag**: Claude Code exits with an error at launch
+* **`/model`**：切换被拒绝并显示错误
+* **`--model` 标志、`ANTHROPIC_MODEL` 或 `model` 设置**：该值在启动时被替换为警告，命名请求的和替换的模型，会话在默认模型上启动
+* **子代理、技能或命令覆盖**：覆盖回退到继承或默认模型，而不是导致请求失败
+* **`advisorModel` 设置**：该会话的顾问被禁用
+* **`--advisor` 标志**：Claude Code 在启动时以错误退出
 
-Excluded models are hidden from the `/model` picker. {/* min-version: 2.1.199 */}A full model ID in the list that has no built-in picker row, such as an older version that the list pins, appears in the `/model` picker as its own labeled row. Before v2.1.199, such an ID was selectable only by typing `/model <id>`.
+被排除的模型在 `/model` 选择器中被隐藏。{/* min-version: 2.1.199 */}列表中没有内置选择器行的完整模型 ID（如列表固定的较旧版本）在 `/model` 选择器中显示为其自己的标记行。在 v2.1.199 之前，这样的 ID 仅可通过键入 `/model <id>` 来选择。
 
-Model changes that Claude Code makes on your behalf are checked the same way:
+Claude Code 代表您进行的模型更改以相同的方式进行检查：
 
-* **[Fallback model chains](#fallback-model-chains)**: entries outside the allowlist are dropped
-* **Plan-mode upgrades**: on the Anthropic API and Claude Platform on AWS, an upgrade such as [`opusplan`](#opusplan-model-setting) to an excluded model uses the newest permitted version of the upgrade family. On providers with provider-specific model IDs, and when no version is permitted, the upgrade is skipped and planning continues on the session's model
-* **[Automatic model fallback](#automatic-model-fallback)**: a fallback whose target is excluded does not run, so the flagged request ends with a refusal instead
-* **[Auto mode classifier](/docs/en/permission-modes#eliminate-prompts-with-auto-mode)**: {/* min-version: 2.1.210 */}the classifier's Claude Sonnet 5 default applies only when the allowlist permits Sonnet 5. When it's excluded, the classifier runs on the session's model, which the allowlist already governs, or on an Opus model when the session runs on [Fable 5](#work-with-fable-5). On providers other than the Anthropic API, that Opus fallback runs on the provider's default Opus model without consulting the allowlist. Requires Claude Code v2.1.210 or later
-* **[Fast mode](/docs/en/fast-mode)**: enabling fast mode is refused when the model the session would run on afterward is outside the allowlist
+* **[回退模型链](#fallback-model-chains)**：允许列表外的元素被删除
+* **Plan Mode 升级**：在 Anthropic API 和 AWS 上的 Claude Platform 上，升级（如 [`opusplan`](#opusplan-model-setting)）到被排除的模型会使用升级系列的最新允许版本。在具有特定于提供商的模型 ID 的提供商上，以及当没有版本被允许时，升级被跳过，规划继续在会话的模型上进行
+* **[自动模型回退](#automatic-model-fallback)**：目标被排除的回退不会运行，因此标记的请求以拒绝结束
+* **[快速模式](/docs/zh-CN/fast-mode)**：当会话之后运行的模型在允许列表外时，启用快速模式被拒绝
 
 ```json theme={null}
 {
@@ -184,31 +188,37 @@ Model changes that Claude Code makes on your behalf are checked the same way:
 }
 ```
 
-### Surface coverage
+<h3 id="surface-coverage">
+  表面覆盖
+</h3>
 
-Every surface enforces the allowlist it receives. Which delivery mechanism reaches each surface differs:
+每个表面都强制执行它接收的允许列表。哪个交付机制到达每个表面不同：
 
-| Delivery mechanism                                                            | CLI and IDE | Desktop local sessions | Web, mobile, and cloud sessions | Agent SDK and non-interactive | Cowork                  |
-| :---------------------------------------------------------------------------- | :---------- | :--------------------- | :------------------------------ | :---------------------------- | :---------------------- |
-| [Server-managed settings](/docs/en/server-managed-settings) from the admin console | Enforced    | Enforced               | Enforced                        | Enforced                      | Not delivered           |
-| [MDM or managed settings files](/docs/en/settings#settings-files)                  | Enforced    | Enforced               | Not delivered                   | Enforced                      | Enforced where deployed |
+| 交付机制                                               | CLI 和 IDE | 桌面本地会话 | Web、移动和云会话 | Agent SDK 和非交互式 | Cowork     |
+| :------------------------------------------------- | :-------- | :----- | :--------- | :-------------- | :--------- |
+| 来自管理控制台的[服务器管理的设置](/docs/zh-CN/server-managed-settings) | 强制执行      | 强制执行   | 强制执行       | 强制执行            | 未交付        |
+| [MDM 或托管设置文件](/docs/zh-CN/settings#settings-files)      | 强制执行      | 强制执行   | 未交付        | 强制执行            | 在部署的地方强制执行 |
 
-* Cloud sessions, on [Claude Code on the web](/docs/en/claude-code-on-the-web) or in the Desktop app, run on Anthropic-managed VMs: settings deployed to your device do not reach them, so deliver the allowlist through server-managed settings. A mid-session model switch in a cloud session is rejected when the requested model is excluded by the allowlist. Server-side rejection at session creation applies to [organization model restrictions](#organization-model-restrictions), not the `availableModels` settings key.
-* Cowork, the agentic-work tab in the Claude Desktop app, is not a Claude Code surface and does not receive server-managed settings by design. A managed settings file applies to Cowork sessions when it is present where the session runs; remote Cowork sessions run on Anthropic-managed VMs, where a device-deployed file is not present.
-* Sessions on [third-party providers](/docs/en/server-managed-settings#platform-availability) such as Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and [Claude Platform on AWS](/docs/en/claude-platform-on-aws) do not receive server-managed settings, so deliver the allowlist through MDM or managed settings files there.
-* Server-managed delivery also requires the session to authenticate with an organization login or a directly configured API key. Fleets that generate keys only through an [`apiKeyHelper`](/docs/en/settings#available-settings) script should deliver the allowlist through MDM or managed settings files.
-* The Desktop Code tab also hosts [SSH sessions](/docs/en/desktop#ssh-sessions), which read the managed settings file from the remote host they run on. See [Desktop managed settings](/docs/en/desktop#managed-settings).
-* The model pickers on claude.ai and in the Desktop app hide or grey out models excluded by your organization's allowlist. The picker state is a convenience for users; enforcement happens in the session.
+* 云会话在[网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) 或桌面应用中运行在 Anthropic 管理的虚拟机上：部署到您的设备的设置无法到达它们，因此通过服务器管理的设置交付允许列表。云会话中的中途模型切换在请求的模型被允许列表排除时被拒绝。服务器端拒绝在会话创建时适用于[组织模型限制](#organization-model-restrictions)，而不是 `availableModels` 设置键。
+* Cowork 是 Claude 桌面应用中的代理工作选项卡，不是 Claude Code 表面，按设计不接收服务器管理的设置。托管设置文件在会话运行的地方存在时适用于 Cowork 会话；远程 Cowork 会话运行在 Anthropic 管理的虚拟机上，其中不存在设备部署的文件。
+* [第三方提供商](/docs/zh-CN/server-managed-settings#platform-availability)上的会话，如 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和 [AWS 上的 Claude Platform](/docs/zh-CN/claude-platform-on-aws)，不接收服务器管理的设置，因此在那里通过 MDM 或托管设置文件交付允许列表。
+* 服务器管理的交付还需要会话使用组织登录或直接配置的 API 密钥进行身份验证。仅通过 [`apiKeyHelper`](/docs/zh-CN/settings#available-settings) 脚本生成密钥的队列应通过 MDM 或托管设置文件交付允许列表。
+* 桌面代码选项卡还托管 [SSH 会话](/docs/zh-CN/desktop#ssh-sessions)，它们从运行的远程主机读取托管设置文件。请参阅[桌面托管设置](/docs/zh-CN/desktop#managed-settings)。
+* claude.ai 和桌面应用中的模型选择器隐藏或灰显您的组织允许列表排除的模型。选择器状态是用户的便利；强制执行发生在会话中。
 
-### Default model behavior
+<h3 id="default-model-behavior">
+  默认模型行为
+</h3>
 
-The Default option in the model picker is not affected by `availableModels` unless [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) is also set. On its own, `availableModels` leaves Default available, resolving to the system's [runtime default](#default-model-setting) for the account. If that default is a model you intend to restrict, set `enforceAvailableModels` as well.
+模型选择器中的"默认"选项不受 `availableModels` 影响，除非也设置了 [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model)。单独使用 `availableModels` 会保持"默认"可用，解析为系统的[运行时默认](#default-model-setting)。如果该默认值是您打算限制的模型，也设置 `enforceAvailableModels`。
 
-An empty `availableModels` array never engages the Default-model enforcement: with `availableModels: []`, named model selections are blocked but the Default model for the account type remains usable regardless of `enforceAvailableModels`.
+空的 `availableModels` 数组永远不会启用"默认"模型强制执行：使用 `availableModels: []`，命名的模型选择被阻止，但帐户类型的默认模型无论 `enforceAvailableModels` 如何设置都保持可用。
 
-### Enforce the allowlist for the Default model
+<h3 id="enforce-the-allowlist-for-the-default-model">
+  对默认模型强制执行允许列表
+</h3>
 
-Set `enforceAvailableModels: true` alongside a non-empty `availableModels` in managed settings to extend the allowlist to the Default option. This requires Claude Code v2.1.175 or later.
+在托管设置中将 `enforceAvailableModels: true` 与非空的 `availableModels` 一起设置，以将允许列表扩展到"默认"选项。这需要 Claude Code v2.1.175 或更高版本。
 
 ```json theme={null}
 {
@@ -217,24 +227,26 @@ Set `enforceAvailableModels: true` alongside a non-empty `availableModels` in ma
 }
 ```
 
-The Default option resolves to the account-type default, or to the [organization default model](#organization-default-model) when an admin has set one. When that model is not in the allowlist, the Default option instead resolves to the first `availableModels` entry that names an allowed, available model, and the `/model` picker's Default row shows that model. This applies everywhere the default is reached: session startup, selecting Default in `/model`, the `"default"` keyword in [fallback model chains](#fallback-model-chains), and the fallback used when an excluded selection is dropped.
+"默认"选项解析为账户类型默认值，或在管理员设置了[组织默认模型](#organization-default-model)时解析为该模型。当该模型不在允许列表中时，"默认"选项改为解析为第一个 `availableModels` 条目，该条目命名允许的、可用的模型，`/model` 选择器的"默认"行显示该模型。这适用于到达默认值的每个地方：会话启动、在 `/model` 中选择"默认"、[回退模型链](#fallback-model-chains)中的 `"default"` 关键字，以及排除的选择被删除时使用的回退。
 
-`enforceAvailableModels` has no effect when `availableModels` is unset or empty: with `availableModels: []`, the Default model for the account type remains usable, so the setting cannot lock users out of every model. When `availableModels` is non-empty but no entry resolves to an allowed and available model, enforcement is skipped and Default resolves to the account-type default, with a warning visible only under `--debug`. Keep at least one guaranteed-available entry in the list to avoid this.
+当 `availableModels` 未设置或为空时，`enforceAvailableModels` 无效：使用 `availableModels: []`，帐户类型的默认模型保持可用，因此该设置无法将用户锁定在每个模型之外。当 `availableModels` 非空但没有条目解析为允许的和可用的模型时，强制执行降级，"默认"回退到帐户类型默认值，警告仅在 `--debug` 下可见。在列表中保持至少一个保证可用的条目以避免这种情况。
 
-Deploy both keys in the [highest-precedence managed source](/docs/en/settings#settings-precedence): admin-deployed managed sources do not merge, so a pair placed in a managed settings file is ignored when the admin console delivers any settings.
+在[最高优先级托管源](/docs/zh-CN/settings#settings-precedence)中部署两个键：管理员部署的托管源不合并，因此放在托管设置文件中的一对在管理控制台交付任何设置时被忽略。
 
-### Control the model users run on
+<h3 id="control-the-model-users-run-on">
+  控制用户运行的模型
+</h3>
 
-The `model` setting is an initial selection, not enforcement. It sets which model is active when a session starts, but users can still open `/model` and pick Default, which resolves to the system's [runtime default](#default-model-setting) regardless of what `model` is set to, unless [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) redirects it.
+`model` 设置是初始选择，而不是强制执行。它设置会话启动时哪个模型处于活跃状态，但用户仍然可以打开 `/model` 并选择"默认"，这会解析为系统的[运行时默认](#default-model-setting)，无论 `model` 设置为什么，除非 [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) 重定向它。
 
-To fully control the model experience, combine these settings:
+要完全控制模型体验，请结合这些设置：
 
-* **`availableModels`**: restricts which named models users can switch to
-* **`enforceAvailableModels`**: extends the `availableModels` allowlist to the Default option, so Default cannot resolve to a model outside the list
-* **`model`**: sets the initial model selection when a session starts
-* **`ANTHROPIC_DEFAULT_SONNET_MODEL`** / **`ANTHROPIC_DEFAULT_OPUS_MODEL`** / **`ANTHROPIC_DEFAULT_HAIKU_MODEL`** / **`ANTHROPIC_DEFAULT_FABLE_MODEL`**: control what the Default option and the `sonnet`, `opus`, `haiku`, and `fable` aliases resolve to
+* **`availableModels`**：限制用户可以切换到的命名模型
+* **`enforceAvailableModels`**：将 `availableModels` 允许列表扩展到"默认"选项，因此"默认"无法解析为列表外的模型
+* **`model`**：设置会话启动时的初始模型选择
+* **`ANTHROPIC_DEFAULT_SONNET_MODEL`** / **`ANTHROPIC_DEFAULT_OPUS_MODEL`** / **`ANTHROPIC_DEFAULT_HAIKU_MODEL`** / **`ANTHROPIC_DEFAULT_FABLE_MODEL`**：控制"默认"选项和 `sonnet`、`opus`、`haiku` 和 `fable` 别名解析为什么
 
-This example starts users on Sonnet 4.5, limits the picker to Sonnet and Haiku, and ensures Default resolves to a model on the allowlist rather than the tier default:
+此示例在 Sonnet 4.5 上启动用户，将选择器限制为 Sonnet 和 Haiku，并确保"默认"解析为允许列表上的模型，而不是系统默认值：
 
 ```json theme={null}
 {
@@ -247,130 +259,148 @@ This example starts users on Sonnet 4.5, limits the picker to Sonnet and Haiku, 
 }
 ```
 
-Without `enforceAvailableModels` or the `env` block, a user who selects Default in the picker would get the latest release for their tier, bypassing the version pin in `model` and `availableModels`. The two settings cover different scopes: `enforceAvailableModels` makes Default obey the allowlist, while the `env` block pins which version a permitted alias such as `sonnet` resolves to. Use `enforceAvailableModels` alone when restricting model families is enough; add the `env` block when you also need to pin a specific version.
+没有 `enforceAvailableModels` 或 `env` 块，在选择器中选择"默认"的用户会获得其层级的最新版本，绕过 `model` 和 `availableModels` 中的版本固定。这两个设置涵盖不同的范围：`enforceAvailableModels` 使"默认"遵守允许列表，而 `env` 块固定允许的别名（如 `sonnet`）解析为哪个版本。当限制模型系列就足够时，单独使用 `enforceAvailableModels`；当您还需要固定特定版本时，添加 `env` 块。
 
-### Merge behavior
+<h3 id="merge-behavior">
+  合并行为
+</h3>
 
-When the [highest-precedence managed settings source](/docs/en/server-managed-settings#settings-precedence) defines `availableModels`, that list alone applies: entries in user, project, or local settings cannot extend it, and admin-deployed managed sources do not merge with each other, so a list deployed in a managed settings file is ignored when server-managed settings deliver any keys. Otherwise, lists from user, project, and local settings are [concatenated and deduplicated](/docs/en/settings#settings-precedence) like other array settings. {/* min-version: 2.1.175 */}As of Claude Code v2.1.175, the managed list replaces lower-precedence entries; earlier versions merge them.
+当[最高优先级托管设置源](/docs/zh-CN/server-managed-settings#settings-precedence)定义 `availableModels` 时，仅该列表适用：用户、项目或本地设置中的条目无法扩展它，管理员部署的托管源不相互合并，因此在托管设置文件中部署的列表在服务器管理的设置交付任何键时被忽略。否则，来自用户、项目和本地设置的列表像其他数组设置一样[连接和去重](/docs/zh-CN/settings#settings-precedence)。{/* min-version: 2.1.175 */}从 Claude Code v2.1.175 开始，托管列表替换较低优先级条目；早期版本合并它们。
 
-Within the effective list, an entry naming a specific model in a family, whether a version prefix or a full model ID, disables that family's wildcard entry: `["sonnet", "claude-sonnet-4-5"]` allows only Sonnet 4.5 versions, not every Sonnet model.
+在有效列表中，命名系列中特定模型的条目，无论是版本前缀还是完整模型 ID，都禁用该系列的通配符条目：`["sonnet", "claude-sonnet-4-5"]` 仅允许 Sonnet 4.5 版本，而不是每个 Sonnet 模型。
 
-### Mantle model IDs
+<h3 id="mantle-model-ids">
+  Mantle 模型 ID
+</h3>
 
-When the [Amazon Bedrock Mantle endpoint](/docs/en/amazon-bedrock#use-the-mantle-endpoint) is enabled, entries in `availableModels` that start with `anthropic.` are added to the `/model` picker as custom options and routed to the Mantle endpoint. This is an exception to the alias matching described in [Pin models for third-party deployments](#pin-models-for-third-party-deployments). The setting still restricts the picker to listed entries, and a Mantle ID embeds a family name, so it counts as a specific entry and disables that family's wildcard: alongside any Mantle IDs, list the version prefixes or full IDs you want to keep selectable. See [Merge behavior](#merge-behavior).
+当启用[Amazon Bedrock Mantle 端点](/docs/zh-CN/amazon-bedrock#use-the-mantle-endpoint)时，`availableModels` 中以 `anthropic.` 开头的条目会作为自定义选项添加到 `/model` 选择器，并路由到 Mantle 端点。这是对[为第三方部署固定模型](#pin-models-for-third-party-deployments)中描述的别名匹配的例外。该设置仍然将选择器限制为列出的条目，Mantle ID 嵌入系列名称，因此它计为特定条目并禁用该系列的通配符：在任何 Mantle ID 旁边，列出您想保持可选择的版本前缀或完整 ID。请参阅[合并行为](#merge-behavior)。
 
-### Organization model restrictions
+<h3 id="organization-model-restrictions">
+  组织模型限制
+</h3>
 
-Organization admins on Claude Enterprise plans restrict which models members can run by disabling individual models in the claude.ai admin console. This restriction is delivered with the account's entitlements when Claude Code authenticates, separate from any `availableModels` list in settings, and the server enforces the same restriction independently when a session is created. Requires Claude Code v2.1.187 or later.
+Claude Enterprise 计划上的组织管理员通过在 claude.ai 管理控制台中禁用单个模型来限制成员可以运行的模型。此限制与帐户的权利一起交付，当 Claude Code 进行身份验证时，与设置中的任何 `availableModels` 列表分开，服务器在创建会话时独立强制执行相同的限制。需要 Claude Code v2.1.187 或更高版本。
 
-The restriction applies when a member signs in or uses their own API key. Organization-scoped credentials, such as organization service keys, are not tied to a user, so the restriction does not apply to them.
+此限制在成员登录或使用自己的 API 密钥时适用。组织范围的凭证（如组织服务密钥）不与用户绑定，因此限制不适用于它们。
 
-The Claude Console has no model restriction control. Organizations without a Claude Enterprise plan, including those whose members authenticate through the Anthropic API, restrict models with [`availableModels`](#restrict-model-selection) in [managed settings](/docs/en/settings#settings-files) instead, adding [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) to cover the Default option. These settings are enforced by Claude Code itself, not by the server.
+Claude 控制台没有模型限制控制。没有 Claude Enterprise 计划的组织（包括其成员通过 Anthropic API 进行身份验证的组织）改用[托管设置](/docs/zh-CN/settings#settings-files)中的 [`availableModels`](#restrict-model-selection) 来限制模型，添加 [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) 来覆盖"默认"选项。这些设置由 Claude Code 本身强制执行，而不是由服务器强制执行。
 
-A restricted model is hidden from the `/model` picker. Selecting it by name with `--model`, the `ANTHROPIC_MODEL` environment variable, or the `model` setting shows the notice `Model "<name>" is restricted by your organization's settings. Using <model> instead.` and the session starts on an allowed model. Typing `/model <name>` for a restricted model is rejected with `Model '<name>' is restricted by your organization's settings. Run /model to choose a different model.` and the session keeps its current model.
+受限制的模型在 `/model` 选择器中被隐藏。使用 `--model`、`ANTHROPIC_MODEL` 环境变量或 `model` 设置按名称选择它会显示通知 `Model "<name>" is restricted by your organization's settings. Using <model> instead.`，会话在允许的模型上启动。为受限制的模型键入 `/model <name>` 会被拒绝，显示 `Model '<name>' is restricted by your organization's settings. Run /model to choose a different model.`，会话保持其当前模型。
 
-A [model family alias](#restrict-model-selection) such as `opus` resolves to the newest version of its family that the organization permits, with the same substitution notice. `/model <alias>` is rejected only when every version of its family is restricted; an alias set with `--model`, `ANTHROPIC_MODEL`, or the `model` setting is still replaced at startup in that case. Before v2.1.205, a family alias was substituted or rejected based on its newest released version alone, even when an older version was allowed.
+[模型系列别名](#restrict-model-selection)（如 `opus`）解析为组织允许的该系列的最新版本，显示相同的替换通知。`/model <alias>` 仅在其系列的每个版本都被限制时被拒绝；使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置的别名在这种情况下仍在启动时被替换。在 v2.1.205 之前，系列别名基于其最新发布版本单独被替换或拒绝，即使列表允许较旧版本。
 
-Restrictions apply org-wide or per role:
+限制应用于组织范围或按角色：
 
-* Disabling a model at the organization level removes it for every member.
-* Role-level access grants different models to different custom roles, and a member who holds several roles can use any model that one of their roles grants.
-* Haiku models are always available and can't be disabled, so every member keeps at least one usable model.
-* An access change takes effect on new requests within about a minute; the `/model` picker reflects it the next time a session starts.
+* 在组织级别禁用模型会为每个成员删除它。
+* 角色级别访问为不同的自定义角色授予不同的模型，持有多个角色的成员可以使用其任何角色授予的模型。
+* Haiku 模型始终可用，无法禁用，因此每个成员至少保持一个可用模型。
+* 访问更改在约一分钟内对新请求生效；`/model` 选择器在下次会话启动时反映它。
 
-Both restrictions apply together: a model is selectable only when it is permitted by `availableModels` and not restricted by the organization. Organization restrictions are delivered to sessions on the Anthropic API and [LLM gateway](/docs/en/llm-gateway) deployments. Sessions on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS do not receive them, so use `availableModels` on those providers instead.
+两种限制一起适用：仅当模型被 `availableModels` 允许且不被组织限制时，它才可选择。组织限制被交付到 Anthropic API 和 [LLM 网关](/docs/zh-CN/llm-gateway)部署上的会话。Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和 AWS 上的 Claude Platform 上的会话不接收它们，因此在那些提供商上改用 `availableModels`。
 
-## Organization default model
+<h2 id="organization-default-model">
+  组织默认模型
+</h2>
 
 {/* plan-availability: feature=org-default-model plans=enterprise */}
 
-Organization admins on Claude Enterprise plans can set a default model for Claude Code members from the claude.ai admin console, for the whole organization or per custom role. When one is set, the Default option resolves to that model instead of the [account-type default](#default-model-setting). Requires Claude Code v2.1.196 or later.
+Claude Enterprise 计划上的组织管理员可以从 claude.ai 管理控制台为 Claude Code 成员设置默认模型，适用于整个组织或按自定义角色。设置后，"默认"选项会解析为该模型，而不是[账户类型默认](#default-model-setting)。需要 Claude Code v2.1.196 或更高版本。
 
-The Default row in the `/model` picker shows the organization default's name with the label Org default. The label reads Org default whether the admin set the default for the whole organization or for your role. A role default covers members of that custom role and takes precedence over the organization-wide default; when several of your roles set different defaults, the most capable model applies.
+`/model` 选择器中的"默认"行显示组织默认值的名称，标签为"Org default"。无论管理员为整个组织还是为您的角色设置默认值，标签都显示"Org default"。角色默认值涵盖该自定义角色的成员，优先于组织范围的默认值；当您的多个角色设置不同的默认值时，最强大的模型适用。
 
-The organization default is a starting point, not a restriction, and any other model selection takes precedence over it:
+组织默认值是一个起点，而不是限制，任何其他模型选择都优先于它：
 
-* the `--model` flag and the `ANTHROPIC_MODEL` environment variable
-* a `model` value in [managed settings](/docs/en/settings#settings-files) or supplied through `--settings`
-* a `model` value in your user, project, or local settings, including a model you save with `/model`
+* `--model` 标志和 `ANTHROPIC_MODEL` 环境变量
+* [托管设置](/docs/zh-CN/settings#settings-files)中的 `model` 值或通过 `--settings` 提供的值
+* 您的用户、项目或本地设置中的 `model` 值，包括您使用 `/model` 保存的模型
 
-Admins can also configure the organization default to override user selection. With override on, it takes precedence over the `model` value in user, project, and local settings, so a model you save with `/model` applies for the current session and the organization default returns on the next launch. When your selection differs, `/model` shows `Your organization's default (<model>) applies on restart`. The `--model` flag, `ANTHROPIC_MODEL`, managed settings, and `--settings` still take precedence even with override on. Override is available to a limited set of organizations; ask your Anthropic account team about availability.
+管理员还可以配置组织默认值以覆盖用户选择。启用覆盖后，它优先于用户、项目和本地设置中的 `model` 值，因此您使用 `/model` 保存的模型适用于当前会话，组织默认值在下次启动时返回。当您的选择不同时，`/model` 显示 `Your organization's default (<model>) applies on restart`。`--model` 标志、`ANTHROPIC_MODEL`、托管设置和 `--settings` 即使启用覆盖也仍然优先。覆盖仅对有限的组织集可用；向您的 Anthropic 账户团队询问可用性。
 
-To limit which models members can select, use [organization model restrictions](#organization-model-restrictions) or [`availableModels`](#restrict-model-selection) instead.
+要限制成员可以选择的模型，改用[组织模型限制](#organization-model-restrictions)或 [`availableModels`](#restrict-model-selection)。
 
-Claude Code reads the organization default once at startup, so a default the admin changes mid-session takes effect on the next launch.
+Claude Code 在启动时读取组织默认值一次，因此管理员在会话中途更改的默认值在下次启动时生效。
 
-When the organization default doesn't override user selection, the first interactive launch after the admin changes it clears the `model` key from your user settings once, so the new default applies. It changes nothing else in the file, and a model you save with `/model` after that launch is kept.
+当组织默认值不覆盖用户选择时，管理员更改它后的第一次交互式启动会从您的用户设置中清除 `model` 键一次，以便新默认值适用。它不改变文件中的任何其他内容，您在该启动后使用 `/model` 保存的模型会被保留。
 
-The organization default passes through the same restriction checks as any other Default model before it is adopted:
+组织默认值在被采用前通过与任何其他默认模型相同的限制检查：
 
-* [`availableModels`](#restrict-model-selection) on its own never constrains the Default option, so an organization default outside the allowlist still applies. When [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) is also set, an organization default outside the allowlist is remapped to the first allowlist entry, like any other Default
-* an organization default that [organization model restrictions](#organization-model-restrictions) deny for your account is replaced by the newest allowed model in its family, or a lower-cost family when every version of it is restricted
-* an organization default that isn't available to your account at all, such as Fable 5 under [zero data retention](/docs/en/zero-data-retention), is skipped, and the Default option resolves to the account-type default
+* [`availableModels`](#restrict-model-selection) 单独从不限制"默认"选项，因此允许列表外的组织默认值仍然适用。当也设置了 [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) 时，允许列表外的组织默认值会重新映射到第一个允许列表条目，就像任何其他默认值一样
+* [组织模型限制](#organization-model-restrictions)拒绝的组织默认值会被替换为其系列中最新的允许模型，或当该系列的每个版本都被限制时被替换为较低成本的系列
+* 对您的账户完全不可用的组织默认值，例如[零数据保留](/docs/zh-CN/zero-data-retention)下的 Fable 5，会被跳过，"默认"选项解析为账户类型默认值
 
-As of v2.1.199, when the organization default is a different model family from your account type's usual default, the `/model` picker keeps a separate row for that usual family, so you can still switch to it for a session. In v2.1.196 through v2.1.198 that row is missing from the picker.
+从 v2.1.199 开始，当组织默认值是与您的账户类型通常默认值不同的模型系列时，`/model` 选择器为该通常系列保持一个单独的行，因此您仍然可以为会话切换到它。在 v2.1.196 到 v2.1.198 中，该行在选择器中缺失。
 
-The organization default is delivered to sessions authenticated with the Anthropic API. Sessions on [LLM gateway](/docs/en/llm-gateway) deployments, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS don't receive it. To set a default on those deployments, use the `model` key in [managed settings](/docs/en/settings#settings-files) instead.
+组织默认值被交付到使用 Anthropic API 进行身份验证的会话。[LLM 网关](/docs/zh-CN/llm-gateway)部署、Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和 AWS 上的 Claude Platform 上的会话不接收它。要在这些部署上设置默认值，改用[托管设置](/docs/zh-CN/settings#settings-files)中的 `model` 键。
 
-## Organization effort limits
+<h2 id="organization-effort-limits">
+  组织工作量限制
+</h2>
 
 {/* plan-availability: feature=org-effort-limits plans=enterprise */}
 
-Organization admins on Claude Enterprise plans can set a maximum [effort level](#adjust-effort-level) per model for each custom role, alongside role-level [organization model restrictions](#organization-model-restrictions). Levels above the cap aren't offered in the `/effort` picker, and naming a higher level with `--effort` or `/effort` runs at the cap instead. In interactive sessions and plain-text `--print` runs, a warning names the requested and applied levels; with `json` or `stream-json` output or in background agents, the clamp applies silently. Caps are per model, so switching models can change which levels are available. When several of your roles grant the same model, the least restrictive cap applies. Requires Claude Code v2.1.195 or later.
+Claude Enterprise 计划上的组织管理员可以为每个自定义角色按模型设置最大[工作量级别](#adjust-effort-level)，以及角色级别的[组织模型限制](#organization-model-restrictions)。超过上限的级别不在 `/effort` 选择器中提供，使用 `--effort` 或 `/effort` 命名更高级别会在上限处运行。在交互式会话和纯文本 `--print` 运行中，警告命名请求的和应用的级别；使用 `json` 或 `stream-json` 输出或在后台代理中，限制无声应用。上限按模型，因此切换模型可以改变哪些级别可用。当您的多个角色授予相同模型时，最不限制的上限适用。需要 Claude Code v2.1.195 或更高版本。
 
-Effort limits are delivered together with [organization model restrictions](#organization-model-restrictions) and follow the same provider availability: sessions on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS don't receive them.
+工作量限制与[组织模型限制](#organization-model-restrictions)一起交付，并遵循相同的提供商可用性：Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和 AWS 上的 Claude Platform 上的会话不接收它们。
 
-## Special model behavior
+<h2 id="special-model-behavior">
+  特殊模型行为
+</h2>
 
-### `default` model setting
+<h3 id="default-model-setting">
+  `default` 模型设置
+</h3>
 
-The behavior of `default` depends on your account type:
+`default` 的行为取决于您的账户类型：
 
-* **Max, Team Premium, Enterprise pay-as-you-go, and Anthropic API**: defaults to Opus 5
-* **Claude Platform on AWS, Amazon Bedrock, and Google Cloud's Agent Platform**: defaults to Opus 5
-* **Pro, Team Standard, and Enterprise subscription seats**: defaults to Sonnet 5
-* **Microsoft Foundry**: defaults to Sonnet 4.5
+* **Max、Team Premium、Enterprise 按使用量付费和 Anthropic API**：默认为 Opus 4.8
+* **AWS 上的 Claude Platform 和 Amazon Bedrock 以及 Google Cloud 的 Agent Platform**：默认为 Opus 4.8
+* **Pro、Team Standard 和 Enterprise 订阅席位**：默认为 Sonnet 5
+* **Microsoft Foundry**：默认为 Sonnet 4.5
 
-Enterprise pay-as-you-go means an Enterprise organization billed by usage rather than by subscription seat.
+Enterprise 按使用量付费是指按使用量而非按订阅席位计费的 Enterprise 组织。
 
-{/* min-version: 2.1.219 */}Before v2.1.219, `default` resolved to Opus 4.8 on the Anthropic API, Max, Team Premium, and Enterprise pay-as-you-go from v2.1.154, and on Claude Platform on AWS, Amazon Bedrock, and Google Cloud's Agent Platform from v2.1.207. {/* min-version: 2.1.207 */}Before v2.1.207, `default` resolved to Opus 4.7 on Claude Platform on AWS and to Sonnet 4.5 on Amazon Bedrock and Google Cloud's Agent Platform.
+{/* min-version: 2.1.207 */}在 v2.1.207 之前，`default` 在 AWS 上的 Claude Platform 上解析为 Opus 4.7，在 Amazon Bedrock 和 Google Cloud 的 Agent Platform 上解析为 Sonnet 4.5。
 
-When an admin has set an [organization default model](#organization-default-model), `default` resolves to that model instead of the account-type default above. Requires Claude Code v2.1.196 or later.
+当管理员设置了[组织默认模型](#organization-default-model)时，`default` 解析为该模型，而不是上面的账户类型默认值。需要 Claude Code v2.1.196 或更高版本。
 
-When managed settings [enforce the allowlist for the Default model](#enforce-the-allowlist-for-the-default-model) and the account-type default is not in `availableModels`, `default` resolves to the enforced Default instead of the account-type default above. When both apply, the organization default replaces the account-type default first and enforcement then applies to it: an allowlisted organization default is kept, while one outside the list resolves to the enforced Default.
+当托管设置[对默认模型强制执行允许列表](#enforce-the-allowlist-for-the-default-model)且账户类型默认值不在 `availableModels` 中时，`default` 会解析为强制执行的默认值，而不是上面的账户类型默认值。当两者都适用时，组织默认值首先替换账户类型默认值，然后强制执行应用于它：允许列表中的组织默认值被保留，而列表外的则解析为强制执行的默认值。
 
-Fable 5 is not the default model on any account type. Sessions use Fable 5 only after you choose it, with `/model fable`, a `model` setting, or the `best` alias where Fable 5 is available. Choosing it with `/model` saves it as the selected model in your user settings, so later sessions start on Fable 5 until you change models.
+Fable 5 不是任何账户类型的默认模型。会话仅在您选择 Fable 5 后才使用它，通过 `/model fable`、`model` 设置或 Fable 5 可用的 `best` 别名。使用 `/model` 选择它会将其保存为用户设置中的选定模型，因此后续会话将从 Fable 5 开始，直到您更改模型。
 
-### `opusplan` model setting
+<h3 id="opusplan-model-setting">
+  `opusplan` 模型设置
+</h3>
 
-The `opusplan` model alias provides an automated hybrid approach:
+`opusplan` 模型别名提供了一种自动化的混合方法：
 
-* **In plan mode**: uses `opus` for complex reasoning and architecture decisions
-* **In execution mode**: automatically switches to `sonnet` for code generation and implementation
+* **在 Plan Mode 中**：使用 `opus` 进行复杂推理和架构决策
+* **在执行模式中**：自动切换到 `sonnet` 进行代码生成和实现
 
-This pairs Opus's reasoning for planning with Sonnet's efficiency for execution.
+这为您提供了两全其美的方案：Opus 的卓越推理能力用于规划，Sonnet 的效率用于执行。
 
-The plan-mode Opus phase uses the same context window as the `opus` model setting. On subscription tiers where Opus is [automatically upgraded to 1M context](#extended-context), `opusplan` receives the upgrade in plan mode as well. To force 1M context for both phases when you are not on an auto-upgrade tier, set the model to `opusplan[1m]`.
+Plan Mode 中的 Opus 阶段使用与 `opus` 模型设置相同的上下文窗口。在[自动升级到 1M 上下文](#extended-context)的订阅层上，`opusplan` 在 Plan Mode 中也会获得升级。要在您不在自动升级层上时为两个阶段强制使用 1M 上下文，请将模型设置为 `opusplan[1m]`。
 
-When [`availableModels`](#restrict-model-selection) excludes the newest Opus but permits an older version, for example `["sonnet", "claude-opus-4-6"]`, `opusplan` uses the newest permitted Opus for planning and stays on Sonnet only when every Opus is excluded. A Haiku session that would normally upgrade to Sonnet in plan mode likewise uses the newest permitted Sonnet, and stays on Haiku only when every Sonnet is excluded. Before v2.1.205, plan mode stayed on the session's model whenever the newest version of the upgrade family was excluded, even when the allowlist permitted an older one.
+当 [`availableModels`](#restrict-model-selection) 排除最新的 Opus 但允许较旧版本时，例如 `["sonnet", "claude-opus-4-6"]`，`opusplan` 为规划使用最新的允许 Opus，仅当每个 Opus 都被排除时才保持在 Sonnet 上。通常会在 Plan Mode 中升级到 Sonnet 的 Haiku 会话同样使用最新的允许 Sonnet，仅当每个 Sonnet 都被排除时才保持在 Haiku 上。在 v2.1.205 之前，当最新版本的升级系列被排除时，Plan Mode 保持在会话的模型上，即使允许列表允许较旧的版本。
 
-The substitution of an older permitted version applies on the Anthropic API and [Claude Platform on AWS](/docs/en/claude-platform-on-aws). On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Mantle, whose deployments use provider-specific model IDs, plan mode stays on the session's model whenever the upgrade model is excluded.
+较旧的允许版本的替换适用于 Anthropic API 和 [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws)。在 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 和 Mantle 上，其部署使用特定于提供商的模型 ID，当升级模型被排除时，Plan Mode 保持在会话的模型上。
 
-For a hybrid approach where Claude decides mid-task when to consult a second model rather than switching at the plan boundary, see the [advisor tool](/docs/en/advisor).
+有关 Claude 在任务中途决定何时咨询第二个模型而不是在 Plan 边界处切换的混合方法，请参阅 [advisor tool](/docs/zh-CN/advisor)。
 
-### Fallback model chains
+<h3 id="fallback-model-chains">
+  回退模型链
+</h3>
 
-When the primary model is overloaded, unavailable, or returns another non-retryable server error, Claude Code can switch to a fallback model instead of failing the request. Authentication, billing, rate-limit, request-size, and transport errors never trigger a switch; those follow their normal retry and error handling.
+当主模型过载、不可用或返回另一个不可重试的服务器错误时，Claude Code 可以切换到回退模型，而不是使请求失败。身份验证、计费、速率限制、请求大小和传输错误永远不会触发切换；这些遵循其正常的重试和错误处理。
 
-Configure one or more fallback models and Claude Code tries them in order, showing a notice when it switches. The switch lasts for the current turn only, so your next message tries the primary model first again. Chains are capped at three models after duplicate removal, and extra entries are ignored.
+配置一个或多个回退模型，Claude Code 会按顺序尝试它们，在切换时显示通知。切换仅持续当前轮次，因此您的下一条消息会再次首先尝试主模型。链在去重后限制为三个模型，额外条目被忽略。
 
-Set a chain for one session with the `--fallback-model` flag, which accepts a comma-separated list:
+使用 `--fallback-model` 标志为一个会话设置链，该标志接受逗号分隔的列表：
 
 ```bash theme={null}
 claude --fallback-model sonnet,haiku
 ```
 
-To persist a chain across sessions, set `fallbackModel` in [settings](/docs/en/settings) as an array:
+要在会话间持久化链，请在 [settings](/docs/zh-CN/settings) 中将 `fallbackModel` 设置为数组：
 
 ```json theme={null}
 {
@@ -378,307 +408,318 @@ To persist a chain across sessions, set `fallbackModel` in [settings](/docs/en/s
 }
 ```
 
-The `--fallback-model` flag takes precedence over the `fallbackModel` setting. Each entry accepts a model name or alias, and `"default"` expands to the default model.
+`--fallback-model` 标志优先于 `fallbackModel` 设置。每个元素接受模型名称或别名，`"default"` 扩展为默认模型。
 
-Claude Code doesn't confirm the chain at startup and `/status` doesn't display it. The notice shown when a switch happens is the first visible sign that a fallback is configured.
+两种情况会导致元素被跳过：
 
-When a request fails over, Claude Code tries each entry in order until one accepts it. An entry that can't be reached either, such as a retired model pinned in settings, fails over to the next one the same way. Two kinds of entry are removed before that walk starts:
+* **不可用的模型**：无法访问的模型，例如在设置中固定的已停用模型，会被跳过，Claude Code 继续到下一个元素。
+* **超出允许列表**：不被 [`availableModels`](#restrict-model-selection) 允许的元素在读取链时被删除，永远不会被尝试。
 
-* **Outside the allowlist**: any entry not permitted by [`availableModels`](#restrict-model-selection) is dropped when Claude Code reads the chain.
-* **Smaller context window during compaction**: {/* min-version: 2.1.178 */}the chain also covers [compaction](/docs/en/context-window#what-survives-compaction), but Claude Code won't fall back to a model with a smaller context window than the primary's, since summarizing there would cut off part of the conversation first. If every fallback is smaller, compaction shows the original error and you can retry.
+<h3 id="automatic-model-fallback">
+  自动模型回退
+</h3>
 
-### Automatic model fallback
+本部分涵盖来自 Fable 5 的基于内容的回退。有关模型过载或不可用时的基于可用性的回退，请参阅 [Fallback model chains](#fallback-model-chains)。
 
-This section covers content-based fallback from Fable 5 and Opus 5. For availability-based fallback when a model is overloaded or unavailable, see [Fallback model chains](#fallback-model-chains).
+Fable 5 运行时具有网络安全和生物学内容的安全分类器。当分类器标记请求时，Claude Code 在您提供商的默认 Opus 模型上重新运行该请求，并在记录中显示通知。在 Anthropic API、[LLM gateway](/docs/zh-CN/llm-gateway) 部署和 [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws) 上，该模型是 Opus 4.8。在 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway) 上，它是 Opus 4.7，除非您将 [`opus` 别名](#environment-variables)指向另一个模型。
 
-Fable 5 and Opus 5 run with safety classifiers for cybersecurity and biology content. When a classifier flags a request and the flagged category has a fallback model, Claude Code re-runs the request on that model and shows a notice in the transcript. The fallback model depends on which model refused and which category was flagged:
+会话随后在该 Opus 模型上继续。要返回 Fable 5，请运行 `/model fable`。
 
-* **Fable 5**: biology-flagged requests re-run on Opus 5, and cybersecurity-flagged requests re-run on Opus 4.8.
-* **Opus 5**: cybersecurity-flagged requests re-run on Opus 4.8. Biology-flagged requests end with a refusal instead, because Opus 5 runs its own biology classifiers with no fallback model.
+回退目标会根据 [`availableModels`](#restrict-model-selection) 进行检查。当它被阻止时，不会发生回退。拒绝显示为正常错误，会话的模型保持不变。
 
-On Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, Claude Code resolves these targets through your deployment instead, and if you set `ANTHROPIC_DEFAULT_OPUS_MODEL`, categories that have a fallback re-run on the pinned model; see [Enable fallback on Bedrock, Agent Platform, and Foundry](#enable-fallback-on-bedrock-agent-platform-and-foundry).
+<h4 id="check-what-triggered-fallback">
+  检查触发回退的原因
+</h4>
 
-After a fallback, the session continues on the fallback model. To return to your original model, run [`/model`](#setting-your-model).
+回退可以在会话的第一个请求上触发，在您发送任何不寻常的内容之前，因为第一个请求携带工作区上下文，例如您的 CLAUDE.md 内容和 git 状态。包含安全或生物学材料的存储库可以仅在该上下文上触发分类器。
 
-{/* min-version: 2.1.219 */}Category-based fallback requires Claude Code v2.1.219 or later. Before v2.1.219, every flagged Fable 5 request re-ran on your provider's default Opus model, and Opus 5 was not a fallback source.
+要检查自定义是否是触发器，请使用 `claude --safe-mode` 启动会话，这会禁用自定义，例如 CLAUDE.md、skills、MCP servers 和 hooks。Git 状态和目录名称不是自定义，仍然包括在内。
 
-The fallback model is checked against [`availableModels`](#restrict-model-selection). When it is blocked, no fallback occurs. The refusal is shown as a normal error and the session's model is unchanged.
+<h4 id="ask-before-switching">
+  切换前询问
+</h4>
 
-#### Check what triggered fallback
+要决定每次请求被标记时发生什么，而不是自动切换，请运行 `/config` 并关闭"在消息被标记时切换模型"。标记的请求随后暂停会话，有两个选项：切换到 Opus 模型，或编辑提示并在 Fable 5 上重试。
 
-Fallback can trigger on the first request of a session, before you send anything unusual, because the first request carries workspace context such as your CLAUDE.md content and git status. A repository that contains security or biology material can trip the classifier on that context alone.
+某些情况的行为不同：
 
-To check whether customizations are the trigger, start a session with `claude --safe-mode`, which disables customizations such as CLAUDE.md, skills, MCP servers, and hooks. Git status and directory names are not customizations and are still included.
+* 如果两个模型都标记相同的请求，您可以编辑提示并重试，或启动新会话。
+* 在移动 [Claude Code on the web](/docs/zh-CN/claude-code-on-the-web) 会话上，不支持编辑和重试。切换模型，或从桌面浏览器或桌面应用继续会话。
+* 在 [non-interactive mode](/docs/zh-CN/cli-reference#cli-flags) 和无法显示提示的 SDK 集成中，标记的请求以拒绝结束轮次。
+* 当回退目标被 [`availableModels`](#restrict-model-selection) 阻止时，不会显示提示。标记的请求以拒绝结束，与目标被阻止时的自动回退相同。
 
-#### Ask before switching
+<h4 id="enable-fallback-on-bedrock-agent-platform-and-foundry">
+  在 Bedrock、Agent Platform 和 Foundry 上启用回退
+</h4>
 
-To decide what happens each time a request is flagged, rather than switching automatically, run `/config` and turn off **Switch models when a message is flagged**, or set [`switchModelsOnFlag`](/docs/en/settings#available-settings) to `false` in your settings file. A flagged request then pauses the session with two options: switch to the fallback model, or edit the prompt and retry on the current model.
+在 [Amazon Bedrock](/docs/zh-CN/amazon-bedrock)、[Google Cloud 的 Agent Platform](/docs/zh-CN/google-vertex-ai) 和 [Microsoft Foundry](/docs/zh-CN/microsoft-foundry) 上，模型 ID 是特定于提供商的，因此自动回退仅在 Claude Code 可以识别两个涉及的模型时运行：
 
-Some cases behave differently:
+* Claude Code 必须将当前模型识别为 Fable 5：模型 ID 包含 `claude-fable-5`，匹配 `ANTHROPIC_DEFAULT_FABLE_MODEL` 的值，或使用 [`modelOverrides`](#override-model-ids-per-version) 映射。
+* 回退目标必须解析为 Opus 模型：`ANTHROPIC_DEFAULT_OPUS_MODEL` 的值（如果设置），否则提供商模型列表中的 Opus 4.8 条目。
 
-* When the flagged category has no fallback model, such as a biology flag on Opus 5, the prompt is not shown and the request ends with the refusal.
-* If both models flag the same request, you can edit the prompt and retry, or start a new session.
-* On mobile [Claude Code on the web](/docs/en/claude-code-on-the-web) sessions, editing and retrying is not supported. Switch models, or continue the session from a desktop browser or the desktop app.
-* In [non-interactive mode](/docs/en/cli-reference#cli-flags) and SDK integrations that can't show the prompt, a flagged request ends the turn with a refusal instead.
-* When the fallback target is blocked by [`availableModels`](#restrict-model-selection), the prompt is not shown. The flagged request ends with the refusal, the same as automatic fallback when the target is blocked.
+如果任一模型无法识别，Claude Code 不会自动切换。标记的请求以拒绝消息结束，您可以使用 [`/model`](#setting-your-model) 切换模型并重试。要在这些提供商上启用自动回退，请将 `ANTHROPIC_DEFAULT_FABLE_MODEL` 设置为您的 Fable 5 模型 ID，将 `ANTHROPIC_DEFAULT_OPUS_MODEL` 设置为您的 Opus 4.8 模型 ID。
 
-#### Enable fallback on Bedrock, Agent Platform, and Foundry
+<h4 id="security-research-and-biology-workloads">
+  安全研究和生物学工作负载
+</h4>
 
-On [Amazon Bedrock](/docs/en/amazon-bedrock), [Google Cloud's Agent Platform](/docs/en/google-vertex-ai), and [Microsoft Foundry](/docs/en/microsoft-foundry), model IDs are provider-specific, so automatic fallback only operates when Claude Code can identify both models involved:
+进攻性安全或生物学中的工作负载，包括渗透测试、Capture the Flag (CTF) 练习和生物学相邻代码库，经常触发回退，通常在第一个请求上。对于实质性生物学工作，预期几乎所有请求都会重新路由。
 
-* Claude Code must recognize the current model as a fallback source. Fable 5 is recognized when the model ID contains `claude-fable-5`, matches the value of `ANTHROPIC_DEFAULT_FABLE_MODEL`, or is mapped with [`modelOverrides`](#override-model-ids-per-version). Opus 5 is recognized by its provider model ID or a [`modelOverrides`](#override-model-ids-per-version) mapping.
-* The fallback model must resolve in your deployment. If you set `ANTHROPIC_DEFAULT_OPUS_MODEL`, flagged requests re-run on that model for every category that has a fallback; a biology flag on Opus 5 still ends with a refusal. If you don't set it, cybersecurity-flagged requests re-run on an Opus 4.8 entry in the provider's model list, and biology-flagged requests from Fable 5 on an Opus 5 entry.
+这是这些领域的预期路由，不是账户标记。如果您的组织需要 Fable 级别的功能来完成此工作，请向您的 Anthropic 账户团队询问受信任访问计划。
 
-If either model can't be identified, Claude Code does not switch automatically. The flagged request ends with a refusal message, and you can switch models with [`/model`](#setting-your-model) and retry. Setting `ANTHROPIC_DEFAULT_FABLE_MODEL` to your Fable 5 model ID enables Fable 5 recognition. Setting `ANTHROPIC_DEFAULT_OPUS_MODEL` to an Opus model ID gives the flagged categories a fallback target, unless the pin names a model outside the Opus family or the model that refused; then Claude Code doesn't switch and the refusal stands.
+<h3 id="adjust-effort-level">
+  调整工作量级别
+</h3>
 
-#### Security research and biology workloads
+[工作量级别](https://platform.claude.com/docs/zh-CN/build-with-claude/effort)控制自适应推理，让模型根据任务复杂性决定是否以及在每一步思考多少。较低的工作量对于直接任务更快更便宜，而较高的工作量为复杂问题提供更深入的推理。
 
-Workloads in offensive security or biology, including penetration testing, Capture the Flag (CTF) exercises, and biology-adjacent codebases, trigger fallback frequently, often on the first request. For substantive biology work on Fable 5, Claude Code moves the session to Opus 5 at the first flagged request, and later biology-flagged requests end in refusals there, because Opus 5 has no biology fallback. On Opus 5, you get those refusals from the first flagged request.
+可用的工作量级别取决于模型。此处未列出的模型不支持工作量：
 
-This is expected routing for these domains, not an account flag. If your organization needs Fable-class capability for this work, ask your Anthropic account team about trusted access programs.
+| 模型                           | 级别                                  |
+| :--------------------------- | :---------------------------------- |
+| Fable 5                      | `low`、`medium`、`high`、`xhigh`、`max` |
+| Sonnet 5、Opus 4.8 和 Opus 4.7 | `low`、`medium`、`high`、`xhigh`、`max` |
+| Opus 4.6 和 Sonnet 4.6        | `low`、`medium`、`high`、`max`         |
 
-### Adjust effort level
+如果您设置活跃模型不支持的级别，Claude Code 会回退到您设置的级别或以下的最高支持级别。例如，`xhigh` 在 Opus 4.6 上运行为 `high`。您的组织也可以为模型限制哪些级别可用；请参阅[组织工作量限制](#organization-effort-limits)。
 
-[Effort levels](https://platform.claude.com/docs/en/build-with-claude/effort) control adaptive reasoning, which lets the model decide whether and how much to think on each step based on task complexity. Lower effort is faster and cheaper for straightforward tasks, while higher effort provides deeper reasoning for complex problems.
+Fable 5、Sonnet 5、Opus 4.8、Opus 4.6 和 Sonnet 4.6 上的默认工作量是 `high`，Opus 4.7 上的默认工作量是 `xhigh`。
 
-The available effort levels depend on the model. Models not listed here do not support effort:
+当您首次运行 Fable 5、Opus 4.8 或 Opus 4.7 时，Claude Code 会应用该模型的默认工作量，即使您之前为另一个模型设置了不同的级别：Fable 5 和 Opus 4.8 上的 `high`，Opus 4.7 上的 `xhigh`。切换后再次运行 `/effort` 以选择不同的级别。该默认值在会话间保持，直到您做出明确的工作量选择，例如在交互式会话中运行 `/effort` 或使用 `--effort` 启动。`low`、`medium`、`high` 和 `xhigh` 在会话间持续存在。{/* min-version: 2.1.205 */}在 [non-interactive mode](/docs/zh-CN/headless) 中使用 `/effort` 时，带有 `-p` 标志，仅适用于当前会话，不会保存为您的默认值。非交互式 `/effort` 也无法释放上面的模型默认保持：在 Fable 5、Opus 4.8 和 Opus 4.7 上，它报告 `Not applied`，会话保持在模型的默认工作量，因此改为在启动时传递 `--effort`。`max` 提供最深入的推理，对令牌支出没有限制，仅适用于当前会话，除非通过 `CLAUDE_CODE_EFFORT_LEVEL` 环境变量设置。
 
-| Model                                    | Levels                                  |
-| :--------------------------------------- | :-------------------------------------- |
-| Fable 5                                  | `low`, `medium`, `high`, `xhigh`, `max` |
-| Opus 5, Sonnet 5, Opus 4.8, and Opus 4.7 | `low`, `medium`, `high`, `xhigh`, `max` |
-| Opus 4.6 and Sonnet 4.6                  | `low`, `medium`, `high`, `max`          |
+`/effort` 菜单还提供 `ultracode`。Ultracode 是一个 Claude Code 设置，而不是模型工作量级别：它向模型发送 `xhigh`，并且还让 Claude 为实质性任务编排[动态工作流](/docs/zh-CN/workflows)。它仅适用于当前会话。
 
-If you set a level the active model does not support, Claude Code falls back to the highest supported level at or below the one you set. For example, `xhigh` runs as `high` on Opus 4.6. Your organization can also cap which levels are available for a model; see [Organization effort limits](#organization-effort-limits).
+您可以通过以下任何方式打开 ultracode：
 
-The default effort is `high` on every model that supports effort, except Opus 4.7, which defaults to `xhigh`.
+* **`/effort`**：运行 `/effort ultracode`，或从菜单中选择它
+* **`--effort` 标志**：使用 `claude --effort ultracode` 启动，这会在 `xhigh` 工作量下启动会话并打开 ultracode
+* **`--settings` 或 Agent SDK 控制请求**：传递 `"ultracode": true`。[`applyFlagSettings()`](/docs/zh-CN/agent-sdk/typescript#applyflagsettings) 请求也接受 `effortLevel: "ultracode"`
 
-When you first run Fable 5, Opus 4.8, or Opus 4.7, Claude Code applies that model's default effort even if you previously set a different level for another model, and holds it across sessions until you make an explicit effort choice, such as running `/effort` in an interactive session or launching with `--effort`. Opus 5 has no such hold: a level you previously set carries over.
+将 `ultracode` 传递给 `--effort` 标志或 Agent SDK `effortLevel` 值需要 Claude Code v2.1.203 或更高版本。在 v2.1.203 之前，`--effort ultracode` 打印 `Unknown --effort value 'ultracode'`，会话以默认工作量启动。
 
-`low`, `medium`, `high`, and `xhigh` persist across sessions when you set them in an interactive session. `max` provides the deepest reasoning and applies to the current session only, except when set through the `CLAUDE_CODE_EFFORT_LEVEL` environment variable.
+持久化的 `effortLevel` 设置和 `CLAUDE_CODE_EFFORT_LEVEL` 环境变量不接受 `ultracode`。
 
-{/* min-version: 2.1.205 */}A level set with `/effort` in [non-interactive mode](/docs/en/headless), with the `-p` flag, applies to the current session only and isn't saved as your default. It also can't release the model-default hold: while the hold is in force, a non-interactive `/effort` reports `Not applied`, so pass `--effort` at launch instead.
+当 ultracode 不可用时，例如当[工作流被关闭](/docs/zh-CN/workflows#turn-workflows-off)时，`--effort ultracode` 仅设置 `xhigh` 工作量。
 
-The `/effort` menu also offers `ultracode`. Ultracode is a Claude Code setting rather than a model effort level: it sends `xhigh` to the model and additionally has Claude orchestrate [dynamic workflows](/docs/en/workflows) for substantive tasks. It applies to the current session only.
+<h4 id="choose-an-effort-level">
+  选择工作量级别
+</h4>
 
-You can turn on ultracode through any of the following:
+每个级别都在令牌支出和功能之间进行权衡。默认值适合大多数编码任务；当您想要不同的平衡时进行调整。
 
-* **`/effort`**: run `/effort ultracode`, or select it from the menu
-* **`--effort` flag**: launch with `claude --effort ultracode`, which starts the session at `xhigh` effort with ultracode on
-* **`--settings` or an Agent SDK control request**: pass `"ultracode": true`. An [`applyFlagSettings()`](/docs/en/agent-sdk/typescript#applyflagsettings) request also accepts `effortLevel: "ultracode"`
+| 级别          | 何时使用                                                                           |
+| :---------- | :----------------------------------------------------------------------------- |
+| `low`       | 保留用于短期、范围有限、延迟敏感且不需要高智能的任务                                                     |
+| `medium`    | 减少成本敏感工作的令牌使用，可以权衡一些智能                                                         |
+| `high`      | 平衡令牌使用和智能。Fable 5、Sonnet 5、Opus 4.8、Opus 4.6 和 Sonnet 4.6 上的默认值                |
+| `xhigh`     | 更深入的推理，令牌支出更高。Opus 4.7 上的默认值                                                   |
+| `max`       | 可以改进困难任务的性能，但可能显示收益递减，容易过度思考。在广泛采用前进行测试                                        |
+| `ultracode` | 一个 Claude Code 设置，为每个实质性任务规划一个[动态工作流](/docs/zh-CN/workflows)，每条消息进行 `xhigh` 推理。仅限会话 |
 
-Passing `ultracode` to the `--effort` flag or the Agent SDK `effortLevel` value requires Claude Code v2.1.203 or later. Before v2.1.203, `--effort ultracode` printed `Unknown --effort value 'ultracode'` and the session started at the default effort.
+工作量规模按模型校准，因此相同的级别名称在不同模型中不代表相同的基础值。
 
-The persisted `effortLevel` setting and the `CLAUDE_CODE_EFFORT_LEVEL` environment variable don't accept `ultracode`. When `CLAUDE_CODE_EFFORT_LEVEL` is set to a level other than `xhigh`, requests run at that level and ultracode's workflow orchestration stays inactive. Selecting ultracode then shows a warning that the environment variable overrides effort for the session.
+<h4 id="use-ultrathink-for-one-off-deep-reasoning">
+  使用 ultrathink 进行一次性深入推理
+</h4>
 
-When ultracode isn't available, for example when [workflows are turned off](/docs/en/workflows#turn-workflows-off), `--effort ultracode` sets `xhigh` effort only.
+在您的提示中的任何位置包含 `ultrathink` 以请求在该轮进行更深入的推理，而无需更改您的会话工作量设置。Claude Code 识别该关键字并添加上下文内指令。发送到 API 的工作量级别保持不变。其他短语如"think"、"think hard"和"think more"会作为普通提示文本传递，不被识别为关键字。
 
-#### Choose an effort level
+<h4 id="set-the-effort-level">
+  设置工作量级别
+</h4>
 
-Each level trades token spend against capability. The default suits most coding tasks; adjust when you want a different balance.
+您可以通过以下任何方式更改工作量：
 
-| Level       | When to use it                                                                                                                                  |
-| :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `low`       | Reserve for short, scoped, latency-sensitive tasks that are not intelligence-sensitive                                                          |
-| `medium`    | Reduces token usage for cost-sensitive work that can trade off some intelligence                                                                |
-| `high`      | Balances token usage and intelligence. The default on every model except Opus 4.7                                                               |
-| `xhigh`     | Deeper reasoning at higher token spend. The default on Opus 4.7                                                                                 |
-| `max`       | Can improve performance on demanding tasks but may show diminishing returns and is prone to overthinking. Test before adopting broadly          |
-| `ultracode` | A Claude Code setting that plans a [dynamic workflow](/docs/en/workflows) for each substantive task with `xhigh` per-message reasoning. Session-only |
+* **`/effort`**：运行不带参数的 `/effort` 打开交互式滑块，运行 `/effort` 后跟级别名称直接设置，或运行 `/effort auto` 重置为模型默认值
+* **在 `/model` 中**：选择模型时使用左右箭头键调整工作量滑块
+* **`--effort` 标志**：在启动 Claude Code 时传递级别名称为单个会话设置
+* **环境变量**：设置 `CLAUDE_CODE_EFFORT_LEVEL` 为级别名称或 `auto`
+* **设置**：在设置文件中将 `effortLevel` 设置为 `low`、`medium`、`high` 或 `xhigh`。`max` 和 `ultracode` 是[仅限会话](#adjust-effort-level)的，此处不接受
+* **Skill 和 subagent frontmatter**：在 [skill](/docs/zh-CN/skills#frontmatter-reference) 或 [subagent](/docs/zh-CN/sub-agents#supported-frontmatter-fields) markdown 文件中设置 `effort` 以在该 skill 或 subagent 运行时覆盖工作量级别
 
-The effort scale is calibrated per model, so the same level name does not represent the same underlying value across models.
+环境变量优先于所有其他方法，然后是您配置的级别，然后是模型默认值。Frontmatter 工作量在该 skill 或 subagent 活跃时应用，覆盖会话级别但不覆盖环境变量。
 
-#### Use ultrathink for one-off deep reasoning
+当选择支持的模型时，工作量滑块会出现在 `/model` 中。当前工作量级别也显示在徽标和旋转器旁边，例如"with low effort"，因此您可以确认哪个设置处于活动状态，而无需打开 `/model`。
 
-Include `ultrathink` anywhere in your prompt to request deeper reasoning on that turn without changing your session effort setting. Claude Code recognizes the keyword and adds an in-context instruction. The effort level sent to the API is unchanged. Other phrases such as "think", "think hard", and "think more" are passed through as ordinary prompt text and are not recognized as keywords.
+<h4 id="adaptive-reasoning-and-fixed-thinking-budgets">
+  自适应推理和固定思考预算
+</h4>
 
-#### Set the effort level
+自适应推理使思考在每一步都是可选的，因此 Claude 可以更快地响应常规提示，并为受益于思考的步骤保留更深入的思考。如果您希望 Claude 比当前级别产生的思考更多或更少，您可以直接在您的提示或 `CLAUDE.md` 中说明；模型会在其工作量设置范围内响应该指导。
 
-You can change effort through any of the following:
+Fable 5、Sonnet 5 和 Opus 4.7 及更高版本始终使用自适应推理。固定思考预算模式和 `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` 不适用于它们。
 
-* **`/effort`**: run `/effort` with no arguments to open an interactive slider, `/effort` followed by a level name to set it directly, or `/effort auto` to reset to the model default
-* **In `/model`**: use left/right arrow keys to adjust the effort slider when selecting a model
-* **`--effort` flag**: pass a level name to set it for a single session when launching Claude Code
-* **Environment variable**: set `CLAUDE_CODE_EFFORT_LEVEL` to a level name or `auto`
-* **Settings**: set `effortLevel` to `low`, `medium`, `high`, or `xhigh` in your settings file. `max` and `ultracode` are [session-only](#adjust-effort-level) and are not accepted here
-* **Skill and subagent frontmatter**: set `effort` in a [skill](/docs/en/skills#frontmatter-reference) or [subagent](/docs/en/sub-agents#supported-frontmatter-fields) markdown file to override the effort level when that skill or subagent runs
+在 Opus 4.6 和 Sonnet 4.6 上，您可以设置 `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` 以恢复到由 `MAX_THINKING_TOKENS` 控制的先前固定思考预算。请参阅[环境变量](/docs/zh-CN/env-vars)。
 
-The environment variable takes precedence over all other methods, then your configured level, then the model default. Frontmatter effort applies when that skill or subagent is active, overriding the session level but not the environment variable.
+<h3 id="extended-thinking">
+  扩展思考
+</h3>
 
-The `effortLevel` key in [managed settings](/docs/en/settings#settings-precedence) is a starting default, not enforcement: users can change it for a session with `/effort` or `--effort`, and the managed value re-asserts as the default in new sessions.
+扩展思考是 Claude 在响应前发出的推理。在支持[自适应推理](#adjust-effort-level)的模型上，工作量级别是控制发生多少思考的主要方式；下面的设置打开或关闭思考并控制其显示方式。
 
-The effort slider appears in `/model` when a supported model is selected. The current effort level is also shown in the session header next to the model name, for example "with low effort", so you can confirm which setting is active without opening `/model`. The footer also briefly shows the effort level at startup and when it changes.
+| 控制        | 如何设置                                                                                                                                                                                                                            |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 当前会话的切换   | 在 macOS 上按 `Option+T` 或在 Windows 和 Linux 上按 `Alt+T`                                                                                                                                                                             |
+| 设置全局默认值   | 运行 `/config` 并切换思考模式。保存为 `~/.claude/settings.json` 中的 `alwaysThinkingEnabled`                                                                                                                                                   |
+| 无论工作量如何禁用 | 设置 [`MAX_THINKING_TOKENS=0`](/docs/zh-CN/env-vars)，这会在 Anthropic API 上关闭思考，除了 Fable 5。在[第三方提供商](/docs/zh-CN/third-party-integrations)上，这会改为省略 `thinking` 参数，自适应推理模型可能仍然思考。其他值仅适用于[固定思考预算](#adaptive-reasoning-and-fixed-thinking-budgets) |
 
-#### Adaptive reasoning and fixed thinking budgets
+思考无法在 Fable 5 上关闭。会话切换、`alwaysThinkingEnabled` 和 `MAX_THINKING_TOKENS=0` 在那里无效，Fable 5 根据工作量级别决定每一步思考多少。
 
-Adaptive reasoning makes thinking optional on each step, so Claude can respond faster to routine prompts and reserve deeper thinking for steps that benefit from it. If you want Claude to think more or less often than the current level produces, you can say so directly in your prompt or in `CLAUDE.md`; the model responds to that guidance within its effort setting.
+思考输出默认折叠。按 `Ctrl+O` 切换详细模式并将推理显示为灰色斜体文本。Anthropic API 上的交互式会话默认接收编辑后的思考块，因此如果您想在展开时获得完整摘要，请在[设置](/docs/zh-CN/settings)中设置 `showThinkingSummaries: true`。您需要为所有生成的思考令牌付费，即使它们被折叠或编辑。
 
-Fable 5, Sonnet 5, and Opus 4.7 and later always use adaptive reasoning. The fixed thinking budget mode and `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` do not apply to them.
+<h3 id="extended-context">
+  扩展上下文
+</h3>
 
-On Opus 4.6 and Sonnet 4.6, you can set `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` to revert to the previous fixed thinking budget controlled by `MAX_THINKING_TOKENS`. See [environment variables](/docs/en/env-vars).
+Fable 5、Sonnet 5、Opus 4.6 及更高版本和 Sonnet 4.6 支持[100 万令牌上下文窗口](https://platform.claude.com/docs/zh-CN/build-with-claude/context-windows#context-window-sizes-by-model)用于包含大型代码库的长会话。
 
-### Extended thinking
+可用性因模型和计划而异。在 Anthropic API 上，Fable 5、Sonnet 5、Opus 4.8 和 Opus 4.7 始终使用 1M 窗口运行。在 Max、Team 和 Enterprise 计划上，Opus 会自动升级到 1M 上下文，无需额外配置。这适用于 Team Standard 和 Team Premium 席位。Sonnet 4.6 with 1M context 不是自动升级的一部分，需要在每个订阅计划上[使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans)，包括 Max。
 
-Extended thinking is the reasoning Claude emits before responding. On models that support [adaptive reasoning](#adjust-effort-level), the effort level is the primary control for how much thinking happens; the settings below turn thinking on or off and control how it displays.
+| 计划                    | Opus with 1M context                                                                        | Sonnet 4.6 with 1M context                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Max、Team 和 Enterprise | 包含在订阅中                                                                                      | 需要[使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
+| Pro                   | 需要[使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) | 需要[使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
+| API 和按使用量付费           | 完全访问                                                                                        | 完全访问                                                                                        |
 
-| Control                        | How to set it                                                                                                                                                                                                                                                                                                                                                             |
-| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Toggle for the current session | Press `Option+T` on macOS or `Alt+T` on Windows and Linux                                                                                                                                                                                                                                                                                                                 |
-| Set the global default         | Run `/config` and toggle thinking mode. Saved as `alwaysThinkingEnabled` in `~/.claude/settings.json`                                                                                                                                                                                                                                                                     |
-| Disable regardless of effort   | Set [`MAX_THINKING_TOKENS=0`](/docs/en/env-vars), which turns thinking off on the Anthropic API except on Fable 5. On [third-party providers](/docs/en/third-party-integrations) this omits the `thinking` parameter instead, and adaptive-reasoning models may still think. Other values apply only with a [fixed thinking budget](#adaptive-reasoning-and-fixed-thinking-budgets) |
+要完全禁用 1M 上下文，请设置 `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`。这会从模型选择器中删除 1M 模型变体。请参阅[环境变量](/docs/zh-CN/env-vars)。
 
-Thinking cannot be turned off on Fable 5. The session toggle, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect there, and Fable 5 decides per step how much to think based on the effort level.
+1M 上下文窗口使用标准模型定价，超过 200K 的令牌无需额外费用。对于订阅中包含扩展上下文的计划，使用仍由您的订阅覆盖。对于通过使用额度访问扩展上下文的计划，令牌计入使用额度。
 
-Thinking output is collapsed by default. Press `Ctrl+O` to toggle verbose mode and see the reasoning as gray italic text. Interactive sessions on the Anthropic API receive redacted thinking blocks by default, so set `showThinkingSummaries: true` in [settings](/docs/en/settings) if you want the full summaries available when you expand. You are charged for all thinking tokens generated, even when collapsed or redacted.
+如果您的账户支持 1M 上下文，该选项会出现在最新版本的 Claude Code 的 `/model` 选择器中。如果您看不到它，请尝试重新启动您的会话。
 
-### Extended context
+您也可以将 `[1m]` 后缀与模型别名或完整模型名称一起使用：
 
-Fable 5, Sonnet 5, Opus 4.6 and later, and Sonnet 4.6 support a [1 million token context window](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model) for long sessions with large codebases.
-
-Availability varies by model and plan. On the Anthropic API, Fable 5, Sonnet 5, and Opus 4.7 and later always run with the 1M window.
-
-On Max, Team, and Enterprise plans, including both Team Standard and Team Premium seats, Opus is automatically upgraded to 1M context with no additional configuration. Sonnet 4.6 with 1M context is not part of the automatic upgrade and requires [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) on every subscription plan, including Max.
-
-| Plan                      | Opus with 1M context                                                                                        | Sonnet 4.6 with 1M context                                                                                  |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Max, Team, and Enterprise | Included with subscription                                                                                  | Requires [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
-| Pro                       | Requires [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) | Requires [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
-| API and pay-as-you-go     | Full access                                                                                                 | Full access                                                                                                 |
-
-To disable 1M context entirely, set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`. This removes 1M model variants from the model picker. See [environment variables](/docs/en/env-vars).
-
-The 1M context window uses standard model pricing with no premium for tokens beyond 200K. For plans where extended context is included with your subscription, usage remains covered by your subscription. For plans that access extended context through usage credits, tokens are billed to usage credits.
-
-If your account supports 1M context, the option appears in the `/model` picker in the latest versions of Claude Code. If you don't see it, try restarting your session.
-
-You can also use the `[1m]` suffix with model aliases or full model names:
-
-```text theme={null}
-# Use the opus[1m] or sonnet[1m] alias
+```bash theme={null}
+# 使用 opus[1m] 或 sonnet[1m] 别名
 /model opus[1m]
 /model sonnet[1m]
 
-# Or append [1m] to a full model name
+# 或将 [1m] 附加到完整模型名称
 /model claude-opus-4-8[1m]
 ```
 
-#### Sonnet 5 context window
+<h4 id="sonnet-5-context-window">
+  Sonnet 5 上下文窗口
+</h4>
 
-On the Anthropic API, Sonnet 5 always runs with the 1M context window. There is no 200K variant, no `[1m]` suffix to select, and no usage credits required on any plan. Sessions auto-compact before the window fills, at about 967K tokens by default; set [`CLAUDE_CODE_AUTO_COMPACT_WINDOW`](/docs/en/env-vars) to choose a different threshold.
+在 Anthropic API 上，Sonnet 5 始终使用 1M 上下文窗口运行。没有 200K 变体，没有可供选择的 `[1m]` 后缀，任何计划都不需要使用额度。会话在窗口填满前自动压缩，默认约为 967K 令牌；设置 [`CLAUDE_CODE_AUTO_COMPACT_WINDOW`](/docs/zh-CN/env-vars) 以选择不同的阈值。
 
-Two configurations budget the window at 200K instead and auto-compact at that boundary:
+两种配置会改为将窗口预算设为 200K，并在该边界自动压缩：
 
-* **LLM gateway**: when `ANTHROPIC_BASE_URL` points at a [gateway](/docs/en/llm-gateway), Claude Code can't verify 1M support. To use the full window, select Sonnet 5 (1M context) in the model picker, which maps to `sonnet[1m]`.
-* **`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`**: treats Sonnet 5 sessions as having a 200K window, for deployments that need to cap context.
+* **LLM gateway**：当 `ANTHROPIC_BASE_URL` 指向[网关](/docs/zh-CN/llm-gateway)时，Claude Code 无法验证 1M 支持。要使用完整窗口，请在模型选择器中选择 Sonnet 5 (1M context)，它映射到 `sonnet[1m]`。
+* **`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`**：将 Sonnet 5 会话视为具有 200K 窗口，适用于需要限制上下文的部署。
 
-## Checking your current model
+<h2 id="checking-your-current-model">
+  检查您当前的模型
+</h2>
 
-You can see which model you're currently using in two places:
+您可以在两个位置查看您当前使用的模型：
 
-* In the [status line](/docs/en/statusline), if you have one configured
-* In `/status`, which also displays your account information
+* 在[状态行](/docs/zh-CN/statusline)中（如果已配置）
+* 在 `/status` 中，它也显示您的账户信息
 
-## Add a custom model option
+<h2 id="add-a-custom-model-option">
+  添加自定义模型选项
+</h2>
 
-Use `ANTHROPIC_CUSTOM_MODEL_OPTION` to add a single custom entry to the `/model` picker without replacing the built-in aliases. This is useful for testing model IDs that Claude Code does not list by default. For LLM gateway deployments, Claude Code can populate the picker from the gateway's `/v1/models` endpoint when `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` is set, so this variable is needed only when discovery is disabled or does not return the model you want. See [gateway model discovery](/docs/en/llm-gateway-protocol#model-discovery).
+使用 `ANTHROPIC_CUSTOM_MODEL_OPTION` 向 `/model` 选择器添加单个自定义条目，而无需替换内置别名。这对于测试 Claude Code 默认不列出的模型 ID 很有用。对于 LLM 网关部署，当设置 `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` 时，Claude Code 可以从网关的 `/v1/models` 端点自动填充选择器，因此仅当发现被禁用或未返回您想要的模型时才需要此变量。请参阅 [网关模型发现](/docs/zh-CN/llm-gateway-protocol#model-discovery)。
 
-This example sets all three variables to make a gateway-routed Opus deployment selectable. Claude Code reads environment variables at startup, so run the exports before launching `claude`, or restart an existing session to pick them up:
+此示例设置所有三个变量以使网关路由的 Opus 部署可选择：
 
 ```bash theme={null}
-export ANTHROPIC_CUSTOM_MODEL_OPTION="my-gateway/claude-opus-5"
+export ANTHROPIC_CUSTOM_MODEL_OPTION="my-gateway/claude-opus-4-8"
 export ANTHROPIC_CUSTOM_MODEL_OPTION_NAME="Opus via Gateway"
 export ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION="Custom deployment routed through the internal LLM gateway"
 ```
 
-The custom entry appears at the bottom of the `/model` picker. `ANTHROPIC_CUSTOM_MODEL_OPTION_NAME` and `ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION` are optional. If omitted, the model ID is used as the name and the description defaults to `Custom model (<model-id>)`.
+自定义条目出现在 `/model` 选择器的底部。`ANTHROPIC_CUSTOM_MODEL_OPTION_NAME` 和 `ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION` 是可选的。如果省略，模型 ID 用作名称，描述默认为 `Custom model (<model-id>)`。
 
-Claude Code skips validation for the model ID set in `ANTHROPIC_CUSTOM_MODEL_OPTION`, so you can use any string your API endpoint accepts.
+Claude Code 跳过对 `ANTHROPIC_CUSTOM_MODEL_OPTION` 中设置的模型 ID 的验证，因此您可以使用您的 API 端点接受的任何字符串。当设置 [`availableModels`](#restrict-model-selection) 时，也要在允许列表中包含自定义模型 ID：自定义条目会从选择器中被过滤，对其进行 `--model` 选择会被拒绝，就像任何其他被排除的模型一样。嵌入了系列名称的自定义 ID（例如 `my-gateway/claude-opus-4-8`）计为该系列的特定条目并禁用其通配符，因此还要列出您打算保持可选择的版本。请参阅 [合并行为](#merge-behavior)。
 
-When [`availableModels`](#restrict-model-selection) is set, include the custom model ID in the allowlist as well. Otherwise the custom entry is filtered from the picker, and a `--model` selection of it is rejected like any other excluded model.
+<h2 id="environment-variables">
+  环境变量
+</h2>
 
-A custom ID that embeds a family name, such as `my-gateway/claude-opus-5`, counts as a specific entry for that family and disables its wildcard, so also list the versions you intend to keep selectable. See [Merge behavior](#merge-behavior).
+您可以使用以下环境变量来控制别名映射到的模型名称。每个值必须是完整的模型名称，或您的 API 提供商的等效标识符。
 
-## Environment variables
+| 环境变量                             | 描述                                                                                                                                                                                                                                |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_DEFAULT_FABLE_MODEL`  | 用于 `fable` 的模型，以及 Claude Code 识别为 Fable 5 的模型 ID，用于第三方提供商上的[自动模型回退](#automatic-model-fallback)                                                                                                                                    |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL`   | 用于 `opus` 的模型，或在 Plan Mode 活跃时用于 `opusplan` 的模型。                                                                                                                                                                                  |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | 用于 `sonnet` 的模型，或在 Plan Mode 不活跃时用于 `opusplan` 的模型。                                                                                                                                                                               |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL`  | 用于 `haiku` 的模型，或[后台功能](/docs/zh-CN/costs#background-token-usage)                                                                                                                                                                       |
+| `CLAUDE_CODE_SUBAGENT_MODEL`     | 用于所有 [subagents](/docs/zh-CN/sub-agents#choose-a-model)、[agent teams](/docs/zh-CN/agent-teams) 和 [workflow](/docs/zh-CN/workflows) 运行的代理的模型。接受别名（如 `haiku`）或完整模型名称，并覆盖每次调用的 `model` 参数和 subagent 定义的 `model` frontmatter。设置为 `inherit` 以改用常规模型解析 |
 
-You can use the following environment variables to control the model names that the aliases map to. Each value must be a full model name, or the equivalent identifier for your API provider.
+注意：`ANTHROPIC_SMALL_FAST_MODEL` 已弃用，改为使用 `ANTHROPIC_DEFAULT_HAIKU_MODEL`。
 
-| Environment variable             | Description                                                                                                                                                                                                                                                                                                                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ANTHROPIC_DEFAULT_FABLE_MODEL`  | The model to use for `fable`, and the model ID Claude Code recognizes as Fable 5 for [automatic model fallback](#automatic-model-fallback) on third-party providers                                                                                                                                                                                                            |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL`   | The model to use for `opus`, or for `opusplan` when Plan Mode is active.                                                                                                                                                                                                                                                                                                       |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL` | The model to use for `sonnet`, or for `opusplan` when Plan Mode is not active.                                                                                                                                                                                                                                                                                                 |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL`  | The model to use for `haiku`, or [background functionality](/docs/en/costs#background-token-usage)                                                                                                                                                                                                                                                                                  |
-| `CLAUDE_CODE_SUBAGENT_MODEL`     | The model Claude Code uses for all [subagents](/docs/en/sub-agents#choose-a-model), [agent teams](/docs/en/agent-teams), and agents in a [workflow](/docs/en/workflows). Accepts an alias such as `haiku` or a full model name, and overrides the per-invocation `model` parameter and the subagent definition's `model` frontmatter. Set to `inherit` to use normal model resolution instead |
+<h3 id="pin-models-for-third-party-deployments">
+  为第三方部署固定模型
+</h3>
 
-Note: `ANTHROPIC_SMALL_FAST_MODEL` is deprecated in favor of
-`ANTHROPIC_DEFAULT_HAIKU_MODEL`.
+当通过 [Amazon Bedrock](/docs/zh-CN/amazon-bedrock)、[Google Cloud's Agent Platform](/docs/zh-CN/google-vertex-ai)、[Microsoft Foundry](/docs/zh-CN/microsoft-foundry) 或 [Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws) 部署 Claude Code 时，在向用户推出前固定模型版本。
 
-### Pin models for third-party deployments
-
-When deploying Claude Code through [Amazon Bedrock](/docs/en/amazon-bedrock), [Google Cloud's Agent Platform](/docs/en/google-vertex-ai), [Microsoft Foundry](/docs/en/microsoft-foundry), or [Claude Platform on AWS](/docs/en/claude-platform-on-aws), pin model versions before rolling out to users.
-
-Without pinning, Claude Code uses model aliases such as `fable`, `opus`, `sonnet`, and `haiku` that resolve to a built-in default model ID for each provider. That default can lag the newest Anthropic release, and the model it points to may not yet be enabled in a user's account. When the default is unavailable, Amazon Bedrock and Google Cloud's Agent Platform users see a notice and the session falls back to an earlier version of the default model, or to the default Sonnet model when the default is an Opus model and no Opus version is available. Microsoft Foundry users see errors instead, because Microsoft Foundry has no equivalent startup check.
-
-{/* min-version: 2.1.211 */}On Amazon Bedrock and Google Cloud's Agent Platform, a user who starts the session on a specific Sonnet or Opus version, with `--model`, `ANTHROPIC_MODEL`, or the `model` setting, pins that version as the session's default for the matching alias: the startup check skips the built-in default it replaces and shows no fallback notice. Before v2.1.211, the check ran and could show a notice even when a session model was explicitly configured.
+不固定模型，Claude Code 会使用模型别名（如 `fable`、`opus`、`sonnet` 和 `haiku`），这些别名会解析为每个提供商的内置默认模型 ID。该默认值可能滞后于最新的 Anthropic 版本，并且它指向的模型可能尚未在用户账户中启用。当默认值不可用时，Amazon Bedrock 和 Google Cloud's Agent Platform 用户会看到通知并回退到该会话的先前版本，或当默认值是 Opus 模型且没有 Opus 版本可用时回退到默认 Sonnet 模型。Microsoft Foundry 用户会看到错误，因为 Microsoft Foundry 没有等效的启动检查。
 
 <Warning>
-  Set the model environment variables to specific version IDs as part of your initial setup. Pinning lets you control when your users move to a new model.
+  在初始设置中将模型环境变量设置为特定版本 ID。固定让您控制用户何时迁移到新模型。
 </Warning>
 
-Use the following environment variables with version-specific model IDs for your provider:
+对您的提供商使用以下环境变量和特定版本的模型 ID：
 
-| Provider                      | Example                                                              |
+| 提供商                           | 示例                                                                   |
 | :---------------------------- | :------------------------------------------------------------------- |
 | Amazon Bedrock                | `export ANTHROPIC_DEFAULT_OPUS_MODEL='us.anthropic.claude-opus-4-8'` |
 | Google Cloud's Agent Platform | `export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-8'`              |
 | Microsoft Foundry             | `export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-8'`              |
 
-Apply the same pattern for `ANTHROPIC_DEFAULT_FABLE_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, and `ANTHROPIC_DEFAULT_HAIKU_MODEL`. For current and legacy model IDs across all providers, see [Models overview](https://platform.claude.com/docs/en/about-claude/models/overview). To upgrade users to a new model version, update these environment variables and redeploy.
+对 `ANTHROPIC_DEFAULT_FABLE_MODEL`、`ANTHROPIC_DEFAULT_SONNET_MODEL` 和 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 应用相同的模式。有关所有提供商的当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。要将用户升级到新模型版本，请更新这些环境变量并重新部署。
 
-To enable [extended context](#extended-context) for a pinned model, append `[1m]` to the model ID in `ANTHROPIC_DEFAULT_OPUS_MODEL` or `ANTHROPIC_DEFAULT_SONNET_MODEL`:
+要为固定模型启用[扩展上下文](#extended-context)，请在 `ANTHROPIC_DEFAULT_OPUS_MODEL` 或 `ANTHROPIC_DEFAULT_SONNET_MODEL` 中的模型 ID 后附加 `[1m]`：
 
 ```bash theme={null}
 export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-8[1m]'
 ```
 
-The `[1m]` suffix applies the 1M context window to all usage of the `opus` and `sonnet` aliases, including the plan-mode Opus phase of [`opusplan`](#opusplan-model-setting).
+`[1m]` 后缀将 1M 上下文窗口应用于 `opus` 和 `sonnet` 别名的所有使用，包括 [`opusplan`](#opusplan-model-setting) 的 plan-mode Opus 阶段。
 
-* Claude Code strips the suffix before sending the model ID to your provider.
-* Only append `[1m]` when the underlying model [supports 1M context](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model).
-* The suffix is read per variable, not per model. On Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, a model ID without `[1m]` in one variable uses 200K context even if another variable sets the same model with the suffix. Sonnet 5 always runs with the 1M window on these providers and never needs the suffix.
+* Claude Code 在将模型 ID 发送到您的提供商之前会删除该后缀。
+* 仅当底层模型[支持 1M 上下文](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)时才附加 `[1m]`。
+* 该后缀按变量读取，而不是按模型读取。在 Amazon Bedrock、Google Cloud's Agent Platform 和 Microsoft Foundry 上，一个变量中没有 `[1m]` 的模型 ID 使用 200K 上下文，即使另一个变量使用相同的模型和后缀。Sonnet 5 在这些提供商上始终以 1M 窗口运行，从不需要该后缀。
 
 <Note>
-  An `availableModels` allowlist delivered through [MDM or a managed settings file](/docs/en/settings#settings-files) still applies when using third-party providers; [server-managed settings are not delivered there](/docs/en/server-managed-settings#platform-availability). Filtering matches on a model alias such as `opus`, a version prefix such as `claude-opus-4-8`, or the full provider-form model ID. Provider-specific prefixes such as `us.anthropic.` are not stripped, so to allow a specific model, list the same provider-form ID the picker shows, or map it through [`modelOverrides`](#override-model-ids-per-version). Any `[1m]` suffix is stripped from both the allowlist entry and the requested model before matching.
+  使用第三方提供商时，通过 [MDM 或托管设置文件](/docs/zh-CN/settings#settings-files) 提供的 `availableModels` 允许列表仍然适用；[服务器托管设置不会在那里提供](/docs/zh-CN/server-managed-settings#platform-availability)。过滤与模型别名（如 `opus`）、版本前缀（如 `claude-opus-4-8`）或完整提供商形式的模型 ID 匹配。提供商特定的前缀（如 `us.anthropic.`）不会被删除，因此要允许特定模型，请列出选择器显示的相同提供商形式 ID，或通过 [`modelOverrides`](#override-model-ids-per-version) 映射它。任何 `[1m]` 后缀在匹配前都会从允许列表条目和请求的模型中删除。
 </Note>
 
-### Customize pinned model display and capabilities
+<h3 id="customize-pinned-model-display-and-capabilities">
+  自定义固定模型显示和功能
+</h3>
 
-When you pin a model on a third-party provider, the provider-specific ID appears as-is in the `/model` picker and Claude Code may not recognize which features the model supports. You can override the display name and declare capabilities with companion environment variables for each pinned model.
+当您在第三方提供商上固定模型时，提供商特定的 ID 在 `/model` 选择器中按原样显示，Claude Code 可能无法识别模型支持的功能。您可以使用每个固定模型的伴随环境变量覆盖显示名称并声明功能。
 
-These variables take effect on third-party providers such as Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry. The `_NAME` and `_DESCRIPTION` variables also take effect when `ANTHROPIC_BASE_URL` points to an [LLM gateway](/docs/en/llm-gateway). They have no effect when connecting directly to `api.anthropic.com`.
+这些变量在第三方提供商（如 Amazon Bedrock、Google Cloud's Agent Platform 和 Microsoft Foundry）上生效。`_NAME` 和 `_DESCRIPTION` 变量在 `ANTHROPIC_BASE_URL` 指向 [LLM gateway](/docs/zh-CN/llm-gateway) 时也生效。当直接连接到 `api.anthropic.com` 时无效。
 
-| Environment variable                                  | Description                                                                                                                                                                                                                                                |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL_NAME`                   | Display name for the pinned Opus model in the `/model` picker. Defaults to the model ID when not set                                                                                                                                                       |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION`            | Display description for the pinned Opus model in the `/model` picker. When not set, defaults to `Custom Opus model`, or `Custom Opus model (1M context)` if the pinned model ID has the `[1m]` suffix and `CLAUDE_CODE_DISABLE_1M_CONTEXT` isn't turned on |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES` | Comma-separated list of capabilities the pinned Opus model supports                                                                                                                                                                                        |
+| 环境变量                                                  | 描述                                                         |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_NAME`                   | 固定 Opus 模型在 `/model` 选择器中的显示名称。未设置时默认为模型 ID                |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION`            | 固定 Opus 模型在 `/model` 选择器中的显示描述。未设置时默认为 `Custom Opus model` |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES` | 固定 Opus 模型支持的功能的逗号分隔列表                                     |
 
-The same `_NAME`, `_DESCRIPTION`, and `_SUPPORTED_CAPABILITIES` suffixes are available for `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`, `ANTHROPIC_DEFAULT_FABLE_MODEL`, and `ANTHROPIC_CUSTOM_MODEL_OPTION`.
+相同的 `_NAME`、`_DESCRIPTION` 和 `_SUPPORTED_CAPABILITIES` 后缀可用于 `ANTHROPIC_DEFAULT_SONNET_MODEL`、`ANTHROPIC_DEFAULT_HAIKU_MODEL`、`ANTHROPIC_DEFAULT_FABLE_MODEL` 和 `ANTHROPIC_CUSTOM_MODEL_OPTION`。
 
-Claude Code enables features like [effort levels](#adjust-effort-level) and [extended thinking](#extended-thinking) by matching the model ID against known patterns. Provider-specific IDs such as Amazon Bedrock ARNs or custom deployment names often don't match these patterns, leaving supported features disabled. Set `_SUPPORTED_CAPABILITIES` to tell Claude Code which features the model actually supports:
+Claude Code 通过将模型 ID 与已知模式匹配来启用[工作量级别](#adjust-effort-level)和[扩展思考](#extended-thinking)等功能。提供商特定的 ID（如 Amazon Bedrock ARN 或自定义部署名称）通常与这些模式不匹配，导致支持的功能被禁用。设置 `_SUPPORTED_CAPABILITIES` 以告诉 Claude Code 模型实际支持的功能：
 
-| Capability value       | Enables                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| `effort`               | [Effort levels](#adjust-effort-level) and the `/effort` command                 |
-| `xhigh_effort`         | {/* min-version: 2.1.111 */}The `xhigh` effort level                            |
-| `max_effort`           | The `max` effort level                                                          |
-| `thinking`             | [Extended thinking](#extended-thinking)                                         |
-| `adaptive_thinking`    | Adaptive reasoning that dynamically allocates thinking based on task complexity |
-| `interleaved_thinking` | Thinking between tool calls                                                     |
+| 功能值                    | 启用                                          |
+| ---------------------- | ------------------------------------------- |
+| `effort`               | [工作量级别](#adjust-effort-level)和 `/effort` 命令 |
+| `xhigh_effort`         | {/* min-version: 2.1.111 */}`xhigh` 工作量级别   |
+| `max_effort`           | `max` 工作量级别                                 |
+| `thinking`             | [扩展思考](#extended-thinking)                  |
+| `adaptive_thinking`    | 根据任务复杂性动态分配思考的自适应推理                         |
+| `interleaved_thinking` | 工具调用之间的思考                                   |
 
-When `_SUPPORTED_CAPABILITIES` is set, listed capabilities are enabled and unlisted capabilities are disabled for the matching pinned model. When the variable is unset, Claude Code falls back to built-in detection based on the model ID.
+设置 `_SUPPORTED_CAPABILITIES` 时，列出的功能对匹配的固定模型启用，未列出的功能被禁用。未设置变量时，Claude Code 回退到基于模型 ID 的内置检测。
 
-This example pins Opus to an Amazon Bedrock custom model ARN, sets a friendly name, and declares its capabilities:
+此示例将 Opus 固定到 Amazon Bedrock 自定义模型 ARN，设置友好名称，并声明其功能：
 
 ```bash theme={null}
 export ANTHROPIC_DEFAULT_OPUS_MODEL='arn:aws:bedrock:us-east-1:123456789012:custom-model/abc'
@@ -687,15 +728,17 @@ export ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION='Opus 4.7 routed through a Bedro
 export ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES='effort,xhigh_effort,max_effort,thinking,adaptive_thinking,interleaved_thinking'
 ```
 
-### Override model IDs per version
+<h3 id="override-model-ids-per-version">
+  按版本覆盖模型 ID
+</h3>
 
-The family-level environment variables above configure one model ID per family alias. If you need to map several versions within the same family to distinct provider IDs, use the `modelOverrides` setting instead.
+上面的家族级环境变量为每个家族别名配置一个模型 ID。如果您需要将同一家族中的多个版本映射到不同的提供商 ID，请改用 `modelOverrides` 设置。
 
-`modelOverrides` maps individual Anthropic model IDs to the provider-specific strings that Claude Code sends to your provider's API. When a user selects a mapped model in the `/model` picker, Claude Code uses your configured value instead of the built-in default.
+`modelOverrides` 将单个 Anthropic 模型 ID 映射到 Claude Code 发送到您的提供商 API 的提供商特定字符串。当用户在 `/model` 选择器中选择映射的模型时，Claude Code 会使用您配置的值而不是内置默认值。
 
-This lets enterprise administrators route each model version to a specific Amazon Bedrock inference profile ARN, Google Cloud's Agent Platform version name, or Microsoft Foundry deployment name for governance, cost allocation, or regional routing.
+这让企业管理员可以将每个模型版本路由到特定的 Amazon Bedrock 推理配置文件 ARN、Google Cloud's Agent Platform 版本名称或 Microsoft Foundry 部署名称，用于治理、成本分配或区域路由。
 
-Set `modelOverrides` in your [settings file](/docs/en/settings#settings-files):
+在您的[设置文件](/docs/zh-CN/settings#settings-files)中设置 `modelOverrides`：
 
 ```json theme={null}
 {
@@ -707,26 +750,28 @@ Set `modelOverrides` in your [settings file](/docs/en/settings#settings-files):
 }
 ```
 
-Keys must be Anthropic model IDs as listed in the [Models overview](https://platform.claude.com/docs/en/about-claude/models/overview). For dated model IDs, include the date suffix exactly as it appears there. Unknown keys are ignored.
+键必须是[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)中列出的 Anthropic 模型 ID。对于带日期的模型 ID，请包含日期后缀，完全按照其显示的方式。未知的键会被忽略。
 
-Overrides replace the built-in model IDs that back each entry in the `/model` picker. On Amazon Bedrock, `modelOverrides` entries take precedence over any inference profiles that Claude Code discovers automatically at startup. Claude Code passes values that are already provider-native, such as Amazon Bedrock inference profile ARNs or Microsoft Foundry deployment names, to the provider as-is.
+覆盖替换了支持 `/model` 选择器中每个条目的内置模型 ID。在 Amazon Bedrock 上，`modelOverrides` 条目优先于 Claude Code 在启动时自动发现的任何推理配置文件。Claude Code 将已经是提供商原生的值（如 Amazon Bedrock 推理配置文件 ARN 或 Microsoft Foundry 部署名称）按原样传递给提供商。
 
-{/* min-version: 2.1.200 */}Overrides also apply when you pass an Anthropic model ID directly through `--model`, the `ANTHROPIC_MODEL` environment variable, or an `ANTHROPIC_DEFAULT_*_MODEL` environment variable. On Amazon Bedrock, Google Cloud's Agent Platform, and [Mantle](/docs/en/amazon-bedrock#use-the-mantle-endpoint), an Anthropic model ID with no `modelOverrides` entry resolves to the same provider-specific ID as the `/model` picker row for that version, when the provider supports that version. Mantle supports a subset of versions. For an Anthropic model ID outside that subset, Claude Code sends the raw ID to Mantle without mapping it, unless a `modelOverrides` entry covers it. Before v2.1.200, `--model` and the environment-variable values reached the provider as-is without going through the override map.
+{/* min-version: 2.1.200 */}当您通过 `--model`、`ANTHROPIC_MODEL` 环境变量或 `ANTHROPIC_DEFAULT_*_MODEL` 环境变量直接传递 Anthropic 模型 ID 时，覆盖也适用。在 Amazon Bedrock、Google Cloud's Agent Platform 和 [Mantle](/docs/zh-CN/amazon-bedrock#use-the-mantle-endpoint) 上，没有 `modelOverrides` 条目的 Anthropic 模型 ID 解析为与该版本的 `/model` 选择器行相同的提供商特定 ID（当提供商支持该版本时）。Mantle 支持版本的子集。对于该子集之外的 Anthropic 模型 ID，Claude Code 将原始 ID 发送到 Mantle 而不进行映射，除非 `modelOverrides` 条目覆盖它。在 v2.1.200 之前，`--model` 和环境变量值直接到达提供商，不经过覆盖映射。
 
-`modelOverrides` works alongside `availableModels`. The allowlist is evaluated against the Anthropic model ID, not the override value, so an entry like `"opus"` in `availableModels` continues to match even when Opus versions are mapped to ARNs. When `enforceAvailableModels` is set in managed settings, the enforced Default resolves through `modelOverrides` from the [highest-precedence managed source](/docs/en/server-managed-settings#settings-precedence) only. An admin's mapping, such as a version pinned to an inference profile ARN, is honored in the enforced Default. Overrides from user or project settings do not affect it.
+`modelOverrides` 与 `availableModels` 一起工作。允许列表针对 Anthropic 模型 ID 进行评估，而不是覆盖值，因此 `availableModels` 中的条目（如 `"opus"`）即使在 Opus 版本映射到 ARN 时也会继续匹配。当在托管设置中设置 `enforceAvailableModels` 时，强制执行的默认值通过 `modelOverrides` 从[最高优先级托管源](/docs/zh-CN/server-managed-settings#settings-precedence)解析。管理员的映射（如固定到推理配置文件 ARN 的版本）在强制执行的默认值中得到遵守。来自用户或项目设置的覆盖不会影响它。
 
-{/* min-version: 2.1.200 */}When `availableModels` is set in [managed settings](/docs/en/settings#settings-files), only `modelOverrides` from that managed source apply to an Anthropic model ID passed directly through `--model` or the environment variables above. Claude Code ignores overrides in user or project settings for those IDs, and never resolves an ID the managed list excludes through `modelOverrides` from any settings source. This managed-source restriction requires Claude Code v2.1.200 or later. See [Restrict model selection](#restrict-model-selection) for how blocked IDs are handled.
+{/* min-version: 2.1.200 */}当 `availableModels` 在[托管设置](/docs/zh-CN/settings#settings-files)中设置时，仅来自该托管源的 `modelOverrides` 适用于通过 `--model` 或上述环境变量直接传递的 Anthropic 模型 ID。Claude Code 忽略用户或项目设置中针对这些 ID 的覆盖，并且永远不会通过任何设置源的 `modelOverrides` 解析托管列表排除的 ID。此托管源限制需要 Claude Code v2.1.200 或更高版本。有关如何处理被阻止的 ID，请参阅[限制模型选择](#restrict-model-selection)。
 
-### Prompt caching configuration
+<h3 id="prompt-caching-configuration">
+  Prompt caching 配置
+</h3>
 
-Claude Code automatically uses [prompt caching](/docs/en/prompt-caching) to optimize performance and reduce costs. You can disable prompt caching globally or for specific model tiers:
+Claude Code 自动使用 [prompt caching](/docs/zh-CN/prompt-caching) 来优化性能并降低成本。您可以全局禁用 prompt caching 或针对特定模型层级禁用：
 
-| Environment variable            | Description                                                                                       |
-| ------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `DISABLE_PROMPT_CACHING`        | Set to `1` to disable prompt caching for all models. Takes precedence over the per-model settings |
-| `DISABLE_PROMPT_CACHING_HAIKU`  | Set to `1` to disable prompt caching for Haiku models only                                        |
-| `DISABLE_PROMPT_CACHING_SONNET` | Set to `1` to disable prompt caching for Sonnet models only                                       |
-| `DISABLE_PROMPT_CACHING_OPUS`   | Set to `1` to disable prompt caching for Opus models only                                         |
-| `DISABLE_PROMPT_CACHING_FABLE`  | Set to `1` to disable prompt caching for Fable models only                                        |
+| 环境变量                            | 描述                                       |
+| ------------------------------- | ---------------------------------------- |
+| `DISABLE_PROMPT_CACHING`        | 设置为 `1` 以禁用所有模型的 prompt caching。优先于按模型设置 |
+| `DISABLE_PROMPT_CACHING_HAIKU`  | 设置为 `1` 以仅禁用 Haiku 模型的 prompt caching    |
+| `DISABLE_PROMPT_CACHING_SONNET` | 设置为 `1` 以仅禁用 Sonnet 模型的 prompt caching   |
+| `DISABLE_PROMPT_CACHING_OPUS`   | 设置为 `1` 以仅禁用 Opus 模型的 prompt caching     |
+| `DISABLE_PROMPT_CACHING_FABLE`  | 设置为 `1` 以仅禁用 Fable 模型的 prompt caching    |
 
-To change the cache TTL or learn what triggers a cache miss, see [How Claude Code uses prompt caching](/docs/en/prompt-caching).
+要更改缓存 TTL 或了解什么会触发缓存未命中，请参阅 [Claude Code 如何使用 prompt caching](/docs/zh-CN/prompt-caching)。

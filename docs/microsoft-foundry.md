@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Claude Code on Microsoft Foundry
+# Microsoft Foundry 上的 Claude Code
 
-> Learn about configuring Claude Code through Microsoft Foundry, including setup, configuration, and troubleshooting.
+> 了解如何通过 Microsoft Foundry 配置 Claude Code，包括设置、配置和故障排除。
 
 export const ContactSalesCard = ({surface}) => {
   const utm = content => `utm_source=claude_code&utm_medium=docs&utm_content=${surface}_${content}`;
@@ -78,99 +78,108 @@ export const ContactSalesCard = ({surface}) => {
 
 <ContactSalesCard surface="foundry" />
 
-## Prerequisites
+<h2 id="prerequisites">
+  前置条件
+</h2>
 
-Before configuring Claude Code with Microsoft Foundry, ensure you have:
+在使用 Microsoft Foundry 配置 Claude Code 之前，请确保您拥有：
 
-* An Azure subscription with access to Microsoft Foundry
-* RBAC permissions to create Microsoft Foundry resources and deployments
-* Azure CLI installed and configured (optional - only needed if you don't have another mechanism for getting credentials)
+* 具有 Microsoft Foundry 访问权限的 Azure 订阅
+* 创建 Microsoft Foundry 资源和部署的 RBAC 权限
+* 已安装并配置 Azure CLI（可选 - 仅在您没有其他获取凭证机制时需要）
 
 <Note>
-  If you are deploying Claude Code to multiple users, [pin your model versions](#4-pin-model-versions) before rolling out.
+  如果您要将 Claude Code 部署给多个用户，请[固定您的模型版本](#4-pin-model-versions)以防止在 Anthropic 发布新模型时出现破损。
 </Note>
 
-## Setup
+<h2 id="setup">
+  设置
+</h2>
 
-### 1. Provision Microsoft Foundry resource
+<h3 id="1-provision-microsoft-foundry-resource">
+  1. 配置 Microsoft Foundry 资源
+</h3>
 
-First, create a Claude resource in Azure:
+首先，在 Azure 中创建 Claude 资源：
 
-1. Navigate to the [Microsoft Foundry portal](https://ai.azure.com/)
-2. Create a new resource, noting your resource name
-3. Create deployments for the Claude models, noting the deployment name you give each; you'll set these names as the model variables in step 4:
-
+1. 导航到 [Microsoft Foundry 门户](https://ai.azure.com/)
+2. 创建新资源，记下您的资源名称
+3. 为 Claude 模型创建部署，记下您为每个模型指定的部署名称；您将在第 4 步中将这些名称设置为模型变量：
    * Claude Opus
    * Claude Sonnet
    * Claude Haiku
 
-   When you configure a deployment, you also choose its [hosting option](https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options), which determines whether inference runs on Azure or on Anthropic infrastructure.
+<h3 id="2-configure-azure-credentials">
+  2) 配置 Azure 凭证
+</h3>
 
-### 2. Configure Azure credentials
+Claude Code 支持三种 Microsoft Foundry 身份验证方法。选择最适合您安全要求的方法。
 
-Claude Code supports three authentication methods for Microsoft Foundry. Choose the method that best fits your security requirements.
+**选项 A：API 密钥身份验证**
 
-**Option A: API key authentication**
-
-1. Navigate to your resource in the Microsoft Foundry portal
-2. Go to the **Endpoints and keys** section
-3. Copy **API Key**
-4. Set the environment variable, replacing `your-azure-api-key` with the key you copied:
+1. 在 Microsoft Foundry 门户中导航到您的资源
+2. 转到**端点和密钥**部分
+3. 复制 **API 密钥**
+4. 设置环境变量，将 `your-azure-api-key` 替换为您复制的密钥：
 
 ```bash theme={null}
 export ANTHROPIC_FOUNDRY_API_KEY=your-azure-api-key
 ```
 
-**Option B: Microsoft Entra ID authentication**
+**选项 B：Microsoft Entra ID 身份验证**
 
-When neither `ANTHROPIC_FOUNDRY_API_KEY` nor `ANTHROPIC_FOUNDRY_AUTH_TOKEN` is set, Claude Code automatically uses the Azure SDK [default credential chain](https://learn.microsoft.com/en-us/azure/developer/javascript/sdk/authentication/credential-chains#defaultazurecredential-overview).
-This supports a variety of methods for authenticating local and remote workloads.
+当未设置 `ANTHROPIC_FOUNDRY_API_KEY` 和 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 时，Claude Code 会自动使用 Azure SDK [默认凭证链](https://learn.microsoft.com/en-us/azure/developer/javascript/sdk/authentication/credential-chains#defaultazurecredential-overview)。
+这支持多种方法来验证本地和远程工作负载。
 
-On local environments, you commonly may use the Azure CLI:
+在本地环境中，您通常可以使用 Azure CLI：
 
 ```bash theme={null}
 az login
 ```
 
-**Option C: Bearer token authentication**
+**选项 C：Bearer 令牌身份验证**
 
-{/* min-version: 2.1.203 */}Claude Code sends the value of `ANTHROPIC_FOUNDRY_AUTH_TOKEN` on every request as the `Authorization: Bearer` header. Use this option when another process, such as a host application or a sign-in script, has already obtained an access token for you. Requires Claude Code v2.1.203 or later.
+{/* min-version: 2.1.203 */}Claude Code 在每个请求中将 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 的值作为 `Authorization: Bearer` 标头发送。当另一个进程（例如主机应用程序或登录脚本）已经为您获取了访问令牌时，请使用此选项。需要 Claude Code v2.1.203 或更高版本。
 
-Set the variable to a bearer token that Microsoft Entra ID issued for your resource:
+将变量设置为 Microsoft Entra ID 为您的资源颁发的 Bearer 令牌：
 
 ```bash theme={null}
 export ANTHROPIC_FOUNDRY_AUTH_TOKEN=your-entra-access-token
 ```
 
-`ANTHROPIC_FOUNDRY_AUTH_TOKEN` takes precedence over `ANTHROPIC_FOUNDRY_API_KEY` and over the default credential chain.
+`ANTHROPIC_FOUNDRY_AUTH_TOKEN` 优先于 `ANTHROPIC_FOUNDRY_API_KEY` 和默认凭证链。
 
 <Note>
-  When using Microsoft Foundry, the `/logout` command is unavailable since authentication is handled through Azure credentials.
+  使用 Microsoft Foundry 时，`/logout` 命令不可用，因为身份验证通过 Azure 凭证处理。
 </Note>
 
-### 3. Configure Claude Code
+<h3 id="3-configure-claude-code">
+  3. 配置 Claude Code
+</h3>
 
-Set the following environment variables to enable Microsoft Foundry:
+设置以下环境变量以启用 Microsoft Foundry：
 
 ```bash theme={null}
-# Enable Microsoft Foundry integration
+# 启用 Microsoft Foundry 集成
 export CLAUDE_CODE_USE_FOUNDRY=1
 
-# Azure resource name (replace {resource} with your resource name)
+# Azure 资源名称（将 {resource} 替换为您的资源名称）
 export ANTHROPIC_FOUNDRY_RESOURCE={resource}
-# Or provide the full base URL:
+# 或提供完整的基础 URL：
 # export ANTHROPIC_FOUNDRY_BASE_URL=https://{resource}.services.ai.azure.com/anthropic
 ```
 
-### 4. Pin model versions
+<h3 id="4-pin-model-versions">
+  4. 固定模型版本
+</h3>
 
 <Warning>
-  Pin specific model versions for every deployment. Without pinning, model aliases such as `sonnet` and `opus` resolve to Claude Code's built-in default for Microsoft Foundry, which can lag the newest release and may not yet be available in your account. Microsoft Foundry has no startup model check, so requests fail when the default is unavailable. When you create Azure deployments, select a specific model version rather than "auto-update to latest."
+  为每个部署固定特定的模型版本。如果不固定版本，模型别名（如 `sonnet` 和 `opus`）会解析为 Claude Code 为 Microsoft Foundry 内置的默认值，这可能滞后于最新版本，并且可能在您的账户中尚不可用。Microsoft Foundry 没有启动模型检查，因此当默认值不可用时请求会失败。创建 Azure 部署时，请选择特定的模型版本而不是"自动更新到最新版本"。
 </Warning>
 
-Set the model variables to match the deployment names you created in step 1.
+设置模型变量以匹配您在第 1 步中创建的部署名称。
 
-Without `ANTHROPIC_DEFAULT_OPUS_MODEL`, the `opus` alias on Microsoft Foundry resolves to Opus 4.6. Set it to the ID of a newer Opus model, such as Opus 4.8:
+如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，Microsoft Foundry 上的 `opus` 别名会解析为 Opus 4.6。将其设置为 Opus 4.8 ID 以使用最新模型：
 
 ```bash theme={null}
 export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-8'
@@ -178,33 +187,37 @@ export ANTHROPIC_DEFAULT_SONNET_MODEL='claude-sonnet-5'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 ```
 
-Background tasks such as session title generation use the small/fast model, normally a Haiku-class model. On Microsoft Foundry, Claude Code defaults this to the primary model because not every account has a Haiku deployment. To use Haiku for background tasks, set `ANTHROPIC_DEFAULT_HAIKU_MODEL` to a Haiku deployment that is available in your account, as shown above.
+后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Microsoft Foundry 上，Claude Code 默认使用主模型，因为并非每个账户都有 Haiku 部署。要为后台任务使用 Haiku，请将 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 设置为您账户中可用的 Haiku 部署，如上所示。
 
-For current and legacy model IDs, see [Models overview](https://platform.claude.com/docs/en/about-claude/models/overview). See [Model configuration](/docs/en/model-config#pin-models-for-third-party-deployments) for the full list of environment variables.
+有关当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。有关完整的环境变量列表，请参阅[模型配置](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
 
-[Prompt caching](/docs/en/prompt-caching) is enabled automatically. To request a 1-hour cache TTL instead of the 5-minute default, set the following variable; cache writes with a 1-hour TTL are billed at a higher rate:
+[Prompt caching](/docs/zh-CN/prompt-caching) 会自动启用。要请求 1 小时的缓存 TTL 而不是 5 分钟的默认值，请设置以下变量；具有 1 小时 TTL 的缓存写入按更高的费率计费：
 
 ```bash theme={null}
 export ENABLE_PROMPT_CACHING_1H=1
 ```
 
-### 5. Run Claude Code
+<h3 id="5-run-claude-code">
+  5. 运行 Claude Code
+</h3>
 
-With the environment variables set, start Claude Code from your project directory:
+设置环境变量后，从您的项目目录启动 Claude Code：
 
 ```bash theme={null}
 claude
 ```
 
-Claude Code reads `CLAUDE_CODE_USE_FOUNDRY` and the other Microsoft Foundry variables from the environment and connects to your Azure resource on the first prompt. Unlike Amazon Bedrock and Google Cloud's Agent Platform, Microsoft Foundry has no interactive setup wizard, so the environment variables in steps 3 and 4 are the only configuration path.
+Claude Code 从环境中读取 `CLAUDE_CODE_USE_FOUNDRY` 和其他 Microsoft Foundry 变量，并在第一个提示时连接到您的 Azure 资源。与 Amazon Bedrock 和 Google Cloud 的 Agent Platform 不同，Microsoft Foundry 没有交互式设置向导，因此第 3 和第 4 步中的环境变量是唯一的配置路径。
 
-To verify your setup, run `/status` inside Claude Code. The API provider line shows `Microsoft Foundry`, along with the resource name or base URL you configured.
+要验证您的设置，请在 Claude Code 中运行 `/status`。API 提供商行显示 `Microsoft Foundry`，以及您配置的资源名称或基础 URL。
 
-## Azure RBAC configuration
+<h2 id="azure-rbac-configuration">
+  Azure RBAC 配置
+</h2>
 
-The `Azure AI User` and `Cognitive Services User` default roles include all required permissions for invoking Claude models.
+`Azure AI User` 和 `Cognitive Services User` 默认角色包括调用 Claude 模型所需的所有权限。
 
-For more restrictive permissions, create a custom role with the following:
+对于更严格的权限，请创建具有以下内容的自定义角色：
 
 ```json theme={null}
 {
@@ -218,20 +231,24 @@ For more restrictive permissions, create a custom role with the following:
 }
 ```
 
-For details, see [Microsoft Foundry RBAC documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/rbac-azure-ai-foundry).
+有关详情，请参阅 [Microsoft Foundry RBAC 文档](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/rbac-azure-ai-foundry)。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-If you receive an error "Failed to get token from azureADTokenProvider: ChainedTokenCredential authentication failed":
+如果您收到错误"Failed to get token from azureADTokenProvider: ChainedTokenCredential authentication failed"：
 
-* Configure Entra ID on the environment, or set `ANTHROPIC_FOUNDRY_API_KEY`.
+* 在环境中配置 Entra ID，或设置 `ANTHROPIC_FOUNDRY_API_KEY`。
 
-If requests fail with repeated connection errors on the first prompt:
+如果请求在第一个提示上反复出现连接错误而失败：
 
-* Check that `ANTHROPIC_FOUNDRY_RESOURCE` is set to your actual resource name rather than a placeholder. Claude Code builds the endpoint URL from this value, so an incorrect name points at a host that doesn't exist.
+* 检查 `ANTHROPIC_FOUNDRY_RESOURCE` 是否设置为您的实际资源名称，而不是占位符。Claude Code 从此值构建端点 URL，因此不正确的名称会指向不存在的主机。
 
-## Additional resources
+<h2 id="additional-resources">
+  其他资源
+</h2>
 
-* [Microsoft Foundry documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-azure-ai-foundry)
-* [Microsoft Foundry models](https://ai.azure.com/explore/models)
-* [Microsoft Foundry pricing](https://azure.microsoft.com/en-us/pricing/details/ai-foundry/)
+* [Microsoft Foundry 文档](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-azure-ai-foundry)
+* [Microsoft Foundry 模型](https://ai.azure.com/explore/models)
+* [Microsoft Foundry 定价](https://azure.microsoft.com/en-us/pricing/details/ai-foundry/)

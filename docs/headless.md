@@ -2,97 +2,105 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Run Claude Code programmatically
+# 以编程方式运行 Claude Code
 
-> Use the Agent SDK to run Claude Code programmatically from the CLI, Python, or TypeScript.
+> 使用 Agent SDK 从 CLI、Python 或 TypeScript 以编程方式运行 Claude Code。
 
-The [Agent SDK](/docs/en/agent-sdk/overview) gives you the same tools, agent loop, and context management that power Claude Code. It's available as a CLI for scripts and CI/CD, or as [Python](/docs/en/agent-sdk/python) and [TypeScript](/docs/en/agent-sdk/typescript) packages for full programmatic control.
+[Agent SDK](/docs/zh-CN/agent-sdk/overview) 为您提供了与 Claude Code 相同的工具、agent 循环和上下文管理。它可作为 CLI 用于脚本和 CI/CD，或作为 [Python](/docs/zh-CN/agent-sdk/python) 和 [TypeScript](/docs/zh-CN/agent-sdk/typescript) 包供完整的编程控制。
 
-To run Claude Code in non-interactive mode, pass `-p` with your prompt and any [CLI options](/docs/en/cli-reference):
+要以非交互模式运行 Claude Code，请使用 `-p` 传递您的提示和任何 [CLI 选项](/docs/zh-CN/cli-reference)：
 
 ```bash theme={null}
 claude -p "Find and fix the bug in auth.py" --allowedTools "Read,Edit,Bash"
 ```
 
-This page covers using the Agent SDK via the CLI (`claude -p`). For the Python and TypeScript SDK packages with structured outputs, tool approval callbacks, and native message objects, see the [full Agent SDK documentation](/docs/en/agent-sdk/overview).
+本页面涵盖通过 CLI (`claude -p`) 使用 Agent SDK。对于具有结构化输出、工具批准回调和原生消息对象的 Python 和 TypeScript SDK 包，请参阅 [完整 Agent SDK 文档](/docs/zh-CN/agent-sdk/overview)。
 
-## Basic usage
+<h2 id="basic-usage">
+  基本用法
+</h2>
 
-Add the `-p` (or `--print`) flag to any `claude` command to run it non-interactively. All [CLI options](/docs/en/cli-reference) work with `-p`, including:
+将 `-p`（或 `--print`）标志添加到任何 `claude` 命令以非交互方式运行它。所有 [CLI 选项](/docs/zh-CN/cli-reference) 都适用于 `-p`，包括：
 
-* `--continue` for [continuing conversations](#continue-conversations)
-* `--allowedTools` for [auto-approving tools](#auto-approve-tools)
-* `--output-format` for [structured output](#get-structured-output)
+* `--continue` 用于 [继续对话](#continue-conversations)
+* `--allowedTools` 用于 [自动批准工具](#auto-approve-tools)
+* `--output-format` 用于 [获取结构化输出](#get-structured-output)
 
-This example asks Claude a question about your codebase and prints the response:
+此示例询问 Claude 关于您的代码库的问题并打印响应：
 
 ```bash theme={null}
 claude -p "What does the auth module do?"
 ```
 
-### Start faster with bare mode
+<h3 id="start-faster-with-bare-mode">
+  使用裸模式更快启动
+</h3>
 
-Add `--bare` to reduce startup time by skipping auto-discovery of hooks, skills, plugins, MCP servers, auto memory, and CLAUDE.md. Without it, `claude -p` loads the same [context](/docs/en/how-claude-code-works#the-context-window) an interactive session would, including anything configured in the working directory or `~/.claude`.
+添加 `--bare` 以通过跳过 hooks、skills、plugins、MCP 服务器、自动内存和 CLAUDE.md 的自动发现来减少启动时间。没有它，`claude -p` 会加载交互式会话相同的 [上下文](/docs/zh-CN/how-claude-code-works#the-context-window)，包括在工作目录或 `~/.claude` 中配置的任何内容。
 
-Bare mode is useful for CI and scripts where you need the same result on every machine. A hook in a teammate's `~/.claude` or an MCP server in the project's `.mcp.json` won't run, because bare mode never reads them. Only flags you pass explicitly take effect.
+裸模式对于 CI 和脚本很有用，您需要在每台机器上获得相同的结果。队友的 `~/.claude` 中的 hook 或项目的 `.mcp.json` 中的 MCP 服务器不会运行，因为裸模式从不读取它们。只有您显式传递的标志才会生效。
 
-This example runs a one-off summarize task in bare mode and pre-approves the Read tool so the call completes without a permission prompt:
+此示例在裸模式下运行一次性摘要任务，并预先批准 Read 工具，以便调用完成而无需权限提示：
 
 ```bash theme={null}
 claude --bare -p "Summarize this file" --allowedTools "Read"
 ```
 
-In bare mode Claude has access to the Bash, file read, and file edit tools. Pass any context you need with a flag:
+在裸模式下，Claude 可以访问 Bash、文件读取和文件编辑工具。使用标志传递您需要的任何上下文：
 
-| To load                 | Use                                                     |
-| ----------------------- | ------------------------------------------------------- |
-| System prompt additions | `--append-system-prompt`, `--append-system-prompt-file` |
-| Settings                | `--settings <file-or-json>`                             |
-| MCP servers             | `--mcp-config <file-or-json>`                           |
-| Custom agents           | `--agents <json>`                                       |
-| A plugin                | `--plugin-dir <path>`, `--plugin-url <url>`             |
+| 要加载        | 使用                                                      |
+| ---------- | ------------------------------------------------------- |
+| 系统提示添加     | `--append-system-prompt`, `--append-system-prompt-file` |
+| 设置         | `--settings <file-or-json>`                             |
+| MCP 服务器    | `--mcp-config <file-or-json>`                           |
+| 自定义 agents | `--agents <json>`                                       |
+| 插件         | `--plugin-dir <path>`, `--plugin-url <url>`             |
 
-Bare mode skips OAuth and keychain reads. For Anthropic authentication, set `ANTHROPIC_API_KEY` or configure an `apiKeyHelper` in the JSON you pass to `--settings`. Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry use their usual provider credentials.
+裸模式跳过 OAuth 和钥匙链读取。Anthropic 身份验证必须来自 `ANTHROPIC_API_KEY` 或传递给 `--settings` 的 JSON 中的 `apiKeyHelper`。Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 使用其常规提供商凭证。
 
 <Note>
-  `--bare` is the recommended mode for scripted and SDK calls, and will become the default for `-p` in a future release.
+  `--bare` 是脚本和 SDK 调用的推荐模式，将在未来版本中成为 `-p` 的默认值。
 </Note>
 
-### Background tasks at exit
+<h3 id="background-tasks-at-exit">
+  退出时的后台任务
+</h3>
 
-If Claude starts a [background Bash task](/docs/en/tools-reference#bash-tool-behavior) during a `claude -p` run, for example a dev server or a watch build, that shell is terminated about five seconds after Claude has returned its final result and stdin has closed. The grace period lets a task that finishes right after the result still deliver its output. Before v2.1.163, a never-exiting background process would hold the `claude -p` invocation open indefinitely.
+如果 Claude 在 `claude -p` 运行期间启动 [后台 Bash 任务](/docs/zh-CN/tools-reference#bash-tool-behavior)，例如开发服务器或监视构建，该任务将在 Claude 返回其最终结果并关闭 stdin 后约五秒钟被终止。宽限期允许在结果之后立即完成的任务仍然能够传递其输出。在 v2.1.163 之前，永不退出的后台进程会无限期地保持 `claude -p` 调用打开。
 
-Background [subagents](/docs/en/sub-agents) and workflows are exempt from the five-second grace because their result is part of the final output, so `claude -p` waits for them to complete. From v2.1.182, that wait is capped at ten minutes by default so a stuck background agent cannot hold the process open indefinitely. Adjust the cap with [`CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`](/docs/en/env-vars), or set it to `0` to wait without a limit.
+后台 [subagents](/docs/zh-CN/sub-agents) 和工作流程不受五秒宽限期的限制，因为它们的结果是最终输出的一部分，所以 `claude -p` 会等待它们完成。从 v2.1.182 开始，该等待默认上限为十分钟，以便卡住的后台 agent 无法无限期地保持进程打开。使用 [`CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`](/docs/zh-CN/env-vars) 调整上限，或将其设置为 `0` 以无限制地等待。
 
-If you stop a `claude -p` run with SIGTERM, for example from `kill`, a process supervisor, or an SDK host closing the session, Claude Code aborts the in-progress turn, terminates the process tree of any running Bash command, runs [`SessionEnd` hooks](/docs/en/hooks#sessionend), and exits with code 143.
+<h2 id="examples">
+  示例
+</h2>
 
-## Examples
+这些示例突出了常见的 CLI 模式。对于 CI 和其他脚本调用，添加 [`--bare`](#start-faster-with-bare-mode) 以便它们不会选择本地配置的任何内容。
 
-These examples highlight common CLI patterns. For CI and other scripted calls, add [`--bare`](#start-faster-with-bare-mode) so they don't pick up whatever happens to be configured locally.
+<h3 id="pipe-data-through-claude">
+  通过 Claude 管道传输数据
+</h3>
 
-### Pipe data through Claude
+非交互模式读取 stdin，因此您可以像任何其他命令行工具一样管道传输数据并重定向响应。
 
-Non-interactive mode reads stdin, so you can pipe data in and redirect the response out like any other command-line tool.
-
-This example pipes a build log into Claude and writes the explanation to a file:
+此示例将构建日志管道传输到 Claude 并将说明写入文件：
 
 ```bash theme={null}
 cat build-error.txt | claude -p 'concisely explain the root cause of this build error' > output.txt
 ```
 
-With `--output-format json`, the response payload includes `total_cost_usd` and a per-model cost breakdown, so scripted callers can track spend per invocation without consulting the [usage dashboard](/docs/en/costs).
+使用 `--output-format json`，响应有效负载包括 `total_cost_usd` 和按模型的成本分解，因此脚本调用者可以跟踪每次调用的支出，而无需查询 [使用情况仪表板](/docs/zh-CN/costs)。
 
 <Note>
-  As of Claude Code v2.1.128, piped stdin is capped at 10MB. If you exceed the cap, Claude Code exits with a clear error and a non-zero status. To work with larger inputs, write the content to a file and reference the file path in your prompt instead of piping it.
+  从 Claude Code v2.1.128 开始，管道 stdin 的上限为 10MB。如果超过上限，Claude Code 会以清晰的错误和非零状态退出。要处理更大的输入，请将内容写入文件并在提示中引用文件路径，而不是管道传输它。
 </Note>
 
-If Claude Code can't read stdin, for example because the process that started it disconnected its end, Claude Code prints a warning to stderr and continues with the prompt from the command line. Before v2.1.211, an unreadable stdin on Windows crashed the session or made it exit silently with no output.
+<h3 id="add-claude-to-a-build-script">
+  将 Claude 添加到构建脚本
+</h3>
 
-### Add Claude to a build script
+您可以在脚本中包装非交互调用，以将 Claude 用作项目特定的 linter 或审查者。
 
-You can wrap a non-interactive call in a script to use Claude as a project-specific linter or reviewer.
-
-This `package.json` script pipes the diff against `main` into Claude and asks it to report typos. Piping the diff means Claude doesn't need Bash permission to read it, and the escaped double quotes keep the script portable to Windows:
+此 `package.json` 脚本将针对 `main` 的 diff 管道传输到 Claude，并要求它报告拼写错误。管道传输 diff 意味着 Claude 不需要 Bash 权限来读取它，转义的双引号使脚本可移植到 Windows：
 
 ```json theme={null}
 {
@@ -102,23 +110,25 @@ This `package.json` script pipes the diff against `main` into Claude and asks it
 }
 ```
 
-### Get structured output
+<h3 id="get-structured-output">
+  获取结构化输出
+</h3>
 
-Use `--output-format` to control how responses are returned:
+使用 `--output-format` 控制响应的返回方式：
 
-* `text` (default): plain text output
-* `json`: structured JSON with result, session ID, and metadata
-* `stream-json`: newline-delimited JSON for real-time streaming
+* `text`（默认）：纯文本输出
+* `json`：包含结果、会话 ID 和元数据的结构化 JSON
+* `stream-json`：用于实时流式传输的换行符分隔的 JSON
 
-This example returns a project summary as JSON with session metadata, with the text result in the `result` field:
+此示例以 JSON 格式返回项目摘要以及会话元数据，文本结果在 `result` 字段中：
 
 ```bash theme={null}
 claude -p "Summarize this project" --output-format json
 ```
 
-To get output conforming to a specific schema, use `--output-format json` with `--json-schema` and a [JSON Schema](https://json-schema.org/) definition. The response includes metadata about the request (session ID, usage, etc.) with the structured output in the `structured_output` field.
+要获得符合特定架构的输出，请使用 `--output-format json` 与 `--json-schema` 和 [JSON Schema](https://json-schema.org/) 定义。响应包括关于请求的元数据（会话 ID、使用情况等），结构化输出在 `structured_output` 字段中。
 
-This example extracts function names and returns them as an array of strings:
+此示例从 auth.py 中提取函数名称并将其作为字符串数组返回：
 
 ```bash theme={null}
 claude -p "Extract the main function names from auth.py" \
@@ -126,10 +136,10 @@ claude -p "Extract the main function names from auth.py" \
   --json-schema '{"type":"object","properties":{"functions":{"type":"array","items":{"type":"string"}}},"required":["functions"]}'
 ```
 
-If the value isn't a valid JSON Schema, `claude` exits with `Error: --json-schema is not a valid JSON Schema` followed by the validator's diagnostic. Claude Code accepts schemas that use the `format` keyword, such as `"format": "email"`, but treats `format` as an annotation and doesn't enforce it. Before v2.1.205, Claude Code silently ignored an invalid schema and returned unstructured text, and treated any schema containing `format` as invalid.
+如果该值不是有效的 JSON Schema，`claude` 会以 `Error: --json-schema is not a valid JSON Schema` 退出，后跟验证器的诊断。Claude Code 接受使用 `format` 关键字的架构，例如 `"format": "email"`，但将 `format` 视为注释，不强制执行它。在 v2.1.205 之前，Claude Code 会静默忽略无效的架构并返回非结构化文本，并将任何包含 `format` 的架构视为无效。
 
 <Tip>
-  Use a tool like [jq](https://jqlang.org/) to parse the response and extract specific fields:
+  使用 [jq](https://jqlang.github.io/jq/) 之类的工具来解析响应并提取特定字段：
 
   ```bash theme={null}
   # Extract the text result
@@ -143,127 +153,108 @@ If the value isn't a valid JSON Schema, `claude` exits with `Error: --json-schem
   ```
 </Tip>
 
-### Stream responses
+<h3 id="stream-responses">
+  流式传输响应
+</h3>
 
-Use `--output-format stream-json` with `--verbose` and `--include-partial-messages` to receive tokens as they're generated. Each line is a JSON object representing an event:
+使用 `--output-format stream-json` 与 `--verbose` 和 `--include-partial-messages` 来接收生成的令牌。每一行都是代表一个事件的 JSON 对象：
 
 ```bash theme={null}
 claude -p "Explain recursion" --output-format stream-json --verbose --include-partial-messages
 ```
 
-The last line of the stream is a `result` message with the final response text, cost, and session metadata.
+流的最后一行是包含最终响应文本、成本和会话元数据的 `result` 消息。{/* min-version: 2.1.208 */}在 v2.1.208 之前，管道传输大型响应可能会截断最后一行并省略 `result` 消息。
 
-{/* min-version: 2.1.214 */}If your consumer reads the stream slowly, Claude Code waits for the queued output to drain before exiting, scaling the wait with how much is still queued, capped at 30 seconds. Before v2.1.214 the exit wait was capped at about two seconds, which could cut off the end of a large response.
-
-The following example uses [jq](https://jqlang.org/) to filter for text deltas and display just the streaming text. The `-r` flag outputs raw strings (no quotes) and `-j` joins without newlines so tokens stream continuously:
+以下示例使用 [jq](https://jqlang.github.io/jq/) 来过滤文本增量并仅显示流式文本。`-r` 标志输出原始字符串（无引号），`-j` 不带换行符连接，以便令牌连续流式传输：
 
 ```bash theme={null}
 claude -p "Write a poem" --output-format stream-json --verbose --include-partial-messages | \
   jq -rj 'select(.type == "stream_event" and .event.delta.type? == "text_delta") | .event.delta.text'
 ```
 
-For programmatic streaming with callbacks and message objects, see [Stream responses in real-time](/docs/en/agent-sdk/streaming-output) in the Agent SDK documentation.
+当 API 请求因可重试错误而失败时，Claude Code 在重试前发出 `system/api_retry` 事件。您可以使用此来显示重试进度或实现自定义退避逻辑。
 
-#### Follow subagent messages
+| 字段               | 类型            | 描述                                                                                                                                                                                |
+| ---------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`           | `"system"`    | 消息类型                                                                                                                                                                              |
+| `subtype`        | `"api_retry"` | 将其标识为重试事件                                                                                                                                                                         |
+| `attempt`        | 整数            | 当前尝试次数，从 1 开始                                                                                                                                                                     |
+| `max_retries`    | 整数            | 允许的总重试次数                                                                                                                                                                          |
+| `retry_delay_ms` | 整数            | 毫秒直到下一次尝试                                                                                                                                                                         |
+| `error_status`   | 整数或 null      | HTTP 状态代码，或 `null` 表示没有 HTTP 响应的连接错误                                                                                                                                              |
+| `error`          | 字符串           | 错误类别：`authentication_failed`、`oauth_org_not_allowed`、`billing_error`、`rate_limit`、`overloaded`、`invalid_request`、`model_not_found`、`server_error`、`max_output_tokens` 或 `unknown` |
+| `uuid`           | 字符串           | 唯一事件标识符                                                                                                                                                                           |
+| `session_id`     | 字符串           | 事件所属的会话                                                                                                                                                                           |
 
-Messages from [subagents](/docs/en/sub-agents) appear in the stream as `assistant` and `user` messages whose `parent_tool_use_id` field is the ID of the tool call that spawned the subagent. Messages from the main conversation carry `null` in that field.
+`system/init` 事件报告会话元数据，包括模型、工具、MCP 服务器和加载的插件。它是流中的第一个事件，除非启动事件在其之前：
 
-By default, Claude Code emits only subagent `tool_use` and `tool_result` blocks. {/* min-version: 2.1.211 */}Pass [`--forward-subagent-text`](/docs/en/cli-reference#cli-flags) or set [`CLAUDE_CODE_FORWARD_SUBAGENT_TEXT`](/docs/en/env-vars) to also emit subagent text and thinking blocks, so you can reconstruct each subagent's transcript. This requires Claude Code v2.1.211 or later.
+* `plugin_install` 事件，当设置了 [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL`](/docs/zh-CN/env-vars) 时。
+* {/* min-version: 2.1.204 */}[`hook_started`、`hook_progress` 和 `hook_response` 事件](/docs/zh-CN/agent-sdk/typescript#sdkhookstartedmessage)，当配置的 [`SessionStart`](/docs/zh-CN/hooks#sessionstart) 或 [`Setup`](/docs/zh-CN/hooks#setup) hook 运行时。这些事件在 hook 生成时流式传输。Claude Code v2.1.169 至 v2.1.203 在 hook 完成后以一个批次传递它们，仍然在 `system/init` 之前；v2.1.204 恢复了实时传递。
 
-When you enable either option, Claude Code forwards messages from [subagents at every nesting depth](/docs/en/sub-agents#let-subagents-spawn-their-own-subagents): when a subagent spawns its own subagent, the nested subagent's messages carry the ID of the Agent tool call that spawned it in `parent_tool_use_id`, so you can rebuild the full nesting tree by following those IDs. Before v2.1.219, messages from nested subagents didn't appear in the stream.
+该事件还携带一个可选的 `capabilities` 字符串数组，命名此 Claude Code 版本实现的协议行为，例如 `interrupt_receipt_v1`。检查它以进行功能检测，而不是比较版本字符串，并忽略您不认识的值。该字段需要 Claude Code v2.1.205 或更高版本，在早期版本中不存在。有关功能列表，请参阅 [`SDKSystemMessage`](/docs/zh-CN/agent-sdk/typescript#sdksystemmessage)。
 
-#### Handle API retries
+使用插件字段在插件未加载时使 CI 失败：
 
-When an API request fails with a retryable error, Claude Code emits a `system/api_retry` event before retrying. You can use this to surface retry progress or implement custom backoff logic.
+| 字段              | 类型 | 描述                                                                                                                          |
+| --------------- | -- | --------------------------------------------------------------------------------------------------------------------------- |
+| `plugins`       | 数组 | 成功加载的插件，每个都有 `name` 和 `path`                                                                                                |
+| `plugin_errors` | 数组 | 插件加载时错误，每个都有 `plugin`、`type` 和 `message`。包括不满足的依赖版本和 `--plugin-dir` 加载失败，例如缺失路径或无效存档。受影响的插件被降级并从 `plugins` 中缺失。当没有错误时，该键被省略 |
 
-| Field            | Type            | Description                                                                                                                                                                                            |
-| ---------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`           | `"system"`      | message type                                                                                                                                                                                           |
-| `subtype`        | `"api_retry"`   | identifies this as a retry event                                                                                                                                                                       |
-| `attempt`        | integer         | current attempt number, starting at 1                                                                                                                                                                  |
-| `max_retries`    | integer         | total retries permitted                                                                                                                                                                                |
-| `retry_delay_ms` | integer         | milliseconds until the next attempt                                                                                                                                                                    |
-| `error_status`   | integer or null | HTTP status code, or `null` for connection errors with no HTTP response                                                                                                                                |
-| `error`          | string          | error category: `authentication_failed`, `oauth_org_not_allowed`, `billing_error`, `rate_limit`, `overloaded`, `invalid_request`, `model_not_found`, `server_error`, `max_output_tokens`, or `unknown` |
-| `uuid`           | string          | unique event identifier                                                                                                                                                                                |
-| `session_id`     | string          | session the event belongs to                                                                                                                                                                           |
+当设置了 [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL`](/docs/zh-CN/env-vars) 时，Claude Code 在第一轮之前安装市场插件时发出 `system/plugin_install` 事件。使用这些在您自己的 UI 中显示安装进度。
 
-#### Read session metadata
+| 字段           | 类型                                                   | 描述                                                           |
+| ------------ | ---------------------------------------------------- | ------------------------------------------------------------ |
+| `type`       | `"system"`                                           | 消息类型                                                         |
+| `subtype`    | `"plugin_install"`                                   | 将其标识为插件安装事件                                                  |
+| `status`     | `"started"`、`"installed"`、`"failed"` 或 `"completed"` | `started` 和 `completed` 括住整体安装；`installed` 和 `failed` 报告单个市场 |
+| `name`       | 字符串，可选                                               | 市场名称，在 `installed` 和 `failed` 上存在                            |
+| `error`      | 字符串，可选                                               | 失败消息，在 `failed` 上存在                                          |
+| `uuid`       | 字符串                                                  | 唯一事件标识符                                                      |
+| `session_id` | 字符串                                                  | 事件所属的会话                                                      |
 
-The `system/init` event reports session metadata including the model, tools, MCP servers, and loaded plugins. It is the first event in the stream unless startup events precede it:
+对于具有回调和消息对象的编程流式传输，请参阅 Agent SDK 文档中的 [实时流式传输响应](/docs/zh-CN/agent-sdk/streaming-output)。
 
-* `plugin_install` events, when [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL`](/docs/en/env-vars) is set.
-* {/* min-version: 2.1.204 */}[`hook_started`, `hook_progress`, and `hook_response` events](/docs/en/agent-sdk/typescript#sdkhookstartedmessage), while a configured [`SessionStart`](/docs/en/hooks#sessionstart) or [`Setup`](/docs/en/hooks#setup) hook runs. These stream as the hook produces them. Claude Code v2.1.169 through v2.1.203 delivered them in one batch after the hook completed, still ahead of `system/init`; v2.1.204 restored live delivery.
+<h3 id="auto-approve-tools">
+  自动批准工具
+</h3>
 
-The event also carries an optional `capabilities` array of strings naming the protocol behaviors this Claude Code version implements, such as `interrupt_receipt_v1` or `interrupt_cancel_queued_v1`. Check it to feature-detect instead of comparing version strings, and ignore values you don't recognize. The field requires Claude Code v2.1.205 or later and is absent from earlier versions. See [`SDKSystemMessage`](/docs/en/agent-sdk/typescript#sdksystemmessage) for the capability list.
-
-#### Fail CI when a plugin or MCP server doesn't load
-
-Use the plugin fields in the `system/init` event to catch a plugin that didn't load:
-
-| Field           | Type  | Description                                                                                                                                                                                                                                                                                  |
-| --------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `plugins`       | array | plugins that loaded successfully, each with `name` and `path`                                                                                                                                                                                                                                |
-| `plugin_errors` | array | plugin load-time errors, each with `plugin`, `type`, and `message`. Includes unsatisfied dependency versions and `--plugin-dir` load failures such as a missing path or invalid archive. Affected plugins are demoted and absent from `plugins`. The key is omitted when there are no errors |
-
-Use the MCP server fields the same way. Claude Code validates each [`--mcp-config`](/docs/en/cli-reference#cli-flags) entry at startup and skips entries that fail validation, for example a `url` entry with no `type`; the run continues and exits cleanly, so check these fields to catch a server that never loaded:
-
-| Field               | Type  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mcp_servers`       | array | MCP servers in the session, each with `name` and `status`                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `mcp_server_errors` | array | {/* min-version: 2.1.219 */}`--mcp-config` entries skipped by config validation, each with `name`, `type`, and `message`. `type` is a skip category such as `unknown_type`, `url_missing_type`, `invalid_config`, or `reserved_name`; treat values you don't recognize as a generic skip. Affected servers are absent from `mcp_servers`. The key is omitted when there are no errors, so a CI gate can fail on a non-empty array. Requires Claude Code v2.1.219 or later |
-
-When you run the command by hand in a terminal, Claude Code also prints a startup warning to stderr, such as `Warning: 1 MCP server skipped due to invalid config:`, followed by the reason for each skipped entry. When you redirect stderr, or when a program such as a CI runner or an SDK host captures it, Claude Code prints no warning and reports the skipped entries only in the `mcp_server_errors` field. The warning requires Claude Code v2.1.219 or later.
-
-#### Track plugin installs
-
-When [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL`](/docs/en/env-vars) is set, Claude Code emits `system/plugin_install` events while marketplace plugins install before the first turn. Use these to surface install progress in your own UI.
-
-| Field        | Type                                                     | Description                                                                                                    |
-| ------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `type`       | `"system"`                                               | message type                                                                                                   |
-| `subtype`    | `"plugin_install"`                                       | identifies this as a plugin install event                                                                      |
-| `status`     | `"started"`, `"installed"`, `"failed"`, or `"completed"` | `started` and `completed` bracket the overall install; `installed` and `failed` report individual marketplaces |
-| `name`       | string, optional                                         | marketplace name, present on `installed` and `failed`                                                          |
-| `error`      | string, optional                                         | failure message, present on `failed`                                                                           |
-| `uuid`       | string                                                   | unique event identifier                                                                                        |
-| `session_id` | string                                                   | session the event belongs to                                                                                   |
-
-### Auto-approve tools
-
-Use `--allowedTools` to let Claude use certain tools without prompting. This example runs a test suite and fixes failures, allowing Claude to execute Bash commands and read/edit files without asking for permission:
+使用 `--allowedTools` 让 Claude 使用某些工具而无需提示。此示例运行测试套件并修复失败，允许 Claude 执行 Bash 命令和读取/编辑文件而无需请求权限：
 
 ```bash theme={null}
 claude -p "Run the test suite and fix any failures" \
   --allowedTools "Bash,Read,Edit"
 ```
 
-To set a baseline for the whole session instead of listing individual tools, pass a [permission mode](/docs/en/permission-modes). `dontAsk` denies anything not in your `permissions.allow` rules or the [read-only command set](/docs/en/permissions#read-only-commands), which is useful for locked-down CI runs. `AskUserQuestion`, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) are denied even when an allow rule matches.
+要为整个会话设置基线而不是列出单个工具，请传递 [权限模式](/docs/zh-CN/permission-modes)。`dontAsk` 拒绝您的 `permissions.allow` 规则或 [只读命令集](/docs/zh-CN/permissions#read-only-commands) 中未包含的任何内容，这对于锁定的 CI 运行很有用。`AskUserQuestion`、连接器工具 [您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具即使当允许规则匹配时也被拒绝。
 
-`acceptEdits` lets Claude write files without prompting and also auto-approves common filesystem commands such as `mkdir`, `touch`, `mv`, and `cp`. Other shell commands and network requests still need an `--allowedTools` entry or a `permissions.allow` rule, otherwise the run aborts when one is attempted:
+`acceptEdits` 让 Claude 写入文件而无需提示，还自动批准常见的文件系统命令，例如 `mkdir`、`touch`、`mv` 和 `cp`。其他 shell 命令和网络请求仍然需要 `--allowedTools` 条目或 `permissions.allow` 规则，否则当尝试时运行会中止：
 
 ```bash theme={null}
 claude -p "Apply the lint fixes" --permission-mode acceptEdits
 ```
 
-### Create a commit
+<h3 id="create-a-commit">
+  创建提交
+</h3>
 
-This example reviews staged changes and creates a commit with an appropriate message:
+此示例审查暂存的更改并创建具有适当消息的提交：
 
 ```bash theme={null}
 claude -p "Look at my staged changes and create an appropriate commit" \
   --allowedTools "Bash(git diff *),Bash(git log *),Bash(git status *),Bash(git commit *)"
 ```
 
-The `--allowedTools` flag uses [permission rule syntax](/docs/en/settings#permission-rule-syntax). The trailing ` *` enables prefix matching, so `Bash(git diff *)` allows any command starting with `git diff`. The space before `*` is important: without it, `Bash(git diff*)` would also match `git diff-index`.
+`--allowedTools` 标志使用 [权限规则语法](/docs/zh-CN/settings#permission-rule-syntax)。尾部的 ` *` 启用前缀匹配，因此 `Bash(git diff *)` 允许任何以 `git diff` 开头的命令。空格在 `*` 之前很重要：没有它，`Bash(git diff*)` 也会匹配 `git diff-index`。
 
 <Note>
-  User-invoked [skills](/docs/en/skills) and custom commands work in `-p` mode: include `/skill-name` in the prompt string and Claude Code expands it before running. Built-in commands that only run in the terminal interface, such as `/login`, aren't available in `-p` mode. {/* min-version: 2.1.205 */}`/model`, `/effort`, `/fast`, `/color`, and `/rename` accept the value as an argument, for example `/model sonnet`, and `/mcp` with no argument prints a text summary of server status; these forms require Claude Code v2.1.205 or later and follow each command's [availability notes](/docs/en/commands#all-commands). {/* min-version: 2.1.181 */}To change a setting from a `-p` invocation, pass `key=value` to `/config`, for example `/config thinking=false`.
+  用户调用的 [skills](/docs/zh-CN/skills) 和自定义命令在 `-p` 模式下工作：在提示字符串中包含 `/skill-name`，Claude Code 会在运行前展开它。打开交互对话框的内置命令，例如 `/login`，在 `-p` 模式下不可用。{/* min-version: 2.1.205 */}`/model`、`/effort`、`/fast`、`/color` 和 `/rename` 接受该值作为参数，例如 `/model sonnet`，`/mcp` 不带参数打印服务器状态的文本摘要；这些形式需要 Claude Code v2.1.205 或更高版本，并遵循每个命令的 [可用性说明](/docs/zh-CN/commands#all-commands)。{/* min-version: 2.1.181 */}要从 `-p` 调用更改设置，请将 `key=value` 传递给 `/config`，例如 `/config thinking=false`。
 </Note>
 
-### Customize the system prompt
+<h3 id="customize-the-system-prompt">
+  自定义系统提示
+</h3>
 
-Use `--append-system-prompt` to add instructions while keeping Claude Code's default behavior. This example pipes a PR diff to Claude and instructs it to review for security vulnerabilities:
+使用 `--append-system-prompt` 添加指令同时保持 Claude Code 的默认行为。此示例将 PR diff 传递给 Claude 并指示它审查安全漏洞：
 
 ```bash theme={null}
 gh pr diff "$1" | claude -p \
@@ -271,11 +262,13 @@ gh pr diff "$1" | claude -p \
   --output-format json
 ```
 
-See [system prompt flags](/docs/en/cli-reference#system-prompt-flags) for more options including `--system-prompt` to fully replace the default prompt.
+有关更多选项（包括 `--system-prompt` 以完全替换默认提示），请参阅 [系统提示标志](/docs/zh-CN/cli-reference#system-prompt-flags)。
 
-### Continue conversations
+<h3 id="continue-conversations">
+  继续对话
+</h3>
 
-Use `--continue` to continue the most recent conversation, or `--resume` with a session ID to continue a specific conversation. This example runs a review, then sends follow-up prompts:
+使用 `--continue` 继续最近的对话，或使用 `--resume` 与会话 ID 继续特定对话。此示例运行审查，然后发送后续提示：
 
 ```bash theme={null}
 # First request
@@ -286,18 +279,20 @@ claude -p "Now focus on the database queries" --continue
 claude -p "Generate a summary of all issues found" --continue
 ```
 
-If you're running multiple conversations, capture the session ID to resume a specific one:
+如果您运行多个对话，请捕获会话 ID 以恢复特定对话：
 
 ```bash theme={null}
 session_id=$(claude -p "Start a review" --output-format json | jq -r '.session_id')
 claude -p "Continue that review" --resume "$session_id"
 ```
 
-Run both commands from the same directory: session ID lookup is scoped to the current project directory and its git worktrees. See [Resume a session](/docs/en/sessions#resume-a-session) for the full scope rules.
+从同一目录运行两个命令：会话 ID 查找的范围限定为当前项目目录及其 git worktrees。有关完整范围规则，请参阅 [恢复会话](/docs/zh-CN/sessions#resume-a-session)。
 
-## Next steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-* [Agent SDK quickstart](/docs/en/agent-sdk/quickstart): build your first agent with Python or TypeScript
-* [CLI reference](/docs/en/cli-reference): all CLI flags and options
-* [GitHub Actions](/docs/en/github-actions): use the Agent SDK in GitHub workflows
-* [GitLab CI/CD](/docs/en/gitlab-ci-cd): use the Agent SDK in GitLab pipelines
+* [Agent SDK 快速入门](/docs/zh-CN/agent-sdk/quickstart)：使用 Python 或 TypeScript 构建您的第一个 agent
+* [CLI 参考](/docs/zh-CN/cli-reference)：所有 CLI 标志和选项
+* [GitHub Actions](/docs/zh-CN/github-actions)：在 GitHub 工作流中使用 Agent SDK
+* [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd)：在 GitLab 管道中使用 Agent SDK

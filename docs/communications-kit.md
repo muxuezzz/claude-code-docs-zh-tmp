@@ -2,531 +2,473 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Communications kit
+# 通信工具包
 
-> Launch announcements, drip-campaign messages, and FAQ responses for rolling Claude Code out to your engineering organization.
+> 推出公告、滴灌式营销信息和常见问题解答，用于在您的工程组织中推出 Claude Code。
 
-This page is for administrators and engineering leads rolling Claude Code out to a team. It provides copy-ready launch announcements, a tips-and-tricks drip campaign, and one-line FAQ responses for the questions you will be asked most.
+本页面适用于在团队中推出 Claude Code 的管理员和工程主管。它提供了即用型的推出公告、技巧和窍门滴灌式营销活动，以及针对您最常被问到的问题的单行常见问题解答。
 
 <Note>
-  Treat everything here as draft copy, not finished copy. Rewrite each message in your organization's voice, swap the example tasks for real bugs and modules from your own codebase, and replace the `[bracketed placeholders]` before sending. The announcements that drive adoption are the ones that read like someone at your company wrote them.
+  将此处的所有内容视为草稿副本，而不是最终副本。用您组织的语气重写每条消息，用您自己代码库中的真实错误和模块替换示例任务，并在发送前替换 `[括号占位符]`。推动采用的公告是那些看起来像您公司某人写的公告。
 </Note>
 
-## Launch communications
+<h2 id="launch-communications">
+  推出通信
+</h2>
 
-One announcement in two formats, plus two optional variants. Pick whichever fits your rollout and rewrite it from there.
+一个公告分为两种格式，加上两个可选变体。选择最适合您的推出方式的版本，然后从那里开始重写。
 
-### Before you send
+<h3 id="before-you-send">
+  发送前
+</h3>
 
-Work through this checklist before the announcement goes out. Each item closes a gap that otherwise turns into a launch-day support thread.
+在公告发出前，请完成此清单。每一项都会关闭一个差距，否则会变成推出当天的支持线程。
 
-| Item                                                                                             | Why it matters                                                                      |
-| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `#claude-code` channel created and linked in the message                                         | Gives questions one place to land                                                   |
-| Install command tested on at least one machine in your environment                               | Catches proxy or firewall issues before everyone hits them at once                  |
-| Security and data-handling link ready ([Data usage](/docs/en/data-usage) or your internal equivalent) | "Where does my code go?" will be the first reply                                    |
-| One concrete first task chosen, a real bug or file in your codebase                              | Generic examples don't convert; "fix the flaky test in `auth_test.go`" does         |
-| A named owner for the channel for the first 48 hours                                             | Unanswered launch-day questions kill momentum                                       |
-| A C-suite sponsor lined up to send or co-sign the announcement                                   | Exec-sent launches consistently see higher first-week adoption than admin-sent ones |
+| 项目                                                | 为什么重要                                  |
+| ------------------------------------------------- | -------------------------------------- |
+| `#claude-code` 频道已创建并在消息中链接                       | 为问题提供一个统一的落地点                          |
+| 在您环境中至少一台机器上测试了安装命令                               | 在所有人同时遇到代理或防火墙问题之前捕获它们                 |
+| 安全和数据处理链接已准备好（[数据使用](/docs/zh-CN/data-usage) 或您的内部等效项） | "我的代码去哪里了？" 将是第一个回复                    |
+| 已选择一个具体的首个任务，您代码库中的真实错误或文件                        | 通用示例不会转化；"修复 `auth_test.go` 中的不稳定测试" 会 |
+| 为前 48 小时指定的频道所有者                                  | 未回答的推出当天问题会杀死势头                        |
+| 已安排一位 C 级高管赞助商发送或共同签署公告                           | 由高管发送的推出在第一周采用率上始终比由管理员或工具团队发送的相同消息更高  |
 
-### The announcement
+<h3 id="the-announcement">
+  公告
+</h3>
 
-Use this as your standard org-wide rollout message. It covers what Claude Code is, gives a two-minute install path, hands readers one concrete task to try, and answers "where does my code go?" before anyone has to ask.
+将此用作您的标准组织范围推出消息。它涵盖了 Claude Code 是什么，提供了两分钟的安装路径，为读者提供了一个具体的任务来尝试，并在任何人必须询问之前回答了"我的代码去哪里了？"。
 
 <Tabs>
-  <Tab title="Email">
+  <Tab title="电子邮件">
     ```text theme={null}
-    Subject: Claude Code is live for [Engineering / your team]
+    主题：Claude Code 现已为 [工程部门 / 您的团队] 推出
 
-    Team,
+    团队，
 
-    As of today you have access to Claude Code, an AI coding agent that runs in
-    your terminal, reads your actual codebase, and works through real tasks end
-    to end: debugging, refactors, tests, PRs. It is not autocomplete and it is
-    not a chat window. It edits files, runs your commands, and asks permission
-    before anything risky.
+    从今天开始，您可以访问 Claude Code，这是一个在您的终端中运行、读取您的实际代码库并端到端处理真实任务的 AI 编码代理：调试、重构、测试、PR。它不是自动完成，也不是聊天窗口。它编辑文件、运行您的命令，并在任何有风险的事情之前请求许可。
 
-    Get running in two minutes:
+    在两分钟内开始运行：
 
         curl -fsSL https://claude.ai/install.sh | bash
         cd <your-repo>
         claude
 
-    Then run /init once. Claude reads your project and writes a CLAUDE.md with
-    your build commands and conventions, so you stop re-explaining the basics.
+    然后运行 /init 一次。Claude 读取您的项目并写入一个 CLAUDE.md，其中包含您的构建命令和约定，因此您不再需要重新解释基础知识。
 
-    Then try one of these on the repo you are already in:
+    然后在您已经在的仓库上尝试以下其中之一：
 
-      - "The test in [file] is flaky. Figure out why and fix it"
-      - "Walk me through how [module] handles [X]"
-      - "Look at my working diff and tell me what's risky before I push"
+      - "文件 [file] 中的测试不稳定。找出原因并修复它"
+      - "向我介绍 [module] 如何处理 [X]"
+      - "查看我的工作差异并告诉我在我推送之前什么是有风险的"
 
-    Where your code goes: Claude Code runs in your terminal and talks directly
-    to Anthropic's API, with no third-party servers in the loop. It asks before
-    editing files or running commands. Under our Enterprise agreement, Anthropic
-    does not use your code or prompts to train its models.
-    Details: https://code.claude.com/docs/en/data-usage
-             https://code.claude.com/docs/en/security
+    您的代码去哪里了：Claude Code 在您的终端中运行，直接与 Anthropic 的 API 通信，循环中没有第三方服务器。它在编辑文件或运行命令之前请求许可。根据我们的企业协议，Anthropic 不使用您的代码或提示来训练其模型。
+    详情：https://code.claude.com/docs/en/data-usage
+          https://code.claude.com/docs/en/security
 
-    Where to go with questions: #claude-code. [Owner name] is watching it
-    this week.
+    有问题去哪里：#claude-code。[所有者名称] 本周在关注它。
 
-    - [Name]
+    - [名称]
 
-    P.S. Prefer your editor? There is a VS Code extension and a JetBrains
-    plugin. Same agent, no terminal required.
+    附注：更喜欢您的编辑器？有一个 VS Code 扩展和一个 JetBrains 插件。相同的代理，不需要终端。
     ```
   </Tab>
 
-  <Tab title="Slack or Teams">
+  <Tab title="Slack 或 Teams">
     ```markdown theme={null}
-    🚀 *Claude Code is live for [team]*
+    🚀 *Claude Code 现已为 [团队] 推出*
 
-    AI coding agent, runs in your terminal, reads your repo, does real work:
-    bugs, refactors, tests, PRs. Asks before it touches anything.
+    AI 编码代理，在您的终端中运行，读取您的仓库，完成真实工作：
+    错误、重构、测试、PR。在触及任何东西之前请求许可。
 
     `curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` → `claude`
 
-    *First thing to try* → run `/init`, then: "the test in [file] is flaky,
-    figure out why and fix it."
+    *首先尝试的事情* → 运行 `/init`，然后："文件 [file] 中的测试不稳定，
+    找出原因并修复它。"
 
-    🔒 Runs in your terminal, talks only to Anthropic's API. Under our
-    Enterprise plan your code and prompts are not used to train models.
-    Data usage → https://code.claude.com/docs/en/data-usage
+    🔒 在您的终端中运行，仅与 Anthropic 的 API 通信。根据我们的
+    企业计划，您的代码和提示不用于训练模型。
+    数据使用 → https://code.claude.com/docs/en/data-usage
 
-    📚 Quickstart · VS Code · Free 1-hr course
+    📚 快速入门 · VS Code · 免费 1 小时课程
        https://code.claude.com/docs/en/quickstart
        https://code.claude.com/docs/en/vs-code
        https://anthropic.skilljar.com/claude-code-in-action
 
-    Questions → this thread. [Owner] is on point.
+    问题 → 此线程。[所有者] 在处理。
     ```
   </Tab>
 </Tabs>
 
-### Executive sponsor variant
+<h3 id="executive-sponsor-variant">
+  执行赞助商变体
+</h3>
 
-Send this from your sponsoring executive, such as the CTO, CIO, or SVP Engineering, under their name and from their account. Launches that go out under an exec's name consistently see higher open rates and faster first-week activation than the same message from an admin or tooling team. It signals a company priority rather than an optional experiment.
+从您的赞助执行官（如 CTO、CIO 或 SVP 工程）的名义和他们的账户发送此消息。以高管名义发出的推出在开启率和第一周激活速度上始终比来自管理员或工具团队的相同消息更高。它表示公司优先级而不是可选实验。
 
-This version is deliberately stripped to one ask: install it and run it on one real task. The exec's job is to make the ask land; the standard announcement and `#claude-code` handle the how.
+此版本故意精简为一个要求：安装它并在一个真实任务上运行它。高管的工作是让要求落地；标准公告和 `#claude-code` 处理方式。
 
 <Tabs>
-  <Tab title="Email">
+  <Tab title="电子邮件">
     ```text theme={null}
-    Subject: One thing I'd like every engineer to try this week
+    主题：我希望每位工程师本周尝试的一件事
 
-    Team,
+    团队，
 
-    We have turned on Claude Code for all of engineering. It is an AI agent
-    that works directly in your terminal, on your actual codebase, and the
-    early results from teams already using it are strong enough that I want
-    everyone on it this week.
+    我们已为所有工程部门启用了 Claude Code。这是一个直接在您的终端中工作、在您的实际代码库上工作的 AI 代理，已经使用它的团队的早期结果足够强劲，我希望每个人本周都使用它。
 
-    I am asking for ten minutes:
+    我要求十分钟：
 
         curl -fsSL https://claude.ai/install.sh | bash
         cd <your-repo>
         claude
 
-    Then hand it one real task: the bug you have been putting off, or "walk me
-    through how [module] works."
+    然后给它一个真实的任务：您一直在推迟的错误，或"向我介绍 [module] 如何工作"。
 
-    That is the whole ask. [Owner name] and team are in #claude-code for
-    anything you hit along the way.
+    这就是全部要求。[所有者名称] 和团队在 #claude-code 中处理您遇到的任何问题。
 
-    - [Exec Name]
-      [Title]
+    - [执行官名称]
+      [职位]
     ```
   </Tab>
 
-  <Tab title="Slack or Teams">
+  <Tab title="Slack 或 Teams">
     ```markdown theme={null}
-    📣 *From [Exec Name]: one thing to try this week*
+    📣 *来自 [执行官名称]：本周尝试的一件事*
 
-    We have turned on *Claude Code* for all of engineering. Early results are
-    strong enough that I am asking everyone to give it ten minutes on real
-    work this week.
+    我们已为所有工程部门启用了 *Claude Code*。早期结果足够强劲，我要求每个人本周在真实工作上给它十分钟。
 
     `curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` →
-    `claude` → hand it one real task.
+    `claude` → 给它一个真实的任务。
 
-    That's it. Questions → #claude-code.
+    就这样。问题 → #claude-code。
     ```
   </Tab>
 </Tabs>
 
-### Pilot group variant
+<h3 id="pilot-group-variant">
+  试点组变体
+</h3>
 
-Use for a phased rollout. Send to the pilot cohort only.
-
-```text theme={null}
-Subject: You're in the Claude Code pilot
-
-[Name / team],
-
-You are in the first wave of Claude Code at [company]. We picked this group
-because you will put it on real problems and tell us the truth about it.
-
-The ask: use it on at least one real task this week, then drop a note in
-#claude-code-pilot covering what worked, what was annoying, and what
-surprised you. That feedback decides how we roll it out to everyone else.
-
-[Continue with "Get running in two minutes" from the standard announcement]
-
-One extra thing for pilots: on your first multi-file change, press Shift+Tab
-until you see "plan". Claude will lay out exactly what it intends to do
-before it touches a file. It is the fastest way to calibrate how much to
-trust it.
-```
-
-### Champion recruitment DM
-
-After launch, DM the two or three people who are most active in `#claude-code`.
+用于分阶段推出。仅发送给试点队列。
 
 ```text theme={null}
-Hey [name], your #claude-code posts are doing more for adoption than my
-announcement did. A couple of people told me your [thread / screenshot]
-was why they actually tried it.
+主题：您在 Claude Code 试点中
 
-Want to make that semi-official? Low lift: mostly keep posting what you
-are posting, plus first crack at new features and a direct line to the
-Anthropic team. I can share a short playbook if you're in.
+[名称 / 团队]，
+
+您在 [公司] 的 Claude Code 第一波中。我们选择了这个小组，因为您会在真实问题上使用它，并告诉我们关于它的真实情况。
+
+要求：本周在至少一个真实任务上使用它，然后在 #claude-code-pilot 中留下一条说明，涵盖什么有效、什么令人烦恼以及什么让您感到惊讶。该反馈决定了我们如何向其他人推出。
+
+[继续标准公告中的"在两分钟内开始运行"]
+
+试点的一个额外事项：在您的第一个多文件更改时，按 Shift+Tab 直到您看到"plan"。Claude 将在触及任何文件之前准确说明它打算做什么。这是校准您应该信任多少的最快方式。
 ```
 
-## Tips and tricks campaign
+<h3 id="champion-recruitment-dm">
+  冠军招募直接消息
+</h3>
 
-Ready-to-paste Slack or Teams messages designed to drive feature activation after launch. Each follows the same pattern: a hook, the payoff, a "try it now" prompt, and a docs link. Drip them one or two a week in `#claude-code`, or pick the handful that match your team's gaps. They stand alone with no required order.
+推出后，直接消息给在 `#claude-code` 中最活跃的两三个人。
 
-Copy the message body from each block directly into Slack or Teams. Replace `[bracketed placeholders]` before sending.
+```text theme={null}
+嘿 [名称]，您的 #claude-code 帖子对采用的推动比我的公告做得更多。几个人告诉我您的 [线程 / 截图] 是他们实际尝试它的原因。
 
-### Get started
+想让这成为半官方的吗？低投入：主要是继续发布您正在发布的内容，加上新功能的第一次尝试和与 Anthropic 团队的直接联系。如果您有兴趣，我可以分享一个简短的剧本。
+```
 
-**Choosing the right model**
+<h2 id="tips-and-tricks-campaign">
+  技巧和窍门营销活动
+</h2>
+
+设计用于在推出后推动功能激活的即用型 Slack 或 Teams 消息。每个都遵循相同的模式：一个钩子、收益、一个"现在尝试"提示和一个文档链接。每周在 `#claude-code` 中滴灌一个或两个，或选择与您团队差距相匹配的少数几个。它们独立存在，没有必需的顺序。
+
+直接从每个块中复制消息正文到 Slack 或 Teams。在发送前替换 `[括号占位符]`。
+
+<h3 id="get-started">
+  开始
+</h3>
+
+**选择正确的模型**
 
 ```markdown theme={null}
-🎯 *Tip: Match the model to the moment*
+🎯 *技巧：将模型与时刻相匹配*
 
-Using Opus to fix a typo burns compute. Using Haiku for a 12-file refactor
-is asking for a re-do.
+使用 Opus 修复打字错误会浪费计算。使用 Haiku 进行 12 文件重构
+是在要求重做。
 
-Claude Code runs on the same models as the Claude app, and you can switch
-mid-session. *Sonnet* is the workhorse default for everyday feature work,
-bugs, tests, and reviews. Reach for *Opus* on large refactors, gnarly
-debugging, or anything high-stakes. Drop to *Haiku* for quick questions,
-formatting, and mechanical edits where speed wins. *Fable 5* is the most
-capable model for your hardest, longest-running tasks; it is not the
-default, so select it with `/model fable`, and note that cybersecurity and
-biology content falls back to Opus automatically. Opus 5 runs its own
-checks, so flagged cybersecurity content switches models and flagged
-biology content is refused.
+Claude Code 在与 Claude 应用相同的模型上运行，您可以在会话中间切换。*Sonnet* 是日常功能工作、错误、测试和审查的主力默认值。在大型重构、复杂调试或任何高风险的事情上使用 *Opus*。对于快速问题、格式化和速度获胜的机械编辑，降低到 *Haiku*。*Fable 5* 是您最困难、最长时间运行任务的最强大模型；它不是默认值，所以使用 `/model fable` 选择它，请注意网络安全和生物学内容会自动回退到 Opus。
 
-*Try it now:* type `/model` and pick Sonnet if you haven't already. It is
-the right default for most tasks.
+*现在尝试：* 输入 `/model` 并选择 Sonnet（如果您还没有的话）。它是大多数任务的正确默认值。
 
-📖 Model configuration → https://code.claude.com/docs/en/model-config
+📖 Model configuration → https://code.claude.com/docs/zh-CN/model-config
 ```
 
-| Model   | Best for                                                                                                                                                                                                                       |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Fable 5 | The hardest, longest-running tasks. Opt-in only: select it with `/model fable`. Cybersecurity or biology content [falls back to Opus](/docs/en/model-config#automatic-model-fallback)                                               |
-| Opus    | Large-scale refactors, complex debugging, architecture decisions, high-stakes changes. On Opus 5, cybersecurity or biology content triggers [automatic model fallback or a refusal](/docs/en/model-config#automatic-model-fallback) |
-| Sonnet  | Everyday feature work, bug fixes, tests, documentation, code review. Recommended default.                                                                                                                                      |
-| Haiku   | Quick questions, formatting, mechanical edits, rapid iteration                                                                                                                                                                 |
+| 模型      | 最适合                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------ |
+| Fable 5 | 最困难、最长时间运行的任务。仅选择加入：使用 `/model fable` 选择它。网络安全或生物学内容[回退到 Opus](/docs/zh-CN/model-config#automatic-model-fallback) |
+| Opus    | 大规模重构、复杂调试、架构决策、高风险更改                                                                                        |
+| Sonnet  | 日常功能工作、错误修复、测试、文档、代码审查。推荐默认值。                                                                                |
+| Haiku   | 快速问题、格式化、机械编辑、快速迭代                                                                                           |
 
-**Quick wins to try first**
+**快速赢得尝试首先**
 
 ```markdown theme={null}
-🚀 *Tip: Three things to try in your first 10 minutes*
+🚀 *技巧：在您的前 10 分钟尝试的三件事*
 
-Installed Claude Code but not sure what to actually ask it? Start with the
-stuff that has been bugging you all week.
+安装了 Claude Code 但不确定实际要求什么？从一直困扰您整周的东西开始。
 
-  - Fix something annoying: "the test in [file] is flaky, figure out why"
-  - Get oriented in code you didn't write: "walk me through how [module] works"
-  - Sanity-check before you push: "look at my working diff and tell me what
-    looks risky"
+  - 修复令人烦恼的东西："文件 [file] 中的测试不稳定，找出原因"
+  - 在您没有写的代码中定向："向我介绍 [module] 如何工作"
+  - 在您推送前进行理智检查："查看我的工作差异并告诉我什么看起来有风险"
 
-None of these need setup. Just `cd` into your repo and run `claude`.
+这些都不需要设置。只需 `cd` 进入您的仓库并运行 `claude`。
 
-*Try it now:* pick the bug you have been avoiding and paste the error
-message in.
+*现在尝试：* 选择您一直在避免的错误并粘贴错误消息。
 
-📖 Quickstart → https://code.claude.com/docs/en/quickstart
+📖 Quickstart → https://code.claude.com/docs/zh-CN/quickstart
 ```
 
-### Project memory
+<h3 id="project-memory">
+  项目记忆
+</h3>
 
-**`/init` and CLAUDE.md**
+**`/init` 和 CLAUDE.md**
 
 ```markdown theme={null}
-📁 *Tip: Stop re-explaining your repo every session*
+📁 *技巧：停止每个会话重新解释您的仓库*
 
-Telling Claude "we use pnpm, not npm" for the fifth time? There is a
-one-time fix.
+第五次告诉 Claude "我们使用 pnpm，而不是 npm"？有一个一次性修复。
 
-Run `/init` once per repo. Claude reads your project structure and writes a
-CLAUDE.md file with your build commands, architecture, and conventions.
-Every future session in that repo starts from this file automatically. Keep
-it under two screens. It is a cheat sheet, not documentation.
+每个仓库运行一次 `/init`。Claude 读取您的项目结构并写入一个 CLAUDE.md 文件，其中包含您的构建命令、架构和约定。该仓库中的每个未来会话都会自动从此文件开始。保持在两个屏幕以下。这是一个速查表，不是文档。
 
-*Try it now:* open your main repo, run `claude`, type `/init`. Thirty
-seconds, pays off every session after.
+*现在尝试：* 打开您的主仓库，运行 `claude`，输入 `/init`。三十秒，在之后的每个会话中都有回报。
 
-📖 CLAUDE.md and project memory → https://code.claude.com/docs/en/memory
+📖 CLAUDE.md and project memory → https://code.claude.com/docs/zh-CN/memory
 ```
 
-**@-references**
+**@-引用**
 
 ```markdown theme={null}
-📎 *Tip: Stop pasting file contents into the chat*
+📎 *技巧：停止将文件内容粘贴到聊天中*
 
-Copying 200 lines of a component into your prompt so Claude can "see" it?
-You don't have to.
+将一个组件的 200 行复制到您的提示中，以便 Claude 可以"看到"它？您不必这样做。
 
-Type `@` then a file path. Claude pulls the file directly into context.
-Works for whole directories too.
+输入 `@` 然后是文件路径。Claude 直接将文件拉入上下文。也适用于整个目录。
 
-> the styles in @src/components/Button.tsx look off, check against
-> @docs/design-system.md
+> @src/components/Button.tsx 中的样式看起来不对，检查 @docs/design-system.md
 
-*Try it now:* type `@` then Tab. Autocomplete shows you every file in reach.
+*现在尝试：* 输入 `@` 然后 Tab。自动完成显示您可以到达的每个文件。
 
-📖 Referencing files → https://code.claude.com/docs/en/common-workflows
+📖 Referencing files → https://code.claude.com/docs/zh-CN/common-workflows
 ```
 
-### Control and safety
+<h3 id="control-and-safety">
+  控制和安全
+</h3>
 
-**Permission modes**
+**权限模式**
 
 ```markdown theme={null}
-🛡️ *Tip: One keystroke between "look but don't touch" and "just do it"*
+🛡️ *技巧：一个按键在"看但不要触及"和"就做吧"之间*
 
-Sometimes you want Claude to ask before every edit. Sometimes you just want
-it to ship. You shouldn't have to pick one forever.
+有时您希望 Claude 在每次编辑之前请求许可。有时您只是希望它发货。您不应该永远选择一个。
 
-*Shift+Tab* cycles through how much Claude can do without asking: *Manual* (the
-`default` setting value) asks before file edits and most shell commands, *acceptEdits* lets file
-edits and common filesystem commands
-flow through while still checking before other shell commands, and *plan*
-proposes changes for your approval before anything is touched. Plan mode is
-the trust-builder, so start there for anything touching multiple files.
+*Shift+Tab* 循环通过 Claude 获得多少自由度：*Manual*（`default` 设置值）在文件编辑和大多数 shell 命令之前请求，*acceptEdits* 让文件编辑和常见文件系统命令流通，同时仍在其他 shell 命令之前检查，*plan* 在触及任何东西之前为您的批准提议更改。Plan 模式是信任构建者，所以对于任何触及多个文件的东西，从那里开始。
 
-*Try it now:* on your next refactor, hit Shift+Tab until you see "plan",
-then describe the change. You'll get a full proposal before a single file
-moves.
+*现在尝试：* 在您的下一个重构上，按 Shift+Tab 直到您看到"plan"，然后描述更改。您将在单个文件移动之前获得完整的提议。
 
-📖 Permission modes → https://code.claude.com/docs/en/permissions
+📖 Permission modes → https://code.claude.com/docs/zh-CN/permissions
 ```
 
-**Checkpointing and `/rewind`**
+**Checkpointing 和 `/rewind`**
 
 ```markdown theme={null}
-⏪ *Tip: There is an undo button for the whole conversation*
+⏪ *技巧：整个对话有一个撤销按钮*
 
-Claude went down the wrong path three turns ago and now you're untangling
-it? You don't have to fix forward.
+Claude 三轮前走错了路，现在您在解开它？您不必向前修复。
 
-`/rewind` rolls back to an earlier point in the conversation, including the
-file changes Claude made along the way. Checkpointing is automatic; you
-don't set anything up.
+`/rewind` 回滚到对话中的较早点，包括 Claude 沿途所做的文件更改。Checkpointing 是自动的；您不需要设置任何东西。
 
-*Try it now:* press *Esc* twice to open the rewind menu, or type `/rewind`.
-Pick the point before things went sideways.
+*现在尝试：* 按 *Esc* 两次打开倒带菜单，或输入 `/rewind`。选择事情变得不对劲之前的点。
 
-📖 Checkpointing → https://code.claude.com/docs/en/checkpointing
+📖 Checkpointing → https://code.claude.com/docs/zh-CN/checkpointing
 ```
 
-### Connect your tools
+<h3 id="connect-your-tools">
+  连接您的工具
+</h3>
 
-**MCP connectors**
+**MCP 连接器**
 
 ```markdown theme={null}
-🔌 *Tip: Let Claude read your issue tracker so you don't have to paste tickets*
+🔌 *技巧：让 Claude 读取您的问题跟踪器，这样您就不必粘贴票证*
 
-Copy-pasting Jira tickets into the terminal feels like a step backward.
-It is.
+将 Jira 票证复制粘贴到终端感觉像是向后退一步。确实是。
 
-One config file (`.mcp.json` at your project root) wires Claude into GitHub,
-Jira, Linear, or whatever tracker you use. Then "what's the top-priority
-issue assigned to me?" and "go ahead and fix it" happen in the same
-conversation.
+一个配置文件（您的项目根目录中的 `.mcp.json`）将 Claude 连接到 GitHub、Jira、Linear 或您使用的任何跟踪器。然后"分配给我的最高优先级问题是什么？"和"继续修复它"在同一对话中发生。
 
-*Try it now:* ask Claude "set up an MCP connector for [GitHub/Jira/Linear]
-in this repo". It will write the config for you.
+*现在尝试：* 问 Claude "在这个仓库中为 [GitHub/Jira/Linear] 设置一个 MCP 连接器"。它将为您写配置。
 
-📖 MCP connectors → https://code.claude.com/docs/en/mcp
+📖 MCP connectors → https://code.claude.com/docs/zh-CN/mcp
 ```
 
-### Automate your workflows
+<h3 id="automate-your-workflows">
+  自动化您的工作流
+</h3>
 
 **Skills**
 
 ```markdown theme={null}
-⚡ *Tip: Turn that prompt you keep retyping into a command*
+⚡ *技巧：将您一直重新输入的提示变成命令*
 
-Typed "summarize what I worked on today from git log, format it for standup"
-three times this week? That's a slash command waiting to happen.
+本周三次输入"从 git log 总结我今天所做的工作，为站立会议格式化"？那是一个等待发生的斜杠命令。
 
-A SKILL.md file in `.claude/skills/<name>/` becomes a reusable prompt; type
-`/name` to run it. Make one the second time you type a multi-step prompt
-you've typed before. Easiest path: ask Claude to make it for you.
+`.claude/skills/<name>/` 中的 SKILL.md 文件变成可重用的提示；输入 `/name` 来运行它。第二次输入您之前输入过的多步骤提示时制作一个。最简单的路径：要求 Claude 为您制作它。
 
-*Try it now:* type "make me a /standup skill that summarizes what I worked
-on today from git log", then run `/standup` tomorrow morning.
+*现在尝试：* 输入"为我制作一个 /standup skill，从 git log 总结我今天所做的工作"，然后明天早上运行 `/standup`。
 
-📖 Skills → https://code.claude.com/docs/en/skills
+📖 Skills → https://code.claude.com/docs/zh-CN/skills
 ```
 
 **Hooks**
 
 ```markdown theme={null}
-🔔 *Tip: Get pinged when your refactor finishes*
+🔔 *技巧：当您的重构完成时获得通知*
 
-Sitting at your desk watching Claude work through a long task? You've got
-better things to do for those eight minutes.
+坐在您的办公桌前看 Claude 完成一个长任务？您在接下来的八分钟内有更好的事情要做。
 
-Hooks are shell commands that fire on Claude Code events. A Stop hook that
-sends a desktop notification means you can kick off a long refactor, walk
-away, and get pinged the moment it's done.
+Hooks 是在 Claude Code 事件上触发的 shell 命令。一个发送桌面通知的 Stop hook 意味着您可以启动一个长重构、走开，并在完成的那一刻获得通知。
 
-*Try it now:* ask Claude "add a Stop hook that sends a desktop notification
-when you finish". It will write the script and wire it up.
+*现在尝试：* 问 Claude "添加一个 Stop hook，当您完成时发送桌面通知"。它将写脚本并连接它。
 
-📖 Hooks guide → https://code.claude.com/docs/en/hooks-guide
+📖 Hooks guide → https://code.claude.com/docs/zh-CN/hooks-guide
 ```
 
-### Day-to-day development
+<h3 id="day-to-day-development">
+  日常开发
+</h3>
 
-**Screenshots and images**
+**截图和图像**
 
 ```markdown theme={null}
-📸 *Tip: Stop describing the error dialog. Just show it.*
+📸 *技巧：停止描述错误对话框。只需显示它。*
 
-Typing out "there's a red box that says something about a null reference
-and it's pointing at line 47-ish"? Screenshot it.
+输入"有一个红色框说关于空引用的东西，它指向第 47 行左右"？截图它。
 
-Drag a screenshot straight into the terminal and Claude sees it: error
-dialogs, UI mockups, whiteboard photos, Figma exports. *Ctrl+V* pastes from
-clipboard (Ctrl+V works on macOS too, and Cmd+V works in iTerm2).
+直接将截图拖到终端中，Claude 看到它：错误对话框、UI 模型、白板照片、Figma 导出。*Ctrl+V* 从剪贴板粘贴（在 macOS 上也使用 Ctrl+V，而不是 Cmd+V）。
 
-*Try it now:* next time something visual breaks, screenshot it and paste it
-right into the prompt. Then just type "what's wrong here?"
+*现在尝试：* 下次视觉上出现问题时，截图并直接粘贴到提示中。然后只需输入"这里出了什么问题？"
 
-📖 Working with images → https://code.claude.com/docs/en/common-workflows
+📖 Working with images → https://code.claude.com/docs/zh-CN/common-workflows
 ```
 
-**Git workflows**
+**Git 工作流**
 
 ```markdown theme={null}
-🌿 *Tip: Hand off the whole git ceremony*
+🌿 *技巧：交接整个 git 仪式*
 
-The fix took 5 minutes. The commit message, branch, and PR description
-took 15. That ratio is wrong.
+修复花了 5 分钟。提交消息、分支和 PR 描述花了 15 分钟。这个比例是错误的。
 
-Claude handles the full git flow: commits with conventional messages,
-branches, PRs with proper summaries. One ask: "fix the off-by-one, commit
-with a conventional commit message, and open a PR." Reviewing someone
-else's work? Paste the PR URL and ask Claude to walk you through the diff.
+Claude 处理完整的 git 流：带有常规消息的提交、分支、带有适当摘要的 PR。一个要求："修复偏差一，用常规提交消息提交，并打开一个 PR。"审查别人的工作？粘贴 PR URL 并要求 Claude 向您介绍差异。
 
-*Try it now:* after your next fix, instead of switching to your git client,
-just type "commit this with a good message and open a PR".
+*现在尝试：* 在您的下一个修复后，而不是切换到您的 git 客户端，只需输入"用一个好消息提交这个并打开一个 PR"。
 
-📖 Creating pull requests → https://code.claude.com/docs/en/common-workflows
+📖 Creating pull requests → https://code.claude.com/docs/zh-CN/common-workflows
 ```
 
-### Share and scale
+<h3 id="share-and-scale">
+  分享和扩展
+</h3>
 
 **Plugins**
 
 ```markdown theme={null}
-📦 *Tip: Someone probably already built that skill*
+📦 *技巧：有人可能已经构建了那个 skill*
 
-About to spend an hour building a `/deploy` command? Check if it
-already exists.
+即将花一个小时构建一个 `/deploy` 命令？检查它是否已经存在。
 
-Skills get bundled and shared as plugins. `/plugin` browses what's
-available and installs in one step. Five minutes of browsing can save an
-hour of building.
+Skills 被捆绑并作为插件共享。`/plugin` 浏览可用的内容并在一个步骤中安装。五分钟的浏览可以节省一小时的构建。
 
-*Try it now:* type `/plugin` and scroll through. You'll find at least one
-thing you didn't know you wanted.
+*现在尝试：* 输入 `/plugin` 并滚动浏览。您会找到至少一件您不知道自己想要的东西。
 
-📖 Plugins → https://code.claude.com/docs/en/plugins
+📖 Plugins → https://code.claude.com/docs/zh-CN/plugins
 ```
 
-### Security and admin
+<h3 id="security-and-admin">
+  安全和管理
+</h3>
 
-**Security architecture**
+**安全架构**
 
 ```markdown theme={null}
-🔐 *Tip: The answer to "is this safe?" for the next time you're asked*
+🔐 *技巧：下次被问到时"这安全吗？"的答案*
 
-Someone on your team is going to ask "wait, where does my code go?"
-Here's the short version you can paste.
+您团队中的某个人会问"等等，我的代码去哪里了？"
+这是您可以粘贴的简短版本。
 
-Permission-first by design. Every file edit, shell command, and external
-call is gated by your approval. The CLI runs in your terminal and talks
-directly to Anthropic's API, with no third-party servers, and supports
-optional OS-level sandboxing for shell commands. Under our Enterprise plan,
-Anthropic does not use your code or prompts to train its models.
+权限优先设计。每个文件编辑、shell 命令和外部调用都由您的批准门控。CLI 在您的终端中运行，直接与 Anthropic 的 API 通信，没有第三方服务器，并支持 shell 命令的可选操作系统级沙箱。根据我们的企业计划，Anthropic 不使用您的代码或提示来训练其模型。
 
-*Try it now:* save these two links for the next time the question comes up.
-They answer most security-review questions.
+*现在尝试：* 保存这两个链接以备下次问题出现。它们回答了大多数安全审查问题。
 
-📖 https://code.claude.com/docs/en/security
-📖 https://code.claude.com/docs/en/data-usage
+📖 https://code.claude.com/docs/zh-CN/security
+📖 https://code.claude.com/docs/zh-CN/data-usage
 ```
 
-**Best practices**
+**最佳实践**
 
 ```markdown theme={null}
-✅ *Tip: The 4 habits that separate "tried it once" from "use it daily"*
+✅ *技巧：分离"尝试一次"和"每天使用"的 4 个习惯*
 
-Most people who bounce off Claude Code skipped one of these. Most people
-who stick did all four in week one.
+大多数从 Claude Code 反弹的人跳过了其中之一。大多数坚持的人在第一周做了全部四个。
 
-  - Start in plan mode for anything touching multiple files
-  - Run /init early; context compounds
-  - Review diffs before committing; Claude can be confidently wrong
-  - Verify changes that touch critical paths; treat it like a sharp
-    junior, not an oracle
+  - 对于任何触及多个文件的东西，从 plan 模式开始
+  - 早期运行 /init；上下文复合
+  - 在提交前审查差异；Claude 可以自信地错误
+  - 验证触及关键路径的更改；将其视为锐利的初级，而不是预言家
 
-*Try it now:* if you've only done one or two of these, pick the one you're
-missing and do it on your next task. Post what changed in #claude-code.
+*现在尝试：* 如果您只做了其中一两个，选择您缺少的那个并在您的下一个任务上做。在 #claude-code 中发布什么改变了。
 
-📖 Best practices → https://code.claude.com/docs/en/best-practices
+📖 Best practices → https://code.claude.com/docs/zh-CN/best-practices
 ```
 
-## Quick reference
+<h2 id="quick-reference">
+  快速参考
+</h2>
 
-### FAQ responses
+<h3 id="faq-responses">
+  常见问题解答回复
+</h3>
 
-One-line replies for the questions you will be asked most.
+针对您最常被问到的问题的单行回复。
 
-| Question                                 | Response                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Does it work in VS Code?"               | Yes. There is a VS Code extension and a JetBrains plugin with the same features, embedded in your editor. [VS Code →](/docs/en/vs-code)                                                                                                                                                                                                                                                                                |
-| "Do I have to configure anything first?" | No. Install, then run `claude` in any repo. Run `/init` once and you're set. [Quickstart →](/docs/en/quickstart)                                                                                                                                                                                                                                                                                                       |
-| "Where does my code go?"                 | The CLI runs in your terminal and sends context to Anthropic's API for inference, with no third-party servers. Under your Enterprise plan, your code and prompts are not used to train models. [Data usage →](/docs/en/data-usage)                                                                                                                                                                                     |
-| "Can it see my whole repo?"              | It reads what you give it access to. File reads inside your working directory don't prompt; permission prompts gate edits, non-read-only shell commands, and file-tool reads outside that directory. A built-in set of read-only shell commands such as `ls` and `cat` runs without prompting; restrict it with [sandbox `denyRead` rules](/docs/en/sandboxing#filesystem-isolation). [Permissions →](/docs/en/permissions) |
-| "How is this different from Copilot?"    | Copilot autocompletes lines. Claude Code is an agent that reads files, runs commands, and makes multi-file edits. [Overview →](/docs/en/overview)                                                                                                                                                                                                                                                                      |
-| "What should I try first?"               | A bug you've been putting off because it's tedious. "The test in \[file] is flaky, figure out why." [Quickstart →](/docs/en/quickstart)                                                                                                                                                                                                                                                                                |
+| 问题                  | 回复                                                                                                                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "它在 VS Code 中工作吗？"  | 是的。有一个 VS Code 扩展和一个 JetBrains 插件，具有相同的功能，嵌入在您的编辑器中。[VS Code →](/docs/zh-CN/vs-code)                                                                                                                    |
+| "我必须先配置什么吗？"        | 不。安装，然后在任何仓库中运行 `claude`。运行一次 `/init`，您就设置好了。[快速入门 →](/docs/zh-CN/quickstart)                                                                                                                           |
+| "我的代码去哪里了？"         | CLI 在您的终端中运行，并将上下文发送到 Anthropic 的 API 进行推理，没有第三方服务器。根据您的企业计划，您的代码和提示不用于训练模型。[数据使用 →](/docs/zh-CN/data-usage)                                                                                            |
+| "它能看到我的整个仓库吗？"      | 它读取您给它访问权限的内容。您工作目录内的文件读取不提示；权限提示门控编辑、非只读 shell 命令和该目录外的文件工具读取。一组内置的只读 shell 命令（如 `ls` 和 `cat`）无需提示即可运行；使用[沙箱 `denyRead` 规则](/docs/zh-CN/sandboxing#filesystem-isolation)限制它。[权限 →](/docs/zh-CN/permissions) |
+| "这与 Copilot 有什么不同？" | Copilot 自动完成行。Claude Code 是一个读取文件、运行命令和进行多文件编辑的代理。[概述 →](/docs/zh-CN/overview)                                                                                                                          |
+| "我应该首先尝试什么？"        | 您一直在推迟的错误，因为它很乏味。"文件 \[file] 中的测试不稳定，找出原因。" [快速入门 →](/docs/zh-CN/quickstart)                                                                                                                            |
 
-### Prompt templates
+<h3 id="prompt-templates">
+  提示模板
+</h3>
 
-Share these starter prompts with engineers who have installed but aren't sure what to ask. Each one is phrased the way it would be typed into a real session; replace the bracketed pieces with files from your own repo.
+与已安装但不确定要求什么的工程师分享这些入门提示。每一个都以它在真实会话中输入的方式表述；用您自己仓库中的文件替换括号部分。
 
-| Task                 | Prompt                                                                       |
-| -------------------- | ---------------------------------------------------------------------------- |
-| Fix a bug            | "the tests in \[file] are failing, figure out why and fix it"                |
-| Understand code      | "walk me through how \[module] works, then tell me where the entry point is" |
-| Safe refactor        | "refactor \[module] to \[goal], use plan mode so I can review first"         |
-| Write tests          | "write tests for \[file] that cover the edge cases around \[scenario]"       |
-| Review before commit | "look at my working diff and tell me what looks risky"                       |
-| Open a PR            | "fix \[issue], write a conventional commit, and open a PR with a summary"    |
-| Make a skill         | "make me a /ship skill that runs tests and lint before commit"               |
-| Debug a stack trace  | "here's the stack trace, find the root cause, don't just paper over it"      |
+| 任务       | 提示                                           |
+| -------- | -------------------------------------------- |
+| 修复错误     | "文件 \[file] 中的测试失败，找出原因并修复它"                 |
+| 理解代码     | "向我介绍 \[module] 如何工作，然后告诉我入口点在哪里"            |
+| 安全重构     | "重构 \[module] 到 \[goal]，使用 plan 模式，以便我可以先审查" |
+| 编写测试     | "为 \[file] 编写测试，涵盖 \[scenario] 周围的边界情况"      |
+| 提交前审查    | "查看我的工作差异并告诉我什么看起来有风险"                       |
+| 打开 PR    | "修复 \[issue]，写一个常规提交，并用摘要打开一个 PR"            |
+| 制作 skill | "为我制作一个 /ship skill，在提交前运行测试和 lint"          |
+| 调试堆栈跟踪   | "这是堆栈跟踪，找到根本原因，不要只是掩盖它"                      |
 
 <Tip>
-  Claude Code ships frequently. Verify version-specific details against the [documentation home page](/docs/en/overview) before distributing internally.
+  Claude Code 频繁发货。在内部分发前，根据[文档主页](/docs/zh-CN/overview)验证版本特定的详情。
 </Tip>

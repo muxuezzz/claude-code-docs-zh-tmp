@@ -2,124 +2,138 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Debug your configuration
+# 调试你的配置
 
-> Diagnose why CLAUDE.md, settings, hooks, MCP servers, or skills aren't taking effect. Use /context, /doctor, /hooks, and /mcp to see what actually loaded.
+> 诊断为什么 CLAUDE.md、settings、hooks、MCP 服务器或 skills 没有生效。使用 /context、/doctor、/hooks 和 /mcp 来查看实际加载了什么。
 
-When Claude ignores an instruction or a feature you configured doesn't appear, the cause is usually that the file didn't load, it loaded from a different location than you expected, or another file overrode it. This guide shows how to inspect what Claude Code actually loaded so you can narrow down which applies.
+当 Claude 忽略了一条指令或你配置的功能没有出现时，通常是因为文件没有加载、从你预期之外的位置加载，或者被另一个文件覆盖了。本指南展示了如何检查 Claude Code 实际加载了什么，以便你能够缩小范围。
 
-For installation, authentication, and connectivity problems, see [Troubleshoot installation and login](/docs/en/troubleshoot-install) instead.
+对于安装、身份验证和连接问题，请参阅[故障排除安装和登录](/docs/zh-CN/troubleshoot-install)。
 
-## See what loaded into context
+<h2 id="see-what-loaded-into-context">
+  查看加载到上下文中的内容
+</h2>
 
-The `/context` command shows everything occupying the context window for the current session, broken down by category: system prompt, system tools, MCP tools, custom subagents with the source each loaded from, memory files, skills, and conversation messages. Run it first to confirm whether your `CLAUDE.md`, rules, or skill descriptions are present at all.
+`/context` 命令显示当前会话中占用上下文窗口的所有内容，按类别分解：系统提示、内存文件、skills、自定义子代理及其加载源、MCP 工具和对话消息。首先运行它来确认你的 `CLAUDE.md`、规则或 skill 描述是否存在。
 
-For detail on a specific category, follow up with the dedicated command:
+对于特定类别的详细信息，请使用专用命令：
 
-| Command          | Shows                                                                                                                                                                                                                                        |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/memory`        | Memory file locations across user and project scopes with the option to open each in your editor, plus access to the auto memory folder and the auto memory toggle                                                                           |
-| `/skills`        | Available skills from project, user, and plugin sources                                                                                                                                                                                      |
-| `/hooks`         | Active hook configurations                                                                                                                                                                                                                   |
-| `/mcp`           | Connected MCP servers and their status                                                                                                                                                                                                       |
-| `/permissions`   | Resolved allow and deny rules currently in effect                                                                                                                                                                                            |
-| `/doctor`        | Setup checkup: installation health, invalid settings files, unused extensions, duplicate [subagent](/docs/en/sub-agents) names in the same directory, and checked-in `CLAUDE.md` content Claude can derive from the codebase, with proposed fixes |
-| `/debug [issue]` | Enables debug logging for the session and prompts Claude to diagnose using the log output and settings paths                                                                                                                                 |
-| `/status`        | Active settings sources, including whether managed settings are in effect                                                                                                                                                                    |
+| 命令               | 显示内容                                                                  |
+| :--------------- | :-------------------------------------------------------------------- |
+| `/memory`        | 加载了哪些 `CLAUDE.md` 和规则文件，加上自动内存条目                                      |
+| `/skills`        | 来自项目、用户和插件源的可用 skills                                                 |
+| `/hooks`         | 活跃的 hook 配置                                                           |
+| `/mcp`           | 连接的 MCP 服务器及其状态                                                       |
+| `/permissions`   | 当前生效的已解析允许和拒绝规则                                                       |
+| `/doctor`        | 配置检查：安装健康状况、无效的设置文件、未使用的扩展、同一目录中重复的[子代理](/docs/zh-CN/sub-agents)名称，以及建议的修复 |
+| `/debug [issue]` | 为会话启用调试日志记录，并提示 Claude 使用日志输出和设置路径进行诊断                                |
+| `/status`        | 活跃的设置源，包括是否启用了托管设置                                                    |
 
-If a memory file is missing from the `/context` breakdown, check its location against [how CLAUDE.md files load](/docs/en/memory#how-claude-md-files-load). Subdirectory `CLAUDE.md` files load on demand when Claude reads a file in that directory with the Read tool, not at session start.
+如果内存文件在 `/memory` 中缺失，请根据[CLAUDE.md 文件如何加载](/docs/zh-CN/memory#how-claude-md-files-load)检查其位置。子目录 `CLAUDE.md` 文件在 Claude 使用 Read 工具读取该目录中的文件时按需加载，而不是在会话开始时加载。
 
-If `/context` confirms the file loaded but Claude still isn't following a particular instruction, the issue is likely how the instruction is written rather than whether it loaded. CLAUDE.md works well for the kinds of guidance you'd give a new teammate, such as project conventions, build commands, and where files belong.
+如果 `/memory` 确认文件已加载但 Claude 仍然没有遵循特定指令，问题可能在于指令的编写方式，而不是是否加载。CLAUDE.md 适用于你会给新队友的指导类型，例如项目约定、构建命令和文件位置。
 
-Adherence drops when an instruction is vague enough to interpret multiple ways, when two files give conflicting direction, or when the file has grown long enough that individual rules get less attention. [Write effective instructions](/docs/en/memory#write-effective-instructions) covers the specificity, size, and structure patterns that keep adherence high.
+当指令足够模糊以至于可以多种方式解释、两个文件给出相互矛盾的方向，或者文件变得足够长以至于单个规则获得较少关注时，遵守度会下降。[编写有效的指令](/docs/zh-CN/memory#write-effective-instructions)涵盖了保持高遵守度的特异性、大小和结构模式。
 
 <Note>
-  CLAUDE.md and permissions solve different problems. CLAUDE.md tells Claude how your project works so it makes good decisions. [Permissions](/docs/en/permissions) and [hooks](/docs/en/hooks) enforce limits regardless of what Claude decides. Use CLAUDE.md for "we do it this way here." Use permissions or hooks for security boundaries and anything that must never happen, where you need a guarantee instead of guidance.
+  CLAUDE.md 和权限解决不同的问题。CLAUDE.md 告诉 Claude 你的项目如何工作，以便它做出好的决定。[权限](/docs/zh-CN/permissions)和[hooks](/docs/zh-CN/hooks)无论 Claude 决定什么都强制执行限制。对于"我们在这里这样做"使用 CLAUDE.md。对于安全边界和任何必须永远不会发生的事情，使用权限或 hooks，你需要一个保证而不是指导。
 </Note>
 
-## Check resolved settings
+<h2 id="check-resolved-settings">
+  检查已解析的设置
+</h2>
 
-Settings merge across managed, user, project, and local scopes. Managed settings always win when present. Among the rest, the closer scope overrides the broader one in the order local, then project, then user. Some settings can also be set by command-line flags or [environment variables](/docs/en/env-vars), which act as another override layer. When a setting doesn't seem to apply, the value you set is usually being overridden by another scope or an environment variable.
+设置在托管、用户、项目和本地范围内合并。当存在时，托管设置总是优先。在其余的中，更接近的范围按本地、项目、用户的顺序覆盖更广泛的范围。某些设置也可以由命令行标志或[环境变量](/docs/zh-CN/env-vars)设置，它们充当另一个覆盖层。当设置似乎不适用时，你设置的值通常被另一个范围或环境变量覆盖。
 
-Run `/doctor` to check your configuration and installation. It reports what it finds, including invalid settings files, duplicate installations, unused extensions, and {/* min-version: 2.1.206 */}checked-in `CLAUDE.md` content Claude can derive from the codebase, then proposes fixes it applies only after you confirm. The `CLAUDE.md` trim check requires Claude Code v2.1.206 or later. Before v2.1.205, `/doctor` opened a read-only diagnostics screen and pressing `f` sent the report to Claude to fix.
+运行 `/doctor` 来检查你的配置和安装。它报告它发现的内容，包括无效的设置文件、重复的安装、未使用的扩展，以及 {/* min-version: 2.1.206 */}已检入的 `CLAUDE.md` 内容 Claude 可以从代码库中推导出来，然后提议仅在你确认后应用的修复。`CLAUDE.md` 修剪检查需要 Claude Code v2.1.206 或更高版本。在 v2.1.205 之前，`/doctor` 打开一个只读诊断屏幕，按 `f` 将报告发送给 Claude 来修复。
 
-From the terminal, `claude doctor` prints read-only installation and settings diagnostics without starting a session.
+从终端，`claude doctor` 打印只读安装和设置诊断，而不启动会话。
 
-Run `/status` to see which settings sources are active, including whether managed settings are in effect. To understand which scope wins for a given key, see [How scopes interact](/docs/en/settings#how-scopes-interact).
+运行 `/status` 来查看哪些设置源是活跃的，包括是否启用了托管设置。要了解给定键哪个范围优先，请参阅[范围如何交互](/docs/zh-CN/settings#how-scopes-interact)。
 
-## Check MCP servers
+<h2 id="check-mcp-servers">
+  检查 MCP 服务器
+</h2>
 
-Run `/mcp` to see every configured server, its connection status, and whether you have approved it for the current project. A server can be defined correctly but still not provide tools for a few common reasons:
+运行 `/mcp` 来查看每个配置的服务器、其连接状态以及你是否为当前项目批准了它。服务器可以定义正确但仍然不提供工具，原因有几个常见的：
 
-* Project-scoped servers in `.mcp.json` require a one-time approval. If the prompt was dismissed, the server stays disabled until you approve it from `/mcp`.
-* A server that fails to start shows as failed in `/mcp`. Relative file paths in `command` or `args` are a frequent cause, since they resolve against the directory you launched Claude Code from rather than the location of `.mcp.json`.
-* A server that shows as connected but lists zero tools has started successfully but isn't returning a tool list. Select **Reconnect** from `/mcp`. If the count stays at zero, run `claude --debug mcp` to see the server's stderr output.
+* `.mcp.json` 中的项目范围服务器需要一次性批准。如果提示被关闭，服务器将保持禁用状态，直到你从 `/mcp` 批准它。
+* 启动失败的服务器在 `/mcp` 中显示为失败。`command` 或 `args` 中的相对文件路径是一个常见原因，因为它们相对于你启动 Claude Code 的目录而不是 `.mcp.json` 的位置进行解析。
+* 显示为已连接但列出零个工具的服务器已成功启动但没有返回工具列表。从 `/mcp` 选择**重新连接**。如果计数保持为零，运行 `claude --debug mcp` 来查看服务器的 stderr 输出。
 
-For configuration locations and scope rules, see [MCP](/docs/en/mcp).
+对于配置位置和范围规则，请参阅 [MCP](/docs/zh-CN/mcp)。
 
-## Check hooks
+<h2 id="check-hooks">
+  检查 hooks
+</h2>
 
-Run `/hooks` to list every hook registered for the current session, grouped by event. If a hook you defined doesn't appear, it isn't being read: hooks go under the `"hooks"` key in a settings file, not in a standalone file.
+运行 `/hooks` 来列出当前会话注册的每个 hook，按事件分组。如果你定义的 hook 没有出现，它没有被读取：hooks 在设置文件中的 `"hooks"` 键下，而不是在独立文件中。
 
-If the hook appears but doesn't fire, the matcher is the usual cause. Check it for these mistakes:
+如果 hook 出现但没有触发，匹配器通常是原因。检查它是否有这些错误：
 
-* The `matcher` field is a single string that uses `|` to match multiple tool names, for example `"Edit|Write"`. {/* min-version: 2.1.191 */}A `,` separator is equivalent, so `"Edit,Write"` matches the same tools. Before v2.1.191, a comma fell through to regex evaluation and the matcher never matched, so use `|` if you aren't on v2.1.191 yet.
-* A misspelled tool name produces a matcher that matches nothing, so the hook fails silently.
-* An array value is a schema error: Claude Code shows a settings error notice and rejects the whole user, project, or local settings file, `claude doctor` reports the validation failure, and no hook from that file appears in `/hooks`. In [managed settings](/docs/en/settings#settings-files), only the invalid entry is stripped and the file's other hooks still apply.
+* `matcher` 字段是一个使用 `|` 来匹配多个工具名称的单个字符串，例如 `"Edit|Write"`。{/* min-version: 2.1.191 */}`,` 分隔符是等效的，所以 `"Edit,Write"` 匹配相同的工具。在 v2.1.191 之前，逗号会进入正则表达式评估，匹配器永远不会匹配，所以如果你不在 v2.1.191 上，请使用 `|`。
+* 拼写错误的工具名称会产生一个不匹配任何内容的匹配器，所以 hook 会无声地失败。
+* 数组值是一个 schema 错误：Claude Code 显示设置错误通知并拒绝整个用户、项目或本地设置文件，`claude doctor` 报告验证失败，该文件中没有 hook 出现在 `/hooks` 中。在[托管设置](/docs/zh-CN/settings#settings-files)中，只有无效条目被删除，文件的其他 hooks 仍然适用。
 
-Edits to `settings.json` take effect in the running session after a brief file-stability delay. You don't need to restart. If `/hooks` still shows the old definition a few seconds after saving, run `/hooks` again to refresh the view.
+对 `settings.json` 的编辑在短暂的文件稳定延迟后在运行的会话中生效。你不需要重新启动。如果保存后几秒钟 `/hooks` 仍然显示旧定义，再次运行 `/hooks` 来刷新视图。
 
-If `/hooks` shows the hook but it still does not fire, the next step is to watch hook evaluation live. Start a session with `claude --debug hooks` and trigger the tool call. The debug log records each event, which matchers were checked, and the hook's exit code and output. See [Debug hooks](/docs/en/hooks#debug-hooks) for the log format and [hooks troubleshooting](/docs/en/hooks-guide#limitations-and-troubleshooting) for common failure patterns.
+如果 `/hooks` 显示 hook 但它仍然没有触发，下一步是实时观察 hook 评估。使用 `claude --debug hooks` 启动会话并触发工具调用。调试日志记录每个事件、检查了哪些匹配器以及 hook 的退出代码和输出。有关日志格式，请参阅[调试 hooks](/docs/zh-CN/hooks#debug-hooks)，有关常见失败模式，请参阅[hooks 故障排除](/docs/zh-CN/hooks-guide#limitations-and-troubleshooting)。
 
-## Test against a clean configuration
+<h2 id="test-against-a-clean-configuration">
+  针对干净配置进行测试
+</h2>
 
-{/* min-version: 2.1.169 */}Start with [`claude --safe-mode`](/docs/en/cli-reference#cli-flags), which launches a session with all customizations disabled, including `CLAUDE.md`, skills, plugins, hooks, MCP servers, and custom commands and agents. Authentication, model selection, built-in tools, and permissions work normally. If the problem disappears in safe mode, one of those surfaces is the cause; use the targeted checks above to find which. Safe mode still applies managed hooks and settings policy from your organization. Managed plugins, skills, CLAUDE.md, and MCP servers are turned off.
+{/* min-version: 2.1.169 */}使用 [`claude --safe-mode`](/docs/zh-CN/cli-reference#cli-flags) 开始，它会启动一个会话，禁用所有自定义，包括 `CLAUDE.md`、skills、plugins、hooks、MCP 服务器以及自定义命令和代理。身份验证、模型选择、内置工具和权限正常工作。如果问题在安全模式下消失，则其中一个方面是原因；使用上面的针对性检查来找出是哪一个。安全模式仍然应用来自你的组织的托管 hooks 和设置策略。托管 plugins、skills、CLAUDE.md 和 MCP 服务器被关闭。
 
-If the problem persists in safe mode, or your settings themselves are suspect, compare against a session that loads nothing from your usual setup. Point [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars) at an empty directory to bypass everything under `~/.claude`, and launch from a directory that has no `.claude` folder, `.mcp.json`, or `CLAUDE.md` so project configuration is also skipped.
+如果问题在安全模式下仍然存在，或你的设置本身可疑，请与从你的常规设置中不加载任何内容的会话进行比较。将 [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars) 指向一个空目录以绕过 `~/.claude` 下的所有内容，并从没有 `.claude` 文件夹、`.mcp.json` 或 `CLAUDE.md` 的目录启动，以便也跳过项目配置。
 
 ```bash theme={null}
 cd /tmp && CLAUDE_CONFIG_DIR=/tmp/claude-clean claude
 ```
 
-The clean session has no user or project settings, hooks, MCP servers, plugins, or memory. On the first launch, expect the first-run setup screens, starting with theme selection. If you see them, the clean configuration directory is in effect. Later launches with the same directory skip these screens because Claude Code saves onboarding state there.
+干净会话没有用户或项目设置、hooks、MCP 服务器、plugins 或内存。
 
-* Managed settings still apply if your organization deploys them, since they live at a system path outside `~/.claude`
-* On Linux and Windows, you'll be prompted to log in again because credentials are stored under the configuration directory
-* On macOS, credentials are in the Keychain and carry over to the clean session
+* 如果你的组织部署了托管设置，它们仍然适用，因为它们位于 `~/.claude` 之外的系统路径中
+* 在 Linux 和 Windows 上，你将被提示再次登录，因为凭证存储在配置目录下
+* 在 macOS 上，凭证在 Keychain 中，会转移到干净会话
 
-If the problem disappears here, the cause is somewhere in your real `~/.claude` or project `.claude` files. Reintroduce them one at a time, by copying files into the temporary directory or by launching from your project, to find which one. If it persists in the clean session, the cause is outside your user and project configuration. Run `/status` to check whether managed settings are in effect, look for [environment variables](/docs/en/env-vars) that affect Claude Code, then see [Troubleshooting](/docs/en/troubleshooting).
+如果问题在这里消失，原因在你的真实 `~/.claude` 或项目 `.claude` 文件中的某处。一次重新引入一个，通过将文件复制到临时目录或从你的项目启动，来找到哪一个。如果它在干净会话中持续存在，原因在你的用户和项目配置之外。运行 `/status` 来检查是否启用了托管设置，查找影响 Claude Code 的[环境变量](/docs/zh-CN/env-vars)，然后参阅[故障排除](/docs/zh-CN/troubleshooting)。
 
-## Check common causes
+<h2 id="check-common-causes">
+  检查常见原因
+</h2>
 
-Most configuration surprises trace back to a small set of location and syntax rules. Check these before assuming a bug:
+大多数配置意外可以追溯到一小组位置和语法规则。在假设存在错误之前检查这些：
 
-| Symptom                                                              | Cause                                                                                                                      | Fix                                                                                                                                                                                                                                                          |
-| :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hook never fires                                                     | `matcher` is a JSON array instead of a string                                                                              | Use a single string with `\|` to match multiple tools, for example `"Edit\|Write"`. See [matcher patterns](/docs/en/hooks#matcher-patterns).                                                                                                                      |
-| Hook never fires                                                     | `matcher` uses `,` as a separator on a version before v2.1.191                                                             | {/* min-version: 2.1.191 */}Claude Code v2.1.191 or later treats `,` as a list separator like `\|`. Earlier versions evaluate a comma as a literal character, so `"Edit,Write"` matches nothing. Use `\|` instead, or upgrade Claude Code.                   |
-| Hook never fires                                                     | `matcher` value is lowercase, for example `"bash"`                                                                         | Matching is case-sensitive. Tool names are capitalized: `Bash`, `Edit`, `Write`, `Read`.                                                                                                                                                                     |
-| Hook never fires                                                     | Hooks are defined in a standalone file instead of `settings.json`                                                          | There is no standalone hooks file for project or user config. Define hooks under the `"hooks"` key in `settings.json`. Only [plugins](/docs/en/plugins-reference#hooks) load a separate `hooks/hooks.json`. See [hook configuration](/docs/en/hooks).                  |
-| Permissions, hooks, or env set globally are ignored                  | Configuration was added to `~/.claude.json`                                                                                | `~/.claude.json` holds app state and UI toggles. `permissions`, `hooks`, and `env` belong in `~/.claude/settings.json`. These are two different files.                                                                                                       |
-| A `settings.json` value seems ignored                                | The same key is set in `settings.local.json`                                                                               | `settings.local.json` overrides `settings.json`, and both override `~/.claude/settings.json`. See [settings precedence](/docs/en/settings#how-scopes-interact).                                                                                                   |
-| Skill doesn't appear in `/skills`                                    | Skill file is at `.claude/skills/name.md` instead of in a folder                                                           | Use a folder with `SKILL.md` inside: `.claude/skills/name/SKILL.md`.                                                                                                                                                                                         |
-| Skill appears in `/skills` but Claude never invokes it               | Skill has `disable-model-invocation: true` in its frontmatter, or its description doesn't match how you phrase the request | Check the badge in `/skills`: a "user-only" label means Claude won't trigger it on its own. See [skill invocation](/docs/en/skills).                                                                                                                              |
-| Subdirectory `CLAUDE.md` instructions seem ignored                   | Subdirectory files load on demand, not at session start                                                                    | They load when Claude reads a file in that directory with the Read tool, not at launch and not when writing or creating files there. See [how CLAUDE.md files load](/docs/en/memory#how-claude-md-files-load).                                                    |
-| Subagent ignores `CLAUDE.md` instructions                            | The built-in Explore and Plan agents skip `CLAUDE.md`. Custom subagents load it the same way the main conversation does    | For Explore or Plan, restate the instruction in your delegating prompt. For a custom subagent, put critical instructions in the agent file body, which becomes the agent's system prompt. See [what loads at startup](/docs/en/sub-agents#what-loads-at-startup). |
-| Cleanup logic never runs at session end                              | No `SessionEnd` hook configured                                                                                            | Add a `SessionEnd` hook in `settings.json`. See the [hook events list](/docs/en/hooks#hook-events).                                                                                                                                                               |
-| MCP servers in `.mcp.json` never load                                | File is under `.claude/` or uses Claude Desktop's config format                                                            | Project MCP config goes at the repository root as `.mcp.json`, not inside `.claude/`. See [MCP configuration](/docs/en/mcp).                                                                                                                                      |
-| MCP servers added under `mcpServers` in `settings.json` never appear | `settings.json` does not read an `mcpServers` key                                                                          | Define project servers in `.mcp.json` at the repository root, or run `claude mcp add --scope user` for user-scoped servers. See [MCP configuration](/docs/en/mcp).                                                                                                |
-| Project MCP server added but doesn't appear                          | The one-time approval prompt was dismissed                                                                                 | Project-scoped servers require approval. Run `/mcp` to see status and approve.                                                                                                                                                                               |
-| MCP server fails to start from some directories                      | `command` or `args` uses a relative file path                                                                              | Use absolute paths for local scripts. Executables on your `PATH` like `npx` or `uvx` work as-is.                                                                                                                                                             |
-| MCP server starts without expected environment variables             | Variables are in `settings.json` `env`, which doesn't propagate to MCP child processes                                     | Set per-server `env` inside `.mcp.json` instead.                                                                                                                                                                                                             |
-| `Bash(rm *)` deny rule doesn't block `/bin/rm` or `find -delete`     | Prefix rules match the literal command string, not the underlying executable                                               | Add explicit patterns for each variant, or use a [PreToolUse hook](/docs/en/hooks-guide) or the [sandbox](/docs/en/sandboxing) for a hard guarantee.                                                                                                                   |
+| 症状                                                  | 原因                                                                        | 修复                                                                                                                                                              |
+| :-------------------------------------------------- | :------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hook 永远不触发                                          | `matcher` 是 JSON 数组而不是字符串                                                 | 使用单个字符串，其中 `\|` 匹配多个工具，例如 `"Edit\|Write"`。请参阅[匹配器模式](/docs/zh-CN/hooks#matcher-patterns)。                                                                            |
+| Hook 永远不触发                                          | `matcher` 在 v2.1.191 之前的版本中使用 `,` 作为分隔符                                   | {/* min-version: 2.1.191 */}Claude Code v2.1.191 或更高版本将 `,` 视为列表分隔符，如 `\|`。早期版本将逗号评估为字面字符，因此 `"Edit,Write"` 不匹配任何内容。改用 `\|`，或升级 Claude Code。                    |
+| Hook 永远不触发                                          | `matcher` 值是小写的，例如 `"bash"`                                               | 匹配是区分大小写的。工具名称是大写的：`Bash`、`Edit`、`Write`、`Read`。                                                                                                                |
+| Hook 永远不触发                                          | Hooks 在独立文件而不是 `settings.json` 中定义                                        | 项目或用户配置没有独立的 hooks 文件。在 `settings.json` 中的 `"hooks"` 键下定义 hooks。只有[plugins](/docs/zh-CN/plugins-reference#hooks)加载单独的 `hooks/hooks.json`。请参阅[hook 配置](/docs/zh-CN/hooks)。 |
+| 全局设置的权限、hooks 或 env 被忽略                             | 配置被添加到 `~/.claude.json`                                                   | `~/.claude.json` 保存应用状态和 UI 切换。`permissions`、`hooks` 和 `env` 属于 `~/.claude/settings.json`。这是两个不同的文件。                                                            |
+| `settings.json` 值似乎被忽略                              | 相同的键在 `settings.local.json` 中设置                                           | `settings.local.json` 覆盖 `settings.json`，两者都覆盖 `~/.claude/settings.json`。请参阅[设置优先级](/docs/zh-CN/settings#how-scopes-interact)。                                       |
+| Skill 没有出现在 `/skills` 中                             | Skill 文件在 `.claude/skills/name.md` 而不是在文件夹中                               | 使用包含 `SKILL.md` 的文件夹：`.claude/skills/name/SKILL.md`。                                                                                                            |
+| Skill 出现在 `/skills` 中但 Claude 从不调用它                 | Skill 在其 frontmatter 中有 `disable-model-invocation: true`，或其描述与你表述请求的方式不匹配 | 检查 `/skills` 中的徽章：一个"user-only"标签意味着 Claude 不会自动触发它。请参阅[skill 调用](/docs/zh-CN/skills)。                                                                               |
+| 子目录 `CLAUDE.md` 指令似乎被忽略                             | 子目录文件按需加载，而不是在会话开始时加载                                                     | 它们在 Claude 使用 Read 工具读取该目录中的文件时加载，而不是在启动时，也不是在写入或创建文件时。请参阅[CLAUDE.md 文件如何加载](/docs/zh-CN/memory#how-claude-md-files-load)。                                           |
+| 子代理忽略 `CLAUDE.md` 指令                                | 内置的 Explore 和 Plan 代理跳过 `CLAUDE.md`。自定义子代理以与主对话相同的方式加载它                   | 对于 Explore 或 Plan，在你的委派提示中重新陈述指令。对于自定义子代理，将关键指令放在代理文件体中，它成为代理的系统提示。请参阅[启动时加载的内容](/docs/zh-CN/sub-agents#what-loads-at-startup)。                                      |
+| 清理逻辑在会话结束时永远不运行                                     | 没有配置 `SessionEnd` hook                                                    | 在 `settings.json` 中添加 `SessionEnd` hook。请参阅[hook 事件列表](/docs/zh-CN/hooks#hook-events)。                                                                               |
+| `.mcp.json` 中的 MCP 服务器永远不加载                         | 文件在 `.claude/` 下或使用 Claude Desktop 的配置格式                                  | 项目 MCP 配置在存储库根目录下作为 `.mcp.json`，而不是在 `.claude/` 内。请参阅[MCP 配置](/docs/zh-CN/mcp)。                                                                                      |
+| 在 `settings.json` 中的 `mcpServers` 下添加的 MCP 服务器永远不出现 | `settings.json` 不读取 `mcpServers` 键                                        | 在存储库根目录的 `.mcp.json` 中定义项目服务器，或运行 `claude mcp add --scope user` 来添加用户范围的服务器。请参阅[MCP 配置](/docs/zh-CN/mcp)。                                                            |
+| 添加的项目 MCP 服务器没有出现                                   | 一次性批准提示被关闭                                                                | 项目范围的服务器需要批准。运行 `/mcp` 来查看状态并批准。                                                                                                                                |
+| MCP 服务器从某些目录启动失败                                    | `command` 或 `args` 使用相对文件路径                                               | 对本地脚本使用绝对路径。你的 `PATH` 上的可执行文件如 `npx` 或 `uvx` 可以按原样工作。                                                                                                           |
+| MCP 服务器启动时没有预期的环境变量                                 | 变量在 `settings.json` `env` 中，不会传播到 MCP 子进程                                 | 在 `.mcp.json` 中设置每个服务器的 `env`。                                                                                                                                  |
+| `Bash(rm *)` 拒绝规则不阻止 `/bin/rm` 或 `find -delete`     | 前缀规则匹配字面命令字符串，而不是底层可执行文件                                                  | 为每个变体添加显式模式，或使用[PreToolUse hook](/docs/zh-CN/hooks-guide)或[sandbox](/docs/zh-CN/sandboxing)来获得硬保证。                                                                        |
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-For full reference on each configuration surface, see the dedicated page:
+有关每个配置表面的完整参考，请参阅专用页面：
 
-* **[`.claude` directory reference](/docs/en/claude-directory)**: every config file location and what reads it
-* **[Settings](/docs/en/settings)**: precedence order and the full key list
-* **[Hooks reference](/docs/en/hooks)**: event names, payloads, and `--debug hooks` output format
-* **[MCP](/docs/en/mcp)**: server configuration, approval, and `/mcp` output
-* **[Troubleshoot installation and login](/docs/en/troubleshoot-install)**: `command not found`, PATH, and authentication problems
-* **[Troubleshooting](/docs/en/troubleshooting)**: performance, hangs, and search issues
+* **[`.claude` 目录参考](/docs/zh-CN/claude-directory)**：每个配置文件位置及其读取方式
+* **[Settings](/docs/zh-CN/settings)**：优先级顺序和完整的键列表
+* **[Hooks 参考](/docs/zh-CN/hooks)**：事件名称、有效负载和 `--debug hooks` 输出格式
+* **[MCP](/docs/zh-CN/mcp)**：服务器配置、批准和 `/mcp` 输出
+* **[故障排除安装和登录](/docs/zh-CN/troubleshoot-install)**：`command not found`、PATH 和身份验证问题
+* **[故障排除](/docs/zh-CN/troubleshooting)**：性能、挂起和搜索问题

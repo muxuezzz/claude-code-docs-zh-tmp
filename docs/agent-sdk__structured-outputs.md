@@ -2,38 +2,40 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Get structured output from agents
+# 从代理获取结构化输出
 
-> Return validated JSON from agent workflows using JSON Schema, Zod, or Pydantic. Get type-safe, structured data after multi-turn tool use.
+> 使用 JSON Schema、Zod 或 Pydantic 从代理工作流返回验证的 JSON。在多轮工具使用后获取类型安全的结构化数据。
 
-Structured outputs let you define the exact shape of data you want back from an agent. The agent can use any tools it needs to complete the task, and you still get validated JSON matching your schema at the end. Define a [JSON Schema](https://json-schema.org/understanding-json-schema/about) for the structure you need, and the SDK validates the output against it, re-prompting on mismatch. If validation does not succeed within the retry limit, the result is an error instead of structured data; see [Error handling](#error-handling).
+结构化输出让你定义从代理返回的数据的确切形状。代理可以使用任何需要的工具来完成任务，最后你仍然会获得与你的 schema 匹配的验证 JSON。定义一个 [JSON Schema](https://json-schema.org/understanding-json-schema/about) 来描述你需要的结构，SDK 会根据它验证输出，在不匹配时重新提示。如果验证在重试限制内没有成功，结果将是一个错误而不是结构化数据；请参阅 [错误处理](#error-handling)。
 
-For full type safety, use [Zod](#type-safe-schemas-with-zod-and-pydantic) (TypeScript) or [Pydantic](#type-safe-schemas-with-zod-and-pydantic) (Python) to define your schema and get strongly-typed objects back.
+为了获得完整的类型安全，使用 [Zod](#type-safe-schemas-with-zod-and-pydantic)（TypeScript）或 [Pydantic](#type-safe-schemas-with-zod-and-pydantic)（Python）来定义你的 schema 并获取强类型对象。
 
-## Why structured outputs?
+<h2 id="why-structured-outputs">
+  为什么使用结构化输出？
+</h2>
 
-Agents return free-form text by default, which works for chat but not when you need to use the output programmatically. Structured outputs give you typed data you can pass directly to your application logic, database, or UI components.
+代理默认返回自由格式的文本，这适用于聊天但不适用于需要以编程方式使用输出的情况。结构化输出为你提供类型化数据，你可以直接传递给应用逻辑、数据库或 UI 组件。
 
-Consider a recipe app where an agent searches the web and brings back recipes. Without structured outputs, you get free-form text that you'd need to parse yourself. With structured outputs, you define the shape you want and get typed data you can use directly in your app.
+考虑一个食谱应用，其中代理搜索网络并返回食谱。没有结构化输出，你会得到需要自己解析的自由格式文本。有了结构化输出，你定义你想要的形状并获得可以直接在应用中使用的类型化数据。
 
 <AccordionGroup>
-  <Accordion title="Without structured outputs">
+  <Accordion title="没有结构化输出">
     ```text theme={null}
-    Here's a classic chocolate chip cookie recipe!
+    这是一个经典的巧克力芯片饼干食谱！
 
-    **Chocolate Chip Cookies**
-    Prep time: 15 minutes | Cook time: 10 minutes
+    **巧克力芯片饼干**
+    准备时间：15 分钟 | 烹饪时间：10 分钟
 
-    Ingredients:
-    - 2 1/4 cups all-purpose flour
-    - 1 cup butter, softened
+    材料：
+    - 2 1/4 杯通用面粉
+    - 1 杯黄油，软化
     ...
     ```
 
-    To use this in your app, you'd need to parse out the title, convert "15 minutes" to a number, separate ingredients from instructions, and handle inconsistent formatting across responses.
+    要在你的应用中使用这个，你需要解析出标题，将"15 分钟"转换为数字，将材料与说明分开，并处理响应中的不一致格式。
   </Accordion>
 
-  <Accordion title="With structured outputs">
+  <Accordion title="有结构化输出">
     ```json theme={null}
     {
       "name": "Chocolate Chip Cookies",
@@ -48,21 +50,23 @@ Consider a recipe app where an agent searches the web and brings back recipes. W
     }
     ```
 
-    Typed data you can use directly in your UI.
+    你可以直接在 UI 中使用的类型化数据。
   </Accordion>
 </AccordionGroup>
 
-## Quick start
+<h2 id="quick-start">
+  快速开始
+</h2>
 
-To use structured outputs, define a [JSON Schema](https://json-schema.org/understanding-json-schema/about) describing the shape of data you want, then pass it to `query()` via the `outputFormat` option (TypeScript) or `output_format` option (Python). When the agent finishes, the result message includes a `structured_output` field with validated data matching your schema.
+要使用结构化输出，定义一个 [JSON Schema](https://json-schema.org/understanding-json-schema/about) 来描述你想要的数据形状，然后通过 `outputFormat` 选项（TypeScript）或 `output_format` 选项（Python）将其传递给 `query()`。当代理完成时，结果消息包含一个 `structured_output` 字段，其中包含与你的 schema 匹配的验证数据。
 
-The example below asks the agent to research Anthropic and return the company name, year founded, and headquarters as structured output.
+下面的示例要求代理研究 Anthropic 并返回公司名称、成立年份和总部作为结构化输出。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
-  // Define the shape of data you want back
+  // 定义你想要返回的数据形状
   const schema = {
     type: "object",
     properties: {
@@ -73,26 +77,20 @@ The example below asks the agent to research Anthropic and return the company na
     required: ["company_name"]
   };
 
-  try {
-    for await (const message of query({
-      prompt: "Research Anthropic and provide key company information",
-      options: {
-        outputFormat: {
-          type: "json_schema",
-          schema: schema
-        }
-      }
-    })) {
-      // The result message contains structured_output with validated data
-      if (message.type === "result" && message.subtype === "success" && message.structured_output) {
-        console.log(message.structured_output);
-        // { company_name: "Anthropic", founded_year: 2021, headquarters: "San Francisco, CA" }
+  for await (const message of query({
+    prompt: "Research Anthropic and provide key company information",
+    options: {
+      outputFormat: {
+        type: "json_schema",
+        schema: schema
       }
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result, such as
-    // error_max_structured_output_retries; see the Error handling section.
-    console.error(`Session ended with an error: ${error}`);
+  })) {
+    // 结果消息包含带有验证数据的 structured_output
+    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+      console.log(message.structured_output);
+      // { company_name: "Anthropic", founded_year: 2021, headquarters: "San Francisco, CA" }
+    }
   }
   ```
 
@@ -100,7 +98,7 @@ The example below asks the agent to research Anthropic and return the company na
   import asyncio
   from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
-  # Define the shape of data you want back
+  # 定义你想要返回的数据形状
   schema = {
       "type": "object",
       "properties": {
@@ -113,41 +111,36 @@ The example below asks the agent to research Anthropic and return the company na
 
 
   async def main():
-      try:
-          async for message in query(
-              prompt="Research Anthropic and provide key company information",
-              options=ClaudeAgentOptions(
-                  output_format={"type": "json_schema", "schema": schema}
-              ),
-          ):
-              # The result message contains structured_output with validated data
-              if isinstance(message, ResultMessage) and message.structured_output:
-                  print(message.structured_output)
-                  # {'company_name': 'Anthropic', 'founded_year': 2021, 'headquarters': 'San Francisco, CA'}
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result, such as
-          # error_max_structured_output_retries; see the Error handling section.
-          print(f"Session ended with an error: {error}")
+      async for message in query(
+          prompt="Research Anthropic and provide key company information",
+          options=ClaudeAgentOptions(
+              output_format={"type": "json_schema", "schema": schema}
+          ),
+      ):
+          # 结果消息包含带有验证数据的 structured_output
+          if isinstance(message, ResultMessage) and message.structured_output:
+              print(message.structured_output)
+              # {'company_name': 'Anthropic', 'founded_year': 2021, 'headquarters': 'San Francisco, CA'}
 
 
   asyncio.run(main())
   ```
 </CodeGroup>
 
-## Type-safe schemas with Zod and Pydantic
+<h2 id="type-safe-schemas-with-zod-and-pydantic">
+  使用 Zod 和 Pydantic 的类型安全 schema
+</h2>
 
-Instead of writing JSON Schema by hand, you can use [Zod](https://zod.dev/) (TypeScript) or [Pydantic](https://docs.pydantic.dev/latest/) (Python) to define your schema. These libraries generate the JSON Schema for you and let you parse the response into a fully-typed object you can use throughout your codebase with autocomplete and type checking.
+与其手动编写 JSON Schema，你可以使用 [Zod](https://zod.dev/)（TypeScript）或 [Pydantic](https://docs.pydantic.dev/latest/)（Python）来定义你的 schema。这些库为你生成 JSON Schema，并让你将响应解析为完全类型化的对象，你可以在整个代码库中使用，具有自动完成和类型检查。
 
-The example below defines a schema for a feature implementation plan with a summary, list of steps (each with complexity level), and potential risks. The agent plans the feature and returns a typed `FeaturePlan` object. You can then access properties like `plan.summary` and iterate over `plan.steps` with full type safety.
-
-The SDK validates schemas with JSON Schema draft-07, so schemas that declare a newer version are rejected. Zod targets draft 2020-12 by default, so pass `target: "draft-7"` when converting your schema.
+下面的示例定义了一个功能实现计划的 schema，包括摘要、步骤列表（每个步骤都有复杂度级别）和潜在风险。代理规划功能并返回一个类型化的 `FeaturePlan` 对象。然后你可以访问 `plan.summary` 等属性，并使用完整的类型安全遍历 `plan.steps`。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
   import { z } from "zod";
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
-  // Define schema with Zod
+  // 使用 Zod 定义 schema
   const FeaturePlan = z.object({
     feature_name: z.string(),
     summary: z.string(),
@@ -163,38 +156,32 @@ The SDK validates schemas with JSON Schema draft-07, so schemas that declare a n
 
   type FeaturePlan = z.infer<typeof FeaturePlan>;
 
-  // Convert to JSON Schema using the draft-07 target the SDK expects
-  const schema = z.toJSONSchema(FeaturePlan, { target: "draft-7" });
+  // 转换为 JSON Schema
+  const schema = z.toJSONSchema(FeaturePlan);
 
-  // Use in query
-  try {
-    for await (const message of query({
-      prompt:
-        "Plan how to add dark mode support to a React app. Break it into implementation steps.",
-      options: {
-        outputFormat: {
-          type: "json_schema",
-          schema: schema
-        }
-      }
-    })) {
-      if (message.type === "result" && message.subtype === "success" && message.structured_output) {
-        // Validate and get fully typed result
-        const parsed = FeaturePlan.safeParse(message.structured_output);
-        if (parsed.success) {
-          const plan: FeaturePlan = parsed.data;
-          console.log(`Feature: ${plan.feature_name}`);
-          console.log(`Summary: ${plan.summary}`);
-          plan.steps.forEach((step) => {
-            console.log(`${step.step_number}. [${step.estimated_complexity}] ${step.description}`);
-          });
-        }
+  // 在查询中使用
+  for await (const message of query({
+    prompt:
+      "Plan how to add dark mode support to a React app. Break it into implementation steps.",
+    options: {
+      outputFormat: {
+        type: "json_schema",
+        schema: schema
       }
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result, such as
-    // error_max_structured_output_retries; see the Error handling section.
-    console.error(`Session ended with an error: ${error}`);
+  })) {
+    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+      // 验证并获取完全类型化的结果
+      const parsed = FeaturePlan.safeParse(message.structured_output);
+      if (parsed.success) {
+        const plan: FeaturePlan = parsed.data;
+        console.log(`Feature: ${plan.feature_name}`);
+        console.log(`Summary: ${plan.summary}`);
+        plan.steps.forEach((step) => {
+          console.log(`${step.step_number}. [${step.estimated_complexity}] ${step.description}`);
+        });
+      }
+    }
   }
   ```
 
@@ -218,66 +205,65 @@ The SDK validates schemas with JSON Schema draft-07, so schemas that declare a n
 
 
   async def main():
-      try:
-          async for message in query(
-              prompt="Plan how to add dark mode support to a React app. Break it into implementation steps.",
-              options=ClaudeAgentOptions(
-                  output_format={
-                      "type": "json_schema",
-                      "schema": FeaturePlan.model_json_schema(),
-                  }
-              ),
-          ):
-              if isinstance(message, ResultMessage) and message.structured_output:
-                  # Validate and get fully typed result
-                  plan = FeaturePlan.model_validate(message.structured_output)
-                  print(f"Feature: {plan.feature_name}")
-                  print(f"Summary: {plan.summary}")
-                  for step in plan.steps:
-                      print(
-                          f"{step.step_number}. [{step.estimated_complexity}] {step.description}"
-                      )
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result, such as
-          # error_max_structured_output_retries; see the Error handling section.
-          print(f"Session ended with an error: {error}")
+      async for message in query(
+          prompt="Plan how to add dark mode support to a React app. Break it into implementation steps.",
+          options=ClaudeAgentOptions(
+              output_format={
+                  "type": "json_schema",
+                  "schema": FeaturePlan.model_json_schema(),
+              }
+          ),
+      ):
+          if isinstance(message, ResultMessage) and message.structured_output:
+              # 验证并获取完全类型化的结果
+              plan = FeaturePlan.model_validate(message.structured_output)
+              print(f"Feature: {plan.feature_name}")
+              print(f"Summary: {plan.summary}")
+              for step in plan.steps:
+                  print(
+                      f"{step.step_number}. [{step.estimated_complexity}] {step.description}"
+                  )
 
 
   asyncio.run(main())
   ```
 </CodeGroup>
 
-**Benefits:**
+**优势：**
 
-* Full type inference (TypeScript) and type hints (Python)
-* Runtime validation with `safeParse()` or `model_validate()`
-* Better error messages
-* Composable, reusable schemas
+* 完整的类型推断（TypeScript）和类型提示（Python）
+* 使用 `safeParse()` 或 `model_validate()` 进行运行时验证
+* 更好的错误消息
+* 可组合、可重用的 schema
 
-## Output format configuration
+<h2 id="output-format-configuration">
+  输出格式配置
+</h2>
 
-The `outputFormat` (TypeScript) or `output_format` (Python) option accepts an object with:
+`outputFormat`（TypeScript）或 `output_format`（Python）选项接受一个对象，包含：
 
-* `type`: Set to `"json_schema"` for structured outputs
-* `schema`: A [JSON Schema](https://json-schema.org/understanding-json-schema/about) object defining your output structure. You can generate this from a Zod schema with `z.toJSONSchema(schema, { target: "draft-7" })` or a Pydantic model with `.model_json_schema()`
+* `type`：设置为 `"json_schema"` 以获得结构化输出
+* `schema`：一个 [JSON Schema](https://json-schema.org/understanding-json-schema/about) 对象，定义你的输出结构。你可以使用 `z.toJSONSchema()` 从 Zod schema 生成它，或使用 `.model_json_schema()` 从 Pydantic 模型生成它
 
-The SDK supports standard JSON Schema features including all basic types (object, array, string, number, boolean, null), `enum`, `const`, `required`, nested objects, and `$ref` definitions. For the full list of supported features and limitations, see [JSON Schema limitations](https://platform.claude.com/docs/en/build-with-claude/structured-outputs#json-schema-limitations).
+SDK 支持标准 JSON Schema 功能，包括所有基本类型（object、array、string、number、boolean、null）、`enum`、`const`、`required`、嵌套对象和 `$ref` 定义。有关支持的功能和限制的完整列表，请参阅 [JSON Schema 限制](https://platform.claude.com/docs/zh-CN/build-with-claude/structured-outputs#json-schema-limitations)。
 
-A schema that isn't valid JSON Schema fails the run at startup with an error naming the problem. Before v2.1.205, an invalid schema was silently ignored and the agent returned unstructured text.
+不是有效 JSON Schema 的 schema 在启动时会导致运行失败，并显示一条错误消息，说明问题所在。在 v2.1.205 之前，无效的 schema 会被静默忽略，代理会返回非结构化文本。
 
-The `format` keyword, such as `"format": "email"`, is accepted as an annotation and isn't enforced by the SDK's validator. Before v2.1.205, any schema containing `format` was treated as invalid.
+`format` 关键字，例如 `"format": "email"`，被接受为注释，SDK 的验证器不会强制执行它。在 v2.1.205 之前，任何包含 `format` 的 schema 都被视为无效。
 
-## Example: TODO tracking agent
+<h2 id="example-todo-tracking-agent">
+  示例：TODO 跟踪代理
+</h2>
 
-This example demonstrates how structured outputs work with multi-step tool use. The agent needs to find TODO comments in the codebase, then look up git blame information for each one. It autonomously decides which tools to use (Grep to search, Bash to run git commands) and combines the results into a single structured response.
+此示例演示了结构化输出如何与多步工具使用配合工作。代理需要在代码库中查找 TODO 注释，然后为每个注释查找 git blame 信息。它自主决定使用哪些工具（Grep 搜索、Bash 运行 git 命令）并将结果合并为单个结构化响应。
 
-The schema includes optional fields (`author` and `date`) since git blame information might not be available for all files. The agent fills in what it can find and omits the rest.
+schema 包括可选字段（`author` 和 `date`），因为 git blame 信息可能不适用于所有文件。代理填充它能找到的内容并省略其余部分。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
-  // Define structure for TODO extraction
+  // 定义 TODO 提取的结构
   const todoSchema = {
     type: "object",
     properties: {
@@ -300,32 +286,26 @@ The schema includes optional fields (`author` and `date`) since git blame inform
     required: ["todos", "total_count"]
   };
 
-  // Agent uses Grep to find TODOs, Bash to get git blame info
-  try {
-    for await (const message of query({
-      prompt: "Find all TODO comments in this codebase and identify who added them",
-      options: {
-        outputFormat: {
-          type: "json_schema",
-          schema: todoSchema
-        }
-      }
-    })) {
-      if (message.type === "result" && message.subtype === "success" && message.structured_output) {
-        const data = message.structured_output as { total_count: number; todos: Array<{ file: string; line: number; text: string; author?: string; date?: string }> };
-        console.log(`Found ${data.total_count} TODOs`);
-        data.todos.forEach((todo) => {
-          console.log(`${todo.file}:${todo.line} - ${todo.text}`);
-          if (todo.author) {
-            console.log(`  Added by ${todo.author} on ${todo.date}`);
-          }
-        });
+  // 代理使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
+  for await (const message of query({
+    prompt: "Find all TODO comments in this codebase and identify who added them",
+    options: {
+      outputFormat: {
+        type: "json_schema",
+        schema: todoSchema
       }
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result, such as
-    // error_max_structured_output_retries; see the Error handling section.
-    console.error(`Session ended with an error: ${error}`);
+  })) {
+    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+      const data = message.structured_output as { total_count: number; todos: Array<{ file: string; line: number; text: string; author?: string; date?: string }> };
+      console.log(`Found ${data.total_count} TODOs`);
+      data.todos.forEach((todo) => {
+        console.log(`${todo.file}:${todo.line} - ${todo.text}`);
+        if (todo.author) {
+          console.log(`  Added by ${todo.author} on ${todo.date}`);
+        }
+      });
+    }
   }
   ```
 
@@ -333,7 +313,7 @@ The schema includes optional fields (`author` and `date`) since git blame inform
   import asyncio
   from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
-  # Define structure for TODO extraction
+  # 定义 TODO 提取的结构
   todo_schema = {
       "type": "object",
       "properties": {
@@ -358,135 +338,91 @@ The schema includes optional fields (`author` and `date`) since git blame inform
 
 
   async def main():
-      # Agent uses Grep to find TODOs, Bash to get git blame info
-      try:
-          async for message in query(
-              prompt="Find all TODO comments in this codebase and identify who added them",
-              options=ClaudeAgentOptions(
-                  output_format={"type": "json_schema", "schema": todo_schema}
-              ),
-          ):
-              if isinstance(message, ResultMessage) and message.structured_output:
-                  data = message.structured_output
-                  print(f"Found {data['total_count']} TODOs")
-                  for todo in data["todos"]:
-                      print(f"{todo['file']}:{todo['line']} - {todo['text']}")
-                      if "author" in todo:
-                          print(f"  Added by {todo['author']} on {todo['date']}")
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result, such as
-          # error_max_structured_output_retries; see the Error handling section.
-          print(f"Session ended with an error: {error}")
+      # 代理使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
+      async for message in query(
+          prompt="Find all TODO comments in this codebase and identify who added them",
+          options=ClaudeAgentOptions(
+              output_format={"type": "json_schema", "schema": todo_schema}
+          ),
+      ):
+          if isinstance(message, ResultMessage) and message.structured_output:
+              data = message.structured_output
+              print(f"Found {data['total_count']} TODOs")
+              for todo in data["todos"]:
+                  print(f"{todo['file']}:{todo['line']} - {todo['text']}")
+                  if "author" in todo:
+                      print(f"  Added by {todo['author']} on {todo['date']}")
 
 
   asyncio.run(main())
   ```
 </CodeGroup>
 
-## Error handling
+<h2 id="error-handling">
+  错误处理
+</h2>
 
-Structured output generation can fail when the agent cannot produce valid JSON matching your schema. This typically happens when the schema is too complex for the task, the task itself is ambiguous, or the agent hits its retry limit trying to fix validation errors. It can also happen without any validation failure: a [model fallback](/docs/en/model-config#automatic-model-fallback) can retract an already-completed output mid-stream, and if no retry replaces it the run ends with the same error. Check the `errors` list on the result message to tell the two causes apart before debugging your schema.
+结构化输出生成可能会失败，当代理无法生成与你的 schema 匹配的有效 JSON 时。这通常发生在 schema 对于任务来说太复杂、任务本身不明确或代理在尝试修复验证错误时达到重试限制时。它也可能在没有任何验证失败的情况下发生：[模型回退](/docs/zh-CN/model-config#automatic-model-fallback)可以在流中途收回已完成的输出，如果没有重试替换它，运行将以相同的错误结束。在调试你的 schema 之前，检查结果消息上的 `errors` 字段以区分这两个原因。
 
-When an error occurs, the result message has a `subtype` indicating what went wrong:
+发生错误时，结果消息有一个 `subtype` 指示出了什么问题：
 
-| Subtype                               | Meaning                                                                                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `success`                             | Output was generated and validated successfully                                                                                 |
-| `error_max_structured_output_retries` | No valid output remained after multiple attempts (validation failures, or a model-fallback retraction with no successful retry) |
+| Subtype                               | 含义                                 |
+| ------------------------------------- | ---------------------------------- |
+| `success`                             | 输出已成功生成并验证                         |
+| `error_max_structured_output_retries` | 多次尝试后没有有效输出存活（验证失败，或模型回退收回且没有成功重试） |
 
-A result can also end with subtype `success` but no `structured_output` value, for example when the run completes without the agent producing a structured output. Treat that case as a failure as well. The example below treats a result as successful only when the `subtype` is `success` and `structured_output` is present, and handles every other result as a failure:
+下面的示例检查 `subtype` 字段以确定输出是否成功生成或你是否需要处理失败：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
-  import { query } from "@anthropic-ai/claude-agent-sdk";
-
-  const contactSchema = {
-    type: "object",
-    properties: {
-      name: { type: "string" },
-      email: { type: "string" }
-    },
-    required: ["name"]
-  };
-
-  try {
-    for await (const msg of query({
-      prompt: "Extract contact info from the document",
-      options: {
-        outputFormat: {
-          type: "json_schema",
-          schema: contactSchema
-        }
-      }
-    })) {
-      if (msg.type === "result") {
-        if (msg.subtype === "success" && msg.structured_output) {
-          // Use the validated output
-          console.log(msg.structured_output);
-        } else if (msg.subtype === "error_max_structured_output_retries") {
-          console.error("Could not produce valid output");
-        } else {
-          console.error("Run ended without a structured output");
-        }
+  for await (const msg of query({
+    prompt: "Extract contact info from the document",
+    options: {
+      outputFormat: {
+        type: "json_schema",
+        schema: contactSchema
       }
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result. If the
-    // failure was an error result, the error subtype branches above have
-    // already run; connection or process failures yield no result message.
-    console.log(`Session ended with an error: ${error}`);
+  })) {
+    if (msg.type === "result") {
+      if (msg.subtype === "success" && msg.structured_output) {
+        // 使用验证的输出
+        console.log(msg.structured_output);
+      } else if (msg.subtype === "error_max_structured_output_retries") {
+        // 处理失败 - 使用更简单的提示重试、回退到非结构化等
+        console.error("Could not produce valid output");
+      }
+    }
   }
   ```
 
   ```python Python theme={null}
-  import asyncio
-  from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
-
-  contact_schema = {
-      "type": "object",
-      "properties": {
-          "name": {"type": "string"},
-          "email": {"type": "string"},
-      },
-      "required": ["name"],
-  }
-
-
-  async def main():
-      try:
-          async for message in query(
-              prompt="Extract contact info from the document",
-              options=ClaudeAgentOptions(
-                  output_format={"type": "json_schema", "schema": contact_schema}
-              ),
-          ):
-              if isinstance(message, ResultMessage):
-                  if message.subtype == "success" and message.structured_output:
-                      # Use the validated output
-                      print(message.structured_output)
-                  elif message.subtype == "error_max_structured_output_retries":
-                      print("Could not produce valid output")
-                  else:
-                      print("Run ended without a structured output")
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result. If the
-          # failure was an error result, the error subtype branches above have
-          # already run; connection or process failures yield no result message.
-          print(f"Session ended with an error: {error}")
-
-
-  asyncio.run(main())
+  async for message in query(
+      prompt="Extract contact info from the document",
+      options=ClaudeAgentOptions(
+          output_format={"type": "json_schema", "schema": contact_schema}
+      ),
+  ):
+      if isinstance(message, ResultMessage):
+          if message.subtype == "success" and message.structured_output:
+              # 使用验证的输出
+              print(message.structured_output)
+          elif message.subtype == "error_max_structured_output_retries":
+              # 处理失败
+              print("Could not produce valid output")
   ```
 </CodeGroup>
 
-**Tips for avoiding errors:**
+**避免错误的提示：**
 
-* **Keep schemas focused.** Deeply nested schemas with many required fields are harder to satisfy. Start simple and add complexity as needed.
-* **Match schema to task.** If the task might not have all the information your schema requires, make those fields optional.
-* **Use clear prompts.** Ambiguous prompts make it harder for the agent to know what output to produce.
+* **保持 schema 专注。** 具有许多必需字段的深层嵌套 schema 更难满足。从简单开始，根据需要添加复杂性。
+* **匹配 schema 到任务。** 如果任务可能没有你的 schema 要求的所有信息，请将这些字段设为可选。
+* **使用清晰的提示。** 模糊的提示使代理更难知道要生成什么输出。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* [JSON Schema documentation](https://json-schema.org/): learn JSON Schema syntax for defining complex schemas with nested objects, arrays, enums, and validation constraints
-* [API Structured Outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs): use structured outputs with the Claude API directly for single-turn requests without tool use
-* [Custom tools](/docs/en/agent-sdk/custom-tools): give your agent custom tools to call during execution before returning structured output
+* [JSON Schema 文档](https://json-schema.org/)：学习 JSON Schema 语法以定义具有嵌套对象、数组、枚举和验证约束的复杂 schema
+* [API 结构化输出](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)：直接使用 Claude API 的结构化输出进行单轮请求，无需工具使用
+* [自定义工具](/docs/zh-CN/agent-sdk/custom-tools)：在返回结构化输出之前，在执行期间给你的代理自定义工具来调用

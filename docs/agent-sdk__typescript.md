@@ -2,29 +2,33 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Agent SDK reference - TypeScript
+# Agent SDK 参考 - TypeScript
 
-> Complete API reference for the TypeScript Agent SDK, including all functions, types, and interfaces.
+> TypeScript Agent SDK 的完整 API 参考，包括所有函数、类型和接口。
 
 <script src="/docs/components/typescript-sdk-type-links.js" defer />
 
-## Installation
+<h2 id="installation">
+  安装
+</h2>
 
 ```bash theme={null}
 npm install @anthropic-ai/claude-agent-sdk
 ```
 
 <Note>
-  The SDK bundles a native Claude Code binary for your platform as an optional dependency such as `@anthropic-ai/claude-agent-sdk-darwin-arm64`. You don't need to install Claude Code separately. The SDK version tracks the bundled Claude Code version: SDK v0.3.191 bundles Claude Code v2.1.191, so a feature on this page that requires a Claude Code version needs the SDK release with the same patch number or later. If your package manager skips optional dependencies, the SDK throws `Native CLI binary for <platform> not found`; set [`pathToClaudeCodeExecutable`](#options) to a separately installed `claude` binary instead.
+  SDK 为您的平台捆绑了一个本地 Claude Code 二进制文件，作为可选依赖项，例如 `@anthropic-ai/claude-agent-sdk-darwin-arm64`。您无需单独安装 Claude Code。如果您的包管理器跳过可选依赖项，SDK 会抛出 `Native CLI binary for <platform> not found`；改为将 [`pathToClaudeCodeExecutable`](#options) 设置为单独安装的 `claude` 二进制文件。
 </Note>
 
-### Compile to a single executable
+<h3 id="compile-to-a-single-executable">
+  编译为单个可执行文件
+</h3>
 
-When you compile your application into a single-file executable with `bun build --compile`, the SDK cannot resolve the bundled CLI binary at runtime. `require.resolve` does not work inside the compiled executable's `$bunfs` virtual filesystem, so the SDK throws `Native CLI binary for <platform> not found`.
+当您使用 `bun build --compile` 将应用程序编译为单文件可执行文件时，SDK 无法在运行时解析捆绑的 CLI 二进制文件。`require.resolve` 在编译后的可执行文件的 `$bunfs` 虚拟文件系统内不起作用，因此 SDK 会抛出 `Native CLI binary for <platform> not found`。
 
-To work around this, embed the platform binary as a file asset, extract it to a real path at startup with `extractFromBunfs()`, and pass that path to [`pathToClaudeCodeExecutable`](#options).
+要解决此问题，请将平台二进制文件作为文件资产嵌入，在启动时使用 `extractFromBunfs()` 将其提取到真实路径，然后将该路径传递给 [`pathToClaudeCodeExecutable`](#options)。
 
-The `extractFromBunfs()` helper requires `@anthropic-ai/claude-agent-sdk` v0.3.144 or later. The example below builds for macOS on Apple Silicon:
+`extractFromBunfs()` 辅助函数需要 `@anthropic-ai/claude-agent-sdk` v0.3.144 或更高版本。下面的示例为 Apple Silicon 上的 macOS 构建：
 
 ```typescript theme={null}
 import binPath from "@anthropic-ai/claude-agent-sdk-darwin-arm64/claude" with { type: "file" };
@@ -41,18 +45,22 @@ for await (const message of query({
 }
 ```
 
-`extractFromBunfs()` copies the embedded binary out of the compiled executable's virtual filesystem to a per-user temp directory and returns the real path. Outside a compiled executable it returns the input path unchanged, so the same code runs in development without modification.
+`extractFromBunfs()` 将嵌入的二进制文件从编译后的可执行文件的虚拟文件系统复制到每个用户的临时目录，并返回真实路径。在编译后的可执行文件之外，它返回输入路径不变，因此相同的代码在开发中无需修改即可运行。
 
-Each compiled executable embeds a single platform's binary. Match the platform package in the import to your `--target`:
+每个编译后的可执行文件都嵌入了单个平台的二进制文件。将导入中的平台包与您的 `--target` 匹配：
 
-* To cross-compile, install the non-matching platform package, for example `npm install @anthropic-ai/claude-agent-sdk-linux-x64 --force`.
-* On Windows, the binary subpath is `claude.exe`, for example `@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe`.
+* 要进行交叉编译，请安装不匹配的平台包，例如 `npm install @anthropic-ai/claude-agent-sdk-linux-x64 --force`。
+* 在 Windows 上，二进制文件子路径是 `claude.exe`，例如 `@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe`。
 
-## Functions
+<h2 id="functions">
+  函数
+</h2>
 
-### `query()`
+<h3 id="query">
+  `query()`
+</h3>
 
-The primary function for interacting with Claude Code. Creates an async generator that streams messages as they arrive.
+与 Claude Code 交互的主要函数。创建一个异步生成器，在消息到达时流式传输消息。
 
 ```typescript theme={null}
 function query({
@@ -64,20 +72,26 @@ function query({
 }): Query;
 ```
 
-#### Parameters
+<h4 id="parameters">
+  参数
+</h4>
 
-| Parameter | Type                                                             | Description                                                       |
-| :-------- | :--------------------------------------------------------------- | :---------------------------------------------------------------- |
-| `prompt`  | `string \| AsyncIterable<`[`SDKUserMessage`](#sdkusermessage)`>` | The input prompt as a string or async iterable for streaming mode |
-| `options` | [`Options`](#options)                                            | Optional configuration object (see Options type below)            |
+| 参数        | 类型                                                               | 描述                          |
+| :-------- | :--------------------------------------------------------------- | :-------------------------- |
+| `prompt`  | `string \| AsyncIterable<`[`SDKUserMessage`](#sdkusermessage)`>` | 输入提示，可以是字符串或异步可迭代对象（用于流式模式） |
+| `options` | [`Options`](#options)                                            | 可选配置对象（请参阅下面的 Options 类型）   |
 
-#### Returns
+<h4 id="returns">
+  返回值
+</h4>
 
-Returns a [`Query`](#query-object) object that extends `AsyncGenerator<`[`SDKMessage`](#sdkmessage)`, void>` with additional methods.
+返回一个 [`Query`](#query-object) 对象，该对象扩展 `AsyncGenerator<`[`SDKMessage`](#sdkmessage)`, void>`，并具有其他方法。
 
-### `startup()`
+<h3 id="startup">
+  `startup()`
+</h3>
 
-Pre-warms the CLI subprocess by spawning it and completing the initialize handshake before a prompt is available. The returned [`WarmQuery`](#warmquery) handle accepts a prompt later and writes it to an already-ready process, so the first `query()` call resolves without paying subprocess spawn and initialization cost inline.
+通过生成 CLI 子进程并在提示可用之前完成初始化握手来预热 CLI 子进程。返回的 [`WarmQuery`](#warmquery) 句柄稍后接受提示并将其写入已准备好的进程，因此第一个 `query()` 调用解析时无需支付子进程生成和初始化成本。
 
 ```typescript theme={null}
 function startup(params?: {
@@ -86,36 +100,44 @@ function startup(params?: {
 }): Promise<WarmQuery>;
 ```
 
-#### Parameters
+<h4 id="parameters-2">
+  参数
+</h4>
 
-| Parameter             | Type                  | Description                                                                                                                                                                    |
-| :-------------------- | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options`             | [`Options`](#options) | Optional configuration object. Same as the `options` parameter to `query()`                                                                                                    |
-| `initializeTimeoutMs` | `number`              | Maximum time in milliseconds to wait for subprocess initialization. Defaults to `60000`. If initialization does not complete in time, the promise rejects with a timeout error |
+| 参数                    | 类型                    | 描述                                                            |
+| :-------------------- | :-------------------- | :------------------------------------------------------------ |
+| `options`             | [`Options`](#options) | 可选配置对象。与 `query()` 的 `options` 参数相同                           |
+| `initializeTimeoutMs` | `number`              | 等待子进程初始化的最长时间（毫秒）。默认为 `60000`。如果初始化未在规定时间内完成，promise 将以超时错误拒绝 |
 
-#### Returns
+<h4 id="returns-2">
+  返回值
+</h4>
 
-Returns a `Promise<`[`WarmQuery`](#warmquery)`>` that resolves once the subprocess has spawned and completed its initialize handshake.
+返回一个 `Promise<`[`WarmQuery`](#warmquery)`>`，在子进程生成并完成其初始化握手后解析。
 
-#### Example
+<h4 id="example">
+  示例
+</h4>
 
-Call `startup()` early, for example on application boot, then call `.query()` on the returned handle once a prompt is ready. This moves subprocess spawn and initialization out of the critical path.
+早期调用 `startup()`，例如在应用程序启动时，然后在提示准备好后在返回的句柄上调用 `.query()`。这会将子进程生成和初始化移出关键路径。
 
 ```typescript theme={null}
 import { startup } from "@anthropic-ai/claude-agent-sdk";
 
-// Pay startup cost upfront
+// 提前支付启动成本
 const warm = await startup({ options: { maxTurns: 3 } });
 
-// Later, when a prompt is ready, this is immediate
+// 稍后，当提示准备好时，这是立即的
 for await (const message of warm.query("What files are here?")) {
   console.log(message);
 }
 ```
 
-### `tool()`
+<h3 id="tool">
+  `tool()`
+</h3>
 
-Creates a type-safe MCP tool definition for use with SDK MCP servers.
+为与 SDK MCP 服务器一起使用创建类型安全的 MCP 工具定义。
 
 ```typescript theme={null}
 function tool<Schema extends AnyZodRawShape>(
@@ -123,31 +145,35 @@ function tool<Schema extends AnyZodRawShape>(
   description: string,
   inputSchema: Schema,
   handler: (args: InferShape<Schema>, extra: unknown) => Promise<CallToolResult>,
-  extras?: { annotations?: ToolAnnotations; searchHint?: string; alwaysLoad?: boolean }
+  extras?: { annotations?: ToolAnnotations }
 ): SdkMcpToolDefinition<Schema>;
 ```
 
-#### Parameters
+<h4 id="parameters-3">
+  参数
+</h4>
 
-| Parameter     | Type                                                                                                   | Description                                                                                                                                                                                                                                                                                                   |
-| :------------ | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `name`        | `string`                                                                                               | The name of the tool                                                                                                                                                                                                                                                                                          |
-| `description` | `string`                                                                                               | A description of what the tool does                                                                                                                                                                                                                                                                           |
-| `inputSchema` | `Schema extends AnyZodRawShape`                                                                        | Zod schema defining the tool's input parameters (supports both Zod 3 and Zod 4)                                                                                                                                                                                                                               |
-| `handler`     | `(args, extra) => Promise<`[`CallToolResult`](#calltoolresult)`>`                                      | Async function that executes the tool logic                                                                                                                                                                                                                                                                   |
-| `extras`      | `{ annotations?: `[`ToolAnnotations`](#toolannotations)`; searchHint?: string; alwaysLoad?: boolean }` | Optional extras. `annotations` provides MCP behavioral hints to clients. `searchHint` is a one-line capability phrase shown in the deferred-tool list when [tool search](/docs/en/agent-sdk/tool-search) is active. `alwaysLoad: true` keeps this tool's full schema in the initial prompt instead of deferring it |
+| 参数            | 类型                                                                | 描述                                 |
+| :------------ | :---------------------------------------------------------------- | :--------------------------------- |
+| `name`        | `string`                                                          | 工具的名称                              |
+| `description` | `string`                                                          | 工具功能的描述                            |
+| `inputSchema` | `Schema extends AnyZodRawShape`                                   | 定义工具输入参数的 Zod 架构（支持 Zod 3 和 Zod 4） |
+| `handler`     | `(args, extra) => Promise<`[`CallToolResult`](#calltoolresult)`>` | 执行工具逻辑的异步函数                        |
+| `extras`      | `{ annotations?: `[`ToolAnnotations`](#toolannotations)` }`       | 可选的 MCP 工具注释，为客户端提供行为提示            |
 
-#### `ToolAnnotations`
+<h4 id="toolannotations">
+  `ToolAnnotations`
+</h4>
 
-Re-exported from `@modelcontextprotocol/sdk/types.js`. All fields are optional hints; clients should not rely on them for security decisions.
+从 `@modelcontextprotocol/sdk/types.js` 重新导出。所有字段都是可选提示；客户端不应依赖它们做出安全决策。
 
-| Field             | Type      | Default     | Description                                                                                                                                          |
-| :---------------- | :-------- | :---------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`           | `string`  | `undefined` | Human-readable title for the tool                                                                                                                    |
-| `readOnlyHint`    | `boolean` | `false`     | If `true`, the tool does not modify its environment                                                                                                  |
-| `destructiveHint` | `boolean` | `true`      | If `true`, the tool may perform destructive updates (only meaningful when `readOnlyHint` is `false`)                                                 |
-| `idempotentHint`  | `boolean` | `false`     | If `true`, repeated calls with the same arguments have no additional effect (only meaningful when `readOnlyHint` is `false`)                         |
-| `openWorldHint`   | `boolean` | `true`      | If `true`, the tool interacts with external entities (for example, web search). If `false`, the tool's domain is closed (for example, a memory tool) |
+| 字段                | 类型        | 默认值         | 描述                                                             |
+| :---------------- | :-------- | :---------- | :------------------------------------------------------------- |
+| `title`           | `string`  | `undefined` | 工具的人类可读标题                                                      |
+| `readOnlyHint`    | `boolean` | `false`     | 如果为 `true`，工具不会修改其环境                                           |
+| `destructiveHint` | `boolean` | `true`      | 如果为 `true`，工具可能执行破坏性更新（仅在 `readOnlyHint` 为 `false` 时有意义）       |
+| `idempotentHint`  | `boolean` | `false`     | 如果为 `true`，使用相同参数的重复调用没有额外效果（仅在 `readOnlyHint` 为 `false` 时有意义） |
+| `openWorldHint`   | `boolean` | `true`      | 如果为 `true`，工具与外部实体交互（例如，网络搜索）。如果为 `false`，工具的域是封闭的（例如，内存工具）    |
 
 ```typescript theme={null}
 import { tool } from "@anthropic-ai/claude-agent-sdk";
@@ -164,64 +190,72 @@ const searchTool = tool(
 );
 ```
 
-### `createSdkMcpServer()`
+<h3 id="createsdkmcpserver">
+  `createSdkMcpServer()`
+</h3>
 
-Creates an MCP server instance that runs in the same process as your application.
+创建在与应用程序相同的进程中运行的 MCP 服务器实例。
 
 ```typescript theme={null}
 function createSdkMcpServer(options: {
   name: string;
   version?: string;
-  instructions?: string;
   tools?: Array<SdkMcpToolDefinition<any>>;
-  alwaysLoad?: boolean;
 }): McpSdkServerConfigWithInstance;
 ```
 
-#### Parameters
+<h4 id="parameters-4">
+  参数
+</h4>
 
-| Parameter              | Type                          | Description                                                                                                                                                                                          |
-| :--------------------- | :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.name`         | `string`                      | The name of the MCP server                                                                                                                                                                           |
-| `options.version`      | `string`                      | Optional version string                                                                                                                                                                              |
-| `options.instructions` | `string`                      | Optional server instructions, returned from `initialize` and surfaced to the model as an MCP instructions block                                                                                      |
-| `options.tools`        | `Array<SdkMcpToolDefinition>` | Array of tool definitions created with [`tool()`](#tool)                                                                                                                                             |
-| `options.alwaysLoad`   | `boolean`                     | When `true`, every tool from this server stays in the initial prompt and is never deferred behind [tool search](/docs/en/agent-sdk/tool-search). Combines with per-tool `alwaysLoad` in [`tool()`](#tool) |
+| 参数                | 类型                            | 描述                             |
+| :---------------- | :---------------------------- | :----------------------------- |
+| `options.name`    | `string`                      | MCP 服务器的名称                     |
+| `options.version` | `string`                      | 可选版本字符串                        |
+| `options.tools`   | `Array<SdkMcpToolDefinition>` | 使用 [`tool()`](#tool) 创建的工具定义数组 |
 
-### `listSessions()`
+<h3 id="listsessions">
+  `listSessions()`
+</h3>
 
-Discovers and lists past sessions with light metadata. Filter by project directory or list sessions across all projects.
+发现并列出具有轻量级元数据的过去会话。按项目目录筛选或列出所有项目中的会话。
 
 ```typescript theme={null}
 function listSessions(options?: ListSessionsOptions): Promise<SDKSessionInfo[]>;
 ```
 
-#### Parameters
+<h4 id="parameters-5">
+  参数
+</h4>
 
-| Parameter                  | Type      | Default     | Description                                                                        |
-| :------------------------- | :-------- | :---------- | :--------------------------------------------------------------------------------- |
-| `options.dir`              | `string`  | `undefined` | Directory to list sessions for. When omitted, returns sessions across all projects |
-| `options.limit`            | `number`  | `undefined` | Maximum number of sessions to return                                               |
-| `options.includeWorktrees` | `boolean` | `true`      | When `dir` is inside a git repository, include sessions from all worktree paths    |
+| 参数                         | 类型        | 默认值         | 描述                                        |
+| :------------------------- | :-------- | :---------- | :---------------------------------------- |
+| `options.dir`              | `string`  | `undefined` | 列出会话的目录。省略时，返回所有项目中的会话                    |
+| `options.limit`            | `number`  | `undefined` | 要返回的最大会话数                                 |
+| `options.includeWorktrees` | `boolean` | `true`      | 当 `dir` 在 git 存储库内时，包括来自所有 worktree 路径的会话 |
 
-#### Return type: `SDKSessionInfo`
+<h4 id="return-type-sdksessioninfo">
+  返回类型：`SDKSessionInfo`
+</h4>
 
-| Property       | Type                  | Description                                                                 |
-| :------------- | :-------------------- | :-------------------------------------------------------------------------- |
-| `sessionId`    | `string`              | Unique session identifier (UUID)                                            |
-| `summary`      | `string`              | Display title: custom title, auto-generated summary, or first prompt        |
-| `lastModified` | `number`              | Last modified time in milliseconds since epoch                              |
-| `fileSize`     | `number \| undefined` | Session file size in bytes. Only populated for local JSONL storage          |
-| `customTitle`  | `string \| undefined` | User-set session title (via `/rename`)                                      |
-| `firstPrompt`  | `string \| undefined` | First meaningful user prompt in the session                                 |
-| `gitBranch`    | `string \| undefined` | Git branch at the end of the session                                        |
-| `cwd`          | `string \| undefined` | Working directory for the session                                           |
-| `tag`          | `string \| undefined` | User-set session tag (see [`tagSession()`](#tagsession))                    |
-| `createdAt`    | `number \| undefined` | Creation time in milliseconds since epoch, from the first entry's timestamp |
+| 属性             | 类型                    | 描述                                           |
+| :------------- | :-------------------- | :------------------------------------------- |
+| `sessionId`    | `string`              | 唯一会话标识符 (UUID)                               |
+| `summary`      | `string`              | 显示标题：自定义标题、自动生成的摘要或第一个提示                     |
+| `lastModified` | `number`              | 上次修改时间（自纪元以来的毫秒数）                            |
+| `fileSize`     | `number \| undefined` | 会话文件大小（字节）。仅对本地 JSONL 存储进行填充                 |
+| `customTitle`  | `string \| undefined` | 用户设置的会话标题（通过 `/rename`）                      |
+| `firstPrompt`  | `string \| undefined` | 会话中的第一个有意义的用户提示                              |
+| `gitBranch`    | `string \| undefined` | 会话结束时的 git 分支                                |
+| `cwd`          | `string \| undefined` | 会话的工作目录                                      |
+| `tag`          | `string \| undefined` | 用户设置的会话标签（请参阅 [`tagSession()`](#tagsession)） |
+| `createdAt`    | `number \| undefined` | 创建时间（自纪元以来的毫秒数），来自第一个条目的时间戳                  |
 
-#### Example
+<h4 id="example-2">
+  示例
+</h4>
 
-Print the 10 most recent sessions for a project. Results are sorted by `lastModified` descending, so the first item is the newest. Omit `dir` to search across all projects.
+打印项目的 10 个最近会话。结果按 `lastModified` 降序排序，因此第一项是最新的。省略 `dir` 以搜索所有项目。
 
 ```typescript theme={null}
 import { listSessions } from "@anthropic-ai/claude-agent-sdk";
@@ -233,9 +267,11 @@ for (const session of sessions) {
 }
 ```
 
-### `getSessionMessages()`
+<h3 id="getsessionmessages">
+  `getSessionMessages()`
+</h3>
 
-Reads user and assistant messages from a past session transcript.
+从过去的会话记录中读取用户和助手消息。
 
 ```typescript theme={null}
 function getSessionMessages(
@@ -244,27 +280,33 @@ function getSessionMessages(
 ): Promise<SessionMessage[]>;
 ```
 
-#### Parameters
+<h4 id="parameters-6">
+  参数
+</h4>
 
-| Parameter        | Type     | Default     | Description                                                                   |
-| :--------------- | :------- | :---------- | :---------------------------------------------------------------------------- |
-| `sessionId`      | `string` | required    | Session UUID to read (see `listSessions()`)                                   |
-| `options.dir`    | `string` | `undefined` | Project directory to find the session in. When omitted, searches all projects |
-| `options.limit`  | `number` | `undefined` | Maximum number of messages to return                                          |
-| `options.offset` | `number` | `undefined` | Number of messages to skip from the start                                     |
+| 参数               | 类型       | 默认值         | 描述                                |
+| :--------------- | :------- | :---------- | :-------------------------------- |
+| `sessionId`      | `string` | 必需          | 要读取的会话 UUID（请参阅 `listSessions()`） |
+| `options.dir`    | `string` | `undefined` | 查找会话的项目目录。省略时，搜索所有项目              |
+| `options.limit`  | `number` | `undefined` | 要返回的最大消息数                         |
+| `options.offset` | `number` | `undefined` | 从开始跳过的消息数                         |
 
-#### Return type: `SessionMessage`
+<h4 id="return-type-sessionmessage">
+  返回类型：`SessionMessage`
+</h4>
 
-| Property             | Type                    | Description                                                                                                                                                                                                                                                                                               |
-| :------------------- | :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`               | `"user" \| "assistant"` | Message role                                                                                                                                                                                                                                                                                              |
-| `uuid`               | `string`                | Unique message identifier                                                                                                                                                                                                                                                                                 |
-| `session_id`         | `string`                | Session this message belongs to                                                                                                                                                                                                                                                                           |
-| `message`            | `unknown`               | Raw message payload from the transcript                                                                                                                                                                                                                                                                   |
-| `parent_tool_use_id` | `string \| null`        | For subagent messages, the `tool_use_id` of the spawning `Agent` tool call. `null` for main-session messages and older sessions                                                                                                                                                                           |
-| `parent_agent_id`    | `string \| null`        | For messages from a [nested subagent](/docs/en/sub-agents#let-subagents-spawn-their-own-subagents), the `agentId` of the subagent that spawned it. `null` for main-session messages, messages from top-level subagents, and older sessions. {/* min-version: 2.1.202 */}Requires Claude Code v2.1.202 or later |
+| 属性                   | 类型                      | 描述                                                                                                                                                                       |
+| :------------------- | :---------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`               | `"user" \| "assistant"` | 消息角色                                                                                                                                                                     |
+| `uuid`               | `string`                | 唯一消息标识符                                                                                                                                                                  |
+| `session_id`         | `string`                | 此消息所属的会话                                                                                                                                                                 |
+| `message`            | `unknown`               | 来自记录的原始消息有效负载                                                                                                                                                            |
+| `parent_tool_use_id` | `string \| null`        | 对于子代理消息，生成 `Agent` 工具调用的 `tool_use_id`。对于主会话消息和较旧的会话为 `null`                                                                                                             |
+| `parent_agent_id`    | `string \| null`        | 对于来自[嵌套子代理](/docs/zh-CN/sub-agents#spawn-nested-subagents)的消息，生成该消息的子代理的 `agentId`。对于主会话消息、来自顶级子代理的消息和较旧的会话为 `null`。{/* min-version: 2.1.202 */}需要 Claude Code v2.1.202 或更高版本 |
 
-#### Example
+<h4 id="example-3">
+  示例
+</h4>
 
 ```typescript theme={null}
 import { listSessions, getSessionMessages } from "@anthropic-ai/claude-agent-sdk";
@@ -283,9 +325,11 @@ if (latest) {
 }
 ```
 
-### `getSessionInfo()`
+<h3 id="getsessioninfo">
+  `getSessionInfo()`
+</h3>
 
-Reads metadata for a single session by ID without scanning the full project directory.
+按 ID 读取单个会话的元数据，无需扫描完整项目目录。
 
 ```typescript theme={null}
 function getSessionInfo(
@@ -294,18 +338,22 @@ function getSessionInfo(
 ): Promise<SDKSessionInfo | undefined>;
 ```
 
-#### Parameters
+<h4 id="parameters-7">
+  参数
+</h4>
 
-| Parameter     | Type     | Default     | Description                                                            |
-| :------------ | :------- | :---------- | :--------------------------------------------------------------------- |
-| `sessionId`   | `string` | required    | UUID of the session to look up                                         |
-| `options.dir` | `string` | `undefined` | Project directory path. When omitted, searches all project directories |
+| 参数            | 类型       | 默认值         | 描述                  |
+| :------------ | :------- | :---------- | :------------------ |
+| `sessionId`   | `string` | 必需          | 要查找的会话 UUID         |
+| `options.dir` | `string` | `undefined` | 项目目录路径。省略时，搜索所有项目目录 |
 
-Returns [`SDKSessionInfo`](#return-type-sdksessioninfo), or `undefined` if the session is not found.
+返回 [`SDKSessionInfo`](#return-type-sdksessioninfo)，如果找不到会话，则返回 `undefined`。
 
-### `renameSession()`
+<h3 id="renamesession">
+  `renameSession()`
+</h3>
 
-Renames a session by appending a custom-title entry. Repeated calls are safe; the most recent title wins.
+通过附加自定义标题条目来重命名会话。重复调用是安全的；最新的标题获胜。
 
 ```typescript theme={null}
 function renameSession(
@@ -315,17 +363,21 @@ function renameSession(
 ): Promise<void>;
 ```
 
-#### Parameters
+<h4 id="parameters-8">
+  参数
+</h4>
 
-| Parameter     | Type     | Default     | Description                                                            |
-| :------------ | :------- | :---------- | :--------------------------------------------------------------------- |
-| `sessionId`   | `string` | required    | UUID of the session to rename                                          |
-| `title`       | `string` | required    | New title. Must be non-empty after trimming whitespace                 |
-| `options.dir` | `string` | `undefined` | Project directory path. When omitted, searches all project directories |
+| 参数            | 类型       | 默认值         | 描述                  |
+| :------------ | :------- | :---------- | :------------------ |
+| `sessionId`   | `string` | 必需          | 要重命名的会话 UUID        |
+| `title`       | `string` | 必需          | 新标题。修剪空格后必须非空       |
+| `options.dir` | `string` | `undefined` | 项目目录路径。省略时，搜索所有项目目录 |
 
-### `tagSession()`
+<h3 id="tagsession">
+  `tagSession()`
+</h3>
 
-Tags a session. Pass `null` to clear the tag. Repeated calls are safe; the most recent tag wins.
+标记会话。传递 `null` 以清除标签。重复调用是安全的；最新的标签获胜。
 
 ```typescript theme={null}
 function tagSession(
@@ -335,20 +387,24 @@ function tagSession(
 ): Promise<void>;
 ```
 
-#### Parameters
+<h4 id="parameters-9">
+  参数
+</h4>
 
-| Parameter     | Type             | Default     | Description                                                            |
-| :------------ | :--------------- | :---------- | :--------------------------------------------------------------------- |
-| `sessionId`   | `string`         | required    | UUID of the session to tag                                             |
-| `tag`         | `string \| null` | required    | Tag string, or `null` to clear                                         |
-| `options.dir` | `string`         | `undefined` | Project directory path. When omitted, searches all project directories |
+| 参数            | 类型               | 默认值         | 描述                  |
+| :------------ | :--------------- | :---------- | :------------------ |
+| `sessionId`   | `string`         | 必需          | 要标记的会话 UUID         |
+| `tag`         | `string \| null` | 必需          | 标签字符串，或 `null` 以清除  |
+| `options.dir` | `string`         | `undefined` | 项目目录路径。省略时，搜索所有项目目录 |
 
-### `resolveSettings()`
+<h3 id="resolvesettings">
+  `resolveSettings()`
+</h3>
 
-Resolves the effective Claude Code settings for a given directory using the same merge engine as the CLI, without spawning the Claude CLI. Use it to inspect what configuration a `query()` call would see before invoking one.
+使用与 CLI 相同的合并引擎为给定目录解析有效的 Claude Code 设置，无需生成 Claude CLI。在调用 `query()` 之前使用它来检查 `query()` 调用将看到的配置。
 
 <Note>
-  This function is alpha and its API may change before stabilization. It reads MDM sources, including macOS plist and Windows HKLM/HKCU, for parity with CLI startup, but does not execute the admin-configured `policyHelper` subprocess. The `permissions.defaultMode` field is returned as-is from all tiers including project settings. The trust filter the CLI applies before honoring escalating permission modes is not applied.
+  此函数处于 alpha 阶段，其 API 在稳定之前可能会更改。它读取 MDM 源，包括 macOS plist 和 Windows HKLM/HKCU，以与 CLI 启动保持一致，但不执行管理员配置的 `policyHelper` 子进程。`permissions.defaultMode` 字段从所有层级（包括项目设置）按原样返回。CLI 在遵守升级权限模式之前应用的信任过滤器不被应用。
 </Note>
 
 ```typescript theme={null}
@@ -357,30 +413,36 @@ function resolveSettings(
 ): Promise<ResolvedSettings>;
 ```
 
-#### Parameters
+<h4 id="parameters-10">
+  参数
+</h4>
 
-`resolveSettings()` accepts a single options object. All fields are optional.
+`resolveSettings()` 接受单个选项对象。所有字段都是可选的。
 
-| Parameter                       | Type                                  | Default         | Description                                                                                                                                                                                                                                                                                                                                                 |
-| :------------------------------ | :------------------------------------ | :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.cwd`                   | `string`                              | `process.cwd()` | Directory to resolve project and local settings relative to                                                                                                                                                                                                                                                                                                 |
-| `options.settingSources`        | [`SettingSource`](#settingsource)`[]` | All sources     | Which filesystem sources to load. Pass `[]` to skip user, project, and local settings. [Endpoint-managed policy](/docs/en/settings#settings-files) loads in all cases. Server-managed settings are taken from `serverManagedSettings` when the host passes it, or read from the CLI's on-disk cache otherwise; the snapshot does not fetch them from the network |
-| `options.managedSettings`       | `Settings`                            | `undefined`     | Policy-tier settings supplied by the embedding host. Follows the same rules as [`managedSettings` in `Options`](#options), except that `resolveSettings()` doesn't execute a configured [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper), so the snapshot can include settings that a live session drops                        |
-| `options.serverManagedSettings` | `Settings`                            | `undefined`     | Server-managed settings payload from `/api/claude_code/settings`. Non-restrictive keys pass through unfiltered                                                                                                                                                                                                                                              |
+| 参数                              | 类型                                    | 默认值             | 描述                                                                                                                                                                 |
+| :------------------------------ | :------------------------------------ | :-------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.cwd`                   | `string`                              | `process.cwd()` | 用于解析项目和本地设置的相对目录                                                                                                                                                   |
+| `options.settingSources`        | [`SettingSource`](#settingsource)`[]` | 所有源             | 要加载的文件系统源。传递 `[]` 以跳过用户、项目和本地设置。[端点管理的策略](/docs/zh-CN/settings#settings-files)在所有情况下都会加载。服务器管理的设置取自主机传递的 `serverManagedSettings`，或从 CLI 的磁盘缓存中读取；快照不会从网络获取它们            |
+| `options.managedSettings`       | `Settings`                            | `undefined`     | 由嵌入主机提供的限制性策略层设置。当存在管理员部署的托管层时被删除；当 [`parentSettingsBehavior`](/docs/zh-CN/settings#available-settings) 为 `"merge"` 时在该层下合并。非限制性密钥（如 `model`）会被静默删除，以便此选项可以加强托管策略但不能放松它 |
+| `options.serverManagedSettings` | `Settings`                            | `undefined`     | 来自 `/api/claude_code/settings` 的服务器托管设置有效负载。非限制性密钥不经过滤地通过                                                                                                          |
 
-#### Return type: `ResolvedSettings`
+<h4 id="return-type-resolvedsettings">
+  返回类型：`ResolvedSettings`
+</h4>
 
-`resolveSettings()` returns an object describing the merged settings and the source that contributed each key.
+`resolveSettings()` 返回一个对象，描述合并的设置和为每个密钥提供的源。
 
-| Property     | Type                                                | Description                                                            |
-| :----------- | :-------------------------------------------------- | :--------------------------------------------------------------------- |
-| `effective`  | `Settings`                                          | Merged settings after applying all enabled sources in precedence order |
-| `provenance` | `Partial<Record<keyof Settings, ProvenanceEntry>>`  | For each top-level key in `effective`, which source supplied the value |
-| `sources`    | `Array<{ source, settings, path?, policyOrigin? }>` | Per-source raw settings, ordered from lowest to highest precedence     |
+| 属性           | 类型                                                  | 描述                               |
+| :----------- | :-------------------------------------------------- | :------------------------------- |
+| `effective`  | `Settings`                                          | 在按优先级顺序应用所有启用的源后合并的设置            |
+| `provenance` | `Partial<Record<keyof Settings, ProvenanceEntry>>`  | 对于 `effective` 中的每个顶级密钥，哪个源提供了该值 |
+| `sources`    | `Array<{ source, settings, path?, policyOrigin? }>` | 每个源的原始设置，按从最低到最高优先级排序            |
 
-#### Example
+<h4 id="example-4">
+  示例
+</h4>
 
-The example below resolves settings for a project directory and prints the source that controls the cleanup period. On a machine where no settings file sets `cleanupPeriodDays`, both printed lines show `undefined` for the value, which is the expected output rather than an error.
+下面的示例为项目目录解析设置，并打印控制清理周期的源。
 
 ```typescript theme={null}
 import { resolveSettings } from "@anthropic-ai/claude-agent-sdk";
@@ -394,84 +456,88 @@ console.log(`Cleanup period: ${effective.cleanupPeriodDays} days`);
 console.log(`Set by: ${provenance.cleanupPeriodDays?.source}`);
 ```
 
-## Types
+<h2 id="types">
+  类型
+</h2>
 
-### `Options`
+<h3 id="options">
+  `Options`
+</h3>
 
-Configuration object for the `query()` function.
+`query()` 函数的配置对象。
 
-| Property                          | Type                                                                                                     | Default                                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| :-------------------------------- | :------------------------------------------------------------------------------------------------------- | :------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `abortController`                 | `AbortController`                                                                                        | `new AbortController()`                     | Controller for cancelling operations                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `additionalDirectories`           | `string[]`                                                                                               | `[]`                                        | Additional directories Claude can access                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `agent`                           | `string`                                                                                                 | `undefined`                                 | Agent name for the main thread. The agent must be defined in the `agents` option or in settings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `agents`                          | `Record<string, [`AgentDefinition`](#agentdefinition)>`                                                  | `undefined`                                 | Programmatically define subagents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `agentProgressSummaries`          | `boolean`                                                                                                | `false`                                     | When `true`, generate one-line progress summaries for subagents and forward them on [`task_progress`](#sdktaskprogressmessage) events via the `summary` field. Applies to foreground and background subagents                                                                                                                                                                                                                                                                                                                                                                                        |
-| `allowDangerouslySkipPermissions` | `boolean`                                                                                                | `false`                                     | Enable bypassing permissions. Required when using `permissionMode: 'bypassPermissions'`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `allowedTools`                    | `string[]`                                                                                               | `[]`                                        | Tools to auto-approve without prompting. This does not restrict Claude to only these tools; unlisted tools fall through to `permissionMode` and `canUseTool`. Use `disallowedTools` to block tools. See [Permissions](/docs/en/agent-sdk/permissions#allow-and-deny-rules)                                                                                                                                                                                                                                                                                                                                |
-| `betas`                           | [`SdkBeta`](#sdkbeta)`[]`                                                                                | `[]`                                        | Enable beta features                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `canUseTool`                      | [`CanUseTool`](#canusetool)                                                                              | `undefined`                                 | Custom permission function, invoked only when the [permission flow](/docs/en/agent-sdk/permissions#how-permissions-are-evaluated) falls through to a prompt. Not invoked for calls auto-approved by `allowedTools`, allow rules, or `permissionMode`. `AskUserQuestion`, connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool) reach it even if you've allowed them; in `dontAsk` mode these are denied instead. See [`CanUseTool`](#canusetool) for details |
-| `continue`                        | `boolean`                                                                                                | `false`                                     | Continue the most recent conversation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `cwd`                             | `string`                                                                                                 | `process.cwd()`                             | Current working directory                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `debug`                           | `boolean`                                                                                                | `false`                                     | Enable debug mode for the Claude Code process                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `debugFile`                       | `string`                                                                                                 | `undefined`                                 | Write debug logs to a specific file path. Implicitly enables debug mode                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `disallowedTools`                 | `string[]`                                                                                               | `[]`                                        | Tools to deny. A bare name such as `"Bash"` removes the tool from Claude's context. A scoped rule such as `"Bash(rm *)"` leaves the tool available and denies matching calls in every permission mode, including `bypassPermissions`. See [Permissions](/docs/en/agent-sdk/permissions#allow-and-deny-rules)                                                                                                                                                                                                                                                                                              |
-| `effort`                          | `'low' \| 'medium' \| 'high' \| 'xhigh' \| 'max'`                                                        | Model default                               | Controls how much effort Claude puts into its response. Works with adaptive thinking to guide thinking depth. See [adjust the effort level](/docs/en/model-config#adjust-effort-level)                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `enableFileCheckpointing`         | `boolean`                                                                                                | `false`                                     | Enable file change tracking for rewinding. See [File checkpointing](/docs/en/agent-sdk/file-checkpointing)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `env`                             | `Record<string, string \| undefined>`                                                                    | `process.env`                               | Environment variables. When set, this replaces the subprocess environment instead of merging with `process.env`, so pass `{ ...process.env, YOUR_VAR: 'value' }` to keep inherited variables like `PATH`. See [Handle slow or stalled API responses](#handle-slow-or-stalled-api-responses) for an example of this pattern, and [Environment variables](/docs/en/env-vars) for variables the underlying CLI reads. Set `CLAUDE_AGENT_SDK_CLIENT_APP` to identify your app in the User-Agent header                                                                                                        |
-| `executable`                      | `'bun' \| 'deno' \| 'node'`                                                                              | Auto-detected                               | JavaScript runtime to use                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `executableArgs`                  | `string[]`                                                                                               | `[]`                                        | Arguments to pass to the executable                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `extraArgs`                       | `Record<string, string \| null>`                                                                         | `{}`                                        | Additional arguments                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `fallbackModel`                   | `string`                                                                                                 | `undefined`                                 | Model to use if primary fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `forkSession`                     | `boolean`                                                                                                | `false`                                     | When resuming with `resume`, fork to a new session ID instead of continuing the original session                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `forwardSubagentText`             | `boolean`                                                                                                | `false`                                     | Forward subagent text and thinking blocks as assistant and user messages with `parent_tool_use_id` set, so consumers can render a nested transcript. By default only `tool_use` and `tool_result` blocks from subagents are emitted. {/* min-version: 2.1.219 */}Messages from subagents at every nesting depth are forwarded on Claude Code v2.1.219 and later; before v2.1.219, only messages from depth-1 subagents appeared                                                                                                                                                                      |
-| `hooks`                           | `Partial<Record<`[`HookEvent`](#hookevent)`, `[`HookCallbackMatcher`](#hookcallbackmatcher)`[]>>`        | `{}`                                        | Hook callbacks for events                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `includeHookEvents`               | `boolean`                                                                                                | `false`                                     | Include hook lifecycle events for every hook event in the message stream as [`SDKHookStartedMessage`](#sdkhookstartedmessage), [`SDKHookProgressMessage`](#sdkhookprogressmessage), and [`SDKHookResponseMessage`](#sdkhookresponsemessage). Lifecycle events for `SessionStart` and `Setup` hooks are always included and don't need this option                                                                                                                                                                                                                                                    |
-| `includePartialMessages`          | `boolean`                                                                                                | `false`                                     | Include partial message events                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `loadTimeoutMs`                   | `number`                                                                                                 | `60000`                                     | *Alpha.* Timeout in milliseconds for each `sessionStore.load()` and `sessionStore.listSubkeys()` call during resume materialization. If the adapter doesn't settle within this window, the query fails instead of hanging. Ignored when `sessionStore` is not set                                                                                                                                                                                                                                                                                                                                    |
-| `managedSettings`                 | `Settings`                                                                                               | `undefined`                                 | Policy-tier settings your host process supplies to the spawned session. On machines with admin-deployed managed settings, Claude Code ignores these unless the admin's highest-priority managed source sets `parentSettingsBehavior: 'merge'`, and never merges them while a [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper) is configured. Merged values pass through a restrictive-only filter; [Restrict parent settings](/docs/en/claude-apps-gateway#restrict-parent-settings) covers what the filter admits and the `allowManaged*Only` locks                          |
-| `maxBudgetUsd`                    | `number`                                                                                                 | `undefined`                                 | Stop the query when the client-side cost estimate reaches this USD value. Compared against the same estimate as `total_cost_usd`; see [Track cost and usage](/docs/en/agent-sdk/cost-tracking) for accuracy caveats                                                                                                                                                                                                                                                                                                                                                                                       |
-| `maxThinkingTokens`               | `number`                                                                                                 | `undefined`                                 | *Deprecated:* Use `thinking` instead. Maximum tokens for thinking process                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `maxTurns`                        | `number`                                                                                                 | `undefined`                                 | Maximum agentic turns (tool-use round trips)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `mcpServers`                      | `Record<string, [`McpServerConfig`](#mcpserverconfig)>`                                                  | `{}`                                        | MCP server configurations                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `model`                           | `string`                                                                                                 | Default from CLI                            | Claude model alias or full model name. See [accepted values and provider-specific IDs](/docs/en/model-config#available-models)                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `onElicitation`                   | `(request: ElicitationRequest, options: { signal: AbortSignal }) => Promise<ElicitationResult>`          | `undefined`                                 | Callback for handling MCP elicitation requests. Called when an MCP server requests user input and no hook handles it first. When not provided, unhandled elicitation requests are declined automatically                                                                                                                                                                                                                                                                                                                                                                                             |
-| `outputFormat`                    | `{ type: 'json_schema', schema: JSONSchema }`                                                            | `undefined`                                 | Define output format for agent results. See [Structured outputs](/docs/en/agent-sdk/structured-outputs) for details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `outputStyle`                     | `string`                                                                                                 | `undefined`                                 | Not an `Options` field. Set `outputStyle` in the inline [`settings`](/docs/en/settings) object or a settings file instead. See [Activate an output style](/docs/en/agent-sdk/modifying-system-prompts#activate-an-output-style)                                                                                                                                                                                                                                                                                                                                                                                |
-| `pathToClaudeCodeExecutable`      | `string`                                                                                                 | Auto-resolved from bundled native binary    | Path to Claude Code executable. Only needed if optional dependencies were skipped during install or your platform isn't in the supported set                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `permissionMode`                  | [`PermissionMode`](#permissionmode)                                                                      | `'default'`                                 | Permission mode for the session                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `permissionPromptToolName`        | `string`                                                                                                 | `undefined`                                 | MCP tool name for permission prompts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `persistSession`                  | `boolean`                                                                                                | `true`                                      | When `false`, disables session persistence to disk. Sessions cannot be resumed later                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `planModeInstructions`            | `string`                                                                                                 | `undefined`                                 | Custom workflow instructions for plan mode. When `permissionMode` is `'plan'`, this string replaces the default plan-mode workflow body. The CLI still wraps it with the read-only enforcement preamble and the ExitPlanMode protocol footer                                                                                                                                                                                                                                                                                                                                                         |
-| `plugins`                         | [`SdkPluginConfig`](#sdkpluginconfig)`[]`                                                                | `[]`                                        | Load custom plugins from local paths. See [Plugins](/docs/en/agent-sdk/plugins) for details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `promptSuggestions`               | `boolean`                                                                                                | `false`                                     | Enable prompt suggestions. Emits a `prompt_suggestion` message after each turn with a predicted next user prompt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `resume`                          | `string`                                                                                                 | `undefined`                                 | Session ID to resume                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `resumeSessionAt`                 | `string`                                                                                                 | `undefined`                                 | Resume session at a specific message UUID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `sandbox`                         | [`SandboxSettings`](#sandboxsettings)                                                                    | `undefined`                                 | Configure sandbox behavior programmatically. See [Sandbox settings](#sandboxsettings) for details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `sessionId`                       | `string`                                                                                                 | Auto-generated                              | Use a specific UUID for the session instead of auto-generating one                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `sessionStore`                    | [`SessionStore`](/docs/en/agent-sdk/session-storage#the-sessionstore-interface)                               | `undefined`                                 | Mirror session transcripts to an external backend so any host can resume them. See [Persist sessions to external storage](/docs/en/agent-sdk/session-storage)                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `sessionStoreFlush`               | `'batched' \| 'eager'`                                                                                   | `'batched'`                                 | *Alpha.* Flush mode for `sessionStore`. Ignored when `sessionStore` is not set                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `settings`                        | `string \| Settings`                                                                                     | `undefined`                                 | Inline [settings](/docs/en/settings) object or path to a settings file. Populates the flag-settings layer in the [precedence order](/docs/en/settings#settings-precedence). Change at runtime with [`applyFlagSettings()`](#applyflagsettings)                                                                                                                                                                                                                                                                                                                                                                 |
-| `settingSources`                  | [`SettingSource`](#settingsource)`[]`                                                                    | CLI defaults (all sources)                  | Control which filesystem settings to load. Pass `[]` to disable user, project, and local settings. [Endpoint-managed policy](/docs/en/settings#settings-files) loads regardless; server-managed settings are fetched when the session authenticates with an organization credential on an [eligible configuration](/docs/en/server-managed-settings#platform-availability). See [Use Claude Code features](/docs/en/agent-sdk/claude-code-features#what-settingsources-does-not-control)                                                                                                                            |
-| `skills`                          | `string[] \| 'all'`                                                                                      | `undefined`                                 | Skills available to the session. Pass `'all'` to enable every discovered skill, or a list of skill names. When set, the SDK adds the Skill tool to `allowedTools` automatically. If you also pass `tools`, include `'Skill'` in that list. See [Skills](/docs/en/agent-sdk/skills)                                                                                                                                                                                                                                                                                                                        |
-| `spawnClaudeCodeProcess`          | `(options: SpawnOptions) => SpawnedProcess`                                                              | `undefined`                                 | Custom function to spawn the Claude Code process. Use to run Claude Code in VMs, containers, or remote environments                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `stderr`                          | `(data: string) => void`                                                                                 | `undefined`                                 | Callback for stderr output                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `strictMcpConfig`                 | `boolean`                                                                                                | `false`                                     | Use only the servers passed in `mcpServers` and ignore project `.mcp.json`, user settings, plugin-provided MCP servers, and [claude.ai connectors](/docs/en/mcp#use-mcp-servers-from-claude-ai)                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `systemPrompt`                    | `string \| { type: 'preset'; preset: 'claude_code'; append?: string; excludeDynamicSections?: boolean }` | `undefined` (minimal prompt)                | System prompt configuration. Pass a string for custom prompt, or `{ type: 'preset', preset: 'claude_code' }` to use Claude Code's system prompt. When using the preset object form, add `append` to extend it with additional instructions, and set `excludeDynamicSections: true` to move per-session context into the first user message for [better prompt-cache reuse across machines](/docs/en/agent-sdk/modifying-system-prompts#improve-prompt-caching-across-users-and-machines)                                                                                                                  |
-| `taskBudget`                      | `{ total: number }`                                                                                      | `undefined`                                 | *Alpha.* API-side task budget in tokens. When set, the model is told its remaining token budget so it can pace tool use and wrap up before the limit                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `thinking`                        | [`ThinkingConfig`](#thinkingconfig)                                                                      | `{ type: 'adaptive' }` for supported models | Controls Claude's thinking/reasoning behavior. See [`ThinkingConfig`](#thinkingconfig) for options                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `title`                           | `string`                                                                                                 | `undefined`                                 | Display title for the session. When resuming via `resume` or `continue`, the resumed session's persisted title takes precedence; use [`renameSession()`](#renamesession) to retitle an existing session                                                                                                                                                                                                                                                                                                                                                                                              |
-| `toolAliases`                     | `Record<string, string>`                                                                                 | `undefined`                                 | Map built-in tool names to MCP tool names so Claude calls your MCP implementation in place of the built-in. For example, `{ Bash: 'mcp__workspace__bash' }`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `toolConfig`                      | [`ToolConfig`](#toolconfig)                                                                              | `undefined`                                 | Configuration for built-in tool behavior. See [`ToolConfig`](#toolconfig) for details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `tools`                           | `string[] \| { type: 'preset'; preset: 'claude_code' }`                                                  | `undefined`                                 | Tool configuration. Pass an array of tool names or use the preset to get Claude Code's default tools                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 属性                                | 类型                                                                                                       | 默认值                           | 描述                                                                                                                                                                                                                                                                                                                                                                                                              |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------- | :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `abortController`                 | `AbortController`                                                                                        | `new AbortController()`       | 用于取消操作的控制器                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `additionalDirectories`           | `string[]`                                                                                               | `[]`                          | Claude 可以访问的其他目录                                                                                                                                                                                                                                                                                                                                                                                                |
+| `agent`                           | `string`                                                                                                 | `undefined`                   | 主线程的代理名称。代理必须在 `agents` 选项或设置中定义                                                                                                                                                                                                                                                                                                                                                                                |
+| `agents`                          | `Record<string, [`AgentDefinition`](#agentdefinition)>`                                                  | `undefined`                   | 以编程方式定义子代理                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `agentProgressSummaries`          | `boolean`                                                                                                | `false`                       | 当为 `true` 时，为子代理生成单行进度摘要，并通过 `summary` 字段在 [`task_progress`](#sdktaskprogressmessage) 事件上转发它们。适用于前台和后台子代理                                                                                                                                                                                                                                                                                                       |
+| `allowDangerouslySkipPermissions` | `boolean`                                                                                                | `false`                       | 启用绕过权限。使用 `permissionMode: 'bypassPermissions'` 时需要                                                                                                                                                                                                                                                                                                                                                             |
+| `allowedTools`                    | `string[]`                                                                                               | `[]`                          | 无需提示即可自动批准的工具。这不会将 Claude 限制为仅这些工具；未列出的工具会通过 `permissionMode` 和 `canUseTool` 进行处理。使用 `disallowedTools` 阻止工具。请参阅[权限](/docs/zh-CN/agent-sdk/permissions#allow-and-deny-rules)                                                                                                                                                                                                                                          |
+| `betas`                           | [`SdkBeta`](#sdkbeta)`[]`                                                                                | `[]`                          | 启用测试功能                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `canUseTool`                      | [`CanUseTool`](#canusetool)                                                                              | `undefined`                   | 自定义权限函数，仅在[权限流](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)落到提示时调用。不会为 `allowedTools`、allow 规则或 `permissionMode` 自动批准的调用调用。`AskUserQuestion`、connector 工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具即使您已允许它们也会到达它；在 `dontAsk` 模式下这些会被拒绝。请参阅 [`CanUseTool`](#canusetool) 了解详情 |
+| `continue`                        | `boolean`                                                                                                | `false`                       | 继续最近的对话                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `cwd`                             | `string`                                                                                                 | `process.cwd()`               | 当前工作目录                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `debug`                           | `boolean`                                                                                                | `false`                       | 为 Claude Code 进程启用调试模式                                                                                                                                                                                                                                                                                                                                                                                          |
+| `debugFile`                       | `string`                                                                                                 | `undefined`                   | 将调试日志写入特定文件路径。隐式启用调试模式                                                                                                                                                                                                                                                                                                                                                                                          |
+| `disallowedTools`                 | `string[]`                                                                                               | `[]`                          | 要拒绝的工具。裸名称如 `"Bash"` 会从 Claude 的上下文中移除该工具。作用域规则如 `"Bash(rm *)"` 会保留该工具可用，并在每个权限模式（包括 `bypassPermissions`）中拒绝匹配的调用。请参阅[权限](/docs/zh-CN/agent-sdk/permissions#allow-and-deny-rules)                                                                                                                                                                                                                                    |
+| `effort`                          | `'low' \| 'medium' \| 'high' \| 'xhigh' \| 'max'`                                                        | 模型默认值                         | 控制 Claude 在其响应中投入的努力程度。与自适应思考一起工作以指导思考深度。请参阅[调整努力级别](/docs/zh-CN/model-config#adjust-effort-level)                                                                                                                                                                                                                                                                                                                   |
+| `enableFileCheckpointing`         | `boolean`                                                                                                | `false`                       | 启用文件更改跟踪以进行回滚。请参阅[文件 checkpointing](/docs/zh-CN/agent-sdk/file-checkpointing)                                                                                                                                                                                                                                                                                                                                        |
+| `env`                             | `Record<string, string \| undefined>`                                                                    | `process.env`                 | 环境变量。设置此选项时，这会替换子进程环境而不是与 `process.env` 合并，因此请传递 `{ ...process.env, YOUR_VAR: 'value' }` 以保留继承的变量如 `PATH`。请参阅[处理缓慢或停滞的 API 响应](#handle-slow-or-stalled-api-responses)了解此模式的示例，以及[环境变量](/docs/zh-CN/env-vars)了解底层 CLI 读取的变量。设置 `CLAUDE_AGENT_SDK_CLIENT_APP` 以在 User-Agent 标头中标识您的应用                                                                                                                                  |
+| `executable`                      | `'bun' \| 'deno' \| 'node'`                                                                              | 自动检测                          | 要使用的 JavaScript 运行时                                                                                                                                                                                                                                                                                                                                                                                             |
+| `executableArgs`                  | `string[]`                                                                                               | `[]`                          | 传递给可执行文件的参数                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `extraArgs`                       | `Record<string, string \| null>`                                                                         | `{}`                          | 其他参数                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `fallbackModel`                   | `string`                                                                                                 | `undefined`                   | 主模型失败时使用的模型                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `forkSession`                     | `boolean`                                                                                                | `false`                       | 使用 `resume` 恢复时，分叉到新会话 ID 而不是继续原始会话                                                                                                                                                                                                                                                                                                                                                                             |
+| `forwardSubagentText`             | `boolean`                                                                                                | `false`                       | 转发子代理文本和思考块作为助手和用户消息，并设置 `parent_tool_use_id`，以便消费者可以呈现嵌套记录。默认情况下，仅从子代理发出 `tool_use` 和 `tool_result` 块                                                                                                                                                                                                                                                                                                          |
+| `hooks`                           | `Partial<Record<`[`HookEvent`](#hookevent)`, `[`HookCallbackMatcher`](#hookcallbackmatcher)`[]>>`        | `{}`                          | 事件的 Hook 回调                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `includeHookEvents`               | `boolean`                                                                                                | `false`                       | 在消息流中包括 hook 生命周期事件，作为 [`SDKHookStartedMessage`](#sdkhookstartedmessage)、[`SDKHookProgressMessage`](#sdkhookprogressmessage) 和 [`SDKHookResponseMessage`](#sdkhookresponsemessage)。`SessionStart` 和 `Setup` hooks 的生命周期事件始终包括在内，不需要此选项                                                                                                                                                                          |
+| `includePartialMessages`          | `boolean`                                                                                                | `false`                       | 包括部分消息事件                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `loadTimeoutMs`                   | `number`                                                                                                 | `60000`                       | *Alpha.* 每个 `sessionStore.load()` 和 `sessionStore.listSubkeys()` 调用在恢复物化期间的超时时间（以毫秒为单位）。如果适配器未在此窗口内解决，查询将失败而不是挂起。未设置 `sessionStore` 时忽略                                                                                                                                                                                                                                                                         |
+| `managedSettings`                 | `Settings`                                                                                               | `undefined`                   | 由生成的父进程提供的策略层设置。当机器上已存在 IT 控制的托管设置层时删除，除非该管理员选择使用 `parentSettingsBehavior: 'merge'`。无论如何都会过滤为仅限制性键                                                                                                                                                                                                                                                                                                              |
+| `maxBudgetUsd`                    | `number`                                                                                                 | `undefined`                   | 当客户端成本估计达到此 USD 值时停止查询。与 `total_cost_usd` 的相同估计进行比较；请参阅[跟踪成本和使用情况](/docs/zh-CN/agent-sdk/cost-tracking)了解准确性注意事项                                                                                                                                                                                                                                                                                                     |
+| `maxThinkingTokens`               | `number`                                                                                                 | `undefined`                   | *已弃用：* 改用 `thinking`。思考过程的最大令牌数                                                                                                                                                                                                                                                                                                                                                                                 |
+| `maxTurns`                        | `number`                                                                                                 | `undefined`                   | 最大代理轮次（工具使用往返）                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `mcpServers`                      | `Record<string, [`McpServerConfig`](#mcpserverconfig)>`                                                  | `{}`                          | MCP 服务器配置                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `model`                           | `string`                                                                                                 | CLI 的默认值                      | Claude 模型别名或完整模型名称。请参阅[接受的值和特定于提供商的 ID](/docs/zh-CN/model-config#available-models)                                                                                                                                                                                                                                                                                                                                   |
+| `onElicitation`                   | `(request: ElicitationRequest, options: { signal: AbortSignal }) => Promise<ElicitationResult>`          | `undefined`                   | 用于处理 MCP 引出请求的回调。当 MCP 服务器请求用户输入且没有 hook 首先处理它时调用。未提供时，未处理的引出请求会自动被拒绝                                                                                                                                                                                                                                                                                                                                           |
+| `outputFormat`                    | `{ type: 'json_schema', schema: JSONSchema }`                                                            | `undefined`                   | 为代理结果定义输出格式。请参阅[结构化输出](/docs/zh-CN/agent-sdk/structured-outputs)了解详情                                                                                                                                                                                                                                                                                                                                                 |
+| `outputStyle`                     | `string`                                                                                                 | `undefined`                   | 不是 `Options` 字段。改为在内联 [`settings`](/docs/zh-CN/settings) 对象或设置文件中设置 `outputStyle`。请参阅[激活输出样式](/docs/zh-CN/agent-sdk/modifying-system-prompts#activate-an-output-style)                                                                                                                                                                                                                                                    |
+| `pathToClaudeCodeExecutable`      | `string`                                                                                                 | 从捆绑的本地二进制文件自动解析               | Claude Code 可执行文件的路径。仅在安装期间跳过可选依赖项或您的平台不在支持的集合中时需要                                                                                                                                                                                                                                                                                                                                                              |
+| `permissionMode`                  | [`PermissionMode`](#permissionmode)                                                                      | `'default'`                   | 会话的权限模式                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `permissionPromptToolName`        | `string`                                                                                                 | `undefined`                   | 权限提示的 MCP 工具名称                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `persistSession`                  | `boolean`                                                                                                | `true`                        | 当为 `false` 时，禁用会话持久化到磁盘。会话之后无法恢复                                                                                                                                                                                                                                                                                                                                                                                |
+| `planModeInstructions`            | `string`                                                                                                 | `undefined`                   | Plan Mode 的自定义工作流说明。当 `permissionMode` 为 `'plan'` 时，此字符串替换默认 Plan Mode 工作流正文。CLI 仍然使用只读强制前导和 ExitPlanMode 协议页脚包装它                                                                                                                                                                                                                                                                                               |
+| `plugins`                         | [`SdkPluginConfig`](#sdkpluginconfig)`[]`                                                                | `[]`                          | 从本地路径加载自定义 plugins。请参阅[Plugins](/docs/zh-CN/agent-sdk/plugins)了解详情                                                                                                                                                                                                                                                                                                                                                   |
+| `promptSuggestions`               | `boolean`                                                                                                | `false`                       | 启用提示建议。在每个轮次后发出 `prompt_suggestion` 消息，包含预测的下一个用户提示                                                                                                                                                                                                                                                                                                                                                             |
+| `resume`                          | `string`                                                                                                 | `undefined`                   | 要恢复的会话 ID                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `resumeSessionAt`                 | `string`                                                                                                 | `undefined`                   | 在特定消息 UUID 处恢复会话                                                                                                                                                                                                                                                                                                                                                                                                |
+| `sandbox`                         | [`SandboxSettings`](#sandboxsettings)                                                                    | `undefined`                   | 以编程方式配置 sandbox 行为。请参阅[Sandbox 设置](#sandboxsettings)了解详情                                                                                                                                                                                                                                                                                                                                                        |
+| `sessionId`                       | `string`                                                                                                 | 自动生成                          | 为会话使用特定的 UUID 而不是自动生成一个                                                                                                                                                                                                                                                                                                                                                                                         |
+| `sessionStore`                    | [`SessionStore`](/docs/zh-CN/agent-sdk/session-storage#the-sessionstore-interface)                            | `undefined`                   | 将会话记录镜像到外部后端，以便任何主机都可以恢复它们。请参阅[将会话持久化到外部存储](/docs/zh-CN/agent-sdk/session-storage)                                                                                                                                                                                                                                                                                                                                   |
+| `sessionStoreFlush`               | `'batched' \| 'eager'`                                                                                   | `'batched'`                   | *Alpha.* `sessionStore` 的刷新模式。未设置 `sessionStore` 时忽略                                                                                                                                                                                                                                                                                                                                                            |
+| `settings`                        | `string \| Settings`                                                                                     | `undefined`                   | 内联[设置](/docs/zh-CN/settings)对象或设置文件的路径。填充[优先级顺序](/docs/zh-CN/settings#settings-precedence)中的标志设置层。使用 [`applyFlagSettings()`](#applyflagsettings) 在运行时更改                                                                                                                                                                                                                                                                   |
+| `settingSources`                  | [`SettingSource`](#settingsource)`[]`                                                                    | CLI 默认值（所有源）                  | 控制加载哪些文件系统设置。传递 `[]` 以禁用用户、项目和本地设置。[端点管理的策略](/docs/zh-CN/settings#settings-files)无论如何都会加载；当会话使用组织凭证在[符合条件的配置](/docs/zh-CN/server-managed-settings#platform-availability)上进行身份验证时，会获取服务器管理的设置。请参阅[使用 Claude Code 功能](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control)                                                                                                                           |
+| `skills`                          | `string[] \| 'all'`                                                                                      | `undefined`                   | 会话可用的 skills。传递 `'all'` 以启用每个发现的 skill，或传递 skill 名称列表。设置后，SDK 会自动将 Skill 工具添加到 `allowedTools`。如果您也传递 `tools`，请在该列表中包含 `'Skill'`。请参阅[Skills](/docs/zh-CN/agent-sdk/skills)                                                                                                                                                                                                                                            |
+| `spawnClaudeCodeProcess`          | `(options: SpawnOptions) => SpawnedProcess`                                                              | `undefined`                   | 用于生成 Claude Code 进程的自定义函数。用于在 VM、容器或远程环境中运行 Claude Code                                                                                                                                                                                                                                                                                                                                                         |
+| `stderr`                          | `(data: string) => void`                                                                                 | `undefined`                   | stderr 输出的回调                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `strictMcpConfig`                 | `boolean`                                                                                                | `false`                       | 仅使用在 `mcpServers` 中传递的服务器，并忽略项目 `.mcp.json`、用户设置、plugin 提供的 MCP 服务器和[claude.ai connectors](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)                                                                                                                                                                                                                                                                           |
+| `systemPrompt`                    | `string \| { type: 'preset'; preset: 'claude_code'; append?: string; excludeDynamicSections?: boolean }` | `undefined`（最小提示）             | 系统提示配置。传递字符串以获取自定义提示，或 `{ type: 'preset', preset: 'claude_code' }` 以使用 Claude Code 的系统提示。使用预设对象形式时，添加 `append` 以使用其他说明扩展它，并设置 `excludeDynamicSections: true` 以将每个会话上下文移到第一条用户消息中，以便[更好地跨机器重用提示缓存](/docs/zh-CN/agent-sdk/modifying-system-prompts#improve-prompt-caching-across-users-and-machines)                                                                                                                   |
+| `taskBudget`                      | `{ total: number }`                                                                                      | `undefined`                   | *Alpha.* API 端任务预算（以令牌为单位）。设置后，模型会被告知其剩余令牌预算，以便它可以调整工具使用速度并在达到限制前完成                                                                                                                                                                                                                                                                                                                                             |
+| `thinking`                        | [`ThinkingConfig`](#thinkingconfig)                                                                      | 支持的模型为 `{ type: 'adaptive' }` | 控制 Claude 的思考/推理行为。请参阅 [`ThinkingConfig`](#thinkingconfig) 了解选项                                                                                                                                                                                                                                                                                                                                                 |
+| `title`                           | `string`                                                                                                 | `undefined`                   | 会话的显示标题。通过 `resume` 或 `continue` 恢复时，恢复的会话的持久化标题优先；使用 [`renameSession()`](#renamesession) 重新标题现有会话                                                                                                                                                                                                                                                                                                              |
+| `toolAliases`                     | `Record<string, string>`                                                                                 | `undefined`                   | 将内置工具名称映射到 MCP 工具名称，以便 Claude 调用您的 MCP 实现而不是内置工具。例如，`{ Bash: 'mcp__workspace__bash' }`                                                                                                                                                                                                                                                                                                                          |
+| `toolConfig`                      | [`ToolConfig`](#toolconfig)                                                                              | `undefined`                   | 内置工具行为的配置。请参阅 [`ToolConfig`](#toolconfig) 了解详情                                                                                                                                                                                                                                                                                                                                                                  |
+| `tools`                           | `string[] \| { type: 'preset'; preset: 'claude_code' }`                                                  | `undefined`                   | 工具配置。传递工具名称数组或使用预设获取 Claude Code 的默认工具                                                                                                                                                                                                                                                                                                                                                                          |
 
-#### Handle slow or stalled API responses
+<h4 id="handle-slow-or-stalled-api-responses">
+  处理缓慢或停滞的 API 响应
+</h4>
 
-The CLI subprocess reads several environment variables that control API timeouts and stall detection. Pass them through the `env` option:
+CLI 子进程读取多个环境变量，这些变量控制 API 超时和停滞检测。通过 `env` 选项传递它们：
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
 const result = query({
   prompt: "Analyze this code",
   options: {
@@ -485,14 +551,16 @@ const result = query({
 });
 ```
 
-* `API_TIMEOUT_MS`: per-request timeout on the Anthropic client, in milliseconds. Default `600000`. Applies to the main loop and all subagents.
-* `CLAUDE_CODE_MAX_RETRIES`: maximum API retries. Default `10`, capped at `15`. Each retry gets its own `API_TIMEOUT_MS` window, so worst-case wall time is roughly `API_TIMEOUT_MS × (CLAUDE_CODE_MAX_RETRIES + 1)` plus backoff. For unattended runs that need to wait through longer outages, set `CLAUDE_CODE_RETRY_WATCHDOG=1`: it retries capacity errors indefinitely, and {/* min-version: 2.1.199 */}as of Claude Code v2.1.199 raises the default for other transient errors to `300` and removes the cap on this variable.
-* `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`: stall watchdog for subagents launched with `run_in_background`. Default `600000`. Resets on each stream event; on stall it aborts the subagent, marks the task failed, and surfaces the error to the parent with any partial result. Does not apply to synchronous subagents.
-* `CLAUDE_ENABLE_STREAM_WATCHDOG` with `CLAUDE_STREAM_IDLE_TIMEOUT_MS`: aborts the request when headers have arrived but the response body stops streaming. The watchdog is on by default for all providers; set `CLAUDE_ENABLE_STREAM_WATCHDOG=0` to disable it. `CLAUDE_STREAM_IDLE_TIMEOUT_MS` defaults to `300000` and is clamped to that minimum. After the abort, Claude Code retries the request at most once, and only before Claude has started a block of text or a tool call in the response; once Claude has completed a block of text or a tool call, Claude Code keeps the completed output, appends an [incomplete-response notice](/docs/en/errors#the-response-above-may-be-incomplete) instead of retrying, and still runs any completed tool call.
+* `API_TIMEOUT_MS`：Anthropic 客户端上的每个请求超时，以毫秒为单位。默认 `600000`。适用于主循环和所有子代理。
+* `CLAUDE_CODE_MAX_RETRIES`：最大 API 重试次数。默认 `10`，上限为 `15`。每次重试都有自己的 `API_TIMEOUT_MS` 窗口，因此最坏情况下的实际时间大约是 `API_TIMEOUT_MS × (CLAUDE_CODE_MAX_RETRIES + 1)` 加上退避。对于需要等待更长时间中断的无人值守运行，设置 `CLAUDE_CODE_RETRY_WATCHDOG=1`：它无限期重试容量错误，{/* min-version: 2.1.199 */}从 Claude Code v2.1.199 开始，为其他瞬时错误提高默认值至 `300` 并移除此变量的上限。
+* `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`：使用 `run_in_background` 启动的子代理的停滞监视程序。默认 `600000`。在每个流事件上重置；在停滞时中止子代理，将任务标记为失败，并将错误与任何部分结果一起呈现给父级。不适用于同步子代理。
+* `CLAUDE_ENABLE_STREAM_WATCHDOG` 与 `CLAUDE_STREAM_IDLE_TIMEOUT_MS`：当标头已到达但响应正文停止流式传输时中止请求。监视程序对所有提供商默认启用；设置 `CLAUDE_ENABLE_STREAM_WATCHDOG=0` 以禁用它。`CLAUDE_STREAM_IDLE_TIMEOUT_MS` 默认为 `300000` 并被限制为该最小值。中止的请求通过正常重试路径进行。
 
-### `Query` object
+<h3 id="query-object">
+  `Query` 对象
+</h3>
 
-Interface returned by the `query()` function.
+由 `query()` 函数返回的接口。
 
 ```typescript theme={null}
 interface Query extends AsyncGenerator<SDKMessage, void> {
@@ -511,7 +579,6 @@ interface Query extends AsyncGenerator<SDKMessage, void> {
   supportedModels(): Promise<ModelInfo[]>;
   supportedAgents(): Promise<AgentInfo[]>;
   mcpServerStatus(): Promise<McpServerStatus[]>;
-  getContextUsage(): Promise<SDKControlGetContextUsageResponse>;
   accountInfo(): Promise<AccountInfo>;
   reconnectMcpServer(serverName: string): Promise<void>;
   toggleMcpServer(serverName: string, enabled: boolean): Promise<void>;
@@ -522,70 +589,72 @@ interface Query extends AsyncGenerator<SDKMessage, void> {
 }
 ```
 
-#### Methods
+<h4 id="methods">
+  方法
+</h4>
 
-| Method                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| :------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interrupt()`                          | Interrupts the query. Only available in streaming input mode. {/* min-version: 2.1.205 */}When the CLI advertises the `interrupt_receipt_v1` capability in [`SDKSystemMessage.capabilities`](#sdksystemmessage), resolves with an [`SDKControlInterruptResponse`](#sdkcontrolinterruptresponse) listing the queued messages that survive the interrupt. Resolves `undefined` on CLIs before v2.1.205                                                                         |
-| `rewindFiles(userMessageId, options?)` | Restores files to their state at the specified user message. Pass `{ dryRun: true }` to preview changes. Requires `enableFileCheckpointing: true`. See [File checkpointing](/docs/en/agent-sdk/file-checkpointing)                                                                                                                                                                                                                                                                |
-| `setPermissionMode()`                  | Changes the permission mode (only available in streaming input mode)                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `setModel()`                           | Changes the model (only available in streaming input mode). Passing `undefined` or the string `"default"` resets to the session default model                                                                                                                                                                                                                                                                                                                                |
-| `setMaxThinkingTokens()`               | *Deprecated:* Use the `thinking` option instead. Changes the maximum thinking tokens. Passing `null` resets thinking to the session default: a mid-session override is cleared, and thinking stays off for sessions that have it disabled                                                                                                                                                                                                                                    |
-| `applyFlagSettings(settings)`          | Merges settings into the session's flag settings layer at runtime (only available in streaming input mode). See [`applyFlagSettings()`](#applyflagsettings)                                                                                                                                                                                                                                                                                                                  |
-| `initializationResult()`               | Returns the full initialization result including supported commands, models, account info, and output style configuration                                                                                                                                                                                                                                                                                                                                                    |
-| `reinitialize()`                       | {/* min-version: 2.1.195 */}Re-sends the `initialize` control request to the running CLI and returns a fresh result instead of the cached first-connect result. Use it after a transport gap, such as reattaching to a session after a disconnect, so pending permission requests reach your `canUseTool` callback again. Make the callback idempotent per request ID, because a request whose response was lost is dispatched again. Requires Claude Code v2.1.195 or later |
-| `supportedCommands()`                  | Returns available slash commands. {/* min-version: agent-sdk@0.3.216 */}From Agent SDK v0.3.216 the list reflects mid-session command changes; see [`SDKCommandsChangedMessage`](#sdkcommandschangedmessage)                                                                                                                                                                                                                                                                 |
-| `supportedModels()`                    | Returns available models with display info                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `supportedAgents()`                    | Returns available subagents as [`AgentInfo`](#agentinfo)`[]`                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `mcpServerStatus()`                    | Returns status of connected MCP servers                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `getContextUsage()`                    | Returns an [`SDKControlGetContextUsageResponse`](#sdkcontrolgetcontextusageresponse) breaking down the session's context window usage by category, skill, and tool. The same data `/context` shows in an interactive session                                                                                                                                                                                                                                                 |
-| `accountInfo()`                        | Returns account information                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `reconnectMcpServer(serverName)`       | Reconnect an MCP server by name                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `toggleMcpServer(serverName, enabled)` | Enable or disable an MCP server by name                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `setMcpServers(servers)`               | Dynamically replace the set of MCP servers for this session. Returns which servers were added and removed, and any errors. {/* min-version: 2.1.210 */}The call keeps plugin-provided servers it doesn't name; naming one replaces it. The promise resolves after newly added stdio, HTTP, and SSE servers connect or fail, so tools from servers that connected are available on the next turn.                                                                             |
-| `streamInput(stream)`                  | Stream input messages to the query for multi-turn conversations                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `stopTask(taskId)`                     | Stop a running background task by ID                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `close()`                              | Close the query and terminate the underlying process. Forcefully ends the query and cleans up all resources                                                                                                                                                                                                                                                                                                                                                                  |
+| 方法                                     | 描述                                                                                                                                                                                                                                                             |
+| :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interrupt()`                          | 中断查询。仅在流式输入模式下可用。{/* min-version: 2.1.205 */}当 CLI 在 [`SDKSystemMessage.capabilities`](#sdksystemmessage) 中通告 `interrupt_receipt_v1` 功能时，使用列出存活中断的排队消息的 [`SDKControlInterruptResponse`](#sdkcontrolinterruptresponse) 进行解决。在 v2.1.205 之前的 CLI 上解决为 `undefined` |
+| `rewindFiles(userMessageId, options?)` | 将文件恢复到指定用户消息时的状态。传递 `{ dryRun: true }` 以预览更改。需要 `enableFileCheckpointing: true`。请参阅[文件 checkpointing](/docs/zh-CN/agent-sdk/file-checkpointing)                                                                                                                     |
+| `setPermissionMode()`                  | 更改权限模式（仅在流式输入模式下可用）                                                                                                                                                                                                                                            |
+| `setModel()`                           | 更改模型（仅在流式输入模式下可用）                                                                                                                                                                                                                                              |
+| `setMaxThinkingTokens()`               | *已弃用：* 改用 `thinking` 选项。更改最大思考令牌数。传递 `null` 会将思考重置为会话默认值：清除中期覆盖，对于禁用思考的会话思考保持关闭                                                                                                                                                                                |
+| `applyFlagSettings(settings)`          | 在运行时将设置合并到会话的标志设置层中（仅在流式输入模式下可用）。请参阅 [`applyFlagSettings()`](#applyflagsettings)                                                                                                                                                                               |
+| `initializationResult()`               | 返回完整的初始化结果，包括支持的命令、模型、帐户信息和输出样式配置                                                                                                                                                                                                                              |
+| `reinitialize()`                       | {/* min-version: 2.1.195 */}重新发送 `initialize` 控制请求到运行的 CLI，并返回新的结果而不是缓存的首次连接结果。在传输间隙后使用它，例如在断开连接后重新连接到会话，以便待处理的权限请求再次到达您的 `canUseTool` 回调。使回调对每个请求 ID 幂等，因为响应丢失的请求会再次分派。需要 Claude Code v2.1.195 或更高版本                                                          |
+| `supportedCommands()`                  | 返回可用的 slash commands                                                                                                                                                                                                                                           |
+| `supportedModels()`                    | 返回具有显示信息的可用模型                                                                                                                                                                                                                                                  |
+| `supportedAgents()`                    | 返回可用的子代理作为 [`AgentInfo`](#agentinfo)`[]`                                                                                                                                                                                                                       |
+| `mcpServerStatus()`                    | 返回连接的 MCP 服务器的状态                                                                                                                                                                                                                                               |
+| `accountInfo()`                        | 返回帐户信息                                                                                                                                                                                                                                                         |
+| `reconnectMcpServer(serverName)`       | 按名称重新连接 MCP 服务器                                                                                                                                                                                                                                                |
+| `toggleMcpServer(serverName, enabled)` | 按名称启用或禁用 MCP 服务器                                                                                                                                                                                                                                               |
+| `setMcpServers(servers)`               | 动态替换此会话的 MCP 服务器集。返回有关添加、删除的服务器和任何错误的信息                                                                                                                                                                                                                        |
+| `streamInput(stream)`                  | 将输入消息流式传输到查询以进行多轮对话                                                                                                                                                                                                                                            |
+| `stopTask(taskId)`                     | 按 ID 停止运行的后台任务                                                                                                                                                                                                                                                 |
+| `close()`                              | 关闭查询并终止底层进程。强制结束查询并清理所有资源                                                                                                                                                                                                                                      |
 
-#### `applyFlagSettings()`
+<h4 id="applyflagsettings">
+  `applyFlagSettings()`
+</h4>
 
-Changes [settings](/docs/en/settings) on a running session without restarting the query. Use it when a setting that has no dedicated setter needs to change mid-session, such as tightening `permissions` after the agent reads untrusted input. `setModel()` and `setPermissionMode()` are dedicated setters for those two keys; `applyFlagSettings()` is the general form that accepts any subset of the settings keys, and passing `model` here behaves the same as `setModel()`.
+在运行的会话上更改任何[设置](/docs/zh-CN/settings)而无需重新启动查询。当没有专用设置器的设置需要在会话中期更改时使用它，例如在代理读取不受信任的输入后收紧 `permissions`。`setModel()` 和 `setPermissionMode()` 是这两个键的专用设置器；`applyFlagSettings()` 是接受任何设置键子集的通用形式，在此处传递 `model` 的行为与 `setModel()` 相同。
 
-Only some keys take effect mid-session:
+仅某些键在会话中期生效：
 
-* **Applied on the next turn**: `effortLevel`, `ultracode`, `permissions`, `hooks`, `skillOverrides`, `fastMode`, `agent`. Switching `agent` also applies that agent's model override, hooks, and system prompt on the next turn.
-* **Applied during the current turn**: `model`. {/* min-version: 2.1.212 */}If you switch `model` while Claude is working on a turn, the response Claude is already generating finishes on the old model, and the rest of the turn, starting with the next call Claude Code makes to the model, uses the new one. Subagents keep their own model. Before v2.1.212, a mid-turn switch waited for the next turn.
-* **No effect mid-session**: the system prompt options. These are resolved once at startup, so the running session keeps the original value even though the call succeeds. To change them, start a new session.
+* **在下一个轮次应用**：`model`、`effortLevel`、`ultracode`、`permissions`、`hooks`、`skillOverrides`、`fastMode`、`agent`。切换 `agent` 也会在下一个轮次应用该代理的模型覆盖、hooks 和系统提示。
+* **会话中期无效**：系统提示选项。这些在启动时解决一次，因此运行的会话保持原始值，即使调用成功。要更改它们，请启动新会话。
 
-`effortLevel` accepts an [effort level](/docs/en/model-config#adjust-effort-level) name. It also accepts `"ultracode"`, which runs the session at `xhigh` effort and turns on [ultracode](/docs/en/workflows#let-claude-decide-with-ultracode). The `Settings` type declares `effortLevel` without that value, so pass the equivalent `{ ultracode: true }` in TypeScript. {/* min-version: 2.1.203 */}The `ultracode` value requires Claude Code v2.1.203 or later and is accepted only by `applyFlagSettings()`, not by the `effortLevel` key in a settings file.
+`effortLevel` 接受一个[努力级别](/docs/zh-CN/model-config#adjust-effort-level)名称。它也接受 `"ultracode"`，它以 `xhigh` 努力运行会话并打开[ultracode](/docs/zh-CN/workflows#let-claude-decide-with-ultracode)。`Settings` 类型声明 `effortLevel` 不包含该值，因此在 TypeScript 中传递等效的 `{ ultracode: true }`。{/* min-version: 2.1.203 */}`ultracode` 值需要 Claude Code v2.1.203 或更高版本，仅由 `applyFlagSettings()` 接受，不由设置文件中的 `effortLevel` 键接受。
 
-The values are written to the flag-settings layer, the same layer the inline `settings` option of `query()` populates at startup. Flag settings sit near the top of the [settings precedence order](/docs/en/settings#settings-precedence): they override user, project, and local settings, and only managed policy settings can override them. This is the same tier the [on-page precedence section](#settings-precedence) calls programmatic options.
+这些值被写入标志设置层，这是内联 `query()` 的 `settings` 选项在启动时填充的同一层。标志设置位于[设置优先级顺序](/docs/zh-CN/settings#settings-precedence)的顶部附近：它们覆盖用户、项目和本地设置，只有托管策略设置可以覆盖它们。这与[优先级部分](#settings-precedence)称为编程选项的层相同。
 
-Successive calls shallow-merge top-level keys. A second call with `{ permissions: {...} }` replaces the entire `permissions` object from the prior call rather than deep-merging into it. To clear a key from the flag layer and fall back to lower-precedence sources, pass `null` for that key. Passing `undefined` has no effect because JSON serialization drops it.
+连续调用浅合并顶级键。第二次调用 `{ permissions: {...} }` 会替换先前调用中的整个 `permissions` 对象，而不是深度合并到其中。要从标志层清除键并回退到较低优先级源，请为该键传递 `null`。传递 `undefined` 无效，因为 JSON 序列化会将其删除。
 
-Only available in streaming input mode, the same constraint as `setModel()` and `setPermissionMode()`.
+仅在流式输入模式下可用，与 `setModel()` 和 `setPermissionMode()` 的约束相同。
 
-The example below switches the active model mid-session, then clears the override so the model falls back to whatever the user or project settings specify.
+下面的示例在会话中期切换活动模型，然后清除覆盖，以便模型回退到用户或项目设置指定的任何内容。
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
 const q = query({ prompt: messageStream });
 
-// Override the model for the rest of the session
+// 覆盖会话其余部分的模型
 await q.applyFlagSettings({ model: "claude-opus-4-6" });
 
-// Later: clear the override and fall back to lower-precedence settings
+// 稍后：清除覆盖并回退到较低优先级设置
 await q.applyFlagSettings({ model: null });
 ```
 
 <Note>
-  `applyFlagSettings()` is TypeScript-only. The Python SDK does not expose an equivalent method.
+  `applyFlagSettings()` 仅适用于 TypeScript。Python SDK 不公开等效方法。
 </Note>
 
-### `WarmQuery`
+<h3 id="warmquery">
+  `WarmQuery`
+</h3>
 
-Handle returned by [`startup()`](#startup). The subprocess is already spawned and initialized, so calling `query()` on this handle writes the prompt directly to a ready process with no startup latency.
+由 [`startup()`](#startup) 返回的句柄。子进程已生成并初始化，因此在此句柄上调用 `query()` 会直接将提示写入准备好的进程，无需启动延迟。
 
 ```typescript theme={null}
 interface WarmQuery extends AsyncDisposable {
@@ -594,18 +663,22 @@ interface WarmQuery extends AsyncDisposable {
 }
 ```
 
-#### Methods
+<h4 id="methods-2">
+  方法
+</h4>
 
-| Method          | Description                                                                                                               |
-| :-------------- | :------------------------------------------------------------------------------------------------------------------------ |
-| `query(prompt)` | Send a prompt to the pre-warmed subprocess and return a [`Query`](#query-object). Can only be called once per `WarmQuery` |
-| `close()`       | Close the subprocess without sending a prompt. Use this to discard a warm query that is no longer needed                  |
+| 方法              | 描述                                                            |
+| :-------------- | :------------------------------------------------------------ |
+| `query(prompt)` | 向预热的子进程发送提示并返回 [`Query`](#query-object)。每个 `WarmQuery` 只能调用一次 |
+| `close()`       | 关闭子进程而不发送提示。使用此方法丢弃不再需要的预热查询                                  |
 
-`WarmQuery` implements `AsyncDisposable`, so it can be used with `await using` for automatic cleanup.
+`WarmQuery` 实现 `AsyncDisposable`，因此可以与 `await using` 一起使用以进行自动清理。
 
-### `SDKControlInitializeResponse`
+<h3 id="sdkcontrolinitializeresponse">
+  `SDKControlInitializeResponse`
+</h3>
 
-Return type of `initializationResult()`. Contains session initialization data.
+`initializationResult()` 的返回类型。包含会话初始化数据。
 
 ```typescript theme={null}
 type SDKControlInitializeResponse = {
@@ -616,151 +689,40 @@ type SDKControlInitializeResponse = {
   models: ModelInfo[];
   account: AccountInfo;
   fast_mode_state?: "off" | "cooldown" | "on";
-  fast_mode_disabled_reason?: FastModeDisabledReason;
 };
 ```
 
-{/* min-version: 2.1.219 */}The response always reports `fast_mode_state`, and when something blocks [fast mode](/docs/en/fast-mode), `fast_mode_disabled_reason` carries the reason code alongside it, so you can explain the blocked state instead of re-deriving availability. Both behaviors require Claude Code v2.1.219 or later. Before v2.1.219, the response omitted `fast_mode_state` when fast mode wasn't available and never carried a reason. For the reason codes and their meanings, see [`fast_mode_disabled_reason`](#sdkresultmessage) on the result message.
+当客户端向已运行的会话发送 `initialize` 时，控制响应包装器也会携带一个可选的 `pending_permission_requests` 数组。该字段位于响应包装器本身，而不是上面的 `SDKControlInitializeResponse` 有效负载中。每个条目都是一个完整的 `control_request` 消息，具有与会话在运行时为权限请求流式传输的相同 `{ type: "control_request", request_id, request }` 形状。
 
-When a client sends `initialize` to a session that is already running, the control-response wrapper also carries an optional `pending_permission_requests` array. The field is on the response wrapper itself, not in the `SDKControlInitializeResponse` payload above. Each entry is a complete `control_request` message with the same `{ type: "control_request", request_id, request }` shape the session streams for permission requests while running.
+这些是在客户端连接之前发出的请求，仍在等待回复。SDK 为您读取数组并将每个条目分派到您的 [`canUseTool`](#canusetool) 回调，这与 [`reinitialize()`](#query-object) 在传输间隙后触发的相同重新发送。使用重复的请求 ID 幂等地处理，因为条目可以重复回调已在连接断开前收到的请求。
 
-These are requests that were issued before the client connected and are still awaiting a reply. The SDK reads the array for you and dispatches each entry to your [`canUseTool`](#canusetool) callback, the same redelivery that [`reinitialize()`](#query-object) triggers after a transport gap. Handle repeated request IDs idempotently, because an entry can repeat a request the callback already received before the connection dropped.
+<h3 id="sdkcontrolinterruptresponse">
+  `SDKControlInterruptResponse`
+</h3>
 
-### `SDKControlInterruptResponse`
-
-The interrupt receipt: the value [`interrupt()`](#query-object) resolves with on a CLI that advertises the `interrupt_receipt_v1` capability in [`SDKSystemMessage.capabilities`](#sdksystemmessage). Requires Claude Code v2.1.205 or later. Earlier CLIs answer the interrupt with an empty success payload, so `interrupt()` resolves to `undefined`.
+中断收据：[`interrupt()`](#query-object) 在通告 [`SDKSystemMessage.capabilities`](#sdksystemmessage) 中的 `interrupt_receipt_v1` 功能的 CLI 上解决的值。需要 Claude Code v2.1.205 或更高版本。较早的 CLI 使用空成功有效负载回答中断，因此 `interrupt()` 解决为 `undefined`。
 
 ```typescript theme={null}
 type SDKControlInterruptResponse = {
   still_queued: string[];
-  cancelled?: string[];
 };
 ```
 
-`still_queued` lists the UUIDs of user messages that survive the interrupt: messages still in the queue, plus any batch already dequeued for the next turn but not yet reachable by the abort. Each one runs as its own turn after the interrupt unless you cancel it first. Use the receipt to decide whether to resend anything; resending a message that is already listed produces a duplicate turn.
+`still_queued` 列出存活中断的用户消息的 UUID：仍在队列中的消息，加上已为下一个轮次出队但尚未被中止到达的任何批次。除非您首先取消它，否则每个都作为其自己的轮次在中断后运行。使用收据来决定是否重新发送任何内容；重新发送已列出的消息会产生重复的轮次。
 
-Interpret the list with these caveats:
+使用这些注意事项解释列表：
 
-* Only messages that were enqueued with a UUID appear. An empty array doesn't mean nothing else will run.
-* Only main-thread messages are listed. Messages addressed to a subagent are out of scope.
-* The list can include UUIDs your client never sent, such as [scheduled task](/docs/en/scheduled-tasks) triggers. Ignore UUIDs you don't recognize instead of treating them as an error.
+* 仅出现已使用 UUID 入队的消息。空数组并不意味着没有其他内容会运行。
+* 仅列出主线程消息。寻址到子代理的消息超出范围。
+* 列表可以包括您的客户端从未发送的 UUID，例如[计划任务](/docs/zh-CN/scheduled-tasks)触发器。忽略您不识别的 UUID，而不是将其视为错误。
 
-{/* min-version: 2.1.219 */}A client that drives the CLI's control protocol directly, rather than through `interrupt()`, can set `cancel_queued: true` on the `interrupt` control request. Claude Code v2.1.219 and later advertises support with the `interrupt_cancel_queued_v1` capability in [`SDKSystemMessage.capabilities`](#sdksystemmessage); older CLIs ignore the field and leave queued messages to run as usual. Such an interrupt also cancels every message that would otherwise be listed under `still_queued`: the receipt lists them under `cancelled` instead, `still_queued` is empty, and none of them run.
+收据是在处理中断时拍摄的快照，在干净中断时，它在中断轮次的 [`SDKResultMessage`](#sdkresultmessage) 之前到达。在该结果之后读取收据而不是检查队列：循环立即启动下一个排队的轮次，因此您在结果后检查的队列已经改变。
 
-The `cancelled` list carries the same caveats as `still_queued`. The `interrupt()` method never sends `cancel_queued`, so receipts it resolves with don't carry `cancelled`.
+<h3 id="agentdefinition">
+  `AgentDefinition`
+</h3>
 
-The receipt is a snapshot taken at the moment the interrupt is processed, and on a clean interrupt it arrives before the interrupted turn's [`SDKResultMessage`](#sdkresultmessage). Read the receipt rather than inspecting the queue after that result: the loop starts the next queued turn immediately, so the queue you inspect after the result has already changed.
-
-### `SDKControlGetContextUsageResponse`
-
-Return type of [`getContextUsage()`](#query-object). This is the same payload the `/context` command renders in an interactive session, so alongside the token counts it carries display fields such as `color`, `gridRows`, and `percentage` that `/context` uses to draw its usage grid.
-
-```typescript theme={null}
-type SDKControlGetContextUsageResponse = {
-  categories: {
-    name: string;
-    tokens: number;
-    color: string;
-    isDeferred?: boolean;
-  }[];
-  totalTokens: number;
-  maxTokens: number;
-  rawMaxTokens: number;
-  percentage: number;
-  gridRows: {
-    color: string;
-    isFilled: boolean;
-    categoryName: string;
-    tokens: number;
-    percentage: number;
-    squareFullness: number;
-  }[][];
-  model: string;
-  memoryFiles: {
-    path: string;
-    type: string;
-    tokens: number;
-  }[];
-  mcpTools: {
-    name: string;
-    serverName: string;
-    tokens: number;
-    isLoaded?: boolean;
-  }[];
-  deferredBuiltinTools?: {
-    name: string;
-    tokens: number;
-    isLoaded: boolean;
-  }[];
-  systemTools?: {
-    name: string;
-    tokens: number;
-  }[];
-  systemPromptSections?: {
-    name: string;
-    tokens: number;
-  }[];
-  agents: {
-    agentType: string;
-    source: string;
-    tokens: number;
-  }[];
-  slashCommands?: {
-    totalCommands: number;
-    includedCommands: number;
-    tokens: number;
-  };
-  skills?: {
-    totalSkills: number;
-    includedSkills: number;
-    tokens: number;
-    skillFrontmatter: {
-      name: string;
-      source: string;
-      tokens: number;
-    }[];
-  };
-  autoCompactThreshold?: number;
-  isAutoCompactEnabled: boolean;
-  messageBreakdown?: {
-    toolCallTokens: number;
-    toolResultTokens: number;
-    attachmentTokens: number;
-    assistantMessageTokens: number;
-    userMessageTokens: number;
-    redirectedContextTokens: number;
-    unattributedTokens: number;
-    toolCallsByType: {
-      name: string;
-      callTokens: number;
-      resultTokens: number;
-    }[];
-    attachmentsByType: {
-      name: string;
-      tokens: number;
-    }[];
-  };
-  apiUsage: {
-    input_tokens: number;
-    output_tokens: number;
-    cache_creation_input_tokens: number;
-    cache_read_input_tokens: number;
-  } | null;
-};
-```
-
-Read token attribution from the collection fields:
-
-* `categories` holds the per-category totals.
-* `mcpTools` and `agents` attribute tokens to individual MCP tools and subagents.
-* `memoryFiles` lists each loaded memory file with its cost.
-* `skills.skillFrontmatter` attributes the skill listing's tokens to each included skill. The per-skill counts measure each skill's listing entry as Claude Code actually sends it, which can be shorter than the skill's full frontmatter. Compare `skills.totalSkills` with `skills.includedSkills` to see whether every discovered skill made it into the listing.
-
-`totalTokens` is the session's current context usage, and `maxTokens` is the window that usage is measured against. That window is the model's context window, or the lower auto-compaction window when one applies. Claude Code leaves the optional `deferredBuiltinTools`, `systemTools`, and `systemPromptSections` diagnostics unset, so expect them to be absent even though the type declares them.
-
-### `AgentDefinition`
-
-Configuration for a subagent defined programmatically.
+以编程方式定义的子代理的配置。
 
 ```typescript theme={null}
 type AgentDefinition = {
@@ -781,115 +743,112 @@ type AgentDefinition = {
 };
 ```
 
-| Field                                 | Required | Description                                                                                                                                                                                                                        |
-| :------------------------------------ | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `description`                         | Yes      | Natural language description of when to use this agent                                                                                                                                                                             |
-| `tools`                               | No       | Array of allowed tool names. If omitted, inherits every [tool available to subagents](/docs/en/sub-agents#available-tools). To preload Skills into the agent's context, use the `skills` field rather than listing `'Skill'` here       |
-| `disallowedTools`                     | No       | Array of tool names to explicitly disallow for this agent. MCP server-level patterns are also accepted: `mcp__server` or `mcp__server__*` removes every tool from that server, and `mcp__*` removes every MCP tool from any server |
-| `prompt`                              | Yes      | The agent's system prompt                                                                                                                                                                                                          |
-| `model`                               | No       | Model override for this agent. Accepts an alias such as `'fable'`, `'opus'`, `'sonnet'`, `'haiku'`, `'inherit'`, or a full model ID. If omitted or `'inherit'`, uses the main model                                                |
-| `mcpServers`                          | No       | MCP server specifications for this agent                                                                                                                                                                                           |
-| `skills`                              | No       | Array of skill names to preload into the agent context                                                                                                                                                                             |
-| `initialPrompt`                       | No       | Auto-submitted as the first user turn when this agent runs as the main thread agent                                                                                                                                                |
-| `maxTurns`                            | No       | Maximum number of agentic turns (API round-trips) before stopping                                                                                                                                                                  |
-| `background`                          | No       | Run this agent as a non-blocking background task when invoked                                                                                                                                                                      |
-| `memory`                              | No       | Memory source for this agent: `'user'`, `'project'`, or `'local'`                                                                                                                                                                  |
-| `effort`                              | No       | Reasoning effort level for this agent. Accepts a named level or an integer                                                                                                                                                         |
-| `permissionMode`                      | No       | Permission mode for tool execution within this agent. See [`PermissionMode`](#permissionmode)                                                                                                                                      |
-| `criticalSystemReminder_EXPERIMENTAL` | No       | Experimental: Critical reminder added to the system prompt                                                                                                                                                                         |
+| 字段                                    | 必需 | 描述                                                                                                        |
+| :------------------------------------ | :- | :-------------------------------------------------------------------------------------------------------- |
+| `description`                         | 是  | 何时使用此代理的自然语言描述                                                                                            |
+| `tools`                               | 否  | 允许的工具名称数组。如果省略，继承父级的所有工具。要将 Skills 预加载到代理的上下文中，请使用 `skills` 字段而不是在此处列出 `'Skill'`                          |
+| `disallowedTools`                     | 否  | 要为此代理明确禁止的工具名称数组。也接受 MCP 服务器级别的模式：`mcp__server` 或 `mcp__server__*` 移除该服务器的每个工具，`mcp__*` 移除任何服务器的每个 MCP 工具 |
+| `prompt`                              | 是  | 代理的系统提示                                                                                                   |
+| `model`                               | 否  | 此代理的模型覆盖。接受别名，如 `'fable'`、`'opus'`、`'sonnet'`、`'haiku'`、`'inherit'`，或完整的模型 ID。如果省略或 `'inherit'`，使用主模型     |
+| `mcpServers`                          | 否  | 此代理的 MCP 服务器规范                                                                                            |
+| `skills`                              | 否  | 要预加载到代理上下文中的 skill 名称数组                                                                                   |
+| `initialPrompt`                       | 否  | 当此代理作为主线程代理运行时，自动提交为第一个用户轮次                                                                               |
+| `maxTurns`                            | 否  | 停止前的最大代理轮次数（API 往返）                                                                                       |
+| `background`                          | 否  | 调用时将此代理作为非阻塞后台任务运行                                                                                        |
+| `memory`                              | 否  | 此代理的内存源：`'user'`、`'project'` 或 `'local'`                                                                  |
+| `effort`                              | 否  | 此代理的推理努力级别。接受命名级别或整数                                                                                      |
+| `permissionMode`                      | 否  | 此代理内工具执行的权限模式。请参阅 [`PermissionMode`](#permissionmode)                                                     |
+| `criticalSystemReminder_EXPERIMENTAL` | 否  | 实验性：添加到系统提示的关键提醒                                                                                          |
 
-### `AgentMcpServerSpec`
+<h3 id="agentmcpserverspec">
+  `AgentMcpServerSpec`
+</h3>
 
-Specifies MCP servers available to a subagent. Can be a server name (string referencing a server from the parent's `mcpServers` config) or an inline server configuration record mapping server names to configs.
+指定子代理可用的 MCP 服务器。可以是服务器名称（字符串，引用父级 `mcpServers` 配置中的服务器）或内联服务器配置记录，将服务器名称映射到配置。
 
 ```typescript theme={null}
 type AgentMcpServerSpec = string | Record<string, McpServerConfigForProcessTransport>;
 ```
 
-Where `McpServerConfigForProcessTransport` is `McpStdioServerConfig | McpSSEServerConfig | McpHttpServerConfig | McpSdkServerConfig`.
+其中 `McpServerConfigForProcessTransport` 是 `McpStdioServerConfig | McpSSEServerConfig | McpHttpServerConfig | McpSdkServerConfig`。
 
-### `SettingSource`
+<h3 id="settingsource">
+  `SettingSource`
+</h3>
 
-Controls which filesystem-based configuration sources the SDK loads settings from.
+控制 SDK 从哪些基于文件系统的配置源加载设置。
 
 ```typescript theme={null}
 type SettingSource = "user" | "project" | "local";
 ```
 
-| Value       | Description                                                               | Location                      |
-| :---------- | :------------------------------------------------------------------------ | :---------------------------- |
-| `'user'`    | Global user settings                                                      | `~/.claude/settings.json`     |
-| `'project'` | Shared project settings (version controlled)                              | `.claude/settings.json`       |
-| `'local'`   | Local project settings, gitignored when Claude Code saves a setting to it | `.claude/settings.local.json` |
+| 值           | 描述            | 位置                            |
+| :---------- | :------------ | :---------------------------- |
+| `'user'`    | 全局用户设置        | `~/.claude/settings.json`     |
+| `'project'` | 共享项目设置（版本控制）  | `.claude/settings.json`       |
+| `'local'`   | 本地项目设置（不版本控制） | `.claude/settings.local.json` |
 
-#### Default behavior
+<h4 id="default-behavior">
+  默认行为
+</h4>
 
-When `settingSources` is omitted or `undefined`, `query()` loads the same filesystem settings as the Claude Code CLI: user, project, and local. [Endpoint-managed policy](/docs/en/settings#settings-files) is loaded in all cases; server-managed settings are fetched when the session authenticates with an organization credential on an [eligible configuration](/docs/en/server-managed-settings#platform-availability). See [What settingSources does not control](/docs/en/agent-sdk/claude-code-features#what-settingsources-does-not-control) for inputs that are read regardless of this option, and how to disable them.
+当 `settingSources` 被省略或 `undefined` 时，`query()` 加载与 Claude Code CLI 相同的文件系统设置：用户、项目和本地。在所有情况下都会加载[端点管理的策略](/docs/zh-CN/settings#settings-files)；当会话使用组织凭证在[符合条件的配置](/docs/zh-CN/server-managed-settings#platform-availability)上进行身份验证时，会获取服务器管理的设置。请参阅[settingSources 不控制的内容](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control)了解无论此选项如何都会读取的输入，以及如何禁用它们。
 
-#### Why use settingSources
+<h4 id="why-use-settingsources">
+  为什么使用 settingSources
+</h4>
 
-**Disable filesystem settings:**
+**禁用文件系统设置：**
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-// Do not load user, project, or local settings from disk
+// 不从磁盘加载用户、项目或本地设置
 const result = query({
   prompt: "Analyze this code",
   options: { settingSources: [] }
 });
 ```
 
-**Load all filesystem settings explicitly:**
+**显式加载所有文件系统设置：**
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
 const result = query({
   prompt: "Analyze this code",
   options: {
-    settingSources: ["user", "project", "local"] // Load all settings
+    settingSources: ["user", "project", "local"] // 加载所有设置
   }
 });
 ```
 
-**Load only specific setting sources:**
+**仅加载特定设置源：**
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-// Load only project settings, ignore user and local
+// 仅加载项目设置，忽略用户和本地
 const result = query({
   prompt: "Run CI checks",
   options: {
-    settingSources: ["project"] // Only .claude/settings.json
+    settingSources: ["project"] // 仅 .claude/settings.json
   }
 });
 ```
 
-**Testing and CI environments:**
+**测试和 CI 环境：**
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-// Ensure consistent behavior in CI by excluding local settings
+// 通过排除本地设置确保 CI 中的一致行为
 const result = query({
   prompt: "Run tests",
   options: {
-    settingSources: ["project"], // Only team-shared settings
-    permissionMode: "bypassPermissions",
-    allowDangerouslySkipPermissions: true
+    settingSources: ["project"], // 仅团队共享设置
+    permissionMode: "bypassPermissions"
   }
 });
 ```
 
-**SDK-only applications:**
+**仅 SDK 应用程序：**
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-// Define everything programmatically.
-// Pass [] to opt out of filesystem setting sources.
+// 以编程方式定义所有内容。
+// 传递 [] 以选择退出文件系统设置源。
 const result = query({
   prompt: "Review this PR",
   options: {
@@ -905,54 +864,58 @@ const result = query({
 });
 ```
 
-**Loading CLAUDE.md project instructions:**
+**加载 CLAUDE.md 项目说明：**
 
 ```typescript theme={null}
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-// Load project settings to include CLAUDE.md files
+// 加载项目设置以包括 CLAUDE.md 文件
 const result = query({
   prompt: "Add a new feature following project conventions",
   options: {
     systemPrompt: {
       type: "preset",
-      preset: "claude_code" // Use Claude Code's system prompt
+      preset: "claude_code" // 使用 Claude Code 的系统提示
     },
-    settingSources: ["project"], // Loads CLAUDE.md from project directory
+    settingSources: ["project"], // 从项目目录加载 CLAUDE.md
     allowedTools: ["Read", "Write", "Edit"]
   }
 });
 ```
 
-#### Settings precedence
+<h4 id="settings-precedence">
+  设置优先级
+</h4>
 
-When multiple sources are loaded, settings are merged with this precedence (highest to lowest):
+加载多个源时，设置按此优先级合并（从高到低）：
 
-1. Local settings (`.claude/settings.local.json`)
-2. Project settings (`.claude/settings.json`)
-3. User settings (`~/.claude/settings.json`)
+1. 本地设置（`.claude/settings.local.json`）
+2. 项目设置（`.claude/settings.json`）
+3. 用户设置（`~/.claude/settings.json`）
 
-Programmatic options such as `agents`, `allowedTools`, and `settings` override user, project, and local filesystem settings. Managed policy settings take precedence over programmatic options.
+编程选项（如 `agents`、`allowedTools` 和 `settings`）覆盖用户、项目和本地文件系统设置。托管策略设置优先于编程选项。
 
-### `PermissionMode`
+<h3 id="permissionmode">
+  `PermissionMode`
+</h3>
 
 ```typescript theme={null}
 type PermissionMode =
-  | "default" // Standard permission behavior
-  | "acceptEdits" // Auto-accept file edits
-  | "bypassPermissions" // Bypass permission checks; explicit ask rules still prompt
-  | "plan" // Planning mode - explore without editing
-  | "dontAsk" // Don't prompt for permissions, deny if not pre-approved
-  | "auto"; // Model classifier approves or denies permission prompts
+  | "default" // 标准权限行为
+  | "acceptEdits" // 自动接受文件编辑
+  | "bypassPermissions" // 绕过权限检查；显式询问规则仍然提示
+  | "plan" // Plan Mode - 仅读取工具
+  | "dontAsk" // 不提示权限，如果未预先批准则拒绝
+  | "auto"; // 使用模型分类器批准或拒绝每个工具调用
 ```
 
-### `CanUseTool`
+<h3 id="canusetool">
+  `CanUseTool`
+</h3>
 
-Custom permission function type for controlling tool usage.
+用于控制工具使用的自定义权限函数类型。
 
-The function is the SDK replacement for the interactive permission prompt: it's invoked only when the [permission evaluation flow](/docs/en/agent-sdk/permissions#how-permissions-are-evaluated) resolves to a prompt. Tool calls already approved by an `allowedTools` entry, a settings allow rule, or the permission mode, such as `acceptEdits` or `bypassPermissions`, never invoke it. To gate every tool call, use a [`PreToolUse` hook](/docs/en/agent-sdk/hooks) instead.
+该函数是 SDK 替代交互式权限提示：仅当[权限评估流](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)解决为提示时才调用它。已由 `allowedTools` 条目、设置 allow 规则或权限模式（如 `acceptEdits` 或 `bypassPermissions`）批准的工具调用永远不会调用它。要限制每个工具调用，请改用 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)。
 
-`AskUserQuestion`, MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool), and connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools) reach the function even when an allow rule matches. In `dontAsk` mode these calls are denied instead, without invoking it.
+`AskUserQuestion`、标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具和[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的 connector 工具即使 allow 规则匹配也会到达该函数。在 `dontAsk` 模式下这些调用会被拒绝，不调用它。
 
 ```typescript theme={null}
 type CanUseTool = (
@@ -970,23 +933,25 @@ type CanUseTool = (
 ) => Promise<PermissionResult | null>;
 ```
 
-| Option           | Type                                        | Description                                                                                                                                                                                                                                                                                                  |
-| :--------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `signal`         | `AbortSignal`                               | Signaled if the operation should be aborted                                                                                                                                                                                                                                                                  |
-| `suggestions`    | [`PermissionUpdate`](#permissionupdate)`[]` | Suggested permission updates so the user is not prompted again for this tool. Bash prompts include a suggestion with the `localSettings` [destination](#permissionupdatedestination), so returning it in `updatedPermissions` writes the rule to `.claude/settings.local.json` and persists across sessions. |
-| `blockedPath`    | `string`                                    | The file path that triggered the permission request, if applicable                                                                                                                                                                                                                                           |
-| `decisionReason` | `string`                                    | Explains why this permission request was triggered                                                                                                                                                                                                                                                           |
-| `toolUseID`      | `string`                                    | Unique identifier for this specific tool call within the assistant message                                                                                                                                                                                                                                   |
-| `agentID`        | `string`                                    | If running within a sub-agent, the sub-agent's ID                                                                                                                                                                                                                                                            |
-| `requestId`      | `string`                                    | The `control_request` envelope's `request_id`. A `control_response` your application sends outside the SDK, such as a signed HTTP POST, must echo this value so the Claude Code process can match the reply to the request                                                                                   |
+| 选项               | 类型                                          | 描述                                                                                                                                                                       |
+| :--------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `signal`         | `AbortSignal`                               | 如果应中止操作，则发出信号                                                                                                                                                            |
+| `suggestions`    | [`PermissionUpdate`](#permissionupdate)`[]` | 建议的权限更新，以便用户不会再次被提示此工具。Bash 提示包括一个建议，其中包含 `localSettings` [目标](#permissionupdatedestination)，因此在 `updatedPermissions` 中返回它会将规则写入 `.claude/settings.local.json` 并在会话中持久化。 |
+| `blockedPath`    | `string`                                    | 触发权限请求的文件路径（如果适用）                                                                                                                                                        |
+| `decisionReason` | `string`                                    | 解释为什么触发此权限请求                                                                                                                                                             |
+| `toolUseID`      | `string`                                    | 此特定工具调用在助手消息中的唯一标识符                                                                                                                                                      |
+| `agentID`        | `string`                                    | 如果在子代理中运行，子代理的 ID                                                                                                                                                        |
+| `requestId`      | `string`                                    | `control_request` 信封的 `request_id`。您的应用程序在其自己的通道上发送的 `control_response`（例如签名的 HTTP POST）必须回显此值，以便 Claude Code 进程可以将回复与请求匹配                                               |
 
-The callback normally resolves the request by returning a [`PermissionResult`](#permissionresult), which the SDK writes back over its transport as the `control_response`. Return `null` only when your application has already sent the `control_response` for this request over its own channel, echoing `requestId`; the SDK then skips writing the response to its transport. Returning `null` in any other case leaves the tool call blocked indefinitely, because no `control_response` is ever sent and permission prompts don't time out.
+回调通常通过返回 [`PermissionResult`](#permissionresult) 来解决请求，SDK 将其写回其传输作为 `control_response`。仅当您的应用程序已通过其自己的通道为此请求发送 `control_response`（回显 `requestId`）时才返回 `null`；SDK 然后跳过将响应写入其传输。在任何其他情况下返回 `null` 会使工具调用无限期被阻止，因为永远不会发送 `control_response` 且权限提示不会超时。
 
-The `requestId` option and the `null` return value require Claude Code v2.1.199 or later.
+`requestId` 选项和 `null` 返回值需要 Claude Code v2.1.199 或更高版本。
 
-### `PermissionResult`
+<h3 id="permissionresult">
+  `PermissionResult`
+</h3>
 
-Result of a permission check.
+权限检查的结果。
 
 ```typescript theme={null}
 type PermissionResult =
@@ -1004,9 +969,11 @@ type PermissionResult =
     };
 ```
 
-### `ToolConfig`
+<h3 id="toolconfig">
+  `ToolConfig`
+</h3>
 
-Configuration for built-in tool behavior.
+内置工具行为的配置。
 
 ```typescript theme={null}
 type ToolConfig = {
@@ -1016,13 +983,15 @@ type ToolConfig = {
 };
 ```
 
-| Field                           | Type                   | Description                                                                                                                                                                   |
-| :------------------------------ | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `askUserQuestion.previewFormat` | `'markdown' \| 'html'` | Opts into the `preview` field on [`AskUserQuestion`](/docs/en/agent-sdk/user-input#question-format) options and sets its content format. When unset, Claude does not emit previews |
+| 字段                              | 类型                     | 描述                                                                                                                |
+| :------------------------------ | :--------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| `askUserQuestion.previewFormat` | `'markdown' \| 'html'` | 选择加入 [`AskUserQuestion`](/docs/zh-CN/agent-sdk/user-input#question-format) 选项上的 `preview` 字段并设置其内容格式。未设置时，Claude 不发出预览 |
 
-### `McpServerConfig`
+<h3 id="mcpserverconfig">
+  `McpServerConfig`
+</h3>
 
-Configuration for MCP servers.
+MCP 服务器的配置。
 
 ```typescript theme={null}
 type McpServerConfig =
@@ -1032,7 +1001,9 @@ type McpServerConfig =
   | McpSdkServerConfigWithInstance;
 ```
 
-#### `McpStdioServerConfig`
+<h4 id="mcpstdioserverconfig">
+  `McpStdioServerConfig`
+</h4>
 
 ```typescript theme={null}
 type McpStdioServerConfig = {
@@ -1043,7 +1014,9 @@ type McpStdioServerConfig = {
 };
 ```
 
-#### `McpSSEServerConfig`
+<h4 id="mcpsseserverconfig">
+  `McpSSEServerConfig`
+</h4>
 
 ```typescript theme={null}
 type McpSSEServerConfig = {
@@ -1053,7 +1026,9 @@ type McpSSEServerConfig = {
 };
 ```
 
-#### `McpHttpServerConfig`
+<h4 id="mcphttpserverconfig">
+  `McpHttpServerConfig`
+</h4>
 
 ```typescript theme={null}
 type McpHttpServerConfig = {
@@ -1063,7 +1038,9 @@ type McpHttpServerConfig = {
 };
 ```
 
-#### `McpSdkServerConfigWithInstance`
+<h4 id="mcpsdkserverconfigwithinstance">
+  `McpSdkServerConfigWithInstance`
+</h4>
 
 ```typescript theme={null}
 type McpSdkServerConfigWithInstance = {
@@ -1073,7 +1050,9 @@ type McpSdkServerConfigWithInstance = {
 };
 ```
 
-#### `McpClaudeAIProxyServerConfig`
+<h4 id="mcpclaudeaiproxyserverconfig">
+  `McpClaudeAIProxyServerConfig`
+</h4>
 
 ```typescript theme={null}
 type McpClaudeAIProxyServerConfig = {
@@ -1083,9 +1062,11 @@ type McpClaudeAIProxyServerConfig = {
 };
 ```
 
-### `SdkPluginConfig`
+<h3 id="sdkpluginconfig">
+  `SdkPluginConfig`
+</h3>
 
-Configuration for loading plugins in the SDK.
+SDK 中加载 plugins 的配置。
 
 ```typescript theme={null}
 type SdkPluginConfig = {
@@ -1095,13 +1076,13 @@ type SdkPluginConfig = {
 };
 ```
 
-| Field              | Type      | Description                                                                                                                                                                                                   |
-| :----------------- | :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`             | `'local'` | Must be `'local'` (only local plugins currently supported)                                                                                                                                                    |
-| `path`             | `string`  | Absolute or relative path to the plugin directory                                                                                                                                                             |
-| `skipMcpDiscovery` | `boolean` | When `true`, the SDK loads skills, hooks, agents, and commands from this plugin but does not read its `.mcp.json` or manifest `mcpServers`. Set this when your application owns the plugin's MCP connections. |
+| 字段                 | 类型        | 描述                                                                                                                                     |
+| :----------------- | :-------- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`             | `'local'` | 必须为 `'local'`（目前仅支持本地 plugins）                                                                                                         |
+| `path`             | `string`  | 插件目录的绝对或相对路径                                                                                                                           |
+| `skipMcpDiscovery` | `boolean` | 当为 `true` 时，SDK 从此 plugin 加载 skills、hooks、agents 和 commands，但不读取其 `.mcp.json` 或 manifest `mcpServers`。当您的应用程序拥有 plugin 的 MCP 连接时设置此选项。 |
 
-**Example:**
+**示例：**
 
 ```typescript theme={null}
 plugins: [
@@ -1110,13 +1091,17 @@ plugins: [
 ];
 ```
 
-For complete information on creating and using plugins, see [Plugins](/docs/en/agent-sdk/plugins).
+有关创建和使用 plugins 的完整信息，请参阅[Plugins](/docs/zh-CN/agent-sdk/plugins)。
 
-## Message Types
+<h2 id="message-types">
+  消息类型
+</h2>
 
-### `SDKMessage`
+<h3 id="sdkmessage">
+  `SDKMessage`
+</h3>
 
-Union type of all possible messages returned by the query.
+查询返回的所有可能消息的联合类型。
 
 ```typescript theme={null}
 type SDKMessage =
@@ -1158,41 +1143,39 @@ type SDKMessage =
   | SDKConversationResetMessage;
 ```
 
-### `SDKAssistantMessage`
+<h3 id="sdkassistantmessage">
+  `SDKAssistantMessage`
+</h3>
 
-Assistant response message.
+助手响应消息。
 
 ```typescript theme={null}
 type SDKAssistantMessage = {
   type: "assistant";
   uuid: UUID;
   session_id: string;
-  message: BetaMessage; // From Anthropic SDK
+  message: BetaMessage; // 来自 Anthropic SDK
   parent_tool_use_id: string | null;
   error?: SDKAssistantMessageError;
-  aborted?: true;
-  timestamp?: string;
 };
 ```
 
-The `message` field is a [`BetaMessage`](https://platform.claude.com/docs/en/api/messages/create) from the Anthropic SDK. It includes fields like `id`, `content`, `model`, `stop_reason`, and `usage`.
+`message` 字段是来自 Anthropic SDK 的 [`BetaMessage`](https://platform.claude.com/docs/zh-CN/api/messages/create)。它包括 `id`、`content`、`model`、`stop_reason` 和 `usage` 等字段。
 
-`SDKAssistantMessageError` is one of: `'authentication_failed'`, `'oauth_org_not_allowed'`, `'billing_error'`, `'rate_limit'`, `'overloaded'`, `'invalid_request'`, `'model_not_found'`, `'server_error'`, `'max_output_tokens'`, or `'unknown'`. `'model_not_found'` means the selected model doesn't exist or isn't available to your account or deployment. `'overloaded'` means the API returned a 529 because the server is at capacity, as opposed to `'rate_limit'`, which is a 429 against your quota.
+`SDKAssistantMessageError` 是以下之一：`'authentication_failed'`、`'oauth_org_not_allowed'`、`'billing_error'`、`'rate_limit'`、`'overloaded'`、`'invalid_request'`、`'model_not_found'`、`'server_error'`、`'max_output_tokens'` 或 `'unknown'`。`'model_not_found'` 表示所选模型不存在或对您的账户或部署不可用。`'overloaded'` 表示 API 返回了 529 错误，因为服务器处于容量限制，与 `'rate_limit'` 相对，后者是针对您的配额的 429 错误。
 
-`aborted` is `true` when an interrupt or abort truncated the assistant message before the stream completed: the message has no `stop_reason` and the content may end mid-word. The field is absent on normally completed messages. It requires Agent SDK v0.3.214 or later.
+<h3 id="sdkusermessage">
+  `SDKUserMessage`
+</h3>
 
-`timestamp` is the ISO 8601 time when the message's content finished generating on the process that produced it. The value comes from that machine's clock, so use it for display only and don't order messages by it. One API turn can produce several assistant messages that share a `message.id`, each with its own `timestamp`. When the field is absent, fall back to the time you received the message.
-
-### `SDKUserMessage`
-
-User input message.
+用户输入消息。
 
 ```typescript theme={null}
 type SDKUserMessage = {
   type: "user";
   uuid?: UUID;
   session_id?: string;
-  message: MessageParam; // From Anthropic SDK
+  message: MessageParam; // 来自 Anthropic SDK
   parent_tool_use_id: string | null;
   isSynthetic?: boolean;
   shouldQuery?: boolean;
@@ -1201,15 +1184,17 @@ type SDKUserMessage = {
 };
 ```
 
-Set `shouldQuery` to `false` to append the message to the transcript without triggering an assistant turn. The message is held and merged into the next user message that does trigger a turn. Use this to inject context, such as the output of a command you ran out of band, without spending a model call on it.
+将 `shouldQuery` 设置为 `false` 以将消息附加到记录中而不触发助手轮次。消息被保留并合并到下一个触发轮次的用户消息中。使用此方法注入上下文，例如您在带外运行的命令的输出，而无需在其上花费模型调用。
 
-On a message that carries a `tool_result` block, `tool_use_result` is the tool's structured output object rather than the text sent to the model. Its shape depends on the tool named by the matching `tool_use` block, so the field is typed `unknown`; the built-in shapes are listed under [Tool Output Types](#tool-output-types).
+在携带 `tool_result` 块的消息上，`tool_use_result` 是工具的结构化输出对象，而不是发送给模型的文本。其形状取决于匹配的 `tool_use` 块命名的工具，因此该字段被类型化为 `unknown`；内置形状列在[工具输出类型](#tool-output-types)下。
 
-For the `Agent` tool, `tool_use_result` is [`AgentOutput`](#agent-2). On a `completed` result, `content` holds the subagent's report without the agent ID and usage trailer that Claude Code appends to the `tool_result` text, so render from `tool_use_result` instead of parsing that text.
+对于 `Agent` 工具，`tool_use_result` 是 [`AgentOutput`](#agent-2)。在 `completed` 结果上，`content` 保存子代理的报告，不包含 Claude Code 附加到 `tool_result` 文本的代理 ID 和使用情况预告片，因此从 `tool_use_result` 呈现而不是解析该文本。
 
-### `SDKUserMessageReplay`
+<h3 id="sdkusermessagereplay">
+  `SDKUserMessageReplay`
+</h3>
 
-Replayed user message with required UUID.
+具有必需 UUID 的重放用户消息。
 
 ```typescript theme={null}
 type SDKUserMessageReplay = {
@@ -1225,11 +1210,13 @@ type SDKUserMessageReplay = {
 };
 ```
 
-A user turn injected from outside the session, one whose [`origin`](#sdkmessageorigin) kind is `peer` or `channel`, reaches the stream as a replay whether it was delivered during an active turn or started a new turn while the session was idle. {/* min-version: 2.1.207 */}Before v2.1.207, an injected turn delivered while the session was idle produced no message on the stream and only appeared when you re-read the transcript.
+从会话外部注入的用户轮次，其 [`origin`](#sdkmessageorigin) 类型为 `peer` 或 `channel`，无论是在活跃轮次期间交付还是在会话空闲时启动新轮次，都会作为重放到达流。{/* min-version: 2.1.207 */}在 v2.1.207 之前，在会话空闲时交付的注入轮次在流上不产生任何消息，仅在您重新读取记录时出现。
 
-### `SDKResultMessage`
+<h3 id="sdkresultmessage">
+  `SDKResultMessage`
+</h3>
 
-Final result message.
+最终结果消息。
 
 ```typescript theme={null}
 type SDKResultMessage =
@@ -1247,8 +1234,6 @@ type SDKResultMessage =
       stop_reason: string | null;
       ttft_ms?: number;
       ttft_stream_ms?: number;
-      user_message_uuid?: string;
-      request_sent_wall_ms?: number;
       total_cost_usd: number;
       usage: NonNullableUsage;
       modelUsage: { [modelName: string]: ModelUsage };
@@ -1257,7 +1242,6 @@ type SDKResultMessage =
       deferred_tool_use?: { id: string; name: string; input: Record<string, unknown> };
       terminal_reason?: TerminalReason;
       fast_mode_state?: FastModeState;
-      fast_mode_disabled_reason?: FastModeDisabledReason;
       origin?: SDKMessageOrigin;
     }
   | {
@@ -1281,46 +1265,27 @@ type SDKResultMessage =
       errors: string[];
       terminal_reason?: TerminalReason;
       fast_mode_state?: FastModeState;
-      fast_mode_disabled_reason?: FastModeDisabledReason;
       origin?: SDKMessageOrigin;
     };
 ```
 
-Several fields on the result carry diagnostic detail beyond `subtype`:
+结果上的多个字段除了 `subtype` 之外还提供诊断详情：
 
-* `api_error_status`: the HTTP status code of the API error that terminated the conversation. Absent or `null` when the turn ended without an API error.
-* `ttft_ms`: time to first token in milliseconds, measured when the first complete assistant message arrives. Present on the success arm only.
-* `ttft_stream_ms`: time in milliseconds until the first `message_start` stream event, when the response stream opens. Lower than `ttft_ms`; the gap between the two is time spent streaming the first message. Present on the success arm only.
-* {/* min-version: 2.1.216 */}`user_message_uuid`: the `uuid` of the [`SDKUserMessage`](#sdkusermessage) that started this turn, echoed back so you can match the result to the message you sent. Requires Claude Code v2.1.216 or later. Present on the success arm only, together with `request_sent_wall_ms`; absent on API-error results, subagent calls, and synthetic turns such as scheduled ones.
-* `request_sent_wall_ms`: epoch milliseconds at which Claude Code dispatched the API request, for joins against server-side timestamps. Present only together with `user_message_uuid`.
-* `terminal_reason`: why the loop ended. One of `"completed"`, `"max_turns"`, `"tool_deferred"`, `"aborted_streaming"`, `"aborted_tools"`, `"hook_stopped"`, `"stop_hook_prevented"`, `"background_requested"`, `"blocking_limit"`, `"rapid_refill_breaker"`, `"prompt_too_long"`, `"image_error"`, `"model_error"`, `"api_error"`, `"malformed_tool_use_exhausted"`, `"budget_exhausted"`, `"structured_output_retry_exhausted"`, `"tool_deferred_unavailable"`, or `"turn_setup_failed"`.
-* `fast_mode_state`: one of `"on"`, `"off"`, or `"cooldown"`.
-* `fast_mode_disabled_reason`: {/* min-version: 2.1.219 */}why [fast mode](/docs/en/fast-mode) isn't available right now. Absent when nothing blocks fast mode, though a request may still run at standard speed. During the cooldown after a fast mode rate limit, Claude Code reports `fast_mode_state: "cooldown"` with no reason code and re-enables fast mode when the cooldown expires. Requires Claude Code v2.1.219 or later.
+* `api_error_status`：终止对话的 API 错误的 HTTP 状态码。当轮次在没有 API 错误的情况下结束时，该字段不存在或为 `null`。
+* `ttft_ms`：首个令牌的时间（毫秒），在第一个完整的助手消息到达时测量。仅在成功分支上显示。
+* `ttft_stream_ms`：直到第一个 `message_start` 流事件的时间（毫秒），当响应流打开时。低于 `ttft_ms`；两者之间的差距是流式传输第一条消息所花费的时间。仅在成功分支上显示。
+* `terminal_reason`：循环结束的原因。为 `"completed"`、`"max_turns"`、`"tool_deferred"`、`"aborted_streaming"`、`"aborted_tools"`、`"hook_stopped"`、`"stop_hook_prevented"`、`"background_requested"`、`"blocking_limit"`、`"rapid_refill_breaker"`、`"prompt_too_long"`、`"image_error"`、`"model_error"`、`"api_error"`、`"malformed_tool_use_exhausted"`、`"budget_exhausted"`、`"structured_output_retry_exhausted"`、`"tool_deferred_unavailable"` 或 `"turn_setup_failed"` 之一。
+* `fast_mode_state`：为 `"on"`、`"off"` 或 `"cooldown"` 之一。
 
-Use the reason code to explain why fast mode is off in your own UI instead of re-deriving availability. Each code names the check that blocked fast mode:
+`origin` 字段转发触发此结果的用户消息的 [`SDKMessageOrigin`](#sdkmessageorigin)。当后台任务完成且 SDK 注入合成后续轮次时，生成的 `SDKResultMessage` 携带 `origin: { kind: "task-notification" }`。检查此字段以区分回答您的提示的结果与为后台任务后续操作发出的结果，以便您可以路由或抑制后者。对于在任何用户轮次之前发出的结果（例如启动错误），该字段不存在。
 
-| Reason code            | Meaning                                                                                                                                                     |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `free`                 | The account doesn't have the paid subscription or usage credits fast mode requires                                                                          |
-| `preference`           | The organization has disabled fast mode                                                                                                                     |
-| `extra_usage_disabled` | Usage credits are turned off for the account                                                                                                                |
-| `network_error`        | The [availability check](/docs/en/fast-mode#use-fast-mode-behind-proxies-and-llm-gateways) couldn't reach `api.anthropic.com`                                    |
-| `unknown`              | Claude Code couldn't determine availability                                                                                                                 |
-| `not_first_party`      | The session uses a provider other than the Anthropic API                                                                                                    |
-| `disabled_by_env`      | [`CLAUDE_CODE_DISABLE_FAST_MODE`](/docs/en/env-vars) is set                                                                                                      |
-| `model_not_allowed`    | The fast mode Opus model isn't in the organization's [`availableModels`](/docs/en/model-config#restrict-model-selection) allowlist                               |
-| `sdk_opt_in_required`  | The session hasn't opted in to fast mode: pass `fastMode: true` in the [`settings`](#options) option or through [`applyFlagSettings()`](#applyflagsettings) |
-| `pending`              | The availability check hasn't completed yet                                                                                                                 |
+当 `PreToolUse` hook 返回 `permissionDecision: "defer"` 时，结果具有 `stop_reason: "tool_deferred"` 和 `deferred_tool_use` 携带待处理工具的 `id`、`name` 和 `input`。读取此字段以在您自己的 UI 中显示请求，然后使用相同的 `session_id` 恢复以继续。有关完整的往返过程，请参阅[稍后延迟工具调用](/docs/zh-CN/hooks#defer-a-tool-call-for-later)。
 
-The same pair of fields appears on [`SDKSystemMessage`](#sdksystemmessage) and on the [`SDKControlInitializeResponse`](#sdkcontrolinitializeresponse), so you can read the fast mode state before the first turn.
+<h3 id="sdksystemmessage">
+  `SDKSystemMessage`
+</h3>
 
-The `origin` field forwards the [`SDKMessageOrigin`](#sdkmessageorigin) of the user message that triggered this result. When a background task finishes and the SDK injects a synthetic follow-up turn, the resulting `SDKResultMessage` carries `origin: { kind: "task-notification" }`. Check this field to distinguish results that answer your prompt from results emitted for background-task follow-ups, so you can route or suppress the latter. The field is absent for results emitted before any user turn, such as startup errors.
-
-When a `PreToolUse` hook returns `permissionDecision: "defer"`, the result has `stop_reason: "tool_deferred"` and `deferred_tool_use` carries the pending tool's `id`, `name`, and `input`. Read this field to surface the request in your own UI, then resume with the same `session_id` to continue. See [Defer a tool call for later](/docs/en/hooks#defer-a-tool-call-for-later) for the full round trip.
-
-### `SDKSystemMessage`
-
-System initialization message.
+系统初始化消息。
 
 ```typescript theme={null}
 type SDKSystemMessage = {
@@ -1344,39 +1309,40 @@ type SDKSystemMessage = {
   output_style: string;
   skills: string[];
   plugins: { name: string; path: string }[];
-  fast_mode_state?: FastModeState;
-  fast_mode_disabled_reason?: FastModeDisabledReason;
   capabilities?: string[];
 };
 ```
 
-`fast_mode_state` reports the session's [fast mode](/docs/en/fast-mode) state. {/* min-version: 2.1.219 */}When something blocks fast mode, `fast_mode_disabled_reason` names the check that blocked it; the field requires Claude Code v2.1.219 or later. For the reason codes and their meanings, see [`fast_mode_disabled_reason`](#sdkresultmessage) on the result message.
+{/* min-version: 2.1.205 */}
 
-The `capabilities` array names the protocol behaviors this CLI implements, so you can feature-detect instead of comparing `claude_code_version` strings. It is an open set: ignore values you don't recognize, and check for the specific capability whose behavior you rely on. The field requires Claude Code v2.1.205 or later and is absent on earlier CLIs.
+`capabilities` 数组命名此 CLI 实现的协议行为，因此您可以进行功能检测而不是比较 `claude_code_version` 字符串。这是一个开放集合：忽略您不认识的值，并检查您依赖其行为的特定功能。该字段需要 Claude Code v2.1.205 或更高版本，在较早的 CLI 上不存在。
 
-| Capability                   | Meaning                                                                                                                                                                                                                                                                                                                            |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interrupt_receipt_v1`       | [`interrupt()`](#query-object) resolves with an [`SDKControlInterruptResponse`](#sdkcontrolinterruptresponse) receipt naming the queued messages that survive the interrupt                                                                                                                                                        |
-| `interrupt_cancel_queued_v1` | {/* min-version: 2.1.219 */}The `interrupt` control request honors `cancel_queued: true`, cancelling the queued messages that would otherwise survive the interrupt and listing them on the receipt's `cancelled` field. See [`SDKControlInterruptResponse`](#sdkcontrolinterruptresponse). Requires Claude Code v2.1.219 or later |
+| 功能                     | 含义                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `interrupt_receipt_v1` | [`interrupt()`](#query-object) 使用命名存活中断的排队消息的 [`SDKControlInterruptResponse`](#sdkcontrolinterruptresponse) 收据进行解析 |
 
-### `SDKPartialAssistantMessage`
+<h3 id="sdkpartialassistantmessage">
+  `SDKPartialAssistantMessage`
+</h3>
 
-Streaming partial message (only when `includePartialMessages` is true). The `parent_tool_use_id` field is always `null`: stream events are emitted for the main session only. For subagent attribution, use complete messages, which carry `parent_tool_use_id`, or enable [`forwardSubagentText`](#options) to receive subagent text and thinking as complete messages.
+流式部分消息（仅当 `includePartialMessages` 为 true 时）。`parent_tool_use_id` 字段始终为 `null`：流事件仅针对主会话发出。对于子代理归属，使用携带 `parent_tool_use_id` 的完整消息，或启用 [`forwardSubagentText`](#options) 以接收子代理文本和思考作为完整消息。
 
 ```typescript theme={null}
 type SDKPartialAssistantMessage = {
   type: "stream_event";
-  event: BetaRawMessageStreamEvent; // From Anthropic SDK
+  event: BetaRawMessageStreamEvent; // 来自 Anthropic SDK
   parent_tool_use_id: string | null;
   uuid: UUID;
   session_id: string;
-  ttft_ms?: number; // Time to first token in ms, present only on message_start events
+  ttft_ms?: number; // 首个令牌的时间（毫秒），仅在 message_start 事件上显示
 };
 ```
 
-### `SDKCompactBoundaryMessage`
+<h3 id="sdkcompactboundarymessage">
+  `SDKCompactBoundaryMessage`
+</h3>
 
-Message indicating a conversation compaction boundary.
+指示对话压缩边界的消息。
 
 ```typescript theme={null}
 type SDKCompactBoundaryMessage = {
@@ -1391,9 +1357,11 @@ type SDKCompactBoundaryMessage = {
 };
 ```
 
-### `SDKInformationalMessage`
+<h3 id="sdkinformationalmessage">
+  `SDKInformationalMessage`
+</h3>
 
-Generic text banner emitted by the loop. Carries non-error status lines, hook feedback such as a `UserPromptSubmit` hook's block reason, and command output. Render `content` as plaintext at the given `level`.
+由循环发出的通用文本横幅。携带非错误状态行、hook 反馈（例如 `UserPromptSubmit` hook 的阻止原因）和命令输出。将 `content` 呈现为给定 `level` 的纯文本。
 
 ```typescript theme={null}
 type SDKInformationalMessage = {
@@ -1408,9 +1376,11 @@ type SDKInformationalMessage = {
 };
 ```
 
-### `SDKWorkerShuttingDownMessage`
+<h3 id="sdkworkershuttingdownmessage">
+  `SDKWorkerShuttingDownMessage`
+</h3>
 
-Emitted on graceful worker teardown so remote clients can show why the worker exited instead of waiting for heartbeat timeout. The `reason` is a short snake\_case string set by the host CLI, such as `"host_exit"` or `"remote_control_disabled"`. Act on this only when streaming live. A resumed session replays past instances of this message, so ignore them in that case.
+在优雅的 worker 拆卸时发出，以便远程客户端可以显示 worker 消失的原因，而不是等待心跳超时。`reason` 是由主机 CLI 设置的短 snake\_case 字符串，例如 `"host_exit"` 或 `"remote_control_disabled"`。仅在实时流式传输时对此采取行动。恢复的会话会重放此消息的过去实例，因此在这种情况下忽略它们。
 
 ```typescript theme={null}
 type SDKWorkerShuttingDownMessage = {
@@ -1422,9 +1392,11 @@ type SDKWorkerShuttingDownMessage = {
 };
 ```
 
-### `SDKPluginInstallMessage`
+<h3 id="sdkplugininstallmessage">
+  `SDKPluginInstallMessage`
+</h3>
 
-Plugin installation progress event. Emitted when [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL`](/docs/en/env-vars) is set, so your Agent SDK application can track marketplace plugin installation before the first turn. The `started` and `completed` statuses bracket the overall install. The `installed` and `failed` statuses report individual marketplaces and include `name`.
+插件安装进度事件。当设置 [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL`](/docs/zh-CN/env-vars) 时发出，以便您的 Agent SDK 应用程序可以在第一个轮次之前跟踪市场插件安装。`started` 和 `completed` 状态括起整体安装。`installed` 和 `failed` 状态报告单个市场并包括 `name`。
 
 ```typescript theme={null}
 type SDKPluginInstallMessage = {
@@ -1438,11 +1410,13 @@ type SDKPluginInstallMessage = {
 };
 ```
 
-### `SDKPermissionDeniedMessage`
+<h3 id="sdkpermissiondeniedmessage">
+  `SDKPermissionDeniedMessage`
+</h3>
 
-Stream event emitted when the permission system auto-denies a tool call without an interactive prompt. Use it to render the denial in your UI as it happens, rather than only observing the `is_error` tool result that follows. The interactive ask path reaches your application separately through the [`canUseTool`](#canusetool) callback. Denials issued by a `PreToolUse` hook are not reported through this event.
+当权限系统自动拒绝工具调用而不显示交互式提示时发出的流事件。使用它在发生时在您的 UI 中呈现拒绝，而不仅仅观察随后的 `is_error` 工具结果。交互式询问路径通过 [`canUseTool`](#canusetool) 回调单独到达您的应用程序。由 `PreToolUse` hook 发出的拒绝不会通过此事件报告。
 
-This event requires Claude Code v2.1.136 or later.
+此事件需要 Claude Code v2.1.136 或更高版本。
 
 ```typescript theme={null}
 type SDKPermissionDeniedMessage = {
@@ -1459,18 +1433,20 @@ type SDKPermissionDeniedMessage = {
 };
 ```
 
-| Field                  | Type     | Description                                                                                                              |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `tool_name`            | `string` | Name of the tool that was denied                                                                                         |
-| `tool_use_id`          | `string` | ID of the `tool_use` block this denial answers                                                                           |
-| `agent_id`             | `string` | Subagent ID when the denied call originated inside a subagent. Mirrors the field on `can_use_tool` for host-side routing |
-| `decision_reason_type` | `string` | Discriminator for the component that decided, such as `"rule"`, `"mode"`, `"classifier"`, or `"asyncAgent"`              |
-| `decision_reason`      | `string` | Human-readable reason from the deciding component, when available                                                        |
-| `message`              | `string` | Rejection message returned to the model in the `tool_result`                                                             |
+| 字段                     | 类型       | 描述                                                            |
+| ---------------------- | -------- | ------------------------------------------------------------- |
+| `tool_name`            | `string` | 被拒绝的工具的名称                                                     |
+| `tool_use_id`          | `string` | 此拒绝回答的 `tool_use` 块的 ID                                       |
+| `agent_id`             | `string` | 当拒绝的调用源自子代理内部时的子代理 ID。镜像 `can_use_tool` 上的字段以进行主机端路由          |
+| `decision_reason_type` | `string` | 决定组件的鉴别器，例如 `"rule"`、`"mode"`、`"classifier"` 或 `"asyncAgent"` |
+| `decision_reason`      | `string` | 来自决定组件的人类可读原因（如果可用）                                           |
+| `message`              | `string` | 在 `tool_result` 中返回给模型的拒绝消息                                   |
 
-### `SDKPermissionDenial`
+<h3 id="sdkpermissiondenial">
+  `SDKPermissionDenial`
+</h3>
 
-Information about a denied tool use.
+有关被拒绝的工具使用的信息。
 
 ```typescript theme={null}
 type SDKPermissionDenial = {
@@ -1480,9 +1456,11 @@ type SDKPermissionDenial = {
 };
 ```
 
-### `SDKMessageOrigin`
+<h3 id="sdkmessageorigin">
+  `SDKMessageOrigin`
+</h3>
 
-Provenance of a user-role message. This appears as `origin` on [`SDKUserMessage`](#sdkusermessage) and is forwarded onto the corresponding [`SDKResultMessage`](#sdkresultmessage) so you can tell what triggered a given turn.
+用户角色消息的来源。这在 [`SDKUserMessage`](#sdkusermessage) 上显示为 `origin`，并转发到相应的 [`SDKResultMessage`](#sdkresultmessage)，以便您可以判断给定轮次的触发因素。
 
 ```typescript theme={null}
 type SDKMessageOrigin =
@@ -1492,43 +1470,34 @@ type SDKMessageOrigin =
       kind: "peer";
       from: string;
       name?: string;
-      fromSession?: string;
       senderTaskId?: string;
       body?: string;
-      verifiedPeerPid?: number;
     }
   | { kind: "task-notification" }
   | { kind: "coordinator" }
   | { kind: "auto-continuation" };
 ```
 
-| `kind`              | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `human`             | Direct input from the end user. If your application forwards what the user typed as a user message, set its `origin` to `{ kind: "human" }` explicitly: {/* min-version: 2.1.210 */}Claude Code treats a user message with no `origin` as unattributed, and checks that require a human-typed prompt, such as the [`ultracode` workflow keyword](/docs/en/workflows#ask-for-a-workflow-in-your-prompt), don't accept it. Before v2.1.210, Claude Code treated an absent `origin` on a user message as human input. |
-| `channel`           | Message arriving on a [channel](/docs/en/channels). `server` is the source MCP server name.                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `peer`              | Message from another agent: an in-process [teammate](/docs/en/agent-teams) or a cross-session peer such as another local Claude Code process. See [Peer origin fields](#peer-origin-fields) for the per-field semantics and the trust model.                                                                                                                                                                                                                                                                       |
-| `task-notification` | Synthetic turn injected after a background task finished. See [`SDKTaskNotificationMessage`](#sdktasknotificationmessage).                                                                                                                                                                                                                                                                                                                                                                                    |
-| `coordinator`       | Message from a team coordinator in an [agent team](/docs/en/agent-teams).                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `auto-continuation` | Synthetic turn injected when the session continues without fresh user input, such as a command result that triggers a follow-up prompt.                                                                                                                                                                                                                                                                                                                                                                       |
+| `kind`              | 含义                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `human`             | 来自最终用户的直接输入。在用户消息上，缺少的 `origin` 也表示人工输入。                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `channel`           | 消息到达[频道](/docs/zh-CN/channels)。`server` 是源 MCP 服务器名称。                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `peer`              | 来自另一个代理的消息。对于通过 `SendMessage` 发送到 `main` 的进程内[队友](/docs/zh-CN/agent-teams)，`from` 是队友的名称，`senderTaskId` 是其任务 ID。对于跨会话对等体（例如另一个本地 Claude Code 进程），`from` 是发送者地址，`senderTaskId` 不存在。{/* min-version: 2.1.205 */}}`name` 和 `body` 需要 Claude Code v2.1.205 或更高版本。`name` 是发送者的显示名称，由 Claude Code 规范化：它删除 Unicode 控制、格式、代理和行或段落分隔符代码点，然后修剪结果并将其限制为 64 个代码点，并带有省略号。`body` 是解码的消息正文，去除对等信封，与模型看到的字节完全相同。对于队友消息，`body` 始终存在；对于跨会话对等体，仅当轮次恰好是由 Claude Code 形成的一个对等信封时才存在。呈现 `name` 和 `body` 而不是重新解析消息文本。 |
+| `task-notification` | 后台任务完成后注入的合成轮次。请参阅 [`SDKTaskNotificationMessage`](#sdktasknotificationmessage)。                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `coordinator`       | 来自[代理团队](/docs/zh-CN/agent-teams)中的团队协调员的消息。                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `auto-continuation` | 当会话在没有新用户输入的情况下继续时注入的合成轮次，例如触发后续提示的命令结果。                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
-### Peer origin fields
+<h2 id="hook-types">
+  Hook 类型
+</h2>
 
-A `peer` origin identifies which agent sent the message: an in-process [teammate](/docs/en/agent-teams) sending to `main` with `SendMessage`, or a cross-session peer such as another local Claude Code process. The two kinds of sender fill the fields differently:
+有关使用 hooks 的综合指南，包括示例和常见模式，请参阅 [Hooks 指南](/docs/zh-CN/agent-sdk/hooks)。
 
-* `from`: the teammate's name, or the sender address for a cross-session peer. The value is sender-authored; `verifiedPeerPid` is the verified identity.
-* `senderTaskId`: the teammate's task ID. Absent for a cross-session peer.
-* {/* min-version: 2.1.205 */}`name`: the sender's display name, normalized by Claude Code: it strips Unicode control, format, surrogate, and line or paragraph separator code points, then trims the result and caps it at 64 code points with an ellipsis. Requires Claude Code v2.1.205 or later.
-* {/* min-version: 2.1.205 */}`body`: the decoded message body with the peer envelope stripped, byte-exact with what the model sees. Always present for a teammate message; for a cross-session peer, present only when the turn is exactly one peer envelope formed by Claude Code. Render `name` and `body` instead of re-parsing the message text. Requires Claude Code v2.1.205 or later.
-* {/* min-version: 2.1.216 */}`fromSession`: the sender's host-openable session ID, set by the sender's host so your UI can link back to the sending session. Like `from`, it is sender-asserted: use it as a navigation target only, and don't treat it as proof of the sender's identity. Requires Claude Code v2.1.216 or later.
-* {/* min-version: 2.1.216 */}`verifiedPeerPid`: the process ID of the process that connected to this session's cross-session messaging socket, verified by the kernel and read from the connection itself, never from the payload. Use it, not `from`, to identify the sender: `from` is forgeable by any same-user process. The field is absent when Claude Code can't verify it, such as on Windows or non-socket ingress, so an absent value means the sender is unverified. For relayed traffic it identifies the relay rather than the message's author, and process IDs are recyclable, so treat it as provenance rather than an authentication token. Requires Claude Code v2.1.216 or later.
+<h3 id="hookevent">
+  `HookEvent`
+</h3>
 
-## Hook Types
-
-For a comprehensive guide on using hooks with examples and common patterns, see the [Hooks guide](/docs/en/agent-sdk/hooks).
-
-### `HookEvent`
-
-Available hook events.
+可用的 hook 事件。
 
 ```typescript theme={null}
 type HookEvent =
@@ -1538,60 +1507,55 @@ type HookEvent =
   | "PostToolBatch"
   | "Notification"
   | "UserPromptSubmit"
-  | "UserPromptExpansion"
   | "SessionStart"
   | "SessionEnd"
   | "Stop"
-  | "StopFailure"
   | "SubagentStart"
   | "SubagentStop"
   | "PreCompact"
-  | "PostCompact"
   | "PermissionRequest"
-  | "PermissionDenied"
   | "Setup"
   | "TeammateIdle"
-  | "TaskCreated"
   | "TaskCompleted"
-  | "Elicitation"
-  | "ElicitationResult"
   | "ConfigChange"
-  | "DirectoryAdded"
   | "WorktreeCreate"
   | "WorktreeRemove"
-  | "InstructionsLoaded"
-  | "CwdChanged"
-  | "FileChanged"
   | "MessageDisplay";
 ```
 
-### `HookCallback`
+<h3 id="hookcallback">
+  `HookCallback`
+</h3>
 
-Hook callback function type.
+Hook 回调函数类型。
 
 ```typescript theme={null}
 type HookCallback = (
-  input: HookInput, // Union of all hook input types
+  input: HookInput, // 所有 hook 输入类型的联合
   toolUseID: string | undefined,
   options: { signal: AbortSignal }
 ) => Promise<HookJSONOutput>;
 ```
 
-### `HookCallbackMatcher`
+<h3 id="hookcallbackmatcher">
+  `HookCallbackMatcher`
+</h3>
 
-Hook configuration with optional matcher.
+带有可选匹配器的 Hook 配置。
 
 ```typescript theme={null}
 interface HookCallbackMatcher {
   matcher?: string;
   hooks: HookCallback[];
-  timeout?: number; // Timeout in seconds for all hooks in this matcher
+  timeout?: number; // 此匹配器中所有 hooks 的超时时间（秒）
 }
 ```
 
-### `HookInput`
+<h3 id="hookinput">
+  `HookInput`
+</h3>
 
-Union type of all hook input types.
+所有 hook 输入类型的联合类型。
 
 ```typescript theme={null}
 type HookInput =
@@ -1599,38 +1563,29 @@ type HookInput =
   | PostToolUseHookInput
   | PostToolUseFailureHookInput
   | PostToolBatchHookInput
-  | PermissionDeniedHookInput
   | NotificationHookInput
   | UserPromptSubmitHookInput
-  | UserPromptExpansionHookInput
   | SessionStartHookInput
   | SessionEndHookInput
   | StopHookInput
-  | StopFailureHookInput
   | SubagentStartHookInput
   | SubagentStopHookInput
   | PreCompactHookInput
-  | PostCompactHookInput
   | PermissionRequestHookInput
   | SetupHookInput
   | TeammateIdleHookInput
-  | TaskCreatedHookInput
   | TaskCompletedHookInput
-  | ElicitationHookInput
-  | ElicitationResultHookInput
   | ConfigChangeHookInput
-  | InstructionsLoadedHookInput
-  | DirectoryAddedHookInput
   | WorktreeCreateHookInput
   | WorktreeRemoveHookInput
-  | CwdChangedHookInput
-  | FileChangedHookInput
   | MessageDisplayHookInput;
 ```
 
-### `BaseHookInput`
+<h3 id="basehookinput">
+  `BaseHookInput`
+</h3>
 
-Base interface that all hook input types extend.
+所有 hook 输入类型扩展的基本接口。
 
 ```typescript theme={null}
 type BaseHookInput = {
@@ -1645,9 +1600,11 @@ type BaseHookInput = {
 };
 ```
 
-The `prompt_id` field is a UUID identifying the user prompt currently being processed. It matches the [`prompt.id` attribute on OpenTelemetry events](/docs/en/monitoring-usage#event-correlation-attributes) and is absent until the first user input. Requires Claude Code v2.1.196 or later.
+`prompt_id` 字段是一个 UUID，用于标识当前正在处理的用户提示。它与 [OpenTelemetry 事件上的 `prompt.id` 属性](/docs/zh-CN/monitoring-usage#event-correlation-attributes)匹配，在第一个用户输入之前不存在。需要 Claude Code v2.1.196 或更高版本。
 
-#### `PreToolUseHookInput`
+<h4 id="pretoolusehookinput">
+  `PreToolUseHookInput`
+</h4>
 
 ```typescript theme={null}
 type PreToolUseHookInput = BaseHookInput & {
@@ -1658,7 +1615,9 @@ type PreToolUseHookInput = BaseHookInput & {
 };
 ```
 
-#### `PostToolUseHookInput`
+<h4 id="posttoolusehookinput">
+  `PostToolUseHookInput`
+</h4>
 
 ```typescript theme={null}
 type PostToolUseHookInput = BaseHookInput & {
@@ -1671,7 +1630,9 @@ type PostToolUseHookInput = BaseHookInput & {
 };
 ```
 
-#### `PostToolUseFailureHookInput`
+<h4 id="posttoolusefailurehookinput">
+  `PostToolUseFailureHookInput`
+</h4>
 
 ```typescript theme={null}
 type PostToolUseFailureHookInput = BaseHookInput & {
@@ -1685,9 +1646,11 @@ type PostToolUseFailureHookInput = BaseHookInput & {
 };
 ```
 
-#### `PostToolBatchHookInput`
+<h4 id="posttoolbatchhookinput">
+  `PostToolBatchHookInput`
+</h4>
 
-Fires once after every tool call in a batch has resolved, before the next model request. `tool_response` carries the serialized `tool_result` content the model sees; the shape differs from `PostToolUseHookInput`'s structured `Output` object.
+在批处理中的每个工具调用都已解决后触发一次，在下一个模型请求之前。`tool_response` 携带序列化的 `tool_result` 内容，模型会看到该内容；其形状与 `PostToolUseHookInput` 的结构化 `Output` 对象不同。
 
 ```typescript theme={null}
 type PostToolBatchHookInput = BaseHookInput & {
@@ -1703,19 +1666,9 @@ type PostToolBatchToolCall = {
 };
 ```
 
-#### `PermissionDeniedHookInput`
-
-```typescript theme={null}
-type PermissionDeniedHookInput = BaseHookInput & {
-  hook_event_name: "PermissionDenied";
-  tool_name: string;
-  tool_input: unknown;
-  tool_use_id: string;
-  reason: string;
-};
-```
-
-#### `NotificationHookInput`
+<h4 id="notificationhookinput">
+  `NotificationHookInput`
+</h4>
 
 ```typescript theme={null}
 type NotificationHookInput = BaseHookInput & {
@@ -1726,51 +1679,44 @@ type NotificationHookInput = BaseHookInput & {
 };
 ```
 
-#### `UserPromptSubmitHookInput`
+<h4 id="userpromptsubmithookinput">
+  `UserPromptSubmitHookInput`
+</h4>
 
 ```typescript theme={null}
 type UserPromptSubmitHookInput = BaseHookInput & {
   hook_event_name: "UserPromptSubmit";
   prompt: string;
-  session_title?: string;
 };
 ```
 
-#### `UserPromptExpansionHookInput`
-
-```typescript theme={null}
-type UserPromptExpansionHookInput = BaseHookInput & {
-  hook_event_name: "UserPromptExpansion";
-  expansion_type: "slash_command" | "mcp_prompt";
-  command_name: string;
-  command_args: string;
-  command_source?: string;
-  prompt: string;
-};
-```
-
-#### `SessionStartHookInput`
+<h4 id="sessionstarthookinput">
+  `SessionStartHookInput`
+</h4>
 
 ```typescript theme={null}
 type SessionStartHookInput = BaseHookInput & {
   hook_event_name: "SessionStart";
-  source: "startup" | "resume" | "clear" | "compact" | "fork";
+  source: "startup" | "resume" | "clear" | "compact";
   agent_type?: string;
   model?: string;
-  session_title?: string;
 };
 ```
 
-#### `SessionEndHookInput`
+<h4 id="sessionendhookinput">
+  `SessionEndHookInput`
+</h4>
 
 ```typescript theme={null}
 type SessionEndHookInput = BaseHookInput & {
   hook_event_name: "SessionEnd";
-  reason: ExitReason; // String from EXIT_REASONS array
+  reason: ExitReason; // EXIT_REASONS 数组中的字符串
 };
 ```
 
-#### `StopHookInput`
+<h4 id="stophookinput">
+  `StopHookInput`
+</h4>
 
 ```typescript theme={null}
 type StopHookInput = BaseHookInput & {
@@ -1782,18 +1728,9 @@ type StopHookInput = BaseHookInput & {
 };
 ```
 
-#### `StopFailureHookInput`
-
-```typescript theme={null}
-type StopFailureHookInput = BaseHookInput & {
-  hook_event_name: "StopFailure";
-  error: SDKAssistantMessageError;
-  error_details?: string;
-  last_assistant_message?: string;
-};
-```
-
-#### `SubagentStartHookInput`
+<h4 id="subagentstarthookinput">
+  `SubagentStartHookInput`
+</h4>
 
 ```typescript theme={null}
 type SubagentStartHookInput = BaseHookInput & {
@@ -1803,7 +1740,9 @@ type SubagentStartHookInput = BaseHookInput & {
 };
 ```
 
-#### `SubagentStopHookInput`
+<h4 id="subagentstophookinput">
+  `SubagentStopHookInput`
+</h4>
 
 ```typescript theme={null}
 type SubagentStopHookInput = BaseHookInput & {
@@ -1837,7 +1776,9 @@ type SessionCronSummary = {
 };
 ```
 
-#### `PreCompactHookInput`
+<h4 id="precompacthookinput">
+  `PreCompactHookInput`
+</h4>
 
 ```typescript theme={null}
 type PreCompactHookInput = BaseHookInput & {
@@ -1847,17 +1788,9 @@ type PreCompactHookInput = BaseHookInput & {
 };
 ```
 
-#### `PostCompactHookInput`
-
-```typescript theme={null}
-type PostCompactHookInput = BaseHookInput & {
-  hook_event_name: "PostCompact";
-  trigger: "manual" | "auto";
-  compact_summary: string;
-};
-```
-
-#### `PermissionRequestHookInput`
+<h4 id="permissionrequesthookinput">
+  `PermissionRequestHookInput`
+</h4>
 
 ```typescript theme={null}
 type PermissionRequestHookInput = BaseHookInput & {
@@ -1868,7 +1801,9 @@ type PermissionRequestHookInput = BaseHookInput & {
 };
 ```
 
-#### `SetupHookInput`
+<h4 id="setuphookinput">
+  `SetupHookInput`
+</h4>
 
 ```typescript theme={null}
 type SetupHookInput = BaseHookInput & {
@@ -1877,32 +1812,22 @@ type SetupHookInput = BaseHookInput & {
 };
 ```
 
-#### `TeammateIdleHookInput`
+<h4 id="teammateidlehookinput">
+  `TeammateIdleHookInput`
+</h4>
 
 ```typescript theme={null}
 type TeammateIdleHookInput = BaseHookInput & {
   hook_event_name: "TeammateIdle";
   teammate_name: string;
-  /** @deprecated since v2.1.178. Carries the session-derived team name; will be removed. */
+  /** @deprecated 自 v2.1.178 起已弃用。携带会话派生的团队名称；将被移除。 */
   team_name: string;
 };
 ```
 
-#### `TaskCreatedHookInput`
-
-```typescript theme={null}
-type TaskCreatedHookInput = BaseHookInput & {
-  hook_event_name: "TaskCreated";
-  task_id: string;
-  task_subject: string;
-  task_description?: string;
-  teammate_name?: string;
-  /** @deprecated since v2.1.178. Carries the session-derived team name; will be removed. */
-  team_name?: string;
-};
-```
-
-#### `TaskCompletedHookInput`
+<h4 id="taskcompletedhookinput">
+  `TaskCompletedHookInput`
+</h4>
 
 ```typescript theme={null}
 type TaskCompletedHookInput = BaseHookInput & {
@@ -1911,39 +1836,14 @@ type TaskCompletedHookInput = BaseHookInput & {
   task_subject: string;
   task_description?: string;
   teammate_name?: string;
-  /** @deprecated since v2.1.178. Carries the session-derived team name; will be removed. */
+  /** @deprecated 自 v2.1.178 起已弃用。携带会话派生的团队名称；将被移除。 */
   team_name?: string;
 };
 ```
 
-#### `ElicitationHookInput`
-
-```typescript theme={null}
-type ElicitationHookInput = BaseHookInput & {
-  hook_event_name: "Elicitation";
-  mcp_server_name: string;
-  message: string;
-  mode?: "form" | "url";
-  url?: string;
-  elicitation_id?: string;
-  requested_schema?: Record<string, unknown>;
-};
-```
-
-#### `ElicitationResultHookInput`
-
-```typescript theme={null}
-type ElicitationResultHookInput = BaseHookInput & {
-  hook_event_name: "ElicitationResult";
-  mcp_server_name: string;
-  elicitation_id?: string;
-  mode?: "form" | "url";
-  action: "accept" | "decline" | "cancel";
-  content?: Record<string, unknown>;
-};
-```
-
-#### `ConfigChangeHookInput`
+<h4 id="configchangehookinput">
+  `ConfigChangeHookInput`
+</h4>
 
 ```typescript theme={null}
 type ConfigChangeHookInput = BaseHookInput & {
@@ -1958,38 +1858,9 @@ type ConfigChangeHookInput = BaseHookInput & {
 };
 ```
 
-#### `InstructionsLoadedHookInput`
-
-```typescript theme={null}
-type InstructionsLoadedHookInput = BaseHookInput & {
-  hook_event_name: "InstructionsLoaded";
-  file_path: string;
-  memory_type: "User" | "Project" | "Local" | "Managed";
-  load_reason:
-    | "session_start"
-    | "nested_traversal"
-    | "path_glob_match"
-    | "include"
-    | "compact";
-  globs?: string[];
-  trigger_file_path?: string;
-  parent_file_path?: string;
-};
-```
-
-#### `DirectoryAddedHookInput`
-
-```typescript theme={null}
-type DirectoryAddedHookInput = BaseHookInput & {
-  hook_event_name: "DirectoryAdded";
-  directory: string;
-  source: "slash_command" | "register_repo_root";
-};
-```
-
-`directory` is the absolute path of the directory that was added. `source` is `"slash_command"` when `/add-dir` added it and `"register_repo_root"` when the SDK control request did.
-
-#### `WorktreeCreateHookInput`
+<h4 id="worktreecreatehookinput">
+  `WorktreeCreateHookInput`
+</h4>
 
 ```typescript theme={null}
 type WorktreeCreateHookInput = BaseHookInput & {
@@ -1998,7 +1869,9 @@ type WorktreeCreateHookInput = BaseHookInput & {
 };
 ```
 
-#### `WorktreeRemoveHookInput`
+<h4 id="worktreeremovehookinput">
+  `WorktreeRemoveHookInput`
+</h4>
 
 ```typescript theme={null}
 type WorktreeRemoveHookInput = BaseHookInput & {
@@ -2007,27 +1880,9 @@ type WorktreeRemoveHookInput = BaseHookInput & {
 };
 ```
 
-#### `CwdChangedHookInput`
-
-```typescript theme={null}
-type CwdChangedHookInput = BaseHookInput & {
-  hook_event_name: "CwdChanged";
-  old_cwd: string;
-  new_cwd: string;
-};
-```
-
-#### `FileChangedHookInput`
-
-```typescript theme={null}
-type FileChangedHookInput = BaseHookInput & {
-  hook_event_name: "FileChanged";
-  file_path: string;
-  event: "change" | "add" | "unlink";
-};
-```
-
-#### `MessageDisplayHookInput`
+<h4 id="messagedisplayhookinput">
+  `MessageDisplayHookInput`
+</h4>
 
 ```typescript theme={null}
 type MessageDisplayHookInput = BaseHookInput & {
@@ -2040,15 +1895,19 @@ type MessageDisplayHookInput = BaseHookInput & {
 };
 ```
 
-### `HookJSONOutput`
+<h3 id="hookjsonoutput">
+  `HookJSONOutput`
+</h3>
 
-Hook return value.
+Hook 返回值。
 
 ```typescript theme={null}
 type HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput;
 ```
 
-#### `AsyncHookJSONOutput`
+<h4 id="asynchookjsonoutput">
+  `AsyncHookJSONOutput`
+</h4>
 
 ```typescript theme={null}
 type AsyncHookJSONOutput = {
@@ -2057,7 +1916,9 @@ type AsyncHookJSONOutput = {
 };
 ```
 
-#### `SyncHookJSONOutput`
+<h4 id="synchookjsonoutput">
+  `SyncHookJSONOutput`
+</h4>
 
 ```typescript theme={null}
 type SyncHookJSONOutput = {
@@ -2066,13 +1927,6 @@ type SyncHookJSONOutput = {
   stopReason?: string;
   decision?: "approve" | "block";
   systemMessage?: string;
-  /**
-   * A terminal escape sequence (e.g. OSC 9 / OSC 777 desktop-notification)
-   * for Claude Code to emit on your behalf. Only notification/title OSCs
-   * (0, 1, 2, 9, 99, 777) and BEL are permitted; a value containing
-   * anything else is ignored as a whole.
-   */
-  terminalSequence?: string;
   reason?: string;
   hookSpecificOutput?:
     | {
@@ -2085,26 +1939,10 @@ type SyncHookJSONOutput = {
     | {
         hookEventName: "UserPromptSubmit";
         additionalContext?: string;
-        sessionTitle?: string;
-        /** When decision is "block", omit the original prompt from the block message. */
-        suppressOriginalPrompt?: boolean;
-      }
-    | {
-        hookEventName: "UserPromptExpansion";
-        additionalContext?: string;
       }
     | {
         hookEventName: "SessionStart";
         additionalContext?: string;
-        initialUserMessage?: string;
-        sessionTitle?: string;
-        watchPaths?: string[];
-        /**
-         * Re-scan skill and command directories after SessionStart hooks
-         * complete, so skills installed by the hook are available in the
-         * same session.
-         */
-        reloadSkills?: boolean;
       }
     | {
         hookEventName: "Setup";
@@ -2118,7 +1956,7 @@ type SyncHookJSONOutput = {
         hookEventName: "PostToolUse";
         additionalContext?: string;
         updatedToolOutput?: unknown;
-        /** @deprecated Use `updatedToolOutput`, which works for all tools. */
+        /** @deprecated 使用 `updatedToolOutput`，它适用于所有工具。 */
         updatedMCPToolOutput?: unknown;
       }
     | {
@@ -2128,18 +1966,6 @@ type SyncHookJSONOutput = {
     | {
         hookEventName: "PostToolBatch";
         additionalContext?: string;
-      }
-    | {
-        hookEventName: "Stop";
-        additionalContext?: string;
-      }
-    | {
-        hookEventName: "SubagentStop";
-        additionalContext?: string;
-      }
-    | {
-        hookEventName: "PermissionDenied";
-        retry?: boolean;
       }
     | {
         hookEventName: "Notification";
@@ -2158,58 +1984,30 @@ type SyncHookJSONOutput = {
               message?: string;
               interrupt?: boolean;
             };
-      }
-    | {
-        hookEventName: "Elicitation";
-        action?: "accept" | "decline" | "cancel";
-        content?: Record<string, unknown>;
-      }
-    | {
-        hookEventName: "ElicitationResult";
-        action?: "accept" | "decline" | "cancel";
-        content?: Record<string, unknown>;
-      }
-    | {
-        hookEventName: "CwdChanged";
-        watchPaths?: string[];
-      }
-    | {
-        hookEventName: "FileChanged";
-        watchPaths?: string[];
-      }
-    | {
-        hookEventName: "WorktreeCreate";
-        worktreePath: string;
-      }
-    | {
-        hookEventName: "MessageDisplay";
-        /** Text displayed in place of the delta. Omit (or return the delta unchanged) to display the original. */
-        displayContent?: string;
       };
 };
 ```
 
-## Tool Input Types
+<h2 id="tool-input-types">
+  工具输入类型
+</h2>
 
-Documentation of input schemas for all built-in Claude Code tools. These types are exported from `@anthropic-ai/claude-agent-sdk` and can be used for type-safe tool interactions.
+所有内置 Claude Code 工具的输入架构文档。这些类型从 `@anthropic-ai/claude-agent-sdk` 导出，可用于类型安全的工具交互。
 
-### `ToolInputSchemas`
+<h3 id="toolinputschemas">
+  `ToolInputSchemas`
+</h3>
 
-Union of tool input types exported from `@anthropic-ai/claude-agent-sdk`; members include:
+所有工具输入类型的联合，从 `@anthropic-ai/claude-agent-sdk` 导出。
 
 ```typescript theme={null}
 type ToolInputSchemas =
   | AgentInput
-  | ArtifactInput
   | AskUserQuestionInput
   | BashInput
-  | CronCreateInput
-  | CronDeleteInput
-  | CronListInput
-  | EnterPlanModeInput
+  | TaskOutputInput
   | EnterWorktreeInput
   | ExitPlanModeInput
-  | ExitWorktreeInput
   | FileEditInput
   | FileReadInput
   | FileWriteInput
@@ -2219,35 +2017,27 @@ type ToolInputSchemas =
   | McpInput
   | MonitorInput
   | NotebookEditInput
-  | ProjectsInput
-  | PushNotificationInput
-  | ReadMcpResourceDirInput
   | ReadMcpResourceInput
-  | RefreshMcpToolsInput
-  | RemoteTriggerInput
-  | REPLInput
-  | ReportFindingsInput
-  | ScheduleWakeupInput
-  | ShowOnboardingRolePickerInput
+  | SubscribeMcpResourceInput
+  | SubscribePollingInput
   | TaskCreateInput
   | TaskGetInput
   | TaskListInput
-  | TaskOutputInput
   | TaskStopInput
   | TaskUpdateInput
   | TodoWriteInput
+  | UnsubscribeMcpResourceInput
+  | UnsubscribePollingInput
   | WebFetchInput
   | WebSearchInput
   | WorkflowInput;
 ```
 
-### Agent
+<h3 id="agent">
+  Agent
+</h3>
 
-**Tool name:** `Agent`. The previous name `Task` is still accepted as an alias, and the `tools` array in the [`SDKSystemMessage`](#sdksystemmessage) init message currently lists this tool as `Task` for backward compatibility.
-
-<Note>
-  {/* min-version: 2.1.212 */}The `mode` field is deprecated and ignored on Claude Code v2.1.212 or later: subagents [inherit the parent session's permission mode](/docs/en/agent-sdk/permissions#available-modes), and a subagent definition's [`permissionMode`](#agentdefinition) can override it, except when the parent uses `bypassPermissions`, `acceptEdits`, or `auto`.
-</Note>
+**工具名称：** `Agent`（之前为 `Task`，仍然接受作为别名）
 
 ```typescript theme={null}
 type AgentInput = {
@@ -2257,17 +2047,18 @@ type AgentInput = {
   model?: "sonnet" | "opus" | "haiku" | "fable";
   run_in_background?: boolean;
   name?: string;
-  team_name?: string; // Deprecated; ignored
-  mode?: "acceptEdits" | "auto" | "bypassPermissions" | "default" | "dontAsk" | "plan"; // Deprecated; ignored. Subagents inherit the parent session's permission mode; agent-definition frontmatter may override it
-  isolation?: "worktree" | "remote";
+  mode?: "acceptEdits" | "auto" | "bypassPermissions" | "default" | "dontAsk" | "plan";
+  isolation?: "worktree";
 };
 ```
 
-Launches a new agent to handle complex, multi-step tasks autonomously.
+启动新代理以自主处理复杂的多步骤任务。
 
-### AskUserQuestion
+<h3 id="askuserquestion">
+  AskUserQuestion
+</h3>
 
-**Tool name:** `AskUserQuestion`
+**工具名称：** `AskUserQuestion`
 
 ```typescript theme={null}
 type AskUserQuestionInput = {
@@ -2277,33 +2068,34 @@ type AskUserQuestionInput = {
     options: Array<{ label: string; description: string; preview?: string }>;
     multiSelect: boolean;
   }>;
-  answers?: Record<string, string>;
-  annotations?: Record<string, { preview?: string; notes?: string }>;
-  metadata?: { source?: string };
 };
 ```
 
-Asks the user clarifying questions during execution. See [Handle approvals and user input](/docs/en/agent-sdk/user-input#handle-clarifying-questions) for usage details.
+在执行期间向用户提出澄清问题。请参阅[处理批准和用户输入](/docs/zh-CN/agent-sdk/user-input#handle-clarifying-questions)了解使用详情。
 
-### Bash
+<h3 id="bash">
+  Bash
+</h3>
 
-**Tool name:** `Bash`
+**工具名称：** `Bash`
 
 ```typescript theme={null}
 type BashInput = {
   command: string;
-  timeout?: number; // milliseconds, max 600000; higher values are clamped to the max
+  timeout?: number; // 毫秒，最大 600000；更高的值会被限制为最大值
   description?: string;
   run_in_background?: boolean;
   dangerouslyDisableSandbox?: boolean;
 };
 ```
 
-Executes Bash commands with optional timeout and background execution. The working directory persists between commands; shell state such as exported environment variables doesn't.
+在持久 shell 会话中执行 bash 命令，支持可选超时和后台执行。
 
-### Monitor
+<h3 id="monitor">
+  Monitor
+</h3>
 
-**Tool name:** `Monitor`
+**工具名称：** `Monitor`
 
 ```typescript theme={null}
 type MonitorInput = {
@@ -2313,20 +2105,20 @@ type MonitorInput = {
     protocols?: string[];
   };
   description: string;
-  timeout_ms: number;
-  persistent: boolean;
+  timeout_ms?: number;
+  persistent?: boolean;
 };
 ```
 
-Runs a background source and delivers each event to Claude so it can react without polling: `command` runs a script and emits one event per stdout line, and `ws` opens a WebSocket and emits one event per text frame. Provide exactly one of `command` or `ws`. {/* min-version: 2.1.195 */}The `ws` source requires Claude Code v2.1.195 or later.
+运行后台源并将每个事件传递给 Claude，以便它可以做出反应而无需轮询：`command` 运行脚本并为每个 stdout 行发出一个事件，`ws` 打开 WebSocket 并为每个文本帧发出一个事件。恰好提供 `command` 或 `ws` 之一。{/* min-version: 2.1.195 */}`ws` 源需要 Claude Code v2.1.195 或更高版本。
 
-Set `persistent: true` for session-length watches such as log tails. When Monitor runs a command, it follows the same permission rules as Bash; a WebSocket watch prompts for approval separately. See the [Monitor tool reference](/docs/en/tools-reference#monitor-tool) for behavior and provider availability. The exported type marks `timeout_ms` and `persistent` as required because the schema fills in their defaults, 300000 and `false`; a call that omits them validates.
+为会话长度的监视（如日志尾部）设置 `persistent: true`。当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则；WebSocket 监视会单独提示批准。请参阅 [Monitor 工具参考](/docs/zh-CN/tools-reference#monitor-tool)了解行为和提供商可用性。
 
-### TaskOutput
+<h3 id="taskoutput">
+  TaskOutput
+</h3>
 
-**Tool name:** `TaskOutput`
-
-<Note>`TaskOutput` is deprecated; prefer `Read` on the task's output file path. {/* min-version: 2.1.83 */}Deprecated since Claude Code v2.1.83. The schemas below remain valid for hooks and permission handlers that encounter the tool.</Note>
+**工具名称：** `TaskOutput`
 
 ```typescript theme={null}
 type TaskOutputInput = {
@@ -2336,11 +2128,13 @@ type TaskOutputInput = {
 };
 ```
 
-Retrieves output from a running or completed background task.
+从运行中或已完成的后台任务检索输出。
 
-### Edit
+<h3 id="edit">
+  Edit
+</h3>
 
-**Tool name:** `Edit`
+**工具名称：** `Edit`
 
 ```typescript theme={null}
 type FileEditInput = {
@@ -2351,11 +2145,13 @@ type FileEditInput = {
 };
 ```
 
-Performs exact string replacements in files.
+在文件中执行精确字符串替换。
 
-### Read
+<h3 id="read">
+  Read
+</h3>
 
-**Tool name:** `Read`
+**工具名称：** `Read`
 
 ```typescript theme={null}
 type FileReadInput = {
@@ -2366,11 +2162,13 @@ type FileReadInput = {
 };
 ```
 
-Reads files from the local filesystem, including text, images, PDFs, and Jupyter notebooks. Use `pages` for PDF page ranges (for example, `"1-5"`).
+从本地文件系统读取文件，包括文本、图像、PDF 和 Jupyter 笔记本。对 PDF 页面范围使用 `pages`（例如，`"1-5"`）。
 
-### Write
+<h3 id="write">
+  Write
+</h3>
 
-**Tool name:** `Write`
+**工具名称：** `Write`
 
 ```typescript theme={null}
 type FileWriteInput = {
@@ -2379,11 +2177,13 @@ type FileWriteInput = {
 };
 ```
 
-Writes a file to the local filesystem, overwriting if it exists.
+将文件写入本地文件系统，如果存在则覆盖。
 
-### Glob
+<h3 id="glob">
+  Glob
+</h3>
 
-**Tool name:** `Glob`
+**工具名称：** `Glob`
 
 ```typescript theme={null}
 type GlobInput = {
@@ -2392,11 +2192,13 @@ type GlobInput = {
 };
 ```
 
-Fast file pattern matching that works with any codebase size.
+快速文件模式匹配，适用于任何代码库大小。
 
-### Grep
+<h3 id="grep">
+  Grep
+</h3>
 
-**Tool name:** `Grep`
+**工具名称：** `Grep`
 
 ```typescript theme={null}
 type GrepInput = {
@@ -2406,7 +2208,6 @@ type GrepInput = {
   type?: string;
   output_mode?: "content" | "files_with_matches" | "count";
   "-i"?: boolean;
-  "-o"?: boolean; // print only the matched parts of each line; requires output_mode: "content"
   "-n"?: boolean;
   "-B"?: number;
   "-A"?: number;
@@ -2418,24 +2219,28 @@ type GrepInput = {
 };
 ```
 
-Powerful search tool built on ripgrep with regex support.
+基于 ripgrep 的强大搜索工具，支持正则表达式。
 
-### TaskStop
+<h3 id="taskstop">
+  TaskStop
+</h3>
 
-**Tool name:** `TaskStop`
+**工具名称：** `TaskStop`
 
 ```typescript theme={null}
 type TaskStopInput = {
   task_id?: string;
-  shell_id?: string; // Deprecated: use task_id
+  shell_id?: string; // 已弃用：使用 task_id
 };
 ```
 
-Stops a running background task or shell by ID. {/* min-version: 2.1.198 */}As of v2.1.198, `task_id` also accepts an agent-team teammate or a named background agent by agent ID or name.
+按 ID 停止运行的后台任务或 shell。{/* min-version: 2.1.198 */}自 v2.1.198 起，`task_id` 也接受代理团队队友或按代理 ID 或名称的命名后台代理。
 
-### NotebookEdit
+<h3 id="notebookedit">
+  NotebookEdit
+</h3>
 
-**Tool name:** `NotebookEdit`
+**工具名称：** `NotebookEdit`
 
 ```typescript theme={null}
 type NotebookEditInput = {
@@ -2447,11 +2252,13 @@ type NotebookEditInput = {
 };
 ```
 
-Edits cells in Jupyter notebook files.
+编辑 Jupyter 笔记本文件中的单元格。
 
-### WebFetch
+<h3 id="webfetch">
+  WebFetch
+</h3>
 
-**Tool name:** `WebFetch`
+**工具名称：** `WebFetch`
 
 ```typescript theme={null}
 type WebFetchInput = {
@@ -2460,11 +2267,13 @@ type WebFetchInput = {
 };
 ```
 
-Fetches content from a URL and processes it with an AI model.
+从 URL 获取内容并使用 AI 模型处理它。
 
-### WebSearch
+<h3 id="websearch">
+  WebSearch
+</h3>
 
-**Tool name:** `WebSearch`
+**工具名称：** `WebSearch`
 
 ```typescript theme={null}
 type WebSearchInput = {
@@ -2474,41 +2283,39 @@ type WebSearchInput = {
 };
 ```
 
-Searches the web and returns formatted results.
+搜索网络并返回格式化的结果。
 
-### Workflow
+<h3 id="workflow">
+  Workflow
+</h3>
 
-**Tool name:** `Workflow`
+**工具名称：** `Workflow`
 
 ```typescript theme={null}
 type WorkflowInput = {
   script?: string;
   name?: string;
   scriptPath?: string;
-  args?: unknown; // any JSON value; the published typings render this as an object map
+  args?: unknown;
   resumeFromRunId?: string;
-  title?: string; // ignored; the script's meta block sets the title
-  description?: string; // ignored; the script's meta block sets the description
 };
 ```
 
-Runs a [dynamic workflow](/docs/en/workflows): a script that orchestrates many subagents in the background and returns one consolidated result. The `Workflow` tool is available in Agent SDK v0.3.149 and later. At least one of `script`, `name`, or `scriptPath` is required.
+运行[动态工作流](/docs/zh-CN/workflows)：一个脚本，在后台协调许多子代理并返回一个统一的结果。Workflow 工具在 Agent SDK v0.3.149 及更高版本中可用。至少需要 `script`、`name` 或 `scriptPath` 之一。
 
-| Field             | Type      | Description                                                                                                                                                                                                                                                                          |
-| ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `script`          | `string`  | Inline workflow script. Must begin with `export const meta = { name, description }` as a literal, followed by the script body using `agent()`, `parallel()`, `pipeline()`, and `phase()`. An optional `phases` array in `meta` groups agents under named stages in the progress view |
-| `name`            | `string`  | Name of a built-in workflow or one saved in `.claude/workflows/`. Resolved to a script                                                                                                                                                                                               |
-| `scriptPath`      | `string`  | Path to a workflow script file on disk. Takes precedence over `script` and `name`. Every invocation persists its script and returns the path in the result, so you can edit that file and re-invoke with the same `scriptPath` to iterate                                            |
-| `args`            | `unknown` | Input value exposed to the script as the global `args`, for parameterized named workflows such as a research question or a list of file paths. Pass arrays and objects as actual JSON values, not as a JSON-encoded string                                                           |
-| `resumeFromRunId` | `string`  | Run ID of a prior `Workflow` invocation to resume. Completed `agent()` calls with unchanged inputs usually return cached results; the rest run live. [Resume after a pause](/docs/en/workflows#resume-after-a-pause) covers which completed calls re-run. Same session only               |
-| `title`           | `string`  | Ignored; the script's `meta` block sets the title                                                                                                                                                                                                                                    |
-| `description`     | `string`  | Ignored; the script's `meta` block sets the description                                                                                                                                                                                                                              |
+| 字段                | 类型        | 描述                                                                                                                                                                  |
+| ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `script`          | `string`  | 内联工作流脚本。必须以 `export const meta = { name, description }` 作为字面量开头，后跟使用 `agent()`、`parallel()`、`pipeline()` 和 `phase()` 的脚本主体。`meta` 中的可选 `phases` 数组在进度视图中将代理分组到命名阶段下 |
+| `name`            | `string`  | 内置工作流的名称或保存在 `.claude/workflows/` 中的工作流名称。解析为脚本                                                                                                                     |
+| `scriptPath`      | `string`  | 磁盘上工作流脚本文件的路径。优先于 `script` 和 `name`。每次调用都会持久化其脚本并在结果中返回路径，因此您可以编辑该文件并使用相同的 `scriptPath` 重新调用以进行迭代                                                                   |
+| `args`            | `unknown` | 输入值，作为全局 `args` 暴露给脚本，用于参数化的命名工作流，例如研究问题或文件路径列表。将数组和对象作为实际 JSON 值传递，而不是作为 JSON 编码的字符串                                                                               |
+| `resumeFromRunId` | `string`  | 要恢复的先前 `Workflow` 调用的运行 ID。具有未更改输入的已完成 `agent()` 调用返回缓存的结果；只有更改或新的调用才会实时运行。仅限同一会话                                                                                   |
 
-The schema accepts any JSON value for `args`; the exported type marks it `unknown`, but the published typings render the field as an object map.
+<h3 id="todowrite">
+  TodoWrite
+</h3>
 
-### TodoWrite
-
-**Tool name:** `TodoWrite`
+**工具名称：** `TodoWrite`
 
 ```typescript theme={null}
 type TodoWriteInput = {
@@ -2520,15 +2327,17 @@ type TodoWriteInput = {
 };
 ```
 
-Creates and manages a structured task list for tracking progress.
+创建和管理结构化任务列表以跟踪进度。
 
 <Note>
-  As of TypeScript Agent SDK 0.3.142, `TodoWrite` is disabled by default. Use `TaskCreate`, `TaskGet`, `TaskUpdate`, and `TaskList` instead. See [Migrate to Task tools](/docs/en/agent-sdk/todo-tracking#migrate-to-task-tools) to update your monitoring code, or set `CLAUDE_CODE_ENABLE_TASKS=0` to revert to `TodoWrite`.
+  自 TypeScript Agent SDK 0.3.142 起，`TodoWrite` 默认被禁用。改用 `TaskCreate`、`TaskGet`、`TaskUpdate` 和 `TaskList`。请参阅[迁移到 Task 工具](/docs/zh-CN/agent-sdk/todo-tracking#migrate-to-task-tools)以更新您的监视代码，或设置 `CLAUDE_CODE_ENABLE_TASKS=0` 以恢复为 `TodoWrite`。
 </Note>
 
-### TaskCreate
+<h3 id="taskcreate">
+  TaskCreate
+</h3>
 
-**Tool name:** `TaskCreate`
+**工具名称：** `TaskCreate`
 
 ```typescript theme={null}
 type TaskCreateInput = {
@@ -2539,11 +2348,13 @@ type TaskCreateInput = {
 };
 ```
 
-Creates a single task and returns its assigned ID.
+创建单个任务并返回其分配的 ID。
 
-### TaskUpdate
+<h3 id="taskupdate">
+  TaskUpdate
+</h3>
 
-**Tool name:** `TaskUpdate`
+**工具名称：** `TaskUpdate`
 
 ```typescript theme={null}
 type TaskUpdateInput = {
@@ -2559,11 +2370,13 @@ type TaskUpdateInput = {
 };
 ```
 
-Patches one task by ID. Set `status` to `"deleted"` to remove it.
+按 ID 修补一个任务。将 `status` 设置为 `"deleted"` 以删除它。
 
-### TaskGet
+<h3 id="taskget">
+  TaskGet
+</h3>
 
-**Tool name:** `TaskGet`
+**工具名称：** `TaskGet`
 
 ```typescript theme={null}
 type TaskGetInput = {
@@ -2571,38 +2384,43 @@ type TaskGetInput = {
 };
 ```
 
-Returns full details for one task, or `null` when the ID is not found.
+返回一个任务的完整详情，或在找不到 ID 时返回 `null`。
 
-### TaskList
+<h3 id="tasklist">
+  TaskList
+</h3>
 
-**Tool name:** `TaskList`
+**工具名称：** `TaskList`
 
 ```typescript theme={null}
 type TaskListInput = {};
 ```
 
-Returns a snapshot of all tasks in the current list.
+返回当前列表中所有任务的快照。
 
-### ExitPlanMode
+<h3 id="exitplanmode">
+  ExitPlanMode
+</h3>
 
-**Tool name:** `ExitPlanMode`
+**工具名称：** `ExitPlanMode`
 
 ```typescript theme={null}
 type ExitPlanModeInput = {
-  /** Deprecated: no longer used. */
+  /** 已弃用：不再使用。 */
   allowedPrompts?: Array<{
     tool: "Bash";
     prompt: string;
   }>;
-  [k: string]: unknown;
 };
 ```
 
-Exits plan mode. The `allowedPrompts` field is deprecated and ignored; Claude Code still accepts it so existing callers and transcripts validate. Before v2.1.205, it requested prompt-based Bash permissions for implementing the plan.
+退出规划模式。`allowedPrompts` 字段已弃用且被忽略；Claude Code 仍然接受它，以便现有调用者和记录验证。在 v2.1.205 之前，它请求基于提示的 Bash 权限以实现计划。
 
-### ListMcpResources
+<h3 id="listmcpresources">
+  ListMcpResources
+</h3>
 
-**Tool name:** `ListMcpResourcesTool`
+**工具名称：** `ListMcpResourcesTool`
 
 ```typescript theme={null}
 type ListMcpResourcesInput = {
@@ -2610,11 +2428,13 @@ type ListMcpResourcesInput = {
 };
 ```
 
-Lists available MCP resources from connected servers.
+列出来自连接服务器的可用 MCP 资源。
 
-### ReadMcpResource
+<h3 id="readmcpresource">
+  ReadMcpResource
+</h3>
 
-**Tool name:** `ReadMcpResourceTool`
+**工具名称：** `ReadMcpResourceTool`
 
 ```typescript theme={null}
 type ReadMcpResourceInput = {
@@ -2623,11 +2443,13 @@ type ReadMcpResourceInput = {
 };
 ```
 
-Reads a specific MCP resource from a server.
+从服务器读取特定的 MCP 资源。
 
-### EnterWorktree
+<h3 id="enterworktree">
+  EnterWorktree
+</h3>
 
-**Tool name:** `EnterWorktree`
+**工具名称：** `EnterWorktree`
 
 ```typescript theme={null}
 type EnterWorktreeInput = {
@@ -2636,304 +2458,36 @@ type EnterWorktreeInput = {
 };
 ```
 
-Creates and enters a temporary git worktree for isolated work. Pass `path` to switch into an existing worktree instead of creating a new one. On first entry the target must be a registered worktree of the current repository or, in a multi-repo workspace, of a repository nested inside it; from within a worktree session it must be under `.claude/worktrees/` of the session's repository. `name` and `path` are mutually exclusive.
+创建并进入临时 git worktree 以进行隔离工作。传递 `path` 以切换到现有 worktree 而不是创建新的。在首次进入时，目标必须是当前存储库的已注册 worktree，或在多存储库工作区中，必须是嵌套在其中的存储库的已注册 worktree；从 worktree 会话内进入时，必须在会话存储库的 `.claude/worktrees/` 下。`name` 和 `path` 互斥。
 
-### ExitWorktree
+<h2 id="tool-output-types">
+  工具输出类型
+</h2>
 
-**Tool name:** `ExitWorktree`
+所有内置 Claude Code 工具的输出架构文档。这些类型从 `@anthropic-ai/claude-agent-sdk` 导出，代表每个工具返回的实际响应数据。
 
-```typescript theme={null}
-type ExitWorktreeInput = {
-  action: "keep" | "remove";
-  discard_changes?: boolean;
-};
-```
+<h3 id="tooloutputschemas">
+  `ToolOutputSchemas`
+</h3>
 
-Exits the current git worktree and returns to the original working directory. The `keep` action leaves the worktree and branch on disk, while `remove` deletes both. `discard_changes` must be `true` when removing a worktree that has uncommitted files or unmerged commits.
-
-### EnterPlanMode
-
-**Tool name:** `EnterPlanMode`
-
-```typescript theme={null}
-type EnterPlanModeInput = {};
-```
-
-Enters plan mode, where Claude researches and presents a plan before making changes.
-
-### CronCreate
-
-**Tool name:** `CronCreate`
-
-```typescript theme={null}
-type CronCreateInput = {
-  cron: string;
-  prompt: string;
-  recurring?: boolean;
-  durable?: boolean;
-};
-```
-
-Schedules a prompt to run on a 5-field cron schedule in local time. Set `recurring` to `false` to fire once at the next match. Jobs are session-scoped by default: starting a fresh conversation clears them, and resuming with `--resume` or `--continue` restores jobs that haven't expired. See [Scheduled tasks](/docs/en/scheduled-tasks).
-
-Setting `durable` to `true` requests persistence to `.claude/scheduled_tasks.json` so the job survives restarts. Durable scheduling isn't available in every session: when it isn't, Claude Code accepts `durable: true` but creates the job session-only. Read the output's `durable` field to see whether the job persisted.
-
-### CronDelete
-
-**Tool name:** `CronDelete`
-
-```typescript theme={null}
-type CronDeleteInput = {
-  id: string;
-};
-```
-
-Deletes a scheduled cron job by the ID returned from `CronCreate`.
-
-### CronList
-
-**Tool name:** `CronList`
-
-```typescript theme={null}
-type CronListInput = {};
-```
-
-Lists the scheduled cron jobs: durable jobs from `.claude/scheduled_tasks.json` and session-only jobs from the current session.
-
-### ScheduleWakeup
-
-**Tool name:** `ScheduleWakeup`
-
-```typescript theme={null}
-type ScheduleWakeupInput = {
-  delaySeconds?: number;
-  reason?: string;
-  prompt?: string;
-  stop?: boolean;
-};
-```
-
-Schedules a one-shot wake-up that fires the given prompt after a delay. This tool backs the self-paced `/loop` command. The runtime clamps `delaySeconds` to between 60 and 3600 seconds. The `delaySeconds`, `reason`, and `prompt` fields are required unless `stop` is true. {/* min-version: 2.1.202 */}Setting `stop: true` cancels the pending wakeup and ends the self-paced `/loop`. The `stop` field requires Claude Code v2.1.202 or later. See the [ScheduleWakeup row in the tools reference](/docs/en/tools-reference) for provider availability; it isn't available on Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, or Microsoft Foundry.
-
-### RemoteTrigger
-
-**Tool name:** `RemoteTrigger`
-
-```typescript theme={null}
-type RemoteTriggerInput = {
-  action: "list" | "get" | "create" | "update" | "run";
-  trigger_id?: string;
-  body?: {
-    [k: string]: unknown;
-  };
-};
-```
-
-Manages [Routines](/docs/en/routines), the scheduled and triggered Claude Code runs hosted on Anthropic-managed cloud infrastructure. This tool backs the `/schedule` command. `trigger_id` is required for the `get`, `update`, and `run` actions. `body` is required for `create` and `update`, and optional for `run`.
-
-This tool is available only when the session is authenticated with a claude.ai account on a plan with Routines enabled.
-
-### PushNotification
-
-**Tool name:** `PushNotification`
-
-```typescript theme={null}
-type PushNotificationInput = {
-  message: string;
-  status: "proactive";
-};
-```
-
-Sends a proactive push notification to the user. Keep `message` under 200 characters because mobile operating systems truncate longer text. See the [PushNotification row in the tools reference](/docs/en/tools-reference) for provider availability; push delivery runs through Anthropic-hosted infrastructure that isn't accessible from Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, or Microsoft Foundry.
-
-### REPL
-
-**Tool name:** `REPL`
-
-```typescript theme={null}
-type REPLInput = {
-  code: string;
-  description?: string;
-  timeout?: number;
-};
-```
-
-Executes JavaScript code in a persistent REPL. State persists across calls and top-level await is supported. `timeout` is in milliseconds, with a default of 30000 and a maximum of 600000.
-
-The types are exported, but the tool is off in SDK sessions unless you set `CLAUDE_CODE_REPL=1` in the [`env` option](#options). It also requires the Bun-based `claude` executable that the native installer provides.
-
-### ReportFindings
-
-**Tool name:** `ReportFindings`
-
-```typescript theme={null}
-type ReportFindingsInput = {
-  level?: "low" | "medium" | "high" | "xhigh" | "max";
-  findings: Array<{
-    file: string;
-    line?: number;
-    summary: string;
-    failure_scenario: string;
-    short_summary?: string;
-    category?: string;
-    verdict?: "CONFIRMED" | "PLAUSIBLE";
-    outcome?: "fixed" | "skipped" | "no_change_needed";
-  }>;
-};
-```
-
-Reports code-review findings as a structured list so Claude Code can render them instead of printing them as text. `level` is the effort level the review ran at. Findings are ordered most-severe first, with at most 32 per call, and the array is empty when none survived. Requires Claude Code v2.1.196 or later.
-
-Each finding carries these fields:
-
-* `file`: repo-relative path the finding is in. The optional `line` is the 1-indexed line it anchors to.
-* `summary`: one-sentence statement of the defect. `failure_scenario` describes the concrete inputs and state that lead to the wrong output or crash.
-* `short_summary`: optional compressed label of at most 60 characters for compact display. {/* min-version: 2.1.212 */}Requires Claude Code v2.1.212 or later.
-* `category`: optional short kebab-case slug of the finding type, such as `correctness` or `test-coverage`. {/* min-version: 2.1.199 */}Requires Claude Code v2.1.199 or later.
-* `verdict`: set when a verify pass ran; absent on inline-only reviews.
-* `outcome`: set only when re-reporting after applying fixes.
-
-### Artifact
-
-**Tool name:** `Artifact`
-
-```typescript theme={null}
-type ArtifactInput = {
-  action?: "publish" | "list";
-  file_path?: string;
-  favicon?: string;
-  limit?: number;
-  scope?: "mine" | "shared" | "all";
-  title?: string;
-  description?: string;
-  label?: string;
-  url?: string;
-  force?: boolean;
-};
-```
-
-Publishes a local `.html` or `.md` file as a hosted artifact page, or lists the user's published artifacts. Omit `action` or pass `"publish"` to publish `file_path`, which is required for the publish action along with `favicon`, one or two emoji for the browser tab. `title` names the published page in the browser tab and gallery when the HTML file has no `<title>` tag. `url` targets an existing artifact to update in place instead of minting a new one, and `force` is a last-resort overwrite that discards another session's published version; on a 409 conflict the normal fix is to re-read, merge, and publish again rather than pass `force`.
-
-Pass `"list"` to enumerate the user's published artifacts; only `limit` and `scope` may accompany it. `scope` defaults to `"mine"`, which lists artifacts the user owns; `"shared"` lists artifacts other people shared with the user, and `"all"` lists both.
-
-The types are exported, but the tool is off by default in Agent SDK sessions. Publishing also requires every condition in the [artifacts availability table](/docs/en/artifacts#availability), which sessions authenticated with an API key don't meet.
-
-### Projects
-
-**Tool name:** `Projects`
-
-```typescript theme={null}
-type ProjectsInput = {
-  method:
-    | "project_info"
-    | "project_read"
-    | "project_search"
-    | "project_write"
-    | "project_delete";
-  path?: string;
-  content?: string;
-  local_path?: string;
-  present_to_user?: boolean;
-  query?: string;
-  n?: number;
-};
-```
-
-Reads and writes the claude.ai Project attached to the session. Dispatches on `method`:
-
-* `project_info`: returns project metadata and the doc list.
-* `project_read`: reads one doc by `path`.
-* `project_search`: queries the project's knowledge base with `query`. `n` caps the hits and defaults to 5.
-* `project_write`: creates or replaces a doc at `path` from exactly one of `content`, which carries inline text, or `local_path`, which names a file inside the working directory. `present_to_user: true` marks the written doc as the deliverable the user needs to see.
-* `project_delete`: deletes a doc by `path`.
-
-### ReadMcpResourceDir
-
-**Tool name:** `ReadMcpResourceDirTool`
-
-```typescript theme={null}
-type ReadMcpResourceDirInput = {
-  server: string;
-  uri: string;
-};
-```
-
-Lists the direct children of a directory resource on an MCP server. Only usable against a server that has declared support for directory listing; the listing isn't recursive. Directory listing isn't enabled in every session: when it's off, the call returns an empty `resources` list and the `error` field reports that directory listing isn't enabled.
-
-### RefreshMcpTools
-
-**Tool name:** `RefreshMcpTools`
-
-```typescript theme={null}
-type RefreshMcpToolsInput = {
-  server?: string; // refresh only this server; omit to refresh all connected servers
-};
-```
-
-Re-queries the tool list of connected MCP servers and applies any changes. The types are exported, but Claude Code registers the tool only when you set `CLAUDE_CODE_ENABLE_REFRESH_MCP_TOOLS=1` in the [`env` option](#options), and only in sessions with at least one MCP server. {/* min-version: 2.1.211 */}Requires Claude Code v2.1.211 or later.
-
-### ShowOnboardingRolePicker
-
-**Tool name:** `ShowOnboardingRolePicker`
-
-```typescript theme={null}
-type ShowOnboardingRolePickerInput = {};
-```
-
-Renders a clickable role-picker chip row during Cowork onboarding so the user can pick their role and get a matching plugin installed. Takes no arguments; the role list is defined by the client. The call blocks until the user responds.
-
-### McpInput
-
-**Tool name:** dynamic MCP tool names of the form `mcp__<server>__<tool>`
-
-```typescript theme={null}
-type McpInput = {
-  [k: string]: unknown;
-};
-```
-
-MCP tool arguments are an open object: each server defines its own parameters, so the type places no constraints on field names or values. Consult the server's own tool schema for the fields a specific tool accepts.
-
-## Tool Output Types
-
-Documentation of output schemas for all built-in Claude Code tools. These types are exported from `@anthropic-ai/claude-agent-sdk` and represent the actual response data returned by each tool.
-
-### `ToolOutputSchemas`
-
-Union of tool output types exported from `@anthropic-ai/claude-agent-sdk`; members include:
+所有工具输出类型的联合。
 
 ```typescript theme={null}
 type ToolOutputSchemas =
   | AgentOutput
-  | ArtifactOutput
   | AskUserQuestionOutput
   | BashOutput
-  | CronCreateOutput
-  | CronDeleteOutput
-  | CronListOutput
-  | EnterPlanModeOutput
   | EnterWorktreeOutput
   | ExitPlanModeOutput
-  | ExitWorktreeOutput
   | FileEditOutput
   | FileReadOutput
   | FileWriteOutput
   | GlobOutput
   | GrepOutput
   | ListMcpResourcesOutput
-  | McpOutput
   | MonitorOutput
   | NotebookEditOutput
-  | ProjectsOutput
-  | PushNotificationOutput
-  | ReadMcpResourceDirOutput
   | ReadMcpResourceOutput
-  | RefreshMcpToolsOutput
-  | RemoteTriggerOutput
-  | REPLOutput
-  | ReportFindingsOutput
-  | ScheduleWakeupOutput
-  | ShowOnboardingRolePickerOutput
   | TaskCreateOutput
   | TaskGetOutput
   | TaskListOutput
@@ -2945,9 +2499,11 @@ type ToolOutputSchemas =
   | WorkflowOutput;
 ```
 
-### Agent
+<h3 id="agent-2">
+  Agent
+</h3>
 
-**Tool name:** `Agent`. The previous name `Task` is still accepted as an alias, and the `tools` array in the [`SDKSystemMessage`](#sdksystemmessage) init message currently lists this tool as `Task` for backward compatibility.
+**工具名称：** `Agent`（之前为 `Task`，仍然接受作为别名）
 
 ```typescript theme={null}
 type AgentOutput =
@@ -2957,7 +2513,6 @@ type AgentOutput =
       agentType?: string;
       content: Array<{ type: "text"; text: string; citations?: unknown[] | null }>;
       resolvedModel?: string;
-      modelsUsed?: string[];
       totalToolUseCount: number;
       totalDurationMs: number;
       totalTokens: number;
@@ -2999,7 +2554,6 @@ type AgentOutput =
       agentId: string;
       description: string;
       resolvedModel?: string;
-      modelsUsed?: string[];
       prompt: string;
       outputFile: string;
       canReadOutputFile?: boolean;
@@ -3014,19 +2568,19 @@ type AgentOutput =
     };
 ```
 
-Returns the result from the subagent. Discriminated on the `status` field: `"completed"` for finished tasks, `"async_launched"` for background tasks, and `"remote_launched"` for tasks Claude Code dispatched to a remote cloud session, where `sessionUrl` links to that session and `taskId` identifies it.
+返回来自子代理的结果。在 `status` 字段上进行区分：`"completed"` 表示已完成的任务，`"async_launched"` 表示后台任务，`"remote_launched"` 表示 Claude Code 分派到远程云会话的任务，其中 `sessionUrl` 链接到该会话，`taskId` 标识它。
 
-On the `completed` variant, `resolvedModel` names the model the subagent started on, which can differ from the requested `model` input when [`availableModels`](/docs/en/model-config#restrict-model-selection) or another override applies. {/* min-version: 2.1.174 */}This field requires Claude Code v2.1.174 or later. {/* min-version: 2.1.212 */}On `async_launched`, it names the model in use when the task moved to the background.
+`completed` 和 `async_launched` 变体上的 `resolvedModel` 字段命名子代理实际运行的模型，当应用 [`availableModels`](/docs/zh-CN/model-config#restrict-model-selection) 或其他覆盖时，该模型可能与请求的 `model` 输入不同。{/* min-version: 2.1.174 */}此字段需要 Claude Code v2.1.174 或更高版本。
 
-`modelsUsed` lists the models the subagent used, in order. The field is present only when a mid-run swap happened, and a model appears again when the run swapped back to it. On `async_launched`, the list covers the models used before backgrounding. {/* min-version: 2.1.212 */}Both `modelsUsed` and the backgrounding behavior of `resolvedModel` require Claude Code v2.1.212 or later.
+在 `completed` 变体上，当子代理在隔离的 git worktree 中运行时，`worktreePath` 被设置，`worktreeBranch` 在 Claude Code 创建该 worktree 时命名其分支。`usage.service_tier` 携带 API 为子代理的请求报告的服务层字符串。
 
-On the `completed` variant, `worktreePath` is set when the subagent ran in an isolated git worktree, and `worktreeBranch` names that worktree's branch when Claude Code created it. `usage.service_tier` carries the service tier string the API reported for the subagent's requests.
+在 v2.1.207 之前，发布的类型更窄。它省略了 `worktreePath`、`worktreeBranch`、`citations`、`toolStats.frameCount` 和 `inference_geo`、`speed` 和 `iterations` 使用字段，并将 `service_tier` 类型化为 `"standard" | "priority" | "batch"`。类型标记为可选的字段可能在早期版本记录的结果中不存在。
 
-Before v2.1.207, the published type was narrower. It omitted `worktreePath`, `worktreeBranch`, `citations`, `toolStats.frameCount`, and the `inference_geo`, `speed`, and `iterations` usage fields, and it typed `service_tier` as `"standard" | "priority" | "batch"`. Fields the type marks optional can be absent on results recorded by earlier versions.
+<h3 id="askuserquestion-2">
+  AskUserQuestion
+</h3>
 
-### AskUserQuestion
-
-**Tool name:** `AskUserQuestion`
+**工具名称：** `AskUserQuestion`
 
 ```typescript theme={null}
 type AskUserQuestionOutput = {
@@ -3038,16 +2592,16 @@ type AskUserQuestionOutput = {
   }>;
   answers: Record<string, string>;
   response?: string;
-  annotations?: Record<string, { preview?: string; notes?: string }>;
-  afkTimeoutMs?: number;
 };
 ```
 
-Returns the questions asked and the user's answers. `response` is set when the user typed a freeform reply instead of answering the structured questions; when present, Claude receives "The user responded: …" instead of the per-question answer list.
+返回提出的问题和用户的答案。当用户输入自由形式的回复而不是回答结构化问题时，`response` 被设置；当存在时，Claude 会收到"用户回复：…"而不是每个问题的答案列表。
 
-### Bash
+<h3 id="bash-2">
+  Bash
+</h3>
 
-**Tool name:** `Bash`
+**工具名称：** `Bash`
 
 ```typescript theme={null}
 type BashOutput = {
@@ -3058,36 +2612,21 @@ type BashOutput = {
   isImage?: boolean;
   backgroundTaskId?: string;
   backgroundedByUser?: boolean;
-  timedOutAfterMs?: number;
-  backgroundCwdHint?: string;
   dangerouslyDisableSandbox?: boolean;
   returnCodeInterpretation?: string;
-  noOutputExpected?: boolean;
   structuredContent?: unknown[];
   persistedOutputPath?: string;
   persistedOutputSize?: number;
-  staleReadFileStateHint?: string;
-  ghRateLimitHint?: string;
-  gitOperation?: {
-    commit?: { sha: string; kind: "committed" | "amended" | "cherry-picked" };
-    push?: { branch: string };
-    branch?: { ref: string; action: "merged" | "rebased" };
-    pr?: {
-      number: number;
-      url?: string;
-      action: "created" | "edited" | "merged" | "commented" | "closed" | "ready" | "draft" | "auto-merge-enabled" | "auto-merge-disabled";
-    };
-  };
 };
 ```
 
-Returns command output with stdout/stderr split. Background commands include a `backgroundTaskId`.
+返回命令输出，stdout/stderr 分开。后台命令包括 `backgroundTaskId`。
 
-{/* min-version: 2.1.210 */}`timedOutAfterMs` is the timeout in milliseconds, set when the command reached its timeout and moved to the background rather than starting there explicitly. `backgroundCwdHint` is set when the backgrounded command contained a directory-change builtin such as `cd`, `pushd`, `popd`, or `chdir`, and notes that the session working directory didn't change. Both fields require Claude Code v2.1.210 or later.
+<h3 id="monitor-2">
+  Monitor
+</h3>
 
-### Monitor
-
-**Tool name:** `Monitor`
+**工具名称：** `Monitor`
 
 ```typescript theme={null}
 type MonitorOutput = {
@@ -3097,18 +2636,20 @@ type MonitorOutput = {
 };
 ```
 
-Returns the background task ID for the running monitor. Use this ID with `TaskStop` to cancel the watch early.
+返回运行监视器的后台任务 ID。使用此 ID 与 `TaskStop` 一起提前取消监视。
 
-### Edit
+<h3 id="edit-2">
+  Edit
+</h3>
 
-**Tool name:** `Edit`
+**工具名称：** `Edit`
 
 ```typescript theme={null}
 type FileEditOutput = {
   filePath: string;
   oldString: string;
   newString: string;
-  originalFile: string | null;
+  originalFile: string;
   structuredPatch: Array<{
     oldStart: number;
     oldLines: number;
@@ -3125,16 +2666,17 @@ type FileEditOutput = {
     deletions: number;
     changes: number;
     patch: string;
-    repository?: string | null;
   };
 };
 ```
 
-Returns the structured diff of the edit operation.
+返回编辑操作的结构化差异。
 
-### Read
+<h3 id="read-2">
+  Read
+</h3>
 
-**Tool name:** `Read`
+**工具名称：** `Read`
 
 ```typescript theme={null}
 type FileReadOutput =
@@ -3146,8 +2688,6 @@ type FileReadOutput =
         numLines: number;
         startLine: number;
         totalLines: number;
-        /** True when a whole-file read was auto-paginated because it exceeded the token cap (the content is a partial first page). */
-        truncatedByTokenCap?: boolean;
       };
     }
   | {
@@ -3187,22 +2727,16 @@ type FileReadOutput =
         count: number;
         outputDir: string;
       };
-    }
-  | {
-      type: "file_unchanged";
-      file: {
-        filePath: string;
-      };
-      /** Set when the dedup matched a startup-seeded entry (CLAUDE.md / nested memory) rather than a prior Read tool_result. */
-      source?: "seeded";
     };
 ```
 
-Returns file contents in a format appropriate to the file type. Discriminated on the `type` field.
+返回适合文件类型的格式的文件内容。在 `type` 字段上进行区分。
 
-### Write
+<h3 id="write-2">
+  Write
+</h3>
 
-**Tool name:** `Write`
+**工具名称：** `Write`
 
 ```typescript theme={null}
 type FileWriteOutput = {
@@ -3224,17 +2758,17 @@ type FileWriteOutput = {
     deletions: number;
     changes: number;
     patch: string;
-    repository?: string | null;
   };
-  userModified?: boolean;
 };
 ```
 
-Returns the write result with structured diff information.
+返回写入结果，包含结构化差异信息。
 
-### Glob
+<h3 id="glob-2">
+  Glob
+</h3>
 
-**Tool name:** `Glob`
+**工具名称：** `Glob`
 
 ```typescript theme={null}
 type GlobOutput = {
@@ -3242,18 +2776,16 @@ type GlobOutput = {
   numFiles: number;
   filenames: string[];
   truncated: boolean;
-  totalMatches?: number;
-  countIsComplete?: boolean;
 };
 ```
 
-Returns file paths matching the glob pattern, sorted by modification time.
+返回与 glob 模式匹配的文件路径，按修改时间排序。
 
-{/* min-version: 2.1.191 */}`totalMatches` and `countIsComplete` require Claude Code v2.1.191 or later. `totalMatches` reports the number of matching files before truncation. When `countIsComplete` is false, `totalMatches` is a lower bound because the underlying search truncated its own output.
+<h3 id="grep-2">
+  Grep
+</h3>
 
-### Grep
-
-**Tool name:** `Grep`
+**工具名称：** `Grep`
 
 ```typescript theme={null}
 type GrepOutput = {
@@ -3263,20 +2795,18 @@ type GrepOutput = {
   content?: string;
   numLines?: number;
   numMatches?: number;
-  totalFiles?: number;
-  totalLines?: number;
   appliedLimit?: number;
   appliedOffset?: number;
 };
 ```
 
-Returns search results. The shape varies by `mode`: file list, content with matches, or match counts. In `count` mode, `numFiles` and `numMatches` are totals over the full result set, not the paginated slice. {/* min-version: 2.1.208 */}Before v2.1.208, a `head_limit` or `offset` that truncated the listed entries also truncated those totals.
+返回搜索结果。形状因 `mode` 而异：文件列表、带匹配的内容或匹配计数。
 
-{/* min-version: 2.1.208 */}`totalFiles` requires Claude Code v2.1.208 or later and reports the total number of results before `head_limit` and `offset` pagination in `files_with_matches` mode. {/* min-version: 2.1.210 */}`totalLines` requires Claude Code v2.1.210 or later and reports the total number of lines before pagination in `content` mode.
+<h3 id="taskstop-2">
+  TaskStop
+</h3>
 
-### TaskStop
-
-**Tool name:** `TaskStop`
+**工具名称：** `TaskStop`
 
 ```typescript theme={null}
 type TaskStopOutput = {
@@ -3287,16 +2817,17 @@ type TaskStopOutput = {
 };
 ```
 
-Returns confirmation after stopping the background task.
+停止后台任务后返回确认。
 
-### NotebookEdit
+<h3 id="notebookedit-2">
+  NotebookEdit
+</h3>
 
-**Tool name:** `NotebookEdit`
+**工具名称：** `NotebookEdit`
 
 ```typescript theme={null}
 type NotebookEditOutput = {
   new_source: string;
-  old_source?: string;
   cell_id?: string;
   cell_type: "code" | "markdown";
   language: string;
@@ -3308,11 +2839,13 @@ type NotebookEditOutput = {
 };
 ```
 
-Returns the result of the notebook edit with original and updated file contents.
+返回笔记本编辑的结果，包含原始和更新的文件内容。
 
-### WebFetch
+<h3 id="webfetch-2">
+  WebFetch
+</h3>
 
-**Tool name:** `WebFetch`
+**工具名称：** `WebFetch`
 
 ```typescript theme={null}
 type WebFetchOutput = {
@@ -3322,18 +2855,16 @@ type WebFetchOutput = {
   result: string;
   durationMs: number;
   url: string;
-  artifactRead?: {
-    slug: string;
-    ver?: string;
-  };
 };
 ```
 
-Returns the fetched content with HTTP status and metadata.
+返回获取的内容，包含 HTTP 状态和元数据。
 
-### WebSearch
+<h3 id="websearch-2">
+  WebSearch
+</h3>
 
-**Tool name:** `WebSearch`
+**工具名称：** `WebSearch`
 
 ```typescript theme={null}
 type WebSearchOutput = {
@@ -3346,51 +2877,46 @@ type WebSearchOutput = {
     | string
   >;
   durationSeconds: number;
-  searchCount?: number;
 };
 ```
 
-Returns search results from the web.
+返回来自网络的搜索结果。
 
-### Workflow
+<h3 id="workflow-2">
+  Workflow
+</h3>
 
-**Tool name:** `Workflow`
+**工具名称：** `Workflow`
 
 ```typescript theme={null}
 type WorkflowOutput = {
-  status: "async_launched" | "remote_launched";
+  status: "async_launched";
   taskId: string;
-  taskType?: "local_workflow" | "remote_agent";
-  workflowName?: string;
   runId?: string;
   summary?: string;
   transcriptDir?: string;
   scriptPath?: string;
-  sessionUrl?: string; // set when the workflow launched as a remote session
-  warning?: string;
   error?: string;
 };
 ```
 
-Returns immediately after the tool accepts the invocation. The final result arrives later as a task completion. Check `error` before treating the run as started: a script that fails its syntax check returns `status: "async_launched"` with `error` set, and never runs.
+在工具接受调用后立即返回。最终结果稍后作为任务完成到达。在将运行视为已启动之前检查 `error`：脚本如果语法检查失败，会返回 `status: "async_launched"` 并设置 `error`，且永远不会运行。
 
-| Field           | Type                                    | Description                                                                                                                                                         |
-| --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`        | `"async_launched" \| "remote_launched"` | The tool accepted the invocation. `"async_launched"` for in-process runs, `"remote_launched"` for runs dispatched to a remote session instead of running in-process |
-| `taskId`        | `string`                                | Background task identifier for the run                                                                                                                              |
-| `taskType`      | `"local_workflow" \| "remote_agent"`    | Task type of the registered background task, matching the `status` arm                                                                                              |
-| `workflowName`  | `string`                                | The `meta.name` from the workflow script                                                                                                                            |
-| `runId`         | `string`                                | Workflow run identifier to pass as `resumeFromRunId` on a later invocation. Absent for `remote_launched` runs, where the cloud session URL is the resume handle     |
-| `summary`       | `string`                                | One-line description of what the workflow does                                                                                                                      |
-| `transcriptDir` | `string`                                | Directory where subagent transcripts are written during execution                                                                                                   |
-| `scriptPath`    | `string`                                | Path to the persisted workflow script for this run. Edit it and pass back as `scriptPath` to rerun without resending the script                                     |
-| `sessionUrl`    | `string`                                | Cloud session URL, set when `status` is `"remote_launched"`                                                                                                         |
-| `warning`       | `string`                                | Non-blocking heads-up, such as local git state diverging from the pushed branch a cloud session will clone                                                          |
-| `error`         | `string`                                | Set when the script fails its syntax check. When present, the run did not start despite the launched status                                                         |
+| 字段              | 类型                 | 描述                                                   |
+| --------------- | ------------------ | ---------------------------------------------------- |
+| `status`        | `"async_launched"` | 工具接受了调用。这是该字段唯一的值                                    |
+| `taskId`        | `string`           | 运行的后台任务标识符                                           |
+| `runId`         | `string`           | 工作流运行标识符，用于在后续调用中作为 `resumeFromRunId` 传递             |
+| `summary`       | `string`           | 工作流功能的单行描述                                           |
+| `transcriptDir` | `string`           | 执行期间写入子代理转录的目录                                       |
+| `scriptPath`    | `string`           | 此运行的持久化工作流脚本的路径。编辑它并作为 `scriptPath` 传回以重新运行而无需重新发送脚本 |
+| `error`         | `string`           | 当脚本语法检查失败时设置。存在时，尽管 `async_launched` 状态，运行未启动        |
 
-### TodoWrite
+<h3 id="todowrite-2">
+  TodoWrite
+</h3>
 
-**Tool name:** `TodoWrite`
+**工具名称：** `TodoWrite`
 
 ```typescript theme={null}
 type TodoWriteOutput = {
@@ -3407,15 +2933,17 @@ type TodoWriteOutput = {
 };
 ```
 
-Returns the previous and updated task lists.
+返回之前和更新的任务列表。
 
 <Note>
-  As of TypeScript Agent SDK 0.3.142, `TodoWrite` is disabled by default. Use `TaskCreate`, `TaskGet`, `TaskUpdate`, and `TaskList` instead. See [Migrate to Task tools](/docs/en/agent-sdk/todo-tracking#migrate-to-task-tools) to update your monitoring code, or set `CLAUDE_CODE_ENABLE_TASKS=0` to revert to `TodoWrite`.
+  自 TypeScript Agent SDK 0.3.142 起，`TodoWrite` 默认被禁用。改用 `TaskCreate`、`TaskGet`、`TaskUpdate` 和 `TaskList`。请参阅[迁移到 Task 工具](/docs/zh-CN/agent-sdk/todo-tracking#migrate-to-task-tools)更新您的监视代码，或设置 `CLAUDE_CODE_ENABLE_TASKS=0` 以恢复为 `TodoWrite`。
 </Note>
 
-### TaskCreate
+<h3 id="taskcreate-2">
+  TaskCreate
+</h3>
 
-**Tool name:** `TaskCreate`
+**工具名称：** `TaskCreate`
 
 ```typescript theme={null}
 type TaskCreateOutput = {
@@ -3426,11 +2954,13 @@ type TaskCreateOutput = {
 };
 ```
 
-Returns the created task with its assigned ID.
+返回创建的任务及其分配的 ID。
 
-### TaskUpdate
+<h3 id="taskupdate-2">
+  TaskUpdate
+</h3>
 
-**Tool name:** `TaskUpdate`
+**工具名称：** `TaskUpdate`
 
 ```typescript theme={null}
 type TaskUpdateOutput = {
@@ -3445,11 +2975,13 @@ type TaskUpdateOutput = {
 };
 ```
 
-Returns the update result, including which fields changed.
+返回更新结果，包括哪些字段已更改。
 
-### TaskGet
+<h3 id="taskget-2">
+  TaskGet
+</h3>
 
-**Tool name:** `TaskGet`
+**工具名称：** `TaskGet`
 
 ```typescript theme={null}
 type TaskGetOutput = {
@@ -3464,11 +2996,13 @@ type TaskGetOutput = {
 };
 ```
 
-Returns the full task record, or `null` when the ID is not found.
+返回完整的任务记录，或在找不到 ID 时返回 `null`。
 
-### TaskList
+<h3 id="tasklist-2">
+  TaskList
+</h3>
 
-**Tool name:** `TaskList`
+**工具名称：** `TaskList`
 
 ```typescript theme={null}
 type TaskListOutput = {
@@ -3482,11 +3016,13 @@ type TaskListOutput = {
 };
 ```
 
-Returns a snapshot of all tasks in the current list.
+返回当前列表中所有任务的快照。
 
-### ExitPlanMode
+<h3 id="exitplanmode-2">
+  ExitPlanMode
+</h3>
 
-**Tool name:** `ExitPlanMode`
+**工具名称：** `ExitPlanMode`
 
 ```typescript theme={null}
 type ExitPlanModeOutput = {
@@ -3494,17 +3030,18 @@ type ExitPlanModeOutput = {
   isAgent: boolean;
   filePath?: string;
   hasTaskTool?: boolean;
-  planWasEdited?: boolean;
   awaitingLeaderApproval?: boolean;
   requestId?: string;
 };
 ```
 
-Returns the plan state after exiting plan mode.
+返回退出规划模式后的计划状态。
 
-### ListMcpResources
+<h3 id="listmcpresources-2">
+  ListMcpResources
+</h3>
 
-**Tool name:** `ListMcpResourcesTool`
+**工具名称：** `ListMcpResourcesTool`
 
 ```typescript theme={null}
 type ListMcpResourcesOutput = Array<{
@@ -3516,11 +3053,13 @@ type ListMcpResourcesOutput = Array<{
 }>;
 ```
 
-Returns an array of available MCP resources.
+返回可用 MCP 资源的数组。
 
-### ReadMcpResource
+<h3 id="readmcpresource-2">
+  ReadMcpResource
+</h3>
 
-**Tool name:** `ReadMcpResourceTool`
+**工具名称：** `ReadMcpResourceTool`
 
 ```typescript theme={null}
 type ReadMcpResourceOutput = {
@@ -3528,17 +3067,17 @@ type ReadMcpResourceOutput = {
     uri: string;
     mimeType?: string;
     text?: string;
-    blobSavedTo?: string;
   }>;
-  error?: string;
 };
 ```
 
-Returns the contents of the requested MCP resource.
+返回请求的 MCP 资源的内容。
 
-### EnterWorktree
+<h3 id="enterworktree-2">
+  EnterWorktree
+</h3>
 
-**Tool name:** `EnterWorktree`
+**工具名称：** `EnterWorktree`
 
 ```typescript theme={null}
 type EnterWorktreeOutput = {
@@ -3548,347 +3087,17 @@ type EnterWorktreeOutput = {
 };
 ```
 
-Returns information about the git worktree.
+返回有关 git worktree 的信息。
 
-### ExitWorktree
+<h2 id="permission-types">
+  权限类型
+</h2>
 
-**Tool name:** `ExitWorktree`
+<h3 id="permissionupdate">
+  `PermissionUpdate`
+</h3>
 
-```typescript theme={null}
-type ExitWorktreeOutput = {
-  action: "keep" | "remove";
-  originalCwd: string;
-  worktreePath: string;
-  worktreeBranch?: string;
-  tmuxSessionName?: string;
-  discardedFiles?: number;
-  discardedCommits?: number;
-  message: string;
-};
-```
-
-Returns the action taken and details about the worktree that was exited.
-
-### EnterPlanMode
-
-**Tool name:** `EnterPlanMode`
-
-```typescript theme={null}
-type EnterPlanModeOutput = {
-  message: string;
-};
-```
-
-Returns a confirmation that plan mode was entered.
-
-### CronCreate
-
-**Tool name:** `CronCreate`
-
-```typescript theme={null}
-type CronCreateOutput = {
-  id: string;
-  humanSchedule: string;
-  recurring: boolean;
-  durable?: boolean; // true when persisted to .claude/scheduled_tasks.json; false when session-only
-};
-```
-
-Returns the job ID and a human-readable description of the schedule.
-
-### CronDelete
-
-**Tool name:** `CronDelete`
-
-```typescript theme={null}
-type CronDeleteOutput = {
-  id: string;
-};
-```
-
-Returns the ID of the deleted job.
-
-### CronList
-
-**Tool name:** `CronList`
-
-```typescript theme={null}
-type CronListOutput = {
-  jobs: {
-    id: string;
-    cron: string;
-    humanSchedule: string;
-    prompt: string;
-    recurring?: boolean;
-    durable?: boolean;
-  }[];
-};
-```
-
-Returns the scheduled cron jobs: durable jobs from `.claude/scheduled_tasks.json` and session-only jobs from the current session. A session-only job carries `durable: false`; jobs read from disk omit the field.
-
-### ScheduleWakeup
-
-**Tool name:** `ScheduleWakeup`
-
-```typescript theme={null}
-type ScheduleWakeupOutput = {
-  scheduledFor: number;
-  clampedDelaySeconds: number;
-  wasClamped: boolean;
-  stopped?: boolean;
-  cancelledWakeups?: number;
-};
-```
-
-Returns when the wake-up will fire as an epoch millisecond timestamp, the delay actually used, and whether the requested delay was clamped. {/* min-version: 2.1.202 */}The `stopped` field is `true` when the call ended the loop with `stop: true`. It requires Claude Code v2.1.202 or later. {/* min-version: 2.1.206 */}The `cancelledWakeups` field counts how many pending wakeups a `stop: true` call cancelled. A value of 0 means nothing was pending, and a recurring `/loop` cron isn't cancelled by `stop: true`. It requires Claude Code v2.1.206 or later.
-
-### RemoteTrigger
-
-**Tool name:** `RemoteTrigger`
-
-```typescript theme={null}
-type RemoteTriggerOutput = {
-  status: number;
-  json: string;
-  summary?: string;
-};
-```
-
-Returns the API response status and body for the trigger operation.
-
-### PushNotification
-
-**Tool name:** `PushNotification`
-
-```typescript theme={null}
-type PushNotificationOutput = {
-  message: string;
-  pushSent?: boolean;
-  localSent?: boolean;
-  disabledReason?: "config_off" | "user_present" | "no_transport";
-  sentAt?: string;
-};
-```
-
-Returns delivery details, including whether a push or local notification was sent and why delivery was skipped.
-
-### REPL
-
-**Tool name:** `REPL`
-
-```typescript theme={null}
-type REPLOutput = {
-  code: string;
-  result: {
-    [k: string]: unknown;
-  };
-  stdout: string;
-  stderr: string;
-  error?: string;
-  registeredTools?: string[];
-  images?: {
-    base64: string;
-    mediaType: string;
-  }[];
-  documents?: {
-    base64: string;
-  }[];
-};
-```
-
-Returns the execution result, captured console output, and any images or documents surfaced by inner `Read` calls.
-
-### ReportFindings
-
-**Tool name:** `ReportFindings`
-
-```typescript theme={null}
-type ReportFindingsOutput = {
-  count: number;
-  level?: "low" | "medium" | "high" | "xhigh" | "max";
-  findings: Array<{
-    file: string;
-    line?: number;
-    summary: string;
-    failure_scenario: string;
-    short_summary?: string;
-    category?: string;
-    verdict?: "CONFIRMED" | "PLAUSIBLE";
-    outcome?: "fixed" | "skipped" | "no_change_needed";
-  }>;
-};
-```
-
-Returns the number of findings reported, the effort level the review ran at, and the findings echoed back for the result body. Requires Claude Code v2.1.196 or later. {/* min-version: 2.1.212 */}The echoed `short_summary` field requires Claude Code v2.1.212 or later.
-
-### Artifact
-
-**Tool name:** `Artifact`
-
-```typescript theme={null}
-type ArtifactOutput =
-  | {
-      url: string;
-      path: string;
-      title?: string;
-      version?: string;
-      capabilities?: unknown;
-      stored?: {
-        contract: string;
-        capabilities?: Record<string, unknown>;
-      };
-      warnings?: string[];
-      contract?: string;
-      updated?: boolean;
-      liveSubscription?: string;
-    }
-  | {
-      artifacts: Array<{
-        title: string;
-        url: string;
-        updatedAt?: string;
-        rel?: "mine" | "shared";
-      }>;
-      truncated?: boolean;
-      scope?: "shared" | "all";
-    };
-```
-
-Returns the published page's `url` and the local `path` that was published for the publish action, with `updated` set to true when the publish redeployed an existing artifact, and `warnings` carrying any publish-time advisories. The list action returns the `artifacts` rows instead, with `truncated` set when more artifacts exist than the requested limit. On listings whose scope isn't `"mine"`, each row carries `rel` marking whether the user owns the artifact or it was shared with them, and the output's `scope` records which non-default scope produced the listing; both are absent on default listings.
-
-### Projects
-
-**Tool name:** `Projects`
-
-```typescript theme={null}
-type ProjectsOutput =
-  | {
-      method: "project_info";
-      notice?: string;
-      name: string;
-      description: string;
-      instructions: string;
-      docs: Array<{ path: string; created_at: string | null }>;
-      files?: Array<{
-        path: string;
-        file_kind: string;
-        created_at: string | null;
-      }>;
-      sync_sources?: Array<{
-        type: string | null;
-        config: Record<string, unknown>;
-      }>;
-      knowledge: {
-        knowledge_size: number;
-        max_knowledge_size: number;
-      };
-    }
-  | {
-      method: "project_read";
-      notice?: string;
-      path: string;
-      file_kind?: string;
-      content?: string;
-      local_file?: string;
-      created_at: string | null;
-    }
-  | {
-      method: "project_search";
-      notice?: string;
-      rag: boolean;
-      hits?: Array<{ name?: string; doc_uuid?: string; text?: string }>;
-      docs?: string[];
-    }
-  | {
-      method: "project_write";
-      notice?: string;
-      path: string;
-      doc_uuid: string;
-      replaced: boolean;
-      present_to_user?: boolean;
-      local_path?: string;
-    }
-  | {
-      method: "project_delete";
-      notice?: string;
-      path: string;
-      deleted: boolean;
-    };
-```
-
-Discriminated on the `method` field, mirroring the input. `project_read` returns small text docs inline in `content` and writes larger docs to a `local_file` path instead; `project_search` returns RAG `hits` with `rag: true` when the project's index is available and falls back to a `docs` path list otherwise.
-
-### ReadMcpResourceDir
-
-**Tool name:** `ReadMcpResourceDirTool`
-
-```typescript theme={null}
-type ReadMcpResourceDirOutput = {
-  resources: Array<{
-    uri: string;
-    name: string;
-    mimeType?: string;
-  }>;
-  error?: string;
-};
-```
-
-Returns the direct children of the directory resource. Subdirectories appear with mimeType `"inode/directory"`; `error` carries a human-readable message when the server couldn't list the directory.
-
-### RefreshMcpTools
-
-**Tool name:** `RefreshMcpTools`
-
-```typescript theme={null}
-type RefreshMcpToolsOutput = Array<{
-  server: string;
-  status: "refreshed" | "error" | "not_connected";
-  toolCount?: number; // tools now available from this server
-  added?: string[]; // tool names this refresh added
-  removed?: string[]; // tool names this refresh removed
-  error?: string; // why the refresh failed or the server was unavailable
-}>;
-```
-
-Returns one entry per server: `refreshed` means the re-queried tool list was applied, `error` means the re-query failed and the previous tool set was kept, and `not_connected` means the server has no live connection to query.
-
-### ShowOnboardingRolePicker
-
-**Tool name:** `ShowOnboardingRolePicker`
-
-```typescript theme={null}
-type ShowOnboardingRolePickerOutput = {
-  role?: string;
-  dismissed?: boolean;
-};
-```
-
-Returns the user's selection: `role` when they picked a role chip or typed one, and `dismissed: true` when they closed the picker. An empty object means the user approved the call without picking a role.
-
-### McpOutput
-
-**Tool name:** dynamic MCP tool names of the form `mcp__<server>__<tool>`
-
-```typescript theme={null}
-type McpOutput =
-  | string
-  | {
-      type: string;
-      [k: string]: unknown;
-    }[]
-  | {
-      [k: string]: unknown;
-    };
-```
-
-MCP tool results are returned as a string or an array of content blocks, depending on the server. The trailing plain-object branch in the exported type is a schema-generation artifact: the SDK doesn't return a bare object, because a server's structured output is serialized to a JSON string before being returned. At runtime the value may also be `undefined`, although the exported type doesn't model this.
-
-## Permission Types
-
-### `PermissionUpdate`
-
-Operations for updating permissions.
+用于更新权限的操作。
 
 ```typescript theme={null}
 type PermissionUpdate =
@@ -3927,24 +3136,30 @@ type PermissionUpdate =
     };
 ```
 
-### `PermissionBehavior`
+<h3 id="permissionbehavior">
+  `PermissionBehavior`
+</h3>
 
 ```typescript theme={null}
 type PermissionBehavior = "allow" | "deny" | "ask";
 ```
 
-### `PermissionUpdateDestination`
+<h3 id="permissionupdatedestination">
+  `PermissionUpdateDestination`
+</h3>
 
 ```typescript theme={null}
 type PermissionUpdateDestination =
-  | "userSettings" // Global user settings
-  | "projectSettings" // Per-directory project settings
-  | "localSettings" // Local project settings
-  | "session" // Current session only
-  | "cliArg"; // CLI argument
+  | "userSettings" // 全局用户设置
+  | "projectSettings" // 每个目录的项目设置
+  | "localSettings" // 本地项目设置
+  | "session" // 仅当前会话
+  | "cliArg"; // CLI 参数
 ```
 
-### `PermissionRuleValue`
+<h3 id="permissionrulevalue">
+  `PermissionRuleValue`
+</h3>
 
 ```typescript theme={null}
 type PermissionRuleValue = {
@@ -3953,33 +3168,37 @@ type PermissionRuleValue = {
 };
 ```
 
-## Other Types
+<h2 id="other-types">
+  其他类型
+</h2>
 
-### `ApiKeySource`
+<h3 id="apikeysource">
+  `ApiKeySource`
+</h3>
 
 ```typescript theme={null}
 type ApiKeySource = "user" | "project" | "org" | "temporary" | "oauth";
 ```
 
-<Note>
-  At runtime, the `apiKeySource` field on the [`SDKSystemMessage`](#sdksystemmessage) init message can also be the string `"none"` when no API key is in use, for example when the session authenticates with an OAuth token. Handle values outside this union defensively.
-</Note>
+<h3 id="sdkbeta">
+  `SdkBeta`
+</h3>
 
-### `SdkBeta`
-
-Available beta features that can be enabled via the `betas` option. See [Beta headers](https://platform.claude.com/docs/en/api/beta-headers) for more information.
+可通过 `betas` 选项启用的可用测试功能。请参阅 [Beta 标头](https://platform.claude.com/docs/zh-CN/api/beta-headers)了解更多信息。
 
 ```typescript theme={null}
 type SdkBeta = "context-1m-2025-08-07";
 ```
 
 <Warning>
-  The `context-1m-2025-08-07` beta is retired as of April 30, 2026. Passing this value with Claude Sonnet 4.5 or Sonnet 4 has no effect, and requests that exceed the standard 200k-token context window return an error. To use a 1M-token context window, migrate to [Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.6, Claude Opus 4.7, or Claude Opus 4.8](https://platform.claude.com/docs/en/about-claude/models/overview), which include 1M context at standard pricing with no beta header required.
+  `context-1m-2025-08-07` beta 自 2026 年 4 月 30 日起已停用。使用 Claude Sonnet 4.5 或 Sonnet 4 传递此值无效，超过标准 200k 令牌上下文窗口的请求返回错误。要使用 1M 令牌上下文窗口，请迁移到 [Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.6、Claude Opus 4.7 或 Claude Opus 4.8](https://platform.claude.com/docs/zh-CN/about-claude/models/overview)，它们以标准定价包括 1M 上下文，无需 beta 标头。
 </Warning>
 
-### `SlashCommand`
+<h3 id="slashcommand">
+  `SlashCommand`
+</h3>
 
-Information about an available slash command.
+有关可用 slash command 的信息。
 
 ```typescript theme={null}
 type SlashCommand = {
@@ -3990,9 +3209,11 @@ type SlashCommand = {
 };
 ```
 
-### `ModelInfo`
+<h3 id="modelinfo">
+  `ModelInfo`
+</h3>
 
-Information about an available model.
+有关可用模型的信息。
 
 ```typescript theme={null}
 type ModelInfo = {
@@ -4008,21 +3229,23 @@ type ModelInfo = {
 };
 ```
 
-| Field                      | Type                                                               | Description                                                                                                                                                                                                                                                                                                           |
-| :------------------------- | :----------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `value`                    | `string`                                                           | Model identifier to pass in API calls                                                                                                                                                                                                                                                                                 |
-| `resolvedModel`            | `string \| undefined`                                              | Canonical wire model ID that this entry's `value` resolves to. An alias entry such as `sonnet` resolves to an explicit model ID such as `claude-sonnet-5`, so a host can match a stored explicit model ID against the alias entry that covers it. {/* min-version: 2.1.197 */}Requires Claude Code v2.1.197 or later. |
-| `displayName`              | `string`                                                           | Human-readable display name                                                                                                                                                                                                                                                                                           |
-| `description`              | `string`                                                           | Description of the model's capabilities                                                                                                                                                                                                                                                                               |
-| `supportsEffort`           | `boolean \| undefined`                                             | Whether this model supports effort levels                                                                                                                                                                                                                                                                             |
-| `supportedEffortLevels`    | `("low" \| "medium" \| "high" \| "xhigh" \| "max")[] \| undefined` | Effort levels this model accepts                                                                                                                                                                                                                                                                                      |
-| `supportsAdaptiveThinking` | `boolean \| undefined`                                             | Whether this model supports adaptive thinking, where Claude decides when and how much to think                                                                                                                                                                                                                        |
-| `supportsFastMode`         | `boolean \| undefined`                                             | Whether this model supports fast mode                                                                                                                                                                                                                                                                                 |
-| `supportsAutoMode`         | `boolean \| undefined`                                             | Whether this model supports auto mode                                                                                                                                                                                                                                                                                 |
+| 字段                         | 类型                                                                 | 描述                                                                                                                                                                  |
+| :------------------------- | :----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `value`                    | `string`                                                           | 在 API 调用中传递的模型标识符                                                                                                                                                   |
+| `resolvedModel`            | `string \| undefined`                                              | 此条目的 `value` 解析到的规范线路模型 ID。别名条目（如 `sonnet`）解析为显式模型 ID（如 `claude-sonnet-5`），因此主机可以将存储的显式模型 ID 与覆盖它的别名条目匹配。{/* min-version: 2.1.197 */}需要 Claude Code v2.1.197 或更高版本。 |
+| `displayName`              | `string`                                                           | 人类可读的显示名称                                                                                                                                                           |
+| `description`              | `string`                                                           | 模型功能的描述                                                                                                                                                             |
+| `supportsEffort`           | `boolean \| undefined`                                             | 此模型是否支持工作量级别                                                                                                                                                        |
+| `supportedEffortLevels`    | `("low" \| "medium" \| "high" \| "xhigh" \| "max")[] \| undefined` | 此模型接受的工作量级别                                                                                                                                                         |
+| `supportsAdaptiveThinking` | `boolean \| undefined`                                             | 此模型是否支持自适应思考，其中 Claude 决定何时以及多少思考                                                                                                                                   |
+| `supportsFastMode`         | `boolean \| undefined`                                             | 此模型是否支持快速模式                                                                                                                                                         |
+| `supportsAutoMode`         | `boolean \| undefined`                                             | 此模型是否支持自动模式                                                                                                                                                         |
 
-### `AgentInfo`
+<h3 id="agentinfo">
+  `AgentInfo`
+</h3>
 
-Information about an available subagent that can be invoked via the Agent tool.
+有关可通过 Agent 工具调用的可用子代理的信息。
 
 ```typescript theme={null}
 type AgentInfo = {
@@ -4032,15 +3255,17 @@ type AgentInfo = {
 };
 ```
 
-| Field         | Type                  | Description                                                          |
-| :------------ | :-------------------- | :------------------------------------------------------------------- |
-| `name`        | `string`              | Agent type identifier (e.g., `"Explore"`, `"general-purpose"`)       |
-| `description` | `string`              | Description of when to use this agent                                |
-| `model`       | `string \| undefined` | Model alias this agent uses. If omitted, inherits the parent's model |
+| 字段            | 类型                    | 描述                                          |
+| :------------ | :-------------------- | :------------------------------------------ |
+| `name`        | `string`              | 代理类型标识符（例如，`"Explore"`、`"general-purpose"`） |
+| `description` | `string`              | 何时使用此代理的描述                                  |
+| `model`       | `string \| undefined` | 此代理使用的模型别名。如果省略，继承父级的模型                     |
 
-### `McpServerStatus`
+<h3 id="mcpserverstatus">
+  `McpServerStatus`
+</h3>
 
-Status of a connected MCP server.
+连接的 MCP 服务器的状态。
 
 ```typescript theme={null}
 type McpServerStatus = {
@@ -4065,9 +3290,11 @@ type McpServerStatus = {
 };
 ```
 
-### `McpServerStatusConfig`
+<h3 id="mcpserverstatusconfig">
+  `McpServerStatusConfig`
+</h3>
 
-The configuration of an MCP server as reported by `mcpServerStatus()`. This is the union of all MCP server transport types.
+由 `mcpServerStatus()` 报告的 MCP 服务器的配置。这是所有 MCP 服务器传输类型的联合。
 
 ```typescript theme={null}
 type McpServerStatusConfig =
@@ -4078,11 +3305,13 @@ type McpServerStatusConfig =
   | McpClaudeAIProxyServerConfig;
 ```
 
-See [`McpServerConfig`](#mcpserverconfig) for details on each transport type.
+请参阅 [`McpServerConfig`](#mcpserverconfig)了解每种传输类型的详情。
 
-### `AccountInfo`
+<h3 id="accountinfo">
+  `AccountInfo`
+</h3>
 
-Account information for the authenticated user.
+经过身份验证的用户的帐户信息。
 
 ```typescript theme={null}
 type AccountInfo = {
@@ -4094,9 +3323,11 @@ type AccountInfo = {
 };
 ```
 
-### `ModelUsage`
+<h3 id="modelusage">
+  `ModelUsage`
+</h3>
 
-Per-model usage statistics returned in result messages. The `costUSD` value is a client-side estimate. See [Track cost and usage](/docs/en/agent-sdk/cost-tracking) for billing caveats.
+结果消息中返回的每个模型使用统计。`costUSD` 值是客户端估计。请参阅[跟踪成本和使用情况](/docs/zh-CN/agent-sdk/cost-tracking)了解计费注意事项。
 
 ```typescript theme={null}
 type ModelUsage = {
@@ -4108,24 +3339,22 @@ type ModelUsage = {
   costUSD: number;
   contextWindow: number;
   maxOutputTokens: number;
-  canonicalModel?: string;
-  provider?: string;
 };
 ```
 
-{/* min-version: 2.1.218 */}The `canonicalModel` and `provider` fields require Claude Code v2.1.218 or later. `canonicalModel` is the canonical model ID that the pricing lookup uses; it can differ from the raw model string that keys the entry, for example when that string is a provider-specific ID or an alias.
-
-`provider` names the API backend that served the model, such as `firstParty`, `bedrock`, `vertex`, `foundry`, `anthropicAws`, `mantle`, or `gateway`.
-
-### `ConfigScope`
+<h3 id="configscope">
+  `ConfigScope`
+</h3>
 
 ```typescript theme={null}
 type ConfigScope = "local" | "user" | "project";
 ```
 
-### `NonNullableUsage`
+<h3 id="nonnullableusage">
+  `NonNullableUsage`
+</h3>
 
-A version of [`Usage`](#usage) with all nullable fields made non-nullable.
+[`Usage`](#usage) 的版本，所有可空字段都变为非可空。
 
 ```typescript theme={null}
 type NonNullableUsage = {
@@ -4133,9 +3362,11 @@ type NonNullableUsage = {
 };
 ```
 
-### `Usage`
+<h3 id="usage">
+  `Usage`
+</h3>
 
-Token usage statistics. This is the `BetaUsage` type from `@anthropic-ai/sdk`.
+令牌使用统计。这是来自 `@anthropic-ai/sdk` 的 `BetaUsage` 类型。
 
 ```typescript theme={null}
 type Usage = {
@@ -4155,41 +3386,47 @@ type Usage = {
 };
 ```
 
-`BetaServerToolUsage` and `BetaIterationsUsage` are defined in `@anthropic-ai/sdk`.
+`BetaServerToolUsage` 和 `BetaIterationsUsage` 在 `@anthropic-ai/sdk` 中定义。
 
-### `CallToolResult`
+<h3 id="calltoolresult">
+  `CallToolResult`
+</h3>
 
-MCP tool result type (from `@modelcontextprotocol/sdk/types.js`). `structuredContent` is a JSON object that can be returned alongside `content`, including image blocks. See [Return structured data](/docs/en/agent-sdk/custom-tools#return-structured-data).
+MCP 工具结果类型（来自 `@modelcontextprotocol/sdk/types.js`）。`structuredContent` 是一个 JSON 对象，可以与 `content` 一起返回，包括图像块。请参阅[返回结构化数据](/docs/zh-CN/agent-sdk/custom-tools#return-structured-data)。
 
 ```typescript theme={null}
 type CallToolResult = {
   content: Array<{
     type: "text" | "image" | "audio" | "resource" | "resource_link";
-    // Additional fields vary by type
+    // 其他字段因类型而异
   }>;
   structuredContent?: Record<string, unknown>;
   isError?: boolean;
 };
 ```
 
-### `ThinkingConfig`
+<h3 id="thinkingconfig">
+  `ThinkingConfig`
+</h3>
 
-Controls Claude's thinking/reasoning behavior. Takes precedence over the deprecated `maxThinkingTokens`.
+控制 Claude 的思考/推理行为。优先于已弃用的 `maxThinkingTokens`。
 
 ```typescript theme={null}
 type ThinkingDisplay = "summarized" | "omitted";
 
 type ThinkingConfig =
-  | { type: "adaptive"; display?: ThinkingDisplay } // The model determines when and how much to reason (Opus 4.6+)
-  | { type: "enabled"; budgetTokens?: number; display?: ThinkingDisplay } // Fixed thinking token budget
-  | { type: "disabled" }; // No extended thinking
+  | { type: "adaptive"; display?: ThinkingDisplay } // 模型确定何时以及多少推理（Opus 4.6+）
+  | { type: "enabled"; budgetTokens?: number; display?: ThinkingDisplay } // 固定思考令牌预算
+  | { type: "disabled" }; // 无扩展思考
 ```
 
-The optional `display` field controls whether thinking text is returned `"summarized"` or `"omitted"`. On Claude Opus 4.7 and later, the API default is `"omitted"`, so set `"summarized"` to receive thinking content in `thinking` blocks. Claude Code doesn't send `display` to Amazon Bedrock or Google Cloud's Agent Platform, so on those providers Opus 4.7 and later return empty `thinking` blocks even when you set `display` to `"summarized"`.
+可选的 `display` 字段控制思考文本是否以 `"summarized"` 或 `"omitted"` 形式返回。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此设置 `"summarized"` 以在 `thinking` 块中接收思考内容。
 
-### `SpawnedProcess`
+<h3 id="spawnedprocess">
+  `SpawnedProcess`
+</h3>
 
-Interface for custom process spawning (used with `spawnClaudeCodeProcess` option). `ChildProcess` already satisfies this interface.
+自定义进程生成的接口（与 `spawnClaudeCodeProcess` 选项一起使用）。`ChildProcess` 已满足此接口。
 
 ```typescript theme={null}
 interface SpawnedProcess {
@@ -4216,9 +3453,11 @@ interface SpawnedProcess {
 }
 ```
 
-### `SpawnOptions`
+<h3 id="spawnoptions">
+  `SpawnOptions`
+</h3>
 
-Options passed to the custom spawn function.
+传递给自定义生成函数的选项。
 
 ```typescript theme={null}
 interface SpawnOptions {
@@ -4231,14 +3470,16 @@ interface SpawnOptions {
 ```
 
 <Note>
-  The `signal` field tells your spawn function when to tear down the process. Pass it as the `signal` option to Node's `spawn()`, or pass it to your VM or container teardown handler.
+  `signal` 字段告诉您的生成函数何时拆除进程。将其作为 `signal` 选项传递给 Node 的 `spawn()`，或将其传递给您的 VM 或容器拆除处理程序。
 
-  This signal does not fire the instant [`Options.abortController`](#options) aborts. The SDK first closes the process's stdin and waits about two seconds so the CLI can shut down cleanly, then aborts this signal. To react the moment the caller aborts instead, listen on your own `Options.abortController.signal`, which your spawn function can reference from its enclosing scope.
+  此信号不会在 [`Options.abortController`](#options) 中止的瞬间触发。SDK 首先关闭进程的 stdin 并等待约两秒钟，以便 CLI 可以干净地关闭，然后中止此信号。要在调用者中止时立即做出反应，请侦听您自己的 `Options.abortController.signal`，您的生成函数可以从其封闭范围引用。
 </Note>
 
-### `McpSetServersResult`
+<h3 id="mcpsetserversresult">
+  `McpSetServersResult`
+</h3>
 
-Result of a `setMcpServers()` operation.
+`setMcpServers()` 操作的结果。
 
 ```typescript theme={null}
 type McpSetServersResult = {
@@ -4248,9 +3489,11 @@ type McpSetServersResult = {
 };
 ```
 
-### `RewindFilesResult`
+<h3 id="rewindfilesresult">
+  `RewindFilesResult`
+</h3>
 
-Result of a `rewindFiles()` operation.
+`rewindFiles()` 操作的结果。
 
 ```typescript theme={null}
 type RewindFilesResult = {
@@ -4259,15 +3502,14 @@ type RewindFilesResult = {
   filesChanged?: string[];
   insertions?: number;
   deletions?: number;
-  skippedLinks?: number;
 };
 ```
 
-{/* min-version: 2.1.216 */}`skippedLinks` counts the tracked paths the rewind refused to restore or delete for link safety: a symlink, hard link, or other non-regular file at the tracked path, a parent directory that no longer resolves to where it pointed when the checkpoint was taken, or a backup that couldn't be read safely. The field requires Claude Code v2.1.216 or later. A preview call with `rewindFiles(userMessageId, { dryRun: true })` never sets it.
+<h3 id="sdkstatusmessage">
+  `SDKStatusMessage`
+</h3>
 
-### `SDKStatusMessage`
-
-Status update message (e.g., compacting).
+状态更新消息（例如，压缩）。
 
 ```typescript theme={null}
 type SDKStatusMessage = {
@@ -4280,9 +3522,11 @@ type SDKStatusMessage = {
 };
 ```
 
-### `SDKTaskNotificationMessage`
+<h3 id="sdktasknotificationmessage">
+  `SDKTaskNotificationMessage`
+</h3>
 
-Notification when a background task completes, fails, or is stopped. Background tasks include `run_in_background` Bash commands, [Monitor](#monitor) watches, and background subagents.
+后台任务完成、失败或停止时的通知。后台任务包括 `run_in_background` Bash 命令、[Monitor](#monitor) 监视和后台子代理。
 
 ```typescript theme={null}
 type SDKTaskNotificationMessage = {
@@ -4303,11 +3547,11 @@ type SDKTaskNotificationMessage = {
 };
 ```
 
-Claude Code prepends a notice to every task notification it sends to the model. The notice states that no human input has occurred, so the model doesn't treat the notification as a user instruction or approval. To detect a task-notification turn, check `origin.kind === "task-notification"` on [`SDKUserMessage`](#sdkusermessage) or [`SDKResultMessage`](#sdkresultmessage) rather than matching on the notice text. Before v2.1.205, Claude Code left the notice off notifications that arrived while the session was idle.
+<h3 id="sdktoolusesummarymessage">
+  `SDKToolUseSummaryMessage`
+</h3>
 
-### `SDKToolUseSummaryMessage`
-
-Summary of tool usage in a conversation.
+对话中工具使用的摘要。
 
 ```typescript theme={null}
 type SDKToolUseSummaryMessage = {
@@ -4319,11 +3563,13 @@ type SDKToolUseSummaryMessage = {
 };
 ```
 
-### `SDKHookStartedMessage`
+<h3 id="sdkhookstartedmessage">
+  `SDKHookStartedMessage`
+</h3>
 
-Emitted when a hook begins executing.
+当 hook 开始执行时发出。
 
-Claude Code delivers this message, [`SDKHookProgressMessage`](#sdkhookprogressmessage), and [`SDKHookResponseMessage`](#sdkhookresponsemessage) to the message stream immediately, including while a `SessionStart` or `Setup` hook is still running during session startup. Claude Code v2.1.169 through v2.1.203 delivered these messages in one batch after a `SessionStart` or `Setup` hook completed; v2.1.204 restored live delivery.
+Claude Code 将此消息、[`SDKHookProgressMessage`](#sdkhookprogressmessage) 和 [`SDKHookResponseMessage`](#sdkhookresponsemessage) 立即传递到消息流，包括在会话启动期间 `SessionStart` 或 `Setup` hook 仍在运行时。Claude Code v2.1.169 至 v2.1.203 在 `SessionStart` 或 `Setup` hook 完成后以一个批次传递这些消息；v2.1.204 恢复了实时传递。
 
 ```typescript theme={null}
 type SDKHookStartedMessage = {
@@ -4337,9 +3583,11 @@ type SDKHookStartedMessage = {
 };
 ```
 
-### `SDKHookProgressMessage`
+<h3 id="sdkhookprogressmessage">
+  `SDKHookProgressMessage`
+</h3>
 
-Emitted while a hook is running, with stdout/stderr output.
+在 hook 运行时发出，包含 stdout/stderr 输出。
 
 ```typescript theme={null}
 type SDKHookProgressMessage = {
@@ -4356,9 +3604,11 @@ type SDKHookProgressMessage = {
 };
 ```
 
-### `SDKHookResponseMessage`
+<h3 id="sdkhookresponsemessage">
+  `SDKHookResponseMessage`
+</h3>
 
-Emitted when a hook finishes executing.
+当 hook 完成执行时发出。
 
 ```typescript theme={null}
 type SDKHookResponseMessage = {
@@ -4377,9 +3627,11 @@ type SDKHookResponseMessage = {
 };
 ```
 
-### `SDKToolProgressMessage`
+<h3 id="sdktoolprogressmessage">
+  `SDKToolProgressMessage`
+</h3>
 
-Emitted periodically while a tool is executing to indicate progress.
+在工具执行时定期发出，以指示进度。
 
 ```typescript theme={null}
 type SDKToolProgressMessage = {
@@ -4389,34 +3641,16 @@ type SDKToolProgressMessage = {
   parent_tool_use_id: string | null;
   elapsed_time_seconds: number;
   task_id?: string;
-  heartbeat?: boolean;
-  subagent_type?: string;
-  subagent_retry?: {
-    agent_id: string;
-    attempt: number;
-    max_retries: number;
-    retry_delay_ms: number;
-    error_status: number | null;
-    error_category: string;
-  };
   uuid: UUID;
   session_id: string;
 };
 ```
 
-While a tool call runs in the main conversation, Claude Code emits a `tool_progress` message every 30 seconds with `heartbeat: true`. Each heartbeat carries the tool name and elapsed seconds, so you can distinguish a long-running call from a stalled session. Claude Code doesn't emit heartbeats for the Agent tool, whose subagents stream their own progress, or for tool calls inside a subagent. The `heartbeat` field requires Agent SDK v0.3.214 or later.
+<h3 id="sdkauthstatusmessage">
+  `SDKAuthStatusMessage`
+</h3>
 
-On `tool_progress` messages for the Agent tool, `subagent_type` names the running subagent type, such as `general-purpose`. `subagent_retry` is present while that subagent waits out an API error backoff, such as a rate limit or overload, with one message per retry attempt. Both fields require Agent SDK v0.3.214 or later.
-
-To render a retry indicator from `subagent_retry`:
-
-* Track the indicator by `parent_tool_use_id`, which is unique per subagent. `tool_use_id` is shared by parallel subagents from one assistant turn, so tracking by it would let one subagent's update clear another's indicator.
-* Clear the indicator when a later `tool_progress` for the same `parent_tool_use_id` arrives without the field, or when the tool's result message arrives. `attempt` can exceed `max_retries` under persistent retry, so don't derive clearing from the counters.
-* Treat `error_category` as a closed set of tokens for choosing your own message text, not as display text: `rate_limit`, `overloaded`, `authentication_failed`, `server_error`, or `unknown`.
-
-### `SDKAuthStatusMessage`
-
-Emitted during authentication flows.
+在身份验证流程中发出。
 
 ```typescript theme={null}
 type SDKAuthStatusMessage = {
@@ -4429,9 +3663,11 @@ type SDKAuthStatusMessage = {
 };
 ```
 
-### `SDKTaskStartedMessage`
+<h3 id="sdktaskstartedmessage">
+  `SDKTaskStartedMessage`
+</h3>
 
-Emitted when a background task begins. The `task_type` field is `"local_bash"` for background Bash commands and [Monitor](#monitor) watches, `"local_agent"` for subagents, or `"remote_agent"`.
+当后台任务开始时发出。`task_type` 字段对于后台 Bash 命令和 [Monitor](#monitor) 监视为 `"local_bash"`，对于子代理为 `"local_agent"`，或 `"remote_agent"`。
 
 ```typescript theme={null}
 type SDKTaskStartedMessage = {
@@ -4446,9 +3682,11 @@ type SDKTaskStartedMessage = {
 };
 ```
 
-### `SDKTaskProgressMessage`
+<h3 id="sdktaskprogressmessage">
+  `SDKTaskProgressMessage`
+</h3>
 
-Emitted periodically while a subagent or background task is running. The `summary` field is populated only when [`agentProgressSummaries`](#options) is enabled.
+在子代理或后台任务运行时定期发出。仅当启用 [`agentProgressSummaries`](#options) 时，`summary` 字段才会被填充。
 
 ```typescript theme={null}
 type SDKTaskProgressMessage = {
@@ -4470,9 +3708,11 @@ type SDKTaskProgressMessage = {
 };
 ```
 
-### `SDKTaskUpdatedMessage`
+<h3 id="sdktaskupdatedmessage">
+  `SDKTaskUpdatedMessage`
+</h3>
 
-Emitted when a background task's state changes, such as when it transitions from `running` to `completed`. Merge `patch` into your local task map keyed by `task_id`. The `end_time` field is a Unix epoch timestamp in milliseconds, comparable with `Date.now()`.
+当后台任务的状态发生变化时发出，例如当它从 `running` 转换为 `completed` 时。将 `patch` 合并到按 `task_id` 键入的本地任务映射中。`end_time` 字段是 Unix 纪元时间戳（以毫秒为单位），可与 `Date.now()` 比较。
 
 ```typescript theme={null}
 type SDKTaskUpdatedMessage = {
@@ -4492,15 +3732,17 @@ type SDKTaskUpdatedMessage = {
 };
 ```
 
-### `SDKBackgroundTasksChangedMessage`
+<h3 id="sdkbackgroundtaskschangedmessage">
+  `SDKBackgroundTasksChangedMessage`
+</h3>
 
-Emitted whenever the set of live background tasks changes: a task starts, completes, is killed, or a foreground agent is backgrounded. The `tasks` array is the full live set. Replace any cached set with each payload instead of pairing `task_started` and `task_notification` events, so the next membership change corrects any event you missed.
+每当实时后台任务集发生变化时发出：任务启动、完成、被杀死，或前台代理被后台化。`tasks` 数组是完整的实时集。用每个有效负载替换任何缓存的集，而不是配对 `task_started` 和 `task_notification` 事件，以便下一个成员资格变化纠正您错过的任何事件。
 
-Ordering relative to those per-task events is unspecified, so don't correlate the two streams.
+相对于这些每个任务事件的顺序是未指定的，因此不要关联这两个流。
 
-Nothing is emitted at startup. Reset to an empty set whenever the session's CLI process starts or restarts and let the next membership change repopulate it.
+启动时不发出任何内容。每当会话的 CLI 进程启动或重新启动时重置为空集，并让下一个成员资格变化重新填充它。
 
-{/* min-version: 2.1.203 */}Requires Claude Code v2.1.203 or later.
+{/* min-version: 2.1.203 */}需要 Claude Code v2.1.203 或更高版本。
 
 ```typescript theme={null}
 type SDKBackgroundTasksChangedMessage = {
@@ -4516,11 +3758,13 @@ type SDKBackgroundTasksChangedMessage = {
 };
 ```
 
-### `SDKThinkingTokensMessage`
+<h3 id="sdkthinkingtokensmessage">
+  `SDKThinkingTokensMessage`
+</h3>
 
-Emitted while Claude is producing a thinking block, including a redacted one, carrying a running estimate of the thinking tokens generated so far. `estimated_tokens` is the running total for the current thinking block and `estimated_tokens_delta` is the increment carried by this frame. Use it for progress display. The final count for the top-level agent loop is the result message's `usage.output_tokens`, which [doesn't include subagent tokens](/docs/en/agent-sdk/cost-tracking#get-the-total-cost-of-a-query); use [`modelUsage`](#modelusage) for whole-tree accounting.
+在 Claude 生成思考块（包括编辑过的块）时发出，携带迄今为止生成的思考令牌的运行估计。`estimated_tokens` 是当前思考块的运行总计，`estimated_tokens_delta` 是此帧携带的增量。将其用于进度显示。顶级代理循环的最终计数是结果消息的 `usage.output_tokens`，它[不包括子代理令牌](/docs/zh-CN/agent-sdk/cost-tracking#get-the-total-cost-of-a-query)；使用 [`modelUsage`](#modelusage) 进行整树会计。
 
-{/* min-version: 2.1.153 */}Requires Claude Code v2.1.153 or later.
+{/* min-version: 2.1.153 */}需要 Claude Code v2.1.153 或更高版本。
 
 ```typescript theme={null}
 type SDKThinkingTokensMessage = {
@@ -4533,9 +3777,11 @@ type SDKThinkingTokensMessage = {
 };
 ```
 
-### `SDKFilesPersistedEvent`
+<h3 id="sdkfilespersistedevent">
+  `SDKFilesPersistedEvent`
+</h3>
 
-Emitted when file checkpoints are persisted to disk.
+当文件检查点持久化到磁盘时发出。
 
 ```typescript theme={null}
 type SDKFilesPersistedEvent = {
@@ -4549,9 +3795,11 @@ type SDKFilesPersistedEvent = {
 };
 ```
 
-### `SDKRateLimitEvent`
+<h3 id="sdkratelimitevent">
+  `SDKRateLimitEvent`
+</h3>
 
-Emitted when the session encounters a rate limit.
+当会话遇到速率限制时发出。
 
 ```typescript theme={null}
 type SDKRateLimitEvent = {
@@ -4569,11 +3817,13 @@ type SDKRateLimitEvent = {
 };
 ```
 
-{/* min-version: 2.1.181 */}When `errorCode` is `"credits_required"`, the rejection is from a claude.ai subscription whose included usage is exhausted, and the session cannot continue until the user buys usage credits. `canUserPurchaseCredits` indicates whether the authenticated user can buy credits for the account, and `hasChargeableSavedPaymentMethod` indicates whether a saved payment method is on file. All three fields are absent on rate-limit events that are not credits-required rejections. Requires Claude Code v2.1.181 or later.
+{/* min-version: 2.1.181 */}当 `errorCode` 为 `"credits_required"` 时，拒绝来自 claude.ai 订阅，其包含的使用量已耗尽，会话在用户购买使用额度之前无法继续。`canUserPurchaseCredits` 指示经过身份验证的用户是否可以为帐户购买额度，`hasChargeableSavedPaymentMethod` 指示是否有保存的付款方式。所有三个字段在非信用额度必需拒绝的速率限制事件中不存在。需要 Claude Code v2.1.181 或更高版本。
 
-### `SDKLocalCommandOutputMessage`
+<h3 id="sdklocalcommandoutputmessage">
+  `SDKLocalCommandOutputMessage`
+</h3>
 
-Output from a local slash command (for example, `/voice` or `/usage`). Displayed as assistant-style text in the transcript.
+来自本地 slash command 的输出（例如，`/voice` 或 `/usage`）。在记录中显示为助手样式的文本。
 
 ```typescript theme={null}
 type SDKLocalCommandOutputMessage = {
@@ -4585,9 +3835,11 @@ type SDKLocalCommandOutputMessage = {
 };
 ```
 
-### `SDKCommandsChangedMessage`
+<h3 id="sdkcommandschangedmessage">
+  `SDKCommandsChangedMessage`
+</h3>
 
-Emitted when the set of available commands changes mid-session, such as when Claude Code discovers skills as the agent enters a subdirectory. The `commands` array is the full updated list, so replace any cached command list with this payload. {/* min-version: agent-sdk@0.3.216 */}Calling [`supportedCommands()`](#query-object) after this message returns the same updated list, because the method tracks the latest push; this requires Agent SDK v0.3.216 or later. In earlier SDK versions, `supportedCommands()` returns the snapshot captured at initialization and never reflects mid-session changes.
+当可用命令集在会话中期发生变化时发出，例如当代理进入子目录时发现技能。`commands` 数组是完整的更新列表，因此用此有效负载替换任何缓存的命令列表。再次调用 `supportedCommands()` 不等同：该方法返回在初始化时捕获的快照，不反映会话中期的变化。
 
 ```typescript theme={null}
 type SDKCommandsChangedMessage = {
@@ -4599,9 +3851,11 @@ type SDKCommandsChangedMessage = {
 };
 ```
 
-### `SDKPromptSuggestionMessage`
+<h3 id="sdkpromptsuggestionmessage">
+  `SDKPromptSuggestionMessage`
+</h3>
 
-Emitted after each turn when `promptSuggestions` is enabled. Contains a predicted next user prompt.
+当启用 `promptSuggestions` 时在每个轮次后发出。包含预测的下一个用户提示。
 
 ```typescript theme={null}
 type SDKPromptSuggestionMessage = {
@@ -4612,9 +3866,11 @@ type SDKPromptSuggestionMessage = {
 };
 ```
 
-### `SDKConversationResetMessage`
+<h3 id="sdkconversationresetmessage">
+  `SDKConversationResetMessage`
+</h3>
 
-Emitted when the session's conversation is replaced without ending the session, such as after `/clear`, on plan-mode exit, or when a fresh conversation starts. Mount an empty transcript under `new_conversation_id` and discard any cached session title.
+当会话的对话被替换而不结束会话时发出，例如在 `/clear` 之后、在计划模式退出时或当新对话启动时。在 `new_conversation_id` 下挂载空记录，并丢弃任何缓存的会话标题。
 
 ```typescript theme={null}
 type SDKConversationResetMessage = {
@@ -4625,21 +3881,27 @@ type SDKConversationResetMessage = {
 };
 ```
 
-{/* min-version: 2.1.203 */}The SDK's published typings declare `SDKConversationResetMessage` in Claude Code v2.1.203 and later. Before v2.1.203, `SDKMessage` referenced the type without declaring it, so narrowing on `type === "conversation_reset"` failed to typecheck when `skipLibCheck` was disabled.
+{/* min-version: 2.1.203 */}SDK 的已发布类型在 Claude Code v2.1.203 及更高版本中声明 `SDKConversationResetMessage`。在 v2.1.203 之前，`SDKMessage` 引用该类型而不声明它，因此当 `skipLibCheck` 被禁用时，在 `type === "conversation_reset"` 上缩小范围失败类型检查。
 
-### `AbortError`
+<h3 id="aborterror">
+  `AbortError`
+</h3>
 
-Custom error class for abort operations.
+用于中止操作的自定义错误类。
 
 ```typescript theme={null}
 class AbortError extends Error {}
 ```
 
-## Sandbox Configuration
+<h2 id="sandbox-configuration">
+  沙箱配置
+</h2>
 
-### `SandboxSettings`
+<h3 id="sandboxsettings">
+  `SandboxSettings`
+</h3>
 
-Configuration for sandbox behavior. Use this to enable command sandboxing and configure network restrictions programmatically.
+沙箱行为的配置。使用此选项以编程方式启用命令沙箱和配置网络限制。
 
 ```typescript theme={null}
 type SandboxSettings = {
@@ -4656,26 +3918,28 @@ type SandboxSettings = {
 };
 ```
 
-| Property                    | Type                                                  | Default     | Description                                                                                                                                                                                                                             |
-| :-------------------------- | :---------------------------------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`                   | `boolean`                                             | `false`     | Enable sandbox mode for command execution                                                                                                                                                                                               |
-| `failIfUnavailable`         | `boolean`                                             | `true`      | Stop at startup if `enabled` is `true` but the sandbox can't start. Set `false` to fall back to unsandboxed execution with a warning on stderr                                                                                          |
-| `autoAllowBashIfSandboxed`  | `boolean`                                             | `true`      | Auto-approve bash commands when sandbox is enabled                                                                                                                                                                                      |
-| `excludedCommands`          | `string[]`                                            | `[]`        | Commands that always bypass sandbox restrictions (e.g., `['docker']`). These run unsandboxed automatically without model involvement                                                                                                    |
-| `allowUnsandboxedCommands`  | `boolean`                                             | `true`      | Allow the model to request running commands outside the sandbox. When `true`, the model can set `dangerouslyDisableSandbox` in tool input, which falls back to the [permissions system](#permissions-fallback-for-unsandboxed-commands) |
-| `network`                   | [`SandboxNetworkConfig`](#sandboxnetworkconfig)       | `undefined` | Network-specific sandbox configuration                                                                                                                                                                                                  |
-| `filesystem`                | [`SandboxFilesystemConfig`](#sandboxfilesystemconfig) | `undefined` | Filesystem-specific sandbox configuration for read/write restrictions                                                                                                                                                                   |
-| `ignoreViolations`          | `Record<string, string[]>`                            | `undefined` | Map of violation categories to patterns to ignore (e.g., `{ file: ['/tmp/*'], network: ['localhost'] }`)                                                                                                                                |
-| `enableWeakerNestedSandbox` | `boolean`                                             | `false`     | Enable a weaker nested sandbox for compatibility                                                                                                                                                                                        |
-| `ripgrep`                   | `{ command: string; args?: string[] }`                | `undefined` | Custom ripgrep binary configuration for sandbox environments                                                                                                                                                                            |
+| 属性                          | 类型                                                    | 默认值         | 描述                                                                                                                              |
+| :-------------------------- | :---------------------------------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| `enabled`                   | `boolean`                                             | `false`     | 为命令执行启用沙箱模式                                                                                                                     |
+| `failIfUnavailable`         | `boolean`                                             | `true`      | 如果 `enabled` 为 `true` 但沙箱无法启动，则在启动时停止。设置为 `false` 以回退到沙箱外执行，并在 stderr 上显示警告                                                     |
+| `autoAllowBashIfSandboxed`  | `boolean`                                             | `true`      | 启用沙箱时自动批准 bash 命令                                                                                                               |
+| `excludedCommands`          | `string[]`                                            | `[]`        | 始终绕过沙箱限制的命令（例如，`['docker']`）。这些自动运行在沙箱外，无需模型参与                                                                                  |
+| `allowUnsandboxedCommands`  | `boolean`                                             | `true`      | 允许模型请求在沙箱外运行命令。当为 `true` 时，模型可以在工具输入中设置 `dangerouslyDisableSandbox`，这会回退到[权限系统](#permissions-fallback-for-unsandboxed-commands) |
+| `network`                   | [`SandboxNetworkConfig`](#sandboxnetworkconfig)       | `undefined` | 网络特定的沙箱配置                                                                                                                       |
+| `filesystem`                | [`SandboxFilesystemConfig`](#sandboxfilesystemconfig) | `undefined` | 用于读/写限制的文件系统特定沙箱配置                                                                                                              |
+| `ignoreViolations`          | `Record<string, string[]>`                            | `undefined` | 违规类别到要忽略的模式的映射（例如，`{ file: ['/tmp/*'], network: ['localhost'] }`）                                                               |
+| `enableWeakerNestedSandbox` | `boolean`                                             | `false`     | 为兼容性启用较弱的嵌套沙箱                                                                                                                   |
+| `ripgrep`                   | `{ command: string; args?: string[] }`                | `undefined` | 沙箱环境中的自定义 ripgrep 二进制配置                                                                                                         |
 
 <Note>
-  The sandbox depends on platform support and, on Linux, tools like `bubblewrap` and `socat`. When `enabled` is `true` and the sandbox can't start, `query()` reports a `result` message with `subtype: "error_during_execution"` and the reason in `errors`. For a single message `query()` call, the SDK throws after yielding that error result, so wrap the loop in a try block to continue past it. See [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result) for the error contract.
+  沙箱取决于平台支持，在 Linux 上，还需要 `bubblewrap` 和 `socat` 等工具。当 `enabled` 为 `true` 且沙箱无法启动时，`query()` 报告一条 `result` 消息，其中 `subtype: "error_during_execution"`，原因在 `errors` 中。对于单个消息 `query()` 调用，SDK 在生成该错误结果后抛出异常，因此将循环包装在 try 块中以继续通过它。有关错误合约，请参阅[处理结果](/docs/zh-CN/agent-sdk/agent-loop#handle-the-result)。
 
-  To run unsandboxed instead, set `failIfUnavailable: false`.
+  要改为运行沙箱外的命令，请设置 `failIfUnavailable: false`。
 </Note>
 
-#### Example usage
+<h4 id="example-usage">
+  示例用法
+</h4>
 
 ```typescript theme={null}
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -4696,25 +3960,26 @@ try {
     if ("result" in message) console.log(message.result);
   }
 } catch (error) {
-  // A single-shot query() throws after yielding an error result,
-  // such as when the sandbox can't start (failIfUnavailable defaults to true).
+  // 单个 query() 调用在生成错误结果后抛出异常，
+  // 例如当沙箱无法启动时（failIfUnavailable 默认为 true）。
   console.log(`Session ended with an error: ${error}`);
 }
 ```
 
 <Warning>
-  **Unix socket security:** The `allowUnixSockets` option can grant access to powerful system services. For example, allowing `/var/run/docker.sock` effectively grants full host system access through the Docker API, bypassing sandbox isolation. Only allow Unix sockets that are strictly necessary and understand the security implications of each.
+  **Unix socket 安全性：** `allowUnixSockets` 选项可以授予对强大系统服务的访问权限。例如，允许 `/var/run/docker.sock` 实际上通过 Docker API 授予对主机系统的完全访问权限，绕过沙箱隔离。仅允许严格必要的 Unix sockets 并了解每个的安全含义。
 </Warning>
 
-### `SandboxNetworkConfig`
+<h3 id="sandboxnetworkconfig">
+  `SandboxNetworkConfig`
+</h3>
 
-Network-specific configuration for sandbox mode. These settings apply to sandboxed Bash commands when `enabled` is `true` in the parent [`SandboxSettings`](#sandboxsettings). They do not restrict the WebFetch tool, which uses [permission rules](/docs/en/permissions#webfetch) instead.
+沙箱模式的网络特定配置。这些设置适用于当父级 [`SandboxSettings`](#sandboxsettings) 中的 `enabled` 为 `true` 时的沙箱化 Bash 命令。它们不限制 WebFetch 工具，该工具改用[权限规则](/docs/zh-CN/permissions#webfetch)。
 
 ```typescript theme={null}
 type SandboxNetworkConfig = {
   allowedDomains?: string[];
   deniedDomains?: string[];
-  strictAllowlist?: boolean;
   allowManagedDomainsOnly?: boolean;
   allowLocalBinding?: boolean;
   allowUnixSockets?: string[];
@@ -4724,25 +3989,26 @@ type SandboxNetworkConfig = {
 };
 ```
 
-| Property                  | Type       | Default     | Description                                                                                                                                                                                                                                                                                                                                       |
-| :------------------------ | :--------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `allowedDomains`          | `string[]` | `[]`        | Domain names that sandboxed processes can access                                                                                                                                                                                                                                                                                                  |
-| `deniedDomains`           | `string[]` | `[]`        | Domain names that sandboxed processes cannot access. Takes precedence over `allowedDomains`                                                                                                                                                                                                                                                       |
-| `strictAllowlist`         | `boolean`  | `false`     | {/* min-version: 2.1.219 */}Deny sandboxed commands access to hosts not in `allowedDomains` instead of prompting. Enforced for sandboxed commands only; in-process tools such as WebFetch aren't gated by it. Only honored from user, managed, or CLI `--settings` settings; project settings are ignored. Requires Claude Code v2.1.219 or later |
-| `allowManagedDomainsOnly` | `boolean`  | `false`     | Managed-settings only. When set in [managed settings](/docs/en/permissions#managed-settings), only `allowedDomains` entries from managed settings are honored and entries from user, project, or local settings are ignored. Has no effect when set via SDK options                                                                                    |
-| `allowLocalBinding`       | `boolean`  | `false`     | Allow processes to bind to local ports (e.g., for dev servers)                                                                                                                                                                                                                                                                                    |
-| `allowUnixSockets`        | `string[]` | `[]`        | Unix socket paths that processes can access (e.g., Docker socket)                                                                                                                                                                                                                                                                                 |
-| `allowAllUnixSockets`     | `boolean`  | `false`     | Allow access to all Unix sockets                                                                                                                                                                                                                                                                                                                  |
-| `httpProxyPort`           | `number`   | `undefined` | HTTP proxy port for network requests                                                                                                                                                                                                                                                                                                              |
-| `socksProxyPort`          | `number`   | `undefined` | SOCKS proxy port for network requests                                                                                                                                                                                                                                                                                                             |
+| 属性                        | 类型         | 默认值         | 描述                                                                                                                       |
+| :------------------------ | :--------- | :---------- | :----------------------------------------------------------------------------------------------------------------------- |
+| `allowedDomains`          | `string[]` | `[]`        | 沙箱进程可以访问的域名                                                                                                              |
+| `deniedDomains`           | `string[]` | `[]`        | 沙箱进程无法访问的域名。优先于 `allowedDomains`                                                                                         |
+| `allowManagedDomainsOnly` | `boolean`  | `false`     | 仅限管理设置。在[管理设置](/docs/zh-CN/permissions#managed-settings)中设置时，仅遵守来自管理设置的 `allowedDomains` 条目，来自用户、项目或本地设置的条目被忽略。通过 SDK 选项设置时无效 |
+| `allowLocalBinding`       | `boolean`  | `false`     | 允许进程绑定到本地端口（例如，用于开发服务器）                                                                                                  |
+| `allowUnixSockets`        | `string[]` | `[]`        | 进程可以访问的 Unix socket 路径（例如，Docker socket）                                                                                 |
+| `allowAllUnixSockets`     | `boolean`  | `false`     | 允许访问所有 Unix sockets                                                                                                      |
+| `httpProxyPort`           | `number`   | `undefined` | 网络请求的 HTTP 代理端口                                                                                                          |
+| `socksProxyPort`          | `number`   | `undefined` | 网络请求的 SOCKS 代理端口                                                                                                         |
 
 <Note>
-  The built-in sandbox proxy enforces `allowedDomains` based on the requested hostname and does not terminate or inspect TLS traffic, so techniques such as [domain fronting](https://en.wikipedia.org/wiki/Domain_fronting) can potentially bypass it. See [Sandboxing security limitations](/docs/en/sandboxing#security-limitations) for details and [Secure deployment](/docs/en/agent-sdk/secure-deployment#traffic-forwarding) for configuring a TLS-terminating proxy.
+  内置沙箱代理基于请求的主机名强制执行 `allowedDomains`，不会终止或检查 TLS 流量，因此[域前置](https://en.wikipedia.org/wiki/Domain_fronting)等技术可能会绕过它。有关详细信息，请参阅[沙箱安全限制](/docs/zh-CN/sandboxing#security-limitations)，以及[安全部署](/docs/zh-CN/agent-sdk/secure-deployment#traffic-forwarding)以配置 TLS 终止代理。
 </Note>
 
-### `SandboxFilesystemConfig`
+<h3 id="sandboxfilesystemconfig">
+  `SandboxFilesystemConfig`
+</h3>
 
-Filesystem-specific configuration for sandbox mode.
+沙箱模式的文件系统特定配置。
 
 ```typescript theme={null}
 type SandboxFilesystemConfig = {
@@ -4752,21 +4018,23 @@ type SandboxFilesystemConfig = {
 };
 ```
 
-| Property     | Type       | Default | Description                                 |
-| :----------- | :--------- | :------ | :------------------------------------------ |
-| `allowWrite` | `string[]` | `[]`    | File path patterns to allow write access to |
-| `denyWrite`  | `string[]` | `[]`    | File path patterns to deny write access to  |
-| `denyRead`   | `string[]` | `[]`    | File path patterns to deny read access to   |
+| 属性           | 类型         | 默认值  | 描述            |
+| :----------- | :--------- | :--- | :------------ |
+| `allowWrite` | `string[]` | `[]` | 允许写入访问的文件路径模式 |
+| `denyWrite`  | `string[]` | `[]` | 拒绝写入访问的文件路径模式 |
+| `denyRead`   | `string[]` | `[]` | 拒绝读取访问的文件路径模式 |
 
-### Permissions Fallback for Unsandboxed Commands
+<h3 id="permissions-fallback-for-unsandboxed-commands">
+  沙箱外命令的权限回退
+</h3>
 
-When `allowUnsandboxedCommands` is enabled, the model can request to run commands outside the sandbox by setting `dangerouslyDisableSandbox: true` in the tool input. These requests fall back to the existing permissions system, meaning your `canUseTool` handler is invoked, allowing you to implement custom authorization logic. In the example below, `isCommandAuthorized` stands in for an authorization check you define.
+启用 `allowUnsandboxedCommands` 时，模型可以通过在工具输入中设置 `dangerouslyDisableSandbox: true` 来请求在沙箱外运行命令。这些请求回退到现有权限系统，意味着您的 `canUseTool` 处理程序被调用，允许您实现自定义授权逻辑。在下面的示例中，`isCommandAuthorized` 代表您定义的授权检查。
 
 <Note>
-  **`excludedCommands` vs `allowUnsandboxedCommands`:**
+  **`excludedCommands` vs `allowUnsandboxedCommands`：**
 
-  * `excludedCommands`: A static list of commands that always bypass the sandbox automatically (e.g., `['docker']`). The model has no control over this.
-  * `allowUnsandboxedCommands`: Lets the model decide at runtime whether to request unsandboxed execution by setting `dangerouslyDisableSandbox: true` in the tool input.
+  * `excludedCommands`：始终自动绕过沙箱的命令的静态列表（例如，`['docker']`）。模型对此无法控制。
+  * `allowUnsandboxedCommands`：让模型在运行时通过在工具输入中设置 `dangerouslyDisableSandbox: true` 来决定是否请求沙箱外执行。
 </Note>
 
 ```typescript theme={null}
@@ -4777,13 +4045,13 @@ for await (const message of query({
   options: {
     sandbox: {
       enabled: true,
-      allowUnsandboxedCommands: true // Model can request unsandboxed execution
+      allowUnsandboxedCommands: true // 模型可以请求沙箱外执行
     },
     permissionMode: "default",
     canUseTool: async (tool, input) => {
-      // Check if the model is requesting to bypass the sandbox
+      // 检查模型是否请求绕过沙箱
       if (tool === "Bash" && input.dangerouslyDisableSandbox) {
-        // The model is requesting to run this command outside the sandbox
+        // 模型请求在沙箱外运行此命令
         console.log(`Unsandboxed command requested: ${input.command}`);
 
         if (isCommandAuthorized(input.command)) {
@@ -4802,21 +4070,23 @@ for await (const message of query({
 }
 ```
 
-This pattern enables you to:
+此模式使您能够：
 
-* **Audit model requests:** Log when the model requests unsandboxed execution
-* **Implement allowlists:** Only permit specific commands to run unsandboxed
-* **Add approval workflows:** Require explicit authorization for privileged operations
+* **审计模型请求：** 记录模型何时请求沙箱外执行
+* **实现允许列表：** 仅允许特定命令在沙箱外运行
+* **添加批准工作流：** 需要对特权操作进行明确授权
 
 <Warning>
-  Commands running with `dangerouslyDisableSandbox: true` have full system access. Ensure your `canUseTool` handler validates these requests carefully.
+  使用 `dangerouslyDisableSandbox: true` 运行的命令具有完整的系统访问权限。确保您的 `canUseTool` 处理程序仔细验证这些请求。
 
-  If `permissionMode` is set to `bypassPermissions` and `allowUnsandboxedCommands` is enabled, the model can autonomously execute commands outside the sandbox without approval prompts (an explicit [`ask` rule](/docs/en/agent-sdk/permissions#how-permissions-are-evaluated) still forces one). This combination effectively allows the model to escape sandbox isolation silently.
+  如果 `permissionMode` 设置为 `bypassPermissions` 且 `allowUnsandboxedCommands` 启用，模型可以自主执行沙箱外的命令，无需任何批准提示（显式的 [`ask` 规则](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)仍会强制执行一个）。此组合实际上允许模型以静默方式逃离沙箱隔离。
 </Warning>
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [SDK overview](/docs/en/agent-sdk/overview) - General SDK concepts
-* [Python SDK reference](/docs/en/agent-sdk/python) - Python SDK documentation
-* [CLI reference](/docs/en/cli-reference) - Command-line interface
-* [Common workflows](/docs/en/common-workflows) - Step-by-step guides
+* [SDK 概述](/docs/zh-CN/agent-sdk/overview) - 常规 SDK 概念
+* [Python SDK 参考](/docs/zh-CN/agent-sdk/python) - Python SDK 文档
+* [CLI 参考](/docs/zh-CN/cli-reference) - 命令行界面
+* [常见工作流](/docs/zh-CN/common-workflows) - 分步指南

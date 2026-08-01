@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Explore the context window
+# 探索上下文窗口
 
-> An interactive simulation of how Claude Code's context window fills during a session. See what loads automatically, what each file read costs, and when rules and hooks fire.
+> Claude Code 上下文窗口在会话期间如何填充的交互式模拟。查看自动加载的内容、每个文件读取的成本以及规则和 hooks 何时触发。
 
 export const ContextWindow = () => {
   const MAX = 200000;
@@ -1568,60 +1568,70 @@ export const ContextWindow = () => {
     </>;
 };
 
-Claude Code's context window holds everything Claude knows about your session: your instructions, the files it reads, its own responses, and content that never appears in your terminal. The timeline below plays a full session from startup to compaction: what loads before you type, what each file read, rule, and hook adds as Claude works, and how a subagent keeps large reads out of your context. See [the written breakdown](#what-the-timeline-shows) for the same content as a list.
+Claude Code 的上下文窗口包含 Claude 在您的会话中了解的所有内容：您的指令、它读取的文件、它自己的响应以及从不在您的终端中出现的内容。下面的时间线展示了从启动到压缩的完整会话：在您输入之前加载的内容、每个文件读取、规则和 hook 在 Claude 工作时添加的内容，以及子代理如何将大型读取保留在您的上下文之外。有关相同内容的列表形式，请参阅[书面分解](#what-the-timeline-shows)。
 
 <ContextWindow />
 
-## What the timeline shows
+<h2 id="what-the-timeline-shows">
+  时间线显示的内容
+</h2>
 
-The session walks through a realistic flow with representative token counts:
+该会话通过具有代表性的令牌计数演示了一个现实的流程：
 
-* **Before you type anything**: CLAUDE.md, auto memory, MCP tool names, and skill descriptions all load into context. Your own setup may add more here, like an [output style](/docs/en/output-styles) or text from [`--append-system-prompt`](/docs/en/cli-reference), which both go into the system prompt the same way.
-* **As Claude works**: each file read adds to context, [path-scoped rules](/docs/en/memory#path-specific-rules) load automatically alongside matching files, and a [PostToolUse hook](/docs/en/hooks-guide) fires after each edit.
-* **The follow-up prompt**: a [subagent](/docs/en/sub-agents) handles the research in its own separate context window, so the large file reads stay out of yours. Only the summary and a small metadata trailer come back.
-* **At the end**: `/compact` replaces the conversation with a structured summary. Most startup content reloads automatically; the table below shows what happens to each mechanism.
+* **在您输入任何内容之前**：CLAUDE.md、自动内存、MCP 工具名称和技能描述都加载到上下文中。您自己的设置可能会在此处添加更多内容，例如[输出样式](/docs/zh-CN/output-styles)或来自 [`--append-system-prompt`](/docs/zh-CN/cli-reference) 的文本，两者都以相同的方式进入系统提示。
+* **当 Claude 工作时**：每个文件读取都会添加到上下文中，[路径范围的规则](/docs/zh-CN/memory#path-specific-rules)会自动与匹配的文件一起加载，并且[PostToolUse hook](/docs/zh-CN/hooks-guide)在每次编辑后触发。
+* **后续提示**：[子代理](/docs/zh-CN/sub-agents)在其自己的单独上下文窗口中处理研究，因此大文件读取不会进入您的窗口。只有摘要和一个小的元数据预告片返回。
+* **最后**：`/compact` 用结构化摘要替换对话。大多数启动内容会自动重新加载；下表显示了每个机制会发生什么。
 
-## What survives compaction
+<h2 id="what-survives-compaction">
+  压缩后保留的内容
+</h2>
 
-When a long session compacts, Claude Code summarizes the conversation history to fit the context window. {/* min-version: 2.1.198 */}As of v2.1.198, the summarization request inherits your session's [extended thinking](/docs/en/model-config#extended-thinking) configuration, so it reasons with thinking enabled when your session has it enabled and stays off otherwise. Thinking affects only how the summary is produced; your session settings are unchanged afterward. What happens to your instructions depends on how they were loaded:
+当长会话压缩时，Claude Code 会总结对话历史以适应上下文窗口。{/* min-version: 2.1.198 */}从 v2.1.198 开始，总结请求继承您会话的[扩展思考](/docs/zh-CN/model-config#extended-thinking)配置，因此当您的会话启用思考时，它会在启用思考的情况下进行推理，否则保持关闭。思考仅影响摘要的生成方式；您的会话设置之后保持不变。您的指令会发生什么取决于它们的加载方式：
 
-| Mechanism                                 | After compaction                                                                            |
-| :---------------------------------------- | :------------------------------------------------------------------------------------------ |
-| System prompt and output style            | Unchanged; not part of message history                                                      |
-| Project-root CLAUDE.md and unscoped rules | Re-injected from disk                                                                       |
-| Auto memory                               | Re-injected from disk                                                                       |
-| Rules with `paths:` frontmatter           | Lost until a matching file is read again                                                    |
-| Nested CLAUDE.md in subdirectories        | Lost until a file in that subdirectory is read again                                        |
-| Invoked skill bodies                      | Re-injected, capped at 5,000 tokens per skill and 25,000 tokens total; oldest dropped first |
-| Hooks                                     | Not applicable; hooks run as code, not context                                              |
+| 机制                          | 压缩后                                          |
+| :-------------------------- | :------------------------------------------- |
+| 系统提示和输出样式                   | 不变；不是消息历史的一部分                                |
+| 项目根目录 CLAUDE.md 和无范围规则      | 从磁盘重新注入                                      |
+| 自动内存                        | 从磁盘重新注入                                      |
+| 带有 `paths:` frontmatter 的规则 | 丢失，直到再次读取匹配的文件                               |
+| 子目录中的嵌套 CLAUDE.md           | 丢失，直到再次读取该子目录中的文件                            |
+| 调用的技能主体                     | 重新注入，每个技能上限为 5,000 个令牌，总计 25,000 个令牌；最旧的首先删除 |
+| Hooks                       | 不适用；hooks 作为代码运行，不是上下文                       |
 
-Path-scoped rules and nested CLAUDE.md files load into message history when their trigger file is read, so compaction summarizes them away with everything else. They reload the next time Claude reads a matching file. If a rule must persist across compaction, drop the `paths:` frontmatter or move it to the project-root CLAUDE.md.
+路径范围的规则和嵌套的 CLAUDE.md 文件在读取其触发文件时加载到消息历史中，因此压缩会将它们与其他所有内容一起总结。下次 Claude 读取匹配的文件时，它们会重新加载。如果规则必须在压缩过程中保持不变，请删除 `paths:` frontmatter 或将其移动到项目根目录 CLAUDE.md。
 
-Skill bodies are re-injected after compaction, but large skills are truncated to fit the per-skill cap, and the oldest invoked skills are dropped once the total budget is exceeded. Truncation keeps the start of the file, so put the most important instructions near the top of `SKILL.md`.
+技能主体在压缩后重新注入，但大型技能会被截断以适应每个技能的上限，一旦超过总预算，最旧的调用技能就会被删除。截断保留文件的开头，因此请将最重要的指令放在 `SKILL.md` 的顶部附近。
 
-## When your context fills up
+<h2 id="when-your-context-fills-up">
+  当您的上下文填满时
+</h2>
 
-Claude Code compacts automatically as you approach the limit, so a full context window doesn't end your session. The automatic pass works the same way as the `/compact` step in the timeline. See [When context fills up](/docs/en/how-claude-code-works#when-context-fills-up) for what it preserves.
+Claude Code 在您接近限制时自动压缩，因此完整的上下文窗口不会结束您的会话。自动传递的工作方式与时间线中的 `/compact` 步骤相同。有关它保留的内容，请参阅[当上下文填满时](/docs/zh-CN/how-claude-code-works#when-context-fills-up)。
 
-You can also act before the automatic pass runs:
+您也可以在自动传递运行之前采取行动：
 
-* **Compact with a focus**: run `/compact` with instructions, like `/compact focus on the auth bug fix`, before starting a long new task. The summary keeps what you choose instead of what the automatic pass guesses is important.
-* **Clear between tasks**: run `/clear` when switching to unrelated work. Old conversation crowds out the files you need next and costs tokens on every message.
-* **Delegate large reads**: send research to a [subagent](/docs/en/sub-agents) so the file contents stay in its context window, not yours.
+* **带有焦点的压缩**：在开始长时间的新任务之前，运行带有指令的 `/compact`，例如 `/compact focus on the auth bug fix`。摘要保留您选择的内容，而不是自动传递猜测的重要内容。
+* **在任务之间清除**：切换到不相关的工作时运行 `/clear`。旧对话会挤出您接下来需要的文件，并在每条消息上花费令牌。
+* **委托大型读取**：将研究发送给[子代理](/docs/zh-CN/sub-agents)，以便文件内容保留在其上下文窗口中，而不是您的。
 
-If you need a larger window rather than a smaller conversation, Fable 5, Sonnet 5, Opus 4.6 and later, and Sonnet 4.6 support a 1 million token context window. See [Extended context](/docs/en/model-config#extended-context) for availability by plan and how to select a `[1m]` model variant. Sonnet 5 runs at 1M with no `[1m]` variant to select; see [Sonnet 5 context window](/docs/en/model-config#sonnet-5-context-window) for its auto-compaction thresholds and the LLM gateway exception. Compaction works the same way at the larger limit.
+如果您需要更大的窗口而不是更小的对话，Fable 5、Sonnet 5、Opus 4.6 及更高版本以及 Sonnet 4.6 支持 100 万令牌的上下文窗口。有关按计划的可用性以及如何选择 `[1m]` 模型变体，请参阅[扩展上下文](/docs/zh-CN/model-config#extended-context)。Sonnet 5 以 1M 运行，无需选择 `[1m]` 变体；有关其自动压缩阈值和 LLM 网关异常，请参阅[Sonnet 5 上下文窗口](/docs/zh-CN/model-config#sonnet-5-context-window)。压缩在更大的限制下以相同的方式工作。
 
-## Check your own session
+<h2 id="check-your-own-session">
+  检查您自己的会话
+</h2>
 
-The visualization uses representative numbers. To see your actual context usage at any point, run `/context` for a live breakdown by category with optimization suggestions, including which CLAUDE.md and auto memory files loaded. Run `/memory` to open and edit those files.
+该可视化使用代表性数字。要在任何时刻查看您的实际上下文使用情况，请运行 `/context` 以获取按类别的实时分解和优化建议。运行 `/memory` 以检查在启动时加载了哪些 CLAUDE.md 和自动内存文件。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-For deeper coverage of the features shown in the timeline, see these pages:
+有关时间线中显示的功能的更深入覆盖，请参阅这些页面：
 
-* [Extend Claude Code](/docs/en/features-overview): when to use CLAUDE.md vs skills vs rules vs hooks vs MCP
-* [Store instructions and memories](/docs/en/memory): CLAUDE.md hierarchy and auto memory
-* [Subagents](/docs/en/sub-agents): delegate research to a separate context window
-* [Best practices](/docs/en/best-practices): managing context as your primary constraint
-* [Prompt caching](/docs/en/prompt-caching): which actions invalidate the cached prefix
-* [Reduce token usage](/docs/en/costs#reduce-token-usage): strategies for keeping context usage low
+* [扩展 Claude Code](/docs/zh-CN/features-overview)：何时使用 CLAUDE.md 与技能与规则与 hooks 与 MCP
+* [存储指令和内存](/docs/zh-CN/memory)：CLAUDE.md 层次结构和自动内存
+* [子代理](/docs/zh-CN/sub-agents)：将研究委托给单独的上下文窗口
+* [最佳实践](/docs/zh-CN/best-practices)：将上下文作为您的主要约束来管理
+* [提示缓存](/docs/zh-CN/prompt-caching)：哪些操作会使缓存的前缀失效
+* [减少令牌使用](/docs/zh-CN/costs#reduce-token-usage)：保持上下文使用低的策略

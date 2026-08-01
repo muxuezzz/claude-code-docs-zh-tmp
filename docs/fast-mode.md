@@ -2,144 +2,134 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Speed up responses with fast mode
+# 使用快速模式加快响应速度
 
-> Get faster Opus responses in Claude Code by toggling fast mode.
-
-<Note>
-  Fast mode is in [research preview](#research-preview). The feature, pricing, and availability may change based on feedback.
-</Note>
-
-Fast mode is a high-speed configuration for Claude Opus, making the model up to 2.5x faster at a higher cost per token. Toggle it on with `/fast` when you need speed for interactive work like rapid iteration or live debugging, and toggle it off when cost matters more than latency.
-
-Fast mode is not a different model. It uses Claude Opus with a different API configuration that prioritizes speed over cost efficiency. You get identical quality and capabilities with faster responses. Fast mode is supported on Opus 5 and Opus 4.8. It is not available on Sonnet, Haiku, or other models.
-
-Claude Code treats Opus 4.7 as a fast mode model everywhere it decides whether fast mode is on: the `/fast` toggle, model switches in either direction, and session start. The API rejects the resulting fast mode requests rather than serving them at standard speed. Switch to Opus 5 or Opus 4.8 to keep the speedup. Fast mode for Opus 4.7 was deprecated on June 25, 2026, and removed on July 24, 2026.
-
-What to know:
-
-* Use `/fast` to toggle on fast mode in the Claude Code CLI. Fast mode is not supported in the VS Code extension.
-* Fast mode pricing per MTok input/output is \$10/\$50 on Opus 5 and Opus 4.8.
-* Available to all Claude Code users on subscription plans (Pro/Max/Team/Enterprise) and Claude Console.
-* For Claude Code users on subscription plans (Pro/Max/Team/Enterprise), fast mode is available via usage credits only and not included in the subscription rate limits.
-
-## Toggle fast mode
-
-Toggle fast mode in either of these ways:
-
-* Type `/fast` and press Tab to toggle on or off
-* Set `"fastMode": true` in your [user settings file](/docs/en/settings)
-
-By default, fast mode you turn on in an interactive session persists across sessions. {/* min-version: 2.1.205 */}In [non-interactive mode](/docs/en/headless), with the `-p` flag, `/fast` works only in a session launched with fast mode in its [`--settings`](/docs/en/cli-reference#cli-flags) value, for example `claude -p --settings '{"fastMode": true}'`; the toggle then applies to that session only and isn't saved as your default, and in any other non-interactive session the command reports that fast mode isn't available. You can configure fast mode to reset each session. See [require per-session opt-in](#require-per-session-opt-in) for details.
-
-For the best cost efficiency, enable fast mode at the start of a session rather than switching mid-conversation. See [understand the cost tradeoff](#understand-the-cost-tradeoff) for details.
-
-When you enable fast mode:
-
-* If you're on a different model, Claude Code automatically switches to Opus
-* You'll see a confirmation message: "Fast mode ON"
-* A small `↯` icon appears next to the prompt while fast mode is active
-* Run `/fast` again at any time to check whether fast mode is on or off
-
-When you disable fast mode with `/fast` again, you remain on Opus. The model does not revert to your previous model. To switch to a different model, use `/model`.
-
-When you switch to a model that doesn't support fast mode, Claude Code turns fast mode off, except on Opus 4.7, where fast mode stays on and the API rejects the requests. {/* min-version: 2.1.208 */}Switching back to a supported Opus model turns it on again when your saved fast mode preference is on, the same preference a new session starts from by default; a model switch never turns fast mode on for a session whose saved preference is off. With [per-session opt-in](#require-per-session-opt-in) configured, switching back doesn't turn fast mode on again; run `/fast` to re-enable it. Before v2.1.208, fast mode stayed off after you switched back until you ran `/fast` again.
-
-{/* min-version: 2.1.218 */}Whenever a model switch turns fast mode on or off, Claude Code shows a `Fast mode ON` or `Fast mode OFF` confirmation, and the `↯` icon appears while fast mode is on. This holds whether you switch with `/model`, with [`/config model=<model>`](/docs/en/settings), or from a device connected through [Remote Control](/docs/en/remote-control); before v2.1.218, switches through `/config model=<model>` or Remote Control changed fast mode without the confirmation.
-
-Opus 5 is the fast mode default in Claude Code v2.1.219 and later. Before v2.1.219, fast mode defaulted to Opus 4.8 on v2.1.154 through v2.1.218, and to Opus 4.7 on v2.1.142 through v2.1.153.
-
-## Understand the cost tradeoff
-
-Fast mode has higher per-token pricing than standard Opus:
-
-| Model    | Input (MTok) | Output (MTok) |
-| -------- | ------------ | ------------- |
-| Opus 5   | \$10         | \$50          |
-| Opus 4.8 | \$10         | \$50          |
-
-Fast mode pricing is flat across the full 1M token context window. For the standard Opus rate to compare against, see the [Claude pricing reference](https://platform.claude.com/docs/en/about-claude/pricing).
-
-The first time you enable fast mode in a conversation, you pay the full fast mode uncached input token price for the entire conversation context. The deeper into a conversation you are, the more this costs, so enabling fast mode from the start is cheaper. The cost applies once per conversation, so toggling fast mode off and on again later does not repeat it. For the mechanism, see [how fast mode interacts with the prompt cache](/docs/en/prompt-caching#turning-on-fast-mode).
-
-## Decide when to use fast mode
-
-Fast mode is best for interactive work where response latency matters more than cost:
-
-* Rapid iteration on code changes
-* Live debugging sessions
-* Time-sensitive work with tight deadlines
-
-Standard mode is better for:
-
-* Long autonomous tasks where speed matters less
-* Batch processing or CI/CD pipelines
-* Cost-sensitive workloads
-
-### Fast mode vs effort level
-
-Fast mode and effort level both affect response speed, but differently:
-
-| Setting                | Effect                                                                           |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| **Fast mode**          | Same model quality, lower latency, higher cost                                   |
-| **Lower effort level** | Less thinking time, faster responses, potentially lower quality on complex tasks |
-
-You can combine both: use fast mode with a lower [effort level](/docs/en/model-config#adjust-effort-level) for maximum speed on straightforward tasks.
-
-## Requirements
-
-Fast mode requires all of the following:
-
-* **Anthropic API or subscription only**: fast mode is available through the Anthropic Console API and for Claude subscription plans using usage credits. It is not available on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS.
-* **Usage credits turned on**: your account must have usage credits turned on, which allows billing beyond your plan's included usage. For individual accounts, turn this on in your [Console billing settings](https://platform.claude.com/settings/billing). For Team and Enterprise, an admin must turn on usage credits for the organization.
+> 通过切换快速模式在 Claude Code 中获得更快的 Opus 响应。
 
 <Note>
-  Fast mode usage draws directly from usage credits, even if you have remaining usage on your plan. This means fast mode tokens do not count against your plan's included usage and are charged at the fast mode rate from the first token.
+  快速模式处于[研究预览](#research-preview)阶段。该功能、定价和可用性可能会根据反馈而改变。
 </Note>
 
-* **Owner enablement for Team and Enterprise**: fast mode is disabled by default for Team and Enterprise organizations. An Owner must explicitly [enable fast mode](#enable-fast-mode-for-your-organization) before users can access it.
+快速模式是 Claude Opus 的高速配置，使模型速度提高最多 2.5 倍，但每个令牌的成本更高。当您需要速度进行交互式工作（如快速迭代或实时调试）时，使用 `/fast` 将其打开，当成本比延迟更重要时，将其关闭。
+
+快速模式不是一个不同的模型。它使用 Claude Opus，但采用不同的 API 配置，优先考虑速度而不是成本效率。您获得相同的质量和功能，只是响应速度更快。快速模式在 Opus 4.8 和 Opus 4.7 上受支持。它在 Sonnet、Haiku 或其他模型上不可用。
+
+<Warning>
+  Opus 4.7 的快速模式自 2026 年 6 月 25 日起已弃用，将在 2026 年 7 月 24 日移除。移除后，Opus 4.7 上的快速模式请求将返回错误，不会回退到标准 Opus 4.7。迁移到 Opus 4.8 以保持加速。
+</Warning>
+
+需要了解的内容：
+
+* 使用 `/fast` 在 Claude Code CLI 中切换快速模式。Claude Code VS Code 扩展中不支持快速模式。
+* 快速模式定价在 Opus 4.8 上为 $10/$50 MTok，在 Opus 4.7 上为 $30/$150 MTok。
+* 可供订阅计划（Pro/Max/Team/Enterprise）上的所有 Claude Code 用户和 Claude 控制台使用。
+* 对于订阅计划（Pro/Max/Team/Enterprise）上的 Claude Code 用户，快速模式仅通过使用额度提供，不包含在订阅速率限制中。
+
+<h2 id="toggle-fast-mode">
+  切换快速模式
+</h2>
+
+通过以下任一方式切换快速模式：
+
+* 输入 `/fast` 并按 Tab 键打开或关闭
+* 在您的[用户设置文件](/docs/zh-CN/settings)中设置 `"fastMode": true`
+
+默认情况下，在交互式会话中打开的快速模式在会话之间保持。{/* min-version: 2.1.205 */}在[非交互式模式](/docs/zh-CN/headless)中，使用 `-p` 标志，`/fast` 仅在使用快速模式在其 [`--settings`](/docs/zh-CN/cli-reference#cli-flags) 值中启动的会话中工作，例如 `claude -p --settings '{"fastMode": true}'`；切换然后仅适用于该会话，不会保存为您的默认值，在任何其他非交互式会话中，该命令报告快速模式不可用。您可以配置快速模式在每个会话时重置。有关详细信息，请参阅[要求每个会话选择加入](#require-per-session-opt-in)。
+
+为了获得最佳成本效率，在会话开始时启用快速模式，而不是在对话中途切换。有关详细信息，请参阅[了解成本权衡](#understand-the-cost-tradeoff)。
+
+启用快速模式时：
+
+* 如果您使用的是不同的模型，Claude Code 会自动切换到 Opus
+* 您将看到确认消息："Fast mode ON"
+* 快速模式处于活动状态时，提示旁边会出现一个小的 `↯` 图标
+* 随时再次运行 `/fast` 以检查快速模式是否打开或关闭
+
+当您再次使用 `/fast` 禁用快速模式时，您仍然保持在 Opus 上。模型不会恢复到您之前的模型。要切换到不同的模型，请使用 `/model`。
+
+切换到不支持快速模式的模型会关闭快速模式。{/* min-version: 2.1.208 */}切换回支持的 Opus 模型时，当您保存的快速模式偏好设置为打开时，它会再次打开，这与新会话默认启动的偏好设置相同。配置了[每个会话选择加入](#require-per-session-opt-in)后，切换回不会再次打开快速模式；运行 `/fast` 以重新启用它。快速模式永远不会为保存的偏好设置为关闭的会话打开，`↯` 图标和 `Fast mode ON` 确认在激活时出现。在 v2.1.208 之前，快速模式在您切换回后保持关闭，直到您再次运行 `/fast`。
+
+Opus 4.8 是 Claude Code v2.1.154 及更高版本中的快速模式默认值。在 v2.1.142 到 v2.1.153 版本中，快速模式默认为 Opus 4.7。
+
+<h2 id="understand-the-cost-tradeoff">
+  了解成本权衡
+</h2>
+
+快速模式的每个令牌定价高于标准 Opus，乘数因模型而异：
+
+| 模型       | 输入 (MTok) | 输出 (MTok) |
+| -------- | --------- | --------- |
+| Opus 4.8 | \$10      | \$50      |
+| Opus 4.7 | \$30      | \$150     |
+
+快速模式定价在整个 1M 令牌上下文窗口中是固定的。有关要比较的标准 Opus 费率，请参阅 [Claude 定价参考](https://platform.claude.com/docs/zh-CN/about-claude/pricing)。
+
+在对话中首次启用快速模式时，您需要为整个对话上下文支付完整的快速模式未缓存输入令牌价格。对话进行得越深入，成本就越高，因此从一开始就启用快速模式更便宜。该成本每个对话只应用一次，因此稍后关闭快速模式再打开不会重复收费。有关机制，请参阅 [快速模式如何与提示缓存交互](/docs/zh-CN/prompt-caching#turning-on-fast-mode)。
+
+<h2 id="decide-when-to-use-fast-mode">
+  决定何时使用快速模式
+</h2>
+
+快速模式最适合响应延迟比成本更重要的交互式工作：
+
+* 快速迭代代码更改
+* 实时调试会话
+* 时间敏感的工作，有紧迫的截止日期
+
+标准模式更适合：
+
+* 速度不那么重要的长期自主任务
+* 批处理或 CI/CD 管道
+* 成本敏感的工作负载
+
+<h3 id="fast-mode-vs-effort-level">
+  快速模式与努力级别
+</h3>
+
+快速模式和努力级别都会影响响应速度，但方式不同：
+
+| 设置          | 效果                         |
+| ----------- | -------------------------- |
+| **快速模式**    | 相同的模型质量，更低的延迟，更高的成本        |
+| **较低的努力级别** | 更少的思考时间，更快的响应，在复杂任务上可能质量较低 |
+
+您可以结合两者：在直接任务上使用快速模式和较低的[努力级别](/docs/zh-CN/model-config#adjust-effort-level)以获得最大速度。
+
+<h2 id="requirements">
+  要求
+</h2>
+
+快速模式需要以下所有条件：
+
+* **仅限 Anthropic API 或订阅**：快速模式可通过 Anthropic 控制台 API 和使用使用额度的 Claude 订阅计划获得。它在 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry 或 AWS 上的 Claude Platform 上不可用。
+* **启用使用额度**：您的账户必须启用使用额度，这允许在您的计划包含的使用量之外进行计费。对于个人账户，在您的[控制台计费设置](https://platform.claude.com/settings/billing)中启用此功能。对于团队和企业，管理员必须为组织启用使用额度。
 
 <Note>
-  If fast mode has not been enabled for your organization, the `/fast` command will show "Fast mode has been disabled by your organization." If your organization's [`availableModels`](/docs/en/model-config#restrict-model-selection) allowlist excludes the fast-mode Opus model, `/fast` is refused with "is not in your organization's allowed models". The exception is a session already running on an allowed Opus model that supports fast mode: `/fast` enables fast mode on your current model instead of switching models.
+  快速模式使用直接计入使用额度，即使您的计划上还有剩余使用量。这意味着快速模式令牌不计入您的计划包含的使用量，并从第一个令牌开始按快速模式费率收费。
 </Note>
 
-### Enable fast mode for your organization
+* **团队和企业的所有者启用**：快速模式默认对团队和企业组织禁用。所有者必须明确[启用快速模式](#enable-fast-mode-for-your-organization)，用户才能访问它。
 
-Where you enable fast mode depends on which product your organization uses:
+<Note>
+  如果您的组织尚未启用快速模式，`/fast` 命令将显示"Fast mode has been disabled by your organization."。如果您的组织的 [`availableModels`](/docs/zh-CN/model-config#restrict-model-selection) 允许列表排除了快速模式 Opus 模型，`/fast` 将被拒绝，显示"is not in your organization's allowed models"。例外情况是已在支持快速模式的允许 Opus 模型上运行的会话：`/fast` 随后在您当前的模型上启用快速模式，而不是切换模型。
+</Note>
 
-* **Console** (API customers): an admin enables it in [Claude Code preferences](https://platform.claude.com/claude-code/preferences)
-* **Claude AI** (Team and Enterprise): an Owner enables it at [Admin Settings > Claude Code](https://claude.ai/admin-settings/claude-code)
+<h3 id="enable-fast-mode-for-your-organization">
+  为您的组织启用快速模式
+</h3>
 
-Another option to disable fast mode entirely is to set `CLAUDE_CODE_DISABLE_FAST_MODE=1`. See [Environment variables](/docs/en/env-vars).
+您启用快速模式的位置取决于您的组织使用的产品：
 
-### Use fast mode behind proxies and LLM gateways
+* **控制台**（API 客户）：管理员在 [Claude Code 偏好设置](https://platform.claude.com/claude-code/preferences)中启用它
+* **Claude AI**（团队和企业）：所有者在[管理员设置 > Claude Code](https://claude.ai/admin-settings/claude-code)中启用它
 
-Before offering fast mode, Claude Code checks your organization's fast mode availability with a request directly to `api.anthropic.com`. The check doesn't follow [`ANTHROPIC_BASE_URL`](/docs/en/llm-gateway-connect#set-the-base-url-and-credential), so on a network that routes Claude traffic through an [LLM gateway](/docs/en/llm-gateway) and blocks direct egress to `api.anthropic.com`, the check fails even though inference requests work. The check does use a configured [HTTP proxy](/docs/en/network-config#proxy-configuration), so a network block fails the check only where `api.anthropic.com` is unreachable even through the proxy.
+另一个完全禁用快速模式的选项是设置 `CLAUDE_CODE_DISABLE_FAST_MODE=1`。请参阅[环境变量](/docs/zh-CN/env-vars)。
 
-When the check fails, `/fast` reports "Fast mode unavailable due to network connectivity issues", and requests run at standard speed, even when your organization has fast mode enabled. A check that succeeded in the past keeps working from its cached result, so a blocked check mostly affects new installations.
+<h3 id="require-per-session-opt-in">
+  要求每个会话选择加入
+</h3>
 
-The same connectivity message appears on an open network when the check reaches `api.anthropic.com` but presents a credential Anthropic rejects. A session whose resolved key is a gateway-issued credential, held in [`ANTHROPIC_API_KEY`](/docs/en/llm-gateway-connect#set-the-base-url-and-credential) or produced by an [`apiKeyHelper`](/docs/en/settings#available-settings), sends the check with that key, and the rejected request is reported as a connectivity failure.
-
-To restore fast mode, allowlist direct egress to `api.anthropic.com` where a network block is the cause, or set whichever variable matches how the check fails:
-
-* `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS=1` treats a failed check as available and still honors a "disabled by your organization" response. Use it when your network refuses the connection, or when Anthropic rejects a gateway credential; allowlisting doesn't help the credential case, since nothing is blocked.
-* `CLAUDE_CODE_SKIP_FAST_MODE_ORG_CHECK=1` skips the check entirely. Use it when your network intercepts the request rather than refusing it.
-
-Two gateway configurations report "Fast mode has been disabled by your organization" rather than the connectivity message, even when your organization has fast mode enabled:
-
-* A session that authenticates with [`ANTHROPIC_AUTH_TOKEN`](/docs/en/llm-gateway-connect#set-the-base-url-and-credential) alone skips the check: without a claude.ai login or an Anthropic API key, and without a cached successful check, Claude Code treats fast mode as disabled by your organization without sending the request.
-* A proxy that intercepts the check and answers with its own page, for example a TLS-inspecting proxy returning an HTTP 200 block page, is read as a response saying your organization has fast mode disabled.
-
-In both cases, set `CLAUDE_CODE_SKIP_FAST_MODE_ORG_CHECK=1` to restore fast mode. `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS` doesn't apply to either case, since it only bypasses failed checks and both of these produce a disabled response instead. Allowlisting direct egress doesn't help the bearer-token case, which never sends the request.
-
-The variables affect only the client-side check. When your organization has fast mode disabled, the API rejects fast mode requests whether or not they're set.
-
-Setting `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` also suppresses the availability check. Without a previously cached successful check, `/fast` reports "Fast mode is currently unavailable"; both skip variables restore fast mode in that configuration too.
-
-### Require per-session opt-in
-
-By default, fast mode a user turns on in an interactive session persists across sessions: it stays on in future sessions. To change this, set `fastModePerSessionOptIn` to `true` in any [settings file](/docs/en/settings#settings-files), which causes each session to start with fast mode off and requires users to explicitly enable it with `/fast`. Owners on [Team](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=fast_mode_teams#team-&-enterprise) or [Enterprise](https://anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=fast_mode_enterprise) plans can deploy it organization-wide through [server-managed settings](/docs/en/server-managed-settings).
+默认情况下，快速模式在会话之间保持：如果用户启用快速模式，它会在未来的会话中保持打开。要更改此行为，在任何[设置文件](/docs/zh-CN/settings#settings-files)中将 `fastModePerSessionOptIn` 设置为 `true`，这会导致每个会话以快速模式关闭开始，并要求用户使用 `/fast` 明确启用它。[团队](https://claude.com/pricing?utm_source=claude_code\&utm_medium=docs\&utm_content=fast_mode_teams#team-&-enterprise)或[企业](https://anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=fast_mode_enterprise)计划上的所有者可以通过[服务器托管设置](/docs/zh-CN/server-managed-settings)在组织范围内部署它。
 
 ```json theme={null}
 {
@@ -147,31 +137,37 @@ By default, fast mode a user turns on in an interactive session persists across 
 }
 ```
 
-This is useful for controlling costs in organizations where users run multiple concurrent sessions. Users can still enable fast mode with `/fast` when they need speed, but it resets at the start of each new session. The user's fast mode preference is still saved, so removing this setting restores the default persistent behavior.
+这对于在用户运行多个并发会话的组织中控制成本很有用。用户在需要速度时仍然可以使用 `/fast` 启用快速模式，但它会在每个新会话开始时重置。用户的快速模式偏好仍然被保存，因此删除此设置会恢复默认的持久行为。
 
-## Handle rate limits
+<h2 id="handle-rate-limits">
+  处理速率限制
+</h2>
 
-Fast mode has separate rate limits from standard Opus. All supported Opus models share one fast mode rate limit pool: usage on any of them draws from the same limits. When you hit the fast mode rate limit or run out of usage credits:
+快速模式与标准 Opus 有单独的速率限制。Opus 4.8 和 Opus 4.7 的快速模式共享相同的速率限制池：任一模型上的使用都会从相同的限制中扣除。当您达到快速模式速率限制或用完使用额度时：
 
-1. Fast mode automatically falls back to standard speed
-2. The `↯` icon turns gray to indicate cooldown
-3. You continue working at standard speed and pricing
-4. When the cooldown expires, fast mode automatically re-enables
+1. 快速模式自动回退到标准速度
+2. `↯` 图标变灰以指示冷却
+3. 您继续以标准速度和定价工作
+4. 冷却过期时，快速模式自动重新启用
 
-To disable fast mode manually instead of waiting for cooldown, run `/fast` again.
+要手动禁用快速模式而不是等待冷却，请再次运行 `/fast`。
 
-## Research preview
+<h2 id="research-preview">
+  研究预览
+</h2>
 
-Fast mode is a research preview feature. This means:
+快速模式是一个研究预览功能。这意味着：
 
-* The feature may change based on feedback
-* Availability and pricing are subject to change
-* The underlying API configuration may evolve
+* 该功能可能会根据反馈而改变
+* 可用性和定价可能会改变
+* 底层 API 配置可能会演变
 
-Report issues or feedback through your usual Anthropic support channels.
+通过您通常的 Anthropic 支持渠道报告问题或反馈。
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Model configuration](/docs/en/model-config): switch models and adjust effort levels
-* [Manage costs effectively](/docs/en/costs): track token usage and reduce costs
-* [Status line configuration](/docs/en/statusline): display model and context information
+* [模型配置](/docs/zh-CN/model-config)：切换模型并调整努力级别
+* [有效管理成本](/docs/zh-CN/costs)：跟踪令牌使用情况并降低成本
+* [状态行配置](/docs/zh-CN/statusline)：显示模型和上下文信息

@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Explore the .claude directory
+# 探索 .claude 目录
 
-> Where Claude Code reads CLAUDE.md, settings.json, hooks, skills, commands, subagents, workflows, rules, and auto memory. Explore the .claude directory in your project and ~/.claude in your home directory.
+> Claude Code 读取 CLAUDE.md、settings.json、hooks、skills、commands、subagents、workflows、rules 和自动内存的位置。探索项目中的 .claude 目录和主目录中的 ~/.claude。
 
 export const ClaudeExplorer = () => {
   const A = useMemo(() => ({href, children}) => <a href={href} style={{
@@ -1430,209 +1430,204 @@ themselves by leaving a TODO(human) marker instead of writing it.`
     </>;
 };
 
-Claude Code reads instructions, settings, skills, subagents, and memory from your project directory and from `~/.claude` in your home directory. Commit project files to git to share them with your team; files in `~/.claude` are personal configuration that applies across all your projects.
+Claude Code 从您的项目目录和主目录中的 `~/.claude` 读取指令、设置、skills、subagents 和内存。将项目文件提交到 git 以与您的团队共享；`~/.claude` 中的文件是个人配置，适用于您的所有项目。
 
-On Windows, `~/.claude` resolves to `%USERPROFILE%\.claude`. If you set [`CLAUDE_CONFIG_DIR`](/docs/en/env-vars), every `~/.claude` path on this page lives under that directory instead.
+在 Windows 上，`~/.claude` 解析为 `%USERPROFILE%\.claude`。如果您设置了 [`CLAUDE_CONFIG_DIR`](/docs/zh-CN/env-vars)，此页面上的每个 `~/.claude` 路径都将位于该目录下。
 
-Most users only edit `CLAUDE.md` and `settings.json`. The rest of the directory is optional: add skills, rules, or subagents as you need them.
+大多数用户只编辑 `CLAUDE.md` 和 `settings.json`。目录的其余部分是可选的：根据需要添加 skills、rules 或 subagents。
 
-## Explore the directory
+<h2 id="explore-the-directory">
+  探索目录
+</h2>
 
-Click files in the tree to see what each one does, when it loads, and an example.
+单击树中的文件以查看每个文件的作用、何时加载以及示例。
 
 <ClaudeExplorer />
 
-## What's not shown
+<h2 id="what’s-not-shown">
+  未显示的内容
+</h2>
 
-The explorer covers files you author and edit. A few related files live elsewhere:
+浏览器涵盖您创作和编辑的文件。一些相关文件位于其他位置：
 
-| File                    | Location                   | Purpose                                                                                                                                                                                                                                                             |
-| ----------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `managed-settings.json` | System-level, varies by OS | Enterprise-enforced settings that you can't override. See [server-managed settings](/docs/en/server-managed-settings).                                                                                                                                                   |
-| `CLAUDE.local.md`       | Project root               | Your private preferences for this project, loaded alongside CLAUDE.md. Create it manually and add it to `.gitignore`.                                                                                                                                               |
-| Installed plugins       | `~/.claude/plugins`        | Cloned marketplaces, installed plugin versions, and per-plugin data, managed by `claude plugin` commands. Orphaned versions are deleted 14 days after a plugin update or uninstall. See [plugin caching](/docs/en/plugins-reference#plugin-caching-and-file-resolution). |
+| 文件                      | 位置                  | 用途                                                                                                                                                                 |
+| ----------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `managed-settings.json` | 系统级别，因操作系统而异        | 企业强制执行的设置，您无法覆盖。请参阅[服务器管理的设置](/docs/zh-CN/server-managed-settings)。                                                                                                     |
+| `CLAUDE.local.md`       | 项目根目录               | 您对此项目的私人偏好，与 CLAUDE.md 一起加载。手动创建它并将其添加到 `.gitignore`。                                                                                                              |
+| 已安装的 plugins            | `~/.claude/plugins` | 克隆的市场、已安装的 plugin 版本和每个 plugin 的数据，由 `claude plugin` 命令管理。孤立版本在 plugin 更新或卸载后 7 天被删除。请参阅 [plugin 缓存](/docs/zh-CN/plugins-reference#plugin-caching-and-file-resolution)。 |
 
-`~/.claude` also holds data Claude Code writes as you work: transcripts, prompt history, file snapshots, caches, and logs. See [application data](#application-data) below.
+`~/.claude` 还保存 Claude Code 在您工作时写入的数据：记录、提示历史、文件快照、缓存和日志。请参阅下面的[应用数据](#application-data)。
 
-## Choose the right file
+<h2 id="choose-the-right-file">
+  选择正确的文件
+</h2>
 
-Different kinds of customization live in different files. Use this table to find where a change belongs.
+不同类型的自定义位于不同的文件中。使用此表找到更改应该放在哪里。
 
-| You want to                                        | Edit                                     | Scope             | Reference                                          |
-| :------------------------------------------------- | :--------------------------------------- | :---------------- | :------------------------------------------------- |
-| Give Claude project context and conventions        | `CLAUDE.md`                              | project or global | [Memory](/docs/en/memory)                               |
-| Allow or block specific tool calls                 | `settings.json` `permissions` or `hooks` | project or global | [Permissions](/docs/en/permissions), [Hooks](/docs/en/hooks) |
-| Run a script before or after tool calls            | `settings.json` `hooks`                  | project or global | [Hooks](/docs/en/hooks)                                 |
-| Set environment variables for the session          | `settings.json` `env`                    | project or global | [Settings](/docs/en/settings#available-settings)        |
-| Keep personal overrides out of git                 | `settings.local.json`                    | project only      | [Settings scopes](/docs/en/settings#settings-files)     |
-| Add a prompt or capability you invoke with `/name` | `skills/<name>/SKILL.md`                 | project or global | [Skills](/docs/en/skills)                               |
-| Define a specialized subagent with its own tools   | `agents/*.md`                            | project or global | [Subagents](/docs/en/sub-agents)                        |
-| Orchestrate many subagents from a script           | `workflows/*.js`                         | project or global | [Dynamic workflows](/docs/en/workflows)                 |
-| Connect external tools over MCP                    | `.mcp.json`                              | project only      | [MCP](/docs/en/mcp)                                     |
-| Change how Claude formats responses                | `output-styles/*.md`                     | project or global | [Output styles](/docs/en/output-styles)                 |
+| 您想要                   | 编辑                                      | 范围    | 参考                                                      |
+| :-------------------- | :-------------------------------------- | :---- | :------------------------------------------------------ |
+| 为 Claude 提供项目上下文和约定   | `CLAUDE.md`                             | 项目或全局 | [Memory](/docs/zh-CN/memory)                                 |
+| 允许或阻止特定工具调用           | `settings.json` `permissions` 或 `hooks` | 项目或全局 | [Permissions](/docs/zh-CN/permissions)、[Hooks](/docs/zh-CN/hooks) |
+| 在工具调用前后运行脚本           | `settings.json` `hooks`                 | 项目或全局 | [Hooks](/docs/zh-CN/hooks)                                   |
+| 为会话设置环境变量             | `settings.json` `env`                   | 项目或全局 | [Settings](/docs/zh-CN/settings#available-settings)          |
+| 将个人覆盖保留在 git 之外       | `settings.local.json`                   | 仅项目   | [Settings scopes](/docs/zh-CN/settings#settings-files)       |
+| 添加使用 `/name` 调用的提示或功能 | `skills/<name>/SKILL.md`                | 项目或全局 | [Skills](/docs/zh-CN/skills)                                 |
+| 定义具有自己工具的专门 subagent  | `agents/*.md`                           | 项目或全局 | [Subagents](/docs/zh-CN/sub-agents)                          |
+| 通过脚本编排许多 subagent     | `workflows/*.js`                        | 项目或全局 | [Dynamic workflows](/docs/zh-CN/workflows)                   |
+| 通过 MCP 连接外部工具         | `.mcp.json`                             | 仅项目   | [MCP](/docs/zh-CN/mcp)                                       |
+| 更改 Claude 格式化响应的方式    | `output-styles/*.md`                    | 项目或全局 | [Output styles](/docs/zh-CN/output-styles)                   |
 
-## File reference
+<h2 id="file-reference">
+  文件参考
+</h2>
 
-This table lists every file the explorer covers. Project-scope files live in your repo under `.claude/` (or at the root for `CLAUDE.md`, `.mcp.json`, and `.worktreeinclude`). Global-scope files live in `~/.claude/` and apply across all projects.
+此表列出浏览器涵盖的每个文件。项目范围的文件位于您的仓库中的 `.claude/` 下（或 `CLAUDE.md`、`.mcp.json` 和 `.worktreeinclude` 的根目录）。全局范围的文件位于 `~/.claude/` 中，适用于所有项目。
 
 <Note>
-  Several things can override what you put in these files:
+  有几件事可以覆盖您在这些文件中放入的内容：
 
-  * [Managed settings](/docs/en/server-managed-settings) deployed by your organization take precedence over everything
-  * CLI flags like `--permission-mode` or `--settings` override `settings.json` for that session
-  * Some environment variables take precedence over their equivalent setting, but this varies: check the [environment variables reference](/docs/en/env-vars) for each one
+  * 您的组织部署的[托管设置](/docs/zh-CN/server-managed-settings)优先于所有内容
+  * CLI 标志（如 `--permission-mode` 或 `--settings`）在该会话中覆盖 `settings.json`
+  * 某些环境变量优先于其等效设置，但这会有所不同：检查[环境变量参考](/docs/zh-CN/env-vars)以了解每个变量
 
-  See [settings precedence](/docs/en/settings#settings-precedence) for the full order.
+  请参阅[设置优先级](/docs/zh-CN/settings#settings-precedence)以了解完整顺序。
 </Note>
 
-Click a filename to open that node in the explorer above.
+单击文件名以在上面的浏览器中打开该节点。
 
-| File                                                | Scope              | Commit | What it does                                                                                                  | Reference                                                       |
-| --------------------------------------------------- | ------------------ | ------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| [`CLAUDE.md`](#ce-claude-md)                        | Project and global | ✓      | Instructions loaded every session                                                                             | [Memory](/docs/en/memory)                                            |
-| [`rules/*.md`](#ce-rules)                           | Project and global | ✓      | Topic-scoped instructions, optionally path-gated                                                              | [Rules](/docs/en/memory#organize-rules-with-claude/rules/)           |
-| [`settings.json`](#ce-settings-json)                | Project and global | ✓      | Permissions, hooks, env vars, model defaults                                                                  | [Settings](/docs/en/settings)                                        |
-| [`settings.local.json`](#ce-settings-local-json)    | Project only       |        | Your personal overrides, gitignored when Claude Code saves a setting to it                                    | [Settings scopes](/docs/en/settings#settings-files)                  |
-| [`.mcp.json`](#ce-mcp-json)                         | Project only       | ✓      | Team-shared MCP servers                                                                                       | [MCP scopes](/docs/en/mcp#mcp-installation-scopes)                   |
-| [`.worktreeinclude`](#ce-worktreeinclude)           | Project only       | ✓      | Gitignored files to copy into new worktrees                                                                   | [Worktrees](/docs/en/worktrees#copy-gitignored-files-into-worktrees) |
-| [`skills/<name>/SKILL.md`](#ce-skills)              | Project and global | ✓      | Reusable prompts invoked with `/name` or auto-invoked                                                         | [Skills](/docs/en/skills)                                            |
-| [`commands/*.md`](#ce-commands)                     | Project and global | ✓      | Single-file prompts; same mechanism as skills                                                                 | [Skills](/docs/en/skills)                                            |
-| [`output-styles/*.md`](#ce-output-styles)           | Project and global | ✓      | Custom system-prompt sections                                                                                 | [Output styles](/docs/en/output-styles)                              |
-| [`agents/*.md`](#ce-agents)                         | Project and global | ✓      | Subagent definitions with their own prompt and tools                                                          | [Subagents](/docs/en/sub-agents)                                     |
-| [`workflows/*.js`](#ce-workflows)                   | Project and global | ✓      | Dynamic workflow scripts written by Claude and saved from `/workflows`; each file becomes a `/<name>` command | [Dynamic workflows](/docs/en/workflows)                              |
-| [`agent-memory/<name>/`](#ce-agent-memory)          | Project and global | ✓      | Persistent memory for subagents                                                                               | [Persistent memory](/docs/en/sub-agents#enable-persistent-memory)    |
-| [`~/.claude.json`](#ce-claude-json)                 | Global only        |        | App state, OAuth, UI toggles, personal MCP servers                                                            | [Global config](/docs/en/settings#global-config-settings)            |
-| [`projects/<project>/memory/`](#ce-global-projects) | Global only        |        | Auto memory: Claude's notes to itself across sessions                                                         | [Auto memory](/docs/en/memory#auto-memory)                           |
-| [`keybindings.json`](#ce-keybindings)               | Global only        |        | Custom keyboard shortcuts                                                                                     | [Keybindings](/docs/en/keybindings)                                  |
-| [`themes/*.json`](#ce-themes)                       | Global only        |        | Custom color themes                                                                                           | [Custom themes](/docs/en/terminal-config#create-a-custom-theme)      |
+| 文件                                                  | 范围    | 提交 | 作用                                                           | 参考                                                                 |
+| --------------------------------------------------- | ----- | -- | ------------------------------------------------------------ | ------------------------------------------------------------------ |
+| [`CLAUDE.md`](#ce-claude-md)                        | 项目和全局 | ✓  | 每个会话加载的指令                                                    | [内存](/docs/zh-CN/memory)                                                |
+| [`rules/*.md`](#ce-rules)                           | 项目和全局 | ✓  | 主题范围的指令，可选择路径门控                                              | [Rules](/docs/zh-CN/memory#organize-rules-with-claude/rules/)           |
+| [`settings.json`](#ce-settings-json)                | 项目和全局 | ✓  | 权限、hooks、环境变量、模型默认值                                          | [设置](/docs/zh-CN/settings)                                              |
+| [`settings.local.json`](#ce-settings-local-json)    | 仅项目   |    | 您的个人覆盖，自动 gitignored                                         | [设置范围](/docs/zh-CN/settings#settings-files)                             |
+| [`.mcp.json`](#ce-mcp-json)                         | 仅项目   | ✓  | 团队共享的 MCP 服务器                                                | [MCP 范围](/docs/zh-CN/mcp#mcp-installation-scopes)                       |
+| [`.worktreeinclude`](#ce-worktreeinclude)           | 仅项目   | ✓  | Gitignored 文件以复制到新的 worktrees                                | [Worktrees](/docs/zh-CN/worktrees#copy-gitignored-files-into-worktrees) |
+| [`skills/<name>/SKILL.md`](#ce-skills)              | 项目和全局 | ✓  | 可重用的提示，使用 `/name` 调用或自动调用                                    | [Skills](/docs/zh-CN/skills)                                            |
+| [`commands/*.md`](#ce-commands)                     | 项目和全局 | ✓  | 单文件提示；与 skills 相同的机制                                         | [Skills](/docs/zh-CN/skills)                                            |
+| [`output-styles/*.md`](#ce-output-styles)           | 项目和全局 | ✓  | 自定义系统提示部分                                                    | [输出样式](/docs/zh-CN/output-styles)                                       |
+| [`agents/*.md`](#ce-agents)                         | 项目和全局 | ✓  | Subagent 定义及其自己的提示和工具                                        | [Subagents](/docs/zh-CN/sub-agents)                                     |
+| [`workflows/*.js`](#ce-workflows)                   | 项目和全局 | ✓  | 由 Claude 编写并从 `/workflows` 保存的动态工作流脚本；每个文件都成为一个 `/<name>` 命令 | [动态工作流](/docs/zh-CN/workflows)                                          |
+| [`agent-memory/<name>/`](#ce-agent-memory)          | 项目和全局 | ✓  | Subagents 的持久内存                                              | [持久内存](/docs/zh-CN/sub-agents#enable-persistent-memory)                 |
+| [`~/.claude.json`](#ce-claude-json)                 | 仅全局   |    | 应用状态、OAuth、UI 切换、个人 MCP 服务器                                  | [全局配置](/docs/zh-CN/settings#global-config-settings)                     |
+| [`projects/<project>/memory/`](#ce-global-projects) | 仅全局   |    | 自动内存：Claude 在会话间对自己的笔记                                       | [自动内存](/docs/zh-CN/memory#auto-memory)                                  |
+| [`keybindings.json`](#ce-keybindings)               | 仅全局   |    | 自定义快捷键                                                       | [快捷键](/docs/zh-CN/keybindings)                                          |
+| [`themes/*.json`](#ce-themes)                       | 仅全局   |    | 自定义颜色主题                                                      | [自定义主题](/docs/zh-CN/terminal-config#create-a-custom-theme)              |
 
-## Troubleshoot configuration
+<h2 id="troubleshoot-configuration">
+  排查配置问题
+</h2>
 
-If a setting, hook, or file isn't taking effect, see [Debug your configuration](/docs/en/debug-your-config) for the inspection commands and a symptom-first lookup table.
+如果设置、hook 或文件未生效，请参阅[调试您的配置](/docs/zh-CN/debug-your-config)以获取检查命令和症状优先查找表。
 
-## Application data
+<h2 id="application-data">
+  应用数据
+</h2>
 
-Beyond the config you author, `~/.claude` holds data Claude Code writes during sessions. These files are plaintext. Anything that passes through a tool lands in a transcript on disk: file contents, command output, pasted text.
+除了您创作的配置外，`~/.claude` 还保存 Claude Code 在会话期间写入的数据。这些文件是纯文本。通过工具传递的任何内容都会在磁盘上的记录中：文件内容、命令输出、粘贴的文本。
 
-### Cleaned up automatically
+<h3 id="cleaned-up-automatically">
+  自动清理
+</h3>
 
-Files in the paths below are deleted on startup once they're older than [`cleanupPeriodDays`](/docs/en/settings#available-settings). The default is 30 days.
+下面路径中的文件在启动时被删除，一旦它们的年龄超过 [`cleanupPeriodDays`](/docs/zh-CN/settings#available-settings)。默认值为 30 天。
 
-| Path under `~/.claude/`                      | Contents                                                                                                                                                                                                                                                |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `projects/<project>/<session>.jsonl`         | Full conversation transcript: every message, tool call, and tool result                                                                                                                                                                                 |
-| `projects/<project>/<session>/subagents/`    | [Subagent](/docs/en/sub-agents) conversation transcripts, removed with the parent session transcript when it ages out                                                                                                                                        |
-| `projects/<project>/<session>/tool-results/` | Large tool outputs spilled to separate files                                                                                                                                                                                                            |
-| `file-history/<session>/`                    | Pre-edit snapshots of files Claude changed, used for [checkpoint restore](/docs/en/checkpointing). Holds snapshots for the 100 most recent checkpoints; snapshot files that no retained checkpoint references are deleted, except each file's first snapshot |
-| `plans/`                                     | Plan files written during [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode)                                                                                                                                                      |
-| `debug/`                                     | Per-session debug logs, written only when you start with `--debug` or run `/debug`                                                                                                                                                                      |
-| `paste-cache/`, `image-cache/`               | Contents of large pastes and attached images                                                                                                                                                                                                            |
-| `session-env/`                               | Per-session environment metadata                                                                                                                                                                                                                        |
-| `tasks/`                                     | Per-session task lists written by the task tools                                                                                                                                                                                                        |
-| `shell-snapshots/`                           | Aliases, functions, and shell options captured at startup and applied by the [Bash tool](/docs/en/tools-reference#bash-tool-behavior) to each command. Removed on clean exit. The sweep clears any left after a crash.                                       |
-| `backups/`                                   | Timestamped copies of `~/.claude.json` taken before config migrations                                                                                                                                                                                   |
-| `feedback-bundles/`                          | Redacted transcript archives written by `/feedback` on third-party providers or when no Anthropic credentials are configured, for sending to your Anthropic account team                                                                                |
-| `todos/`, `statsig/`, `logs/`                | Legacy directories from older versions. No longer written. The sweep removes their contents and then the empty directory.                                                                                                                               |
+| `~/.claude/` 下的路径                            | 内容                                                                                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `projects/<project>/<session>.jsonl`         | 完整的对话记录：每条消息、工具调用和工具结果                                                                                                        |
+| `projects/<project>/<session>/subagents/`    | [Subagent](/docs/zh-CN/sub-agents) 对话记录，当父会话记录过期时被删除                                                                               |
+| `projects/<project>/<session>/tool-results/` | 大型工具输出溢出到单独的文件                                                                                                                |
+| `file-history/<session>/`                    | Claude 更改的文件的编辑前快照，用于 [checkpoint 恢复](/docs/zh-CN/checkpointing)。保存最近 100 个 checkpoint 的快照；没有保留 checkpoint 引用的快照文件被删除，除了每个文件的第一个快照 |
+| `plans/`                                     | 在 [Plan Mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode) 期间写入的计划文件                                       |
+| `debug/`                                     | 每个会话的调试日志，仅在您使用 `--debug` 启动或运行 `/debug` 时写入                                                                                  |
+| `paste-cache/`、`image-cache/`                | 大型粘贴和附加图像的内容                                                                                                                  |
+| `session-env/`                               | 每个会话的环境元数据                                                                                                                    |
+| `tasks/`                                     | 由 Task 工具写入的每个会话的任务列表                                                                                                         |
+| `shell-snapshots/`                           | 在启动时捕获的别名、函数和 shell 选项，由 [Bash 工具](/docs/zh-CN/tools-reference#bash-tool-behavior) 应用于每个命令。在正常退出时删除。扫描清理任何在崩溃后留下的内容。               |
+| `backups/`                                   | 在配置迁移前获取的 `~/.claude.json` 的时间戳副本                                                                                             |
+| `feedback-bundles/`                          | 由 `/feedback` 在第三方提供商上或当未配置 Anthropic 凭证时写入的编辑后的记录存档，用于发送到您的 Anthropic 账户团队                                                   |
+| `todos/`、`statsig/`、`logs/`                  | 来自旧版本的旧版目录。不再写入。扫描删除其内容，然后删除空目录。                                                                                              |
 
-`sessions/` holds one small file per running session, used to detect concurrent sessions and crashes. It isn't part of the age-based sweep: Claude Code removes each file when its session exits and clears crash leftovers on the next launch.
+<h3 id="kept-until-you-delete-them">
+  保留直到您删除它们
+</h3>
 
-### Kept until you delete them
+以下路径不受自动清理覆盖，并无限期保留。
 
-The following paths are not covered by automatic cleanup and persist indefinitely.
+| `~/.claude/` 下的路径      | 内容                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| `history.jsonl`        | 您输入的每个提示，带有时间戳和项目路径。用于向上箭头回忆。                                                      |
+| `stats-cache.json`     | 由 `/usage` 显示的聚合令牌和成本计数                                                            |
+| `remote-settings.json` | [服务器管理的设置](/docs/zh-CN/server-managed-settings)的缓存副本，用于您的组织。仅在您的组织配置了这些设置时才存在。在每次启动时刷新。 |
 
-| Path under `~/.claude/` | Contents                                                                                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `history.jsonl`         | Every prompt you've typed, with timestamp and project path. Used for up-arrow recall.                                                                                           |
-| `stats-cache.json`      | Aggregated token and cost counts shown by `/usage`                                                                                                                              |
-| `remote-settings.json`  | Cached copy of [server-managed settings](/docs/en/server-managed-settings) for your organization. Only present when your organization has configured them. Refreshed on each launch. |
-| `cache/changelog.md`    | Cached copy of the Claude Code changelog, used to show release notes after an update. Refreshed in the background.                                                              |
-| `policy-limits.json`    | Cached feature policy settings for your organization. Only present for some account types. Refreshed automatically.                                                             |
+其他小缓存和锁定文件根据您使用的功能而出现，可以安全删除。
 
-Other small cache and lock files appear depending on which features you use and are safe to delete.
+<h3 id="plaintext-storage">
+  纯文本存储
+</h3>
 
-### Plaintext storage
+记录和历史在静止时未加密。操作系统文件权限是唯一的保护。如果工具读取 `.env` 文件或命令打印凭证，该值将写入 `projects/<project>/<session>.jsonl`。要减少暴露：
 
-Transcripts and history are not encrypted at rest. OS file permissions are the only protection. If a tool reads a `.env` file or a command prints a credential, that value is written to `projects/<project>/<session>.jsonl`. To reduce exposure:
+* 降低 `cleanupPeriodDays` 以缩短记录的保留时间
+* 设置 [`CLAUDE_CODE_SKIP_PROMPT_HISTORY`](/docs/zh-CN/env-vars) 环境变量以跳过在任何模式下写入记录和提示历史。在非交互模式下，您可以改为在 `-p` 旁边传递 `--no-session-persistence`，或在 Agent SDK 中设置 `persistSession: false`。
+* 使用 [权限规则](/docs/zh-CN/permissions) 拒绝读取凭证文件
 
-* Lower `cleanupPeriodDays` to shorten how long transcripts are kept
-* Set the [`CLAUDE_CODE_SKIP_PROMPT_HISTORY`](/docs/en/env-vars) environment variable to skip writing transcripts and prompt history in any mode. In non-interactive mode, you can instead pass `--no-session-persistence` alongside `-p`, or set `persistSession: false` in the Agent SDK.
-* Use [permission rules](/docs/en/permissions) to deny reads of credential files
+<h3 id="clear-local-data">
+  清除本地数据
+</h3>
 
-### Clear local data
+运行 `claude project purge` 以删除 Claude Code 为一个项目保存的状态。该命令需要 Claude Code v2.1.124 或更高版本。它删除：
 
-Run `claude project purge` to delete the state Claude Code holds for one project. The command requires Claude Code v2.1.124 or later. It deletes:
+* `projects/` 下的记录和自动内存
+* 每个会话的 `tasks/`、`debug/` 和 `file-history/` 条目
+* `history.jsonl` 中的匹配提示行
+* `~/.claude.json` 中的项目条目
 
-* Transcripts and auto memory under `projects/`
-* Per-session `tasks/`, `debug/`, and `file-history/` entries
-* Matching prompt lines in `history.jsonl`
-* The project's entry in `~/.claude.json`
+该命令打印完整的删除计划，并在删除任何内容之前要求确认。
 
-The command prints the full deletion plan and asks for confirmation before removing anything.
-
-The examples below use `~/work/my-repo` as a placeholder. Replace it with the path to your project. If no state matches the path, the command prints an error and exits with status 1.
-
-Preview the plan without deleting anything:
+预览计划而不删除任何内容：
 
 ```bash theme={null}
 claude project purge ~/work/my-repo --dry-run
 ```
 
-The plan lists each matching item and why it is included:
-
-```text theme={null}
-Purge plan for /home/user/work/my-repo:
-
-  dir:    /home/user/.claude/projects/-home-user-work-my-repo
-           project transcripts (.jsonl) and memory/
-  config: projects["/home/user/work/my-repo"]
-           project entry in ~/.claude.json (trust, history, MCP servers)
-  filter: /home/user/.claude/history.jsonl
-           12 prompt(s) typed in this project
-
-shell-snapshots/ are not project-scoped and will not be touched
-backups/ may still contain this project entry in old .claude.json snapshots (/home/user/.claude/backups); at most 5 are kept and they rotate out automatically
-Dry run: 3 item(s) would be deleted.
-```
-
-Delete with a single confirmation prompt:
+通过单个确认提示删除：
 
 ```bash theme={null}
 claude project purge ~/work/my-repo
 ```
 
-The command prints the same plan, then asks `Delete 3 item(s) for /home/user/work/my-repo? This cannot be undone. [y/N]` and deletes only if you answer `y`.
+省略路径以从交互式列表中选择项目。
 
-Omit the path to pick a project from an interactive list.
-
-Skip the confirmation prompt for use in scripts:
+跳过确认提示以在脚本中使用：
 
 ```bash theme={null}
 claude project purge ~/work/my-repo --yes
 ```
 
-Pass `--all` instead of a path to purge state for every project at once, which deletes `history.jsonl` outright rather than filtering it. Pass `-i` to step through the deletion plan one item at a time.
+传递 `--all` 而不是路径以一次清除所有项目的状态，这会直接删除 `history.jsonl` 而不是过滤它。传递 `-i` 以逐项逐步执行删除计划。
 
-The command leaves `shell-snapshots/` and `backups/` alone because those are not project-scoped, and warns about them in the plan output.
+该命令不理会 `shell-snapshots/` 和 `backups/`，因为这些不是项目范围的，并在计划输出中警告它们。如果没有状态与给定路径匹配，它以状态 1 退出。
 
-You can also delete any of the application-data paths above by hand. New sessions are unaffected. The table below shows what you lose for past sessions.
+您也可以手动删除上面的任何应用数据路径。新会话不受影响。下表显示您对过去会话失去的内容。
 
-| Delete                                                                                                                                                                                       | You lose                                                     |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `~/.claude/projects/`                                                                                                                                                                        | Resume, continue, and rewind for past sessions               |
-| `~/.claude/history.jsonl`                                                                                                                                                                    | Up-arrow prompt recall                                       |
-| `~/.claude/file-history/`                                                                                                                                                                    | Checkpoint restore for past sessions                         |
-| `~/.claude/stats-cache.json`                                                                                                                                                                 | Historical totals shown by `/usage`                          |
-| `~/.claude/remote-settings.json`                                                                                                                                                             | Nothing. Re-fetched on next launch.                          |
-| `~/.claude/cache/changelog.md`                                                                                                                                                               | Nothing. Refreshed in the background.                        |
-| `~/.claude/policy-limits.json`                                                                                                                                                               | Nothing. Refreshed automatically.                            |
-| `~/.claude/debug/`, `~/.claude/plans/`, `~/.claude/paste-cache/`, `~/.claude/image-cache/`, `~/.claude/session-env/`, `~/.claude/tasks/`, `~/.claude/shell-snapshots/`, `~/.claude/backups/` | Nothing user-facing                                          |
-| `~/.claude/todos/`, `~/.claude/statsig/`, `~/.claude/logs/`                                                                                                                                  | Nothing. Legacy directories not written by current versions. |
+| 删除                                                                                                                                                                                    | 您失去                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `~/.claude/projects/`                                                                                                                                                                 | 恢复、继续和倒回过去的会话       |
+| `~/.claude/history.jsonl`                                                                                                                                                             | 向上箭头提示回忆            |
+| `~/.claude/file-history/`                                                                                                                                                             | 过去会话的 checkpoint 恢复 |
+| `~/.claude/stats-cache.json`                                                                                                                                                          | 由 `/usage` 显示的历史总计  |
+| `~/.claude/remote-settings.json`                                                                                                                                                      | 无。在下次启动时重新获取。       |
+| `~/.claude/debug/`、`~/.claude/plans/`、`~/.claude/paste-cache/`、`~/.claude/image-cache/`、`~/.claude/session-env/`、`~/.claude/tasks/`、`~/.claude/shell-snapshots/`、`~/.claude/backups/` | 没有面向用户的内容           |
+| `~/.claude/todos/`、`~/.claude/statsig/`、`~/.claude/logs/`                                                                                                                             | 无。旧版目录不由当前版本写入。     |
 
-Don't delete `~/.claude.json`, `~/.claude/settings.json`, or `~/.claude/plugins/`: those hold your auth, preferences, and installed plugins.
+不要删除 `~/.claude.json`、`~/.claude/settings.json` 或 `~/.claude/plugins/`：这些保存您的身份验证、偏好和已安装的 plugins。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* [Manage Claude's memory](/docs/en/memory): write and organize CLAUDE.md, rules, and auto memory
-* [Configure settings](/docs/en/settings): set permissions, hooks, environment variables, and model defaults
-* [Create skills](/docs/en/skills): build reusable prompts and workflows
-* [Configure subagents](/docs/en/sub-agents): define specialized agents with their own context
+* [管理 Claude 的内存](/docs/zh-CN/memory)：编写和组织 CLAUDE.md、rules 和自动内存
+* [配置设置](/docs/zh-CN/settings)：设置权限、hooks、环境变量和模型默认值
+* [创建 skills](/docs/zh-CN/skills)：构建可重用的提示和工作流
+* [配置 subagents](/docs/zh-CN/sub-agents)：定义具有自己上下文的专门代理

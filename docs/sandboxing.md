@@ -2,64 +2,68 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Configure the sandboxed Bash tool
+# 配置沙箱化 Bash 工具
 
-> Learn how Claude Code's sandboxed Bash tool provides filesystem and network isolation for safer, more autonomous agent execution.
+> 了解 Claude Code 的沙箱化 Bash 工具如何提供文件系统和网络隔离，以实现更安全、更自主的代理执行。
 
-The Bash sandbox lets Claude run most shell commands without stopping to ask permission. Instead of approving each command, you define which files and network domains commands can touch, and the operating system enforces that boundary for every Bash command and its child processes.
+Bash 沙箱让 Claude 可以运行大多数 shell 命令，而无需停下来请求权限。与其批准每个命令不同，你定义命令可以接触哪些文件和网络域，操作系统为每个 Bash 命令及其子进程强制执行该边界。
 
 <Note>
-  To compare other isolation approaches such as dev containers, custom containers, and virtual machines, see [Sandbox environments](/docs/en/sandbox-environments). To reduce permission prompts for tools other than Bash, see [permission modes](/docs/en/permission-modes).
+  要比较其他隔离方法，如开发容器、自定义容器和虚拟机，请参阅 [Sandbox environments](/docs/zh-CN/sandbox-environments)。要减少 Bash 以外工具的权限提示，请参阅 [permission modes](/docs/zh-CN/permission-modes)。
 </Note>
 
-## Get started
+<h2 id="get-started">
+  入门
+</h2>
 
-The sandbox is built into Claude Code and runs on macOS, Linux, and WSL2. Native Windows is not supported. On Windows, run Claude Code inside a WSL2 distribution.
+沙箱内置于 Claude Code 中，在 macOS、Linux 和 WSL2 上运行。不支持原生 Windows。在 Windows 上，在 WSL2 发行版内运行 Claude Code。
 
-On macOS, there is nothing to install: sandboxing uses the built-in Seatbelt framework. On Linux and WSL2, the sandbox relies on two packages, covered in [Set up Linux and WSL2](#set-up-linux-and-wsl2). Even if you haven't installed them yet, you can start with `/sandbox`, because its panel shows whether anything is missing.
+在 macOS 上，无需安装任何内容：沙箱使用内置的 Seatbelt 框架。在 Linux 和 WSL2 上，沙箱依赖两个包，详见 [设置 Linux 和 WSL2](#set-up-linux-and-wsl2)。即使你还没有安装它们，你也可以从 `/sandbox` 开始，因为它的面板显示是否缺少任何内容。
 
 <Steps>
-  <Step title="Run /sandbox">
-    Start a Claude Code session and run the `/sandbox` command:
+  <Step title="运行 /sandbox">
+    启动 Claude Code 会话并运行 `/sandbox` 命令：
 
     ```text theme={null}
     /sandbox
     ```
 
-    This opens the sandbox panel with three tabs, plus a Dependencies tab on Linux when the optional seccomp filter is missing:
+    这会打开沙箱面板，有三个选项卡：
 
-    * **Mode**: choose how sandboxed commands are approved, covered in the next step
-    * **Overrides**: choose whether commands that fail under the sandbox can fall back to running unsandboxed. This is the [`allowUnsandboxedCommands`](/docs/en/settings#sandbox-settings) setting
-    * **Config**: view the resolved sandbox settings
+    * **Mode**：选择沙箱化命令的批准方式，在下一步中介绍
+    * **Overrides**：选择在沙箱下失败的命令是否可以回退到运行非沙箱化。这是 [`allowUnsandboxedCommands`](/docs/zh-CN/settings#sandbox-settings) 设置
+    * **Config**：查看已解析的沙箱设置
 
-    If the panel shows only a Dependencies tab, a required package is missing. Install it as described in [Set up Linux and WSL2](#set-up-linux-and-wsl2), restart Claude Code, and run `/sandbox` again.
+    如果面板仅显示 Dependencies 选项卡，则缺少必需的包。按照 [设置 Linux 和 WSL2](#set-up-linux-and-wsl2) 中的说明安装它，重启 Claude Code，然后再次运行 `/sandbox`。
   </Step>
 
-  <Step title="Choose a mode">
-    On the Mode tab, select auto-allow or regular permissions. Auto-allow runs sandboxed commands without prompting, and regular permissions keeps the regular permission prompts even when commands are sandboxed. See [Sandbox modes](#sandbox-modes) for which commands still prompt in auto-allow mode.
+  <Step title="选择一个模式">
+    在 Mode 选项卡上，选择自动允许或常规权限。自动允许在不提示的情况下运行沙箱化命令，常规权限即使在命令沙箱化时也保持常规权限提示。有关在自动允许模式下仍会提示哪些命令，请参阅 [沙箱模式](#sandbox-modes)。
   </Step>
 
-  <Step title="Run a Bash command">
-    Ask Claude to run a command, such as a build or a test suite. By default, commands inside the sandbox can write only to the working directory and the session temp directory. The first time a command needs a new network domain, Claude Code prompts for approval.
+  <Step title="运行 Bash 命令">
+    要求 Claude 运行一个命令，例如构建或测试套件。默认情况下，沙箱内的命令只能写入工作目录和会话临时目录。命令第一次需要新的网络域时，Claude Code 会提示批准。
 
-    Commands that cannot run sandboxed fall back to the regular permission flow. To widen or narrow these boundaries, see [Configure sandboxing](#configure-sandboxing).
+    无法沙箱化运行的命令会回退到常规权限流程。要扩大或缩小这些边界，请参阅 [配置沙箱](#configure-sandboxing)。
   </Step>
 </Steps>
 
-When you select a mode in the panel, Claude Code saves it to your project's local settings at `.claude/settings.local.json`, which apply to the current project. Claude Code adds that file to your global gitignore when it saves a setting there. To enable the sandbox across all of your projects, set [`sandbox.enabled`](/docs/en/settings#sandbox-settings) to `true` in your user settings at `~/.claude/settings.json`. To enforce sandboxing for every developer in an organization, use [managed settings](#enforce-sandboxing-with-managed-settings).
+在面板中选择一个模式会写入你的项目的本地设置 `.claude/settings.local.json`，这些设置适用于当前项目，不会检入 git。要在所有项目中启用沙箱，请在 `~/.claude/settings.json` 的用户设置中将 [`sandbox.enabled`](/docs/zh-CN/settings#sandbox-settings) 设置为 `true`。要为组织中的每个开发者强制执行沙箱，请使用 [托管设置](#enforce-sandboxing-with-managed-settings)。
 
 <Warning>
-  By default, if the sandbox cannot start because dependencies are missing or the platform is unsupported, Claude Code shows a warning and runs commands without sandboxing. To make this a hard failure instead, set [`sandbox.failIfUnavailable`](/docs/en/settings#sandbox-settings) to `true`. This is intended for managed deployments that require sandboxing as a security gate.
+  默认情况下，如果沙箱因缺少依赖项或不支持的平台而无法启动，Claude Code 会显示警告并在没有沙箱的情况下运行命令。要使其成为硬失败，请将 [`sandbox.failIfUnavailable`](/docs/zh-CN/settings#sandbox-settings) 设置为 `true`。这适用于需要沙箱作为安全门的托管部署。
 </Warning>
 
-### Set up Linux and WSL2
+<h3 id="set-up-linux-and-wsl2">
+  设置 Linux 和 WSL2
+</h3>
 
-On Linux and WSL2, the sandbox relies on two packages:
+在 Linux 和 WSL2 上，沙箱依赖两个包：
 
-* [`bubblewrap`](https://github.com/containers/bubblewrap): the unprivileged sandboxing tool that enforces filesystem isolation
-* [`socat`](http://www.dest-unreach.org/socat/): the relay used to route network traffic through the sandbox proxy
+* [`bubblewrap`](https://github.com/containers/bubblewrap)：无特权沙箱工具，强制执行文件系统隔离
+* [`socat`](http://www.dest-unreach.org/socat/)：用于通过沙箱代理路由网络流量的中继
 
-Install them with your distribution's package manager:
+使用你的发行版的包管理器安装它们：
 
 <Tabs>
   <Tab title="Ubuntu/Debian">
@@ -75,17 +79,15 @@ Install them with your distribution's package manager:
   </Tab>
 </Tabs>
 
-When a dependency is missing, the Dependencies tab in `/sandbox` lists which of `ripgrep`, `bubblewrap`, `socat`, and the seccomp filter your platform lacks. If you don't see the tab after installing and restarting Claude Code, all dependencies are present.
+安装后，`/sandbox` 中的 Dependencies 选项卡显示 `ripgrep`、`bubblewrap`、`socat` 和 seccomp 过滤器是否在你的平台上可用。Ripgrep 与原生 Claude Code 二进制文件捆绑在一起。seccomp 过滤器是可选的，添加 Unix 域套接字阻止。如果缺少，请使用 `npm install -g @anthropic-ai/sandbox-runtime` 安装它。
 
-Ripgrep is bundled with the native Claude Code binary. The seccomp filter is optional and adds Unix domain socket blocking. Install it with `npm install -g @anthropic-ai/sandbox-runtime` if it is missing.
-
-When a required dependency is missing, the Dependencies tab is the only tab shown until you install it. When only the optional seccomp filter is missing, the Dependencies tab appears alongside the other tabs. The dependency check runs at startup, so restart Claude Code after installing packages for `/sandbox` to detect them.
+当缺少必需的依赖项时，Dependencies 选项卡是唯一显示的选项卡，直到你安装它。依赖项检查在启动时运行，因此在安装包后重启 Claude Code，以便 `/sandbox` 检测到它们。
 
 <AccordionGroup>
-  <Accordion title="Ubuntu 24.04 and later: allow bubblewrap to create user namespaces">
-    On Ubuntu 24.04 and later, the default AppArmor policy prevents bubblewrap from creating the user namespaces it needs for isolation.
+  <Accordion title="Ubuntu 24.04 及更高版本：允许 bubblewrap 创建用户命名空间">
+    在 Ubuntu 24.04 及更高版本上，默认 AppArmor 策略阻止 bubblewrap 创建隔离所需的用户命名空间。
 
-    To check whether your environment enforces this restriction, including inside WSL2, run `sysctl kernel.apparmor_restrict_unprivileged_userns`. If the command returns `0`, skip this step. If it prints a `No such file or directory` error, the key doesn't exist and you can skip this step. If it returns `1`, add an AppArmor profile that grants `bwrap` this capability:
+    要检查你的环境（包括 WSL2 内）是否强制执行此限制，请运行 `sysctl kernel.apparmor_restrict_unprivileged_userns`。如果密钥不存在或返回 `0`，请跳过此步骤。如果返回 `1`，请添加一个 AppArmor 配置文件，授予 `bwrap` 此功能：
 
     ```bash theme={null}
     sudo tee /etc/apparmor.d/bwrap > /dev/null <<'EOF'
@@ -99,54 +101,56 @@ When a required dependency is missing, the Dependencies tab is the only tab show
     EOF
     ```
 
-    The profile applies only to `bwrap` itself, not to the commands it runs inside the sandbox. Reload AppArmor to apply it:
+    该配置文件仅适用于 `bwrap` 本身，不适用于在沙箱内运行的命令。重新加载 AppArmor 以应用它：
 
     ```bash theme={null}
     sudo systemctl reload apparmor
     ```
   </Accordion>
 
-  <Accordion title="WSL2 notes">
-    Check your WSL version with `wsl -l -v` from PowerShell. If you see `Sandboxing requires WSL2`, your distribution is running WSL1. Upgrade it to WSL2 or run Claude Code without sandboxing.
+  <Accordion title="WSL2 注意事项">
+    使用 PowerShell 中的 `wsl -l -v` 检查你的 WSL 版本。如果你看到 `Sandboxing requires WSL2`，你的发行版运行的是 WSL1。将其升级到 WSL2 或在没有沙箱的情况下运行 Claude Code。
 
-    On WSL2, sandboxed commands cannot launch Windows binaries such as `cmd.exe`, `powershell.exe`, or anything under `/mnt/c/`. WSL hands these off to the Windows host over a Unix socket, which the sandbox blocks. If a command needs to invoke a Windows binary, add it to [`excludedCommands`](/docs/en/settings#sandbox-settings) so it runs outside the sandbox.
+    在 WSL2 上，沙箱化命令无法启动 Windows 二进制文件，例如 `cmd.exe`、`powershell.exe` 或 `/mnt/c/` 下的任何内容。WSL 通过 Unix 套接字将这些交给 Windows 主机，沙箱会阻止这些。如果命令需要调用 Windows 二进制文件，请将其添加到 [`excludedCommands`](/docs/zh-CN/settings#sandbox-settings)，以便它在沙箱外运行。
   </Accordion>
 </AccordionGroup>
 
-### Sandbox modes
+<h3 id="sandbox-modes">
+  沙箱模式
+</h3>
 
-Claude Code offers two sandbox modes:
+Claude Code 提供两种沙箱模式：
 
-**Auto-allow mode**: when a command can be sandboxed, Claude Code runs it inside the sandbox and approves it automatically, without asking your permission. Commands that cannot be sandboxed, such as those needing network access to non-allowed hosts, fall back to the regular permission flow, where Claude Code checks your [permission rules](/docs/en/permissions) and gates any command those rules do not already allow, with a prompt in default mode or the classifier in [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode).
+**自动允许模式**：Bash 命令将尝试在沙箱内运行，并自动允许而无需权限。无法沙箱化的命令（例如需要访问非允许主机的网络访问的命令）会回退到常规权限流程，其中 Claude Code 检查你的 [权限规则](/docs/zh-CN/permissions) 并为这些规则不允许的任何命令提示你，在默认模式下提示或在 [自动模式](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) 中使用分类器。
 
-Even in auto-allow mode, the following still apply:
+即使在自动允许模式下，以下仍然适用：
 
-* Explicit [deny rules](/docs/en/permissions) are always respected
-* `rm` or `rmdir` commands that target `/`, your home directory, or other critical system paths still trigger a permission prompt{/* min-version: 2.1.218 */}, or a classifier check in [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode); the classifier routing requires Claude Code v2.1.218 or later
-* Content-scoped [ask rules](/docs/en/permissions) like `Bash(git push *)` still force a prompt even for sandboxed commands
-* A bare `Bash` ask rule, or the equivalent `Bash(*)` form, is skipped for commands that run sandboxed; it still applies to commands that fall back to the regular permission flow. {/* min-version: 2.1.212 */}In [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode), the rule isn't skipped: it prompts for sandboxed commands too, including read-only ones. Before v2.1.212, the skip applied in plan mode as well
+* 显式 [拒绝规则](/docs/zh-CN/permissions) 始终被尊重
+* 针对 `/`、你的主目录或其他关键系统路径的 `rm` 或 `rmdir` 命令仍会触发权限提示
+* 内容范围的 [询问规则](/docs/zh-CN/permissions)（如 `Bash(git push *)`）仍会强制提示，即使对于沙箱化命令
+* 裸 `Bash` 询问规则，或等效的 `Bash(*)` 形式，对于运行沙箱化的命令会被跳过；它仍然适用于回退到常规权限流程的命令
 
-**Regular permissions mode**: All Bash commands go through the regular permission flow, even when sandboxed. This provides more control but requires more approvals.
+**常规权限模式**：所有 Bash 命令都通过常规权限流程，即使沙箱化也是如此。这提供了更多控制，但需要更多批准。
 
-In both modes, the sandbox enforces the same filesystem and network restrictions. The difference is only in whether sandboxed commands are auto-approved or require explicit permission.
+在两种模式中，沙箱都强制执行相同的文件系统和网络限制。区别仅在于沙箱化命令是自动批准还是需要明确权限。
 
-The session temp directory is writable inside the sandbox by default, alongside the working directory. Claude Code sets `$TMPDIR` to this directory for sandboxed commands, so tools that write temporary files work without extra configuration. Unsandboxed commands inherit your shell's `$TMPDIR` unchanged, which means sandboxed and unsandboxed commands resolve `$TMPDIR` to different directories unless you [disable filesystem isolation](#disable-filesystem-isolation). To pass temporary files between the two, write them under the working directory instead.
+会话临时目录在沙箱内默认可写，与工作目录一起。Claude Code 为沙箱化命令设置 `$TMPDIR` 为此目录，因此写入临时文件的工具无需额外配置即可工作。非沙箱化命令继承你的 shell 的 `$TMPDIR` 不变，这意味着沙箱化和非沙箱化命令将 `$TMPDIR` 解析为不同的目录。要在两者之间传递临时文件，请改为在工作目录下写入它们。
 
-Some commands cannot run inside the sandbox at all, such as tools that are incompatible with it or that need a host you have not allowed. Rather than failing the task or requiring you to turn sandboxing off, Claude Code includes an escape hatch: when a command fails because of sandbox restrictions, Claude analyzes the failure and may retry the command with the `dangerouslyDisableSandbox` parameter. The retried command runs outside the sandbox, so it goes through the regular permission flow: in default mode you get a confirmation prompt; in [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) the classifier evaluates the underlying command instead of prompting you. To be prompted on every unsandboxed retry even in auto mode, add an [ask rule](/docs/en/permissions#match-by-input-parameter) for `Bash(dangerouslyDisableSandbox:true)`.
+某些命令根本无法在沙箱内运行，例如与其不兼容的工具或需要你未允许的主机的工具。与其让任务失败或要求你关闭沙箱，Claude Code 包括一个逃生舱：当命令因沙箱限制而失败时，Claude 分析失败，可能使用 `dangerouslyDisableSandbox` 参数重试命令。重试的命令在沙箱外运行，因此通过常规权限流程进行：在默认模式下你会获得确认提示；在 [自动模式](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) 中分类器评估基础命令而不是提示你。要在自动模式下的每次非沙箱化重试时都被提示，请为 `Bash(dangerouslyDisableSandbox:true)` 添加一个 [询问规则](/docs/zh-CN/permissions#match-by-input-parameter)。
 
-You can disable this escape hatch by setting `"allowUnsandboxedCommands": false` in your [sandbox settings](/docs/en/settings#sandbox-settings). When disabled, which the `/sandbox` Overrides tab shows as **Strict sandbox mode**, the `dangerouslyDisableSandbox` parameter is completely ignored and all commands must run sandboxed or be explicitly listed in `excludedCommands`.
+你可以通过在 [沙箱设置](/docs/zh-CN/settings#sandbox-settings) 中设置 `"allowUnsandboxedCommands": false` 来禁用此逃生舱。禁用时，`/sandbox` Overrides 选项卡显示为 **严格沙箱模式**，`dangerouslyDisableSandbox` 参数被完全忽略，所有命令必须沙箱化运行或在 `excludedCommands` 中明确列出。
 
 <Info>
-  Auto-allow mode works independently of your permission mode setting, with one exception: [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode). Even if you're not in "accept edits" mode, sandboxed Bash commands run automatically when auto-allow is enabled. This means Bash commands that modify files within the sandbox boundaries execute without prompting, even when file edit tools would normally require approval.
-
-  {/* min-version: 2.1.212 */}In plan mode, auto-allow doesn't widen approvals. Bash commands outside the [built-in read-only set](/docs/en/permissions#read-only-commands) prompt for approval even with auto-allow enabled{/* min-version: 2.1.218 */}, or go to the classifier when [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) is available and `useAutoModeDuringPlan` is on; in v2.1.212 through v2.1.217 they always prompted. Before v2.1.212, auto-allow ran sandboxed commands without a prompt in plan mode too.
+  自动允许模式独立于你的权限模式设置工作。即使你不在"接受编辑"模式中，启用自动允许时沙箱化的 Bash 命令也会自动运行。这意味着在沙箱边界内修改文件的 Bash 命令将执行而不提示，即使文件编辑工具通常需要批准。
 </Info>
 
-## Configure sandboxing
+<h2 id="configure-sandboxing">
+  配置沙箱
+</h2>
 
-Customize sandbox behavior through your `settings.json` file. See [Settings](/docs/en/settings#sandbox-settings) for the complete configuration reference.
+通过 `settings.json` 文件自定义沙箱行为。有关完整的配置参考，请参阅 [Settings](/docs/zh-CN/settings#sandbox-settings)。
 
-By default, sandboxed commands can write only to the current working directory and the session temp directory. If subprocess commands like `kubectl`, `terraform`, or `npm` need to write outside those directories, use `sandbox.filesystem.allowWrite` to grant access to specific paths:
+默认情况下，沙箱化命令只能写入当前工作目录和会话临时目录。如果子进程命令（如 `kubectl`、`terraform` 或 `npm`）需要在这些目录外写入，请使用 `sandbox.filesystem.allowWrite` 向特定路径授予访问权限：
 
 ```json theme={null}
 {
@@ -159,28 +163,28 @@ By default, sandboxed commands can write only to the current working directory a
 }
 ```
 
-These paths are enforced at the OS level, so all commands running inside the sandbox, including their child processes, respect them. This is the recommended approach when a tool needs write access to a specific location, rather than excluding the tool from the sandbox entirely with `excludedCommands`.
+这些路径在操作系统级别强制执行，因此在沙箱内运行的所有命令（包括其子进程）都尊重它们。这是推荐的方法，当工具需要对特定位置的写入访问时，而不是使用 `excludedCommands` 将工具从沙箱中排除。
 
-When the same filesystem array is defined in multiple [settings scopes](/docs/en/settings#settings-precedence), the arrays are merged: paths from every scope are combined, not replaced.
+当在多个 [settings scopes](/docs/zh-CN/settings#settings-precedence) 中定义相同的文件系统数组时，数组被合并：来自每个范围的路径被组合，而不是替换。
 
-Path prefixes control how paths are resolved:
+路径前缀控制路径的解析方式：
 
-| Prefix            | Meaning                                                                                | Example                                                                   |
-| :---------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------ |
-| `/`               | Absolute path from filesystem root                                                     | `/tmp/build` stays `/tmp/build`                                           |
-| `~/`              | Relative to home directory                                                             | `~/.kube` becomes `$HOME/.kube`                                           |
-| `./` or no prefix | Relative to the project root for project settings, or to `~/.claude` for user settings | `./output` in `.claude/settings.json` resolves to `<project-root>/output` |
+| 前缀        | 含义                                    | 示例                                                                |
+| :-------- | :------------------------------------ | :---------------------------------------------------------------- |
+| `/`       | 从文件系统根目录的绝对路径                         | `/tmp/build` 保持 `/tmp/build`                                      |
+| `~/`      | 相对于主目录                                | `~/.kube` 变为 `$HOME/.kube`                                        |
+| `./` 或无前缀 | 对于项目设置相对于项目根目录，或对于用户设置相对于 `~/.claude` | `.claude/settings.json` 中的 `./output` 解析为 `<project-root>/output` |
 
-This syntax differs from [Read and Edit permission rules](/docs/en/permissions#read-and-edit), which use `//path` for absolute and `/path` for project-relative. Sandbox filesystem paths use standard conventions: `/tmp/build` is absolute.
+此语法与 [Read and Edit permission rules](/docs/zh-CN/permissions#read-and-edit) 不同，后者使用 `//path` 表示绝对路径，`/path` 表示项目相对路径。沙箱文件系统路径使用标准约定：`/tmp/build` 是绝对路径。
 
-You can also deny write or read access using `sandbox.filesystem.denyWrite` and `sandbox.filesystem.denyRead`, and re-allow specific paths within a denied region using `sandbox.filesystem.allowRead`. When read rules overlap, the more specific path wins:
+你也可以使用 `sandbox.filesystem.denyWrite` 和 `sandbox.filesystem.denyRead` 拒绝写入或读取访问，以及使用 `sandbox.filesystem.allowRead` 重新允许被拒绝区域内的特定路径。当读取规则重叠时，更具体的路径获胜：
 
-| Example rules                                           | Result                                                                                                                                                              |
-| :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `"denyRead": ["~/"]` with `"allowRead": ["~/projects"]` | `~/projects` is readable and the rest of the home directory stays blocked. The narrower allow re-opens that part of the denied region                               |
-| `"allowRead": ["~/"]` with `"denyRead": ["~/.env"]`     | `~/.env` stays blocked and the rest of the home directory is readable. An exact deny holds inside a wider allow, so a broad allow can't silently re-expose a secret |
+| 示例规则                                                 | 结果                                                              |
+| :--------------------------------------------------- | :-------------------------------------------------------------- |
+| `"denyRead": ["~/"]` 与 `"allowRead": ["~/projects"]` | `~/projects` 可读，主目录的其余部分保持被阻止。更窄的允许重新打开被拒绝区域的该部分                |
+| `"allowRead": ["~/"]` 与 `"denyRead": ["~/.env"]`     | `~/.env` 保持被阻止，主目录的其余部分可读。精确的拒绝在更广泛的允许内部保持有效，因此广泛的允许无法悄悄地重新暴露秘密 |
 
-The example below blocks reading from the entire home directory while still allowing reads from the current project. Place it in your project's `.claude/settings.json`, because the relative path `.` resolves to the project root only when the configuration lives in project settings:
+下面的示例阻止从整个主目录读取，同时仍允许从当前项目读取。将其放在你的项目的 `.claude/settings.json` 中，因为相对路径 `.` 仅在配置位于项目设置中时才解析为项目根目录：
 
 ```json theme={null}
 {
@@ -194,57 +198,17 @@ The example below blocks reading from the entire home directory while still allo
 }
 ```
 
-The `.` in `allowRead` resolves to the project root because this configuration lives in project settings. If you placed the same configuration in `~/.claude/settings.json`, `.` would resolve to `~/.claude` instead, and project files would remain blocked by the `denyRead` rule.
+`allowRead` 中的 `.` 解析为项目根目录，因为此配置位于项目设置中。如果你将相同的配置放在 `~/.claude/settings.json` 中，`.` 将解析为 `~/.claude`，项目文件将保持被 `denyRead` 规则阻止。
 
-### Disable filesystem isolation
+<h3 id="protect-credentials">
+  保护凭证
+</h3>
 
-Set `sandbox.filesystem.disabled` to `true` to skip filesystem isolation while keeping network isolation. The example below turns off filesystem isolation while keeping an allowlist of network domains:
+`sandbox.credentials` 设置声明凭证文件和环境变量，以保护其免受沙箱化命令的访问。每个条目命名一个文件路径或环境变量以及一个 `mode`。专用的 `credentials` 块将凭证规则分组在一起，并与常规文件系统规则分开。需要 Claude Code v2.1.187 或更高版本。
 
-```json theme={null}
-{
-  "sandbox": {
-    "enabled": true,
-    "filesystem": {
-      "disabled": true
-    },
-    "network": {
-      "allowedDomains": ["github.com", "*.npmjs.org"]
-    }
-  }
-}
-```
+对于 `"mode": "deny"` 的条目，文件路径在沙箱内被拒绝读取，与 `filesystem.denyRead` 应用的限制相同，环境变量在每个沙箱化命令运行前被取消设置。
 
-The sandbox has two independent layers: [filesystem isolation](#filesystem-isolation) controls which paths sandboxed commands can read and write, and [network isolation](#network-isolation) controls which domains they can reach. With the filesystem layer off, sandboxed commands get unrestricted read and write access to the host filesystem, while their network egress stays confined to your allowed domains. Turn the layer off when you sandbox to control where commands connect rather than what they write.
-
-The setting is off by default and applies on the platforms where the sandbox runs: macOS, Linux, and WSL2. Requires Claude Code v2.1.216 or later.
-
-<Warning>
-  With filesystem isolation off and commands auto-allowed, a sandboxed command can write files that later commands run or read, such as shell startup files, executables on `$PATH`, or `~/.claude/settings.json`, and use them to widen its own access on the next run. Set `filesystem.disabled` to `true` only for workloads you trust not to escalate their own access. Locking network domains with [`allowManagedDomainsOnly`](#keep-developers-from-widening-the-policy) narrows the risk but doesn't remove it, since that lock applies only to commands running inside the sandbox.
-</Warning>
-
-#### Which settings can disable it
-
-Because turning filesystem isolation off widens what sandboxed commands can do, Claude Code honors `filesystem.disabled` from these settings sources only:
-
-* User settings, managed settings, and the `--settings` CLI flag can set it. Project settings in `.claude/settings.json` and `.claude/settings.local.json` can't, so a checked-out project can't switch filesystem isolation off.
-* When managed settings configure `sandbox.filesystem` at all, or list any `sandbox.credentials.files` entry, only managed settings can set the key. This keeps administrator-deployed filesystem restrictions in force; to relax such a deployment, set `"disabled": true` in managed settings.
-* When [`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`](/docs/en/env-vars) is set, Claude Code ignores `filesystem.disabled` from every source, including managed settings, and keeps filesystem isolation on.
-
-#### What changes when isolation is off
-
-Turning the filesystem layer off also lifts its read protections and stops overriding `$TMPDIR`, while sandboxed commands stay auto-allowed:
-
-* The read protections from `filesystem.denyRead` and [`credentials.files`](#protect-credentials) don't apply to sandboxed commands, because the filesystem layer enforces both. `credentials.envVars` deny and mask entries still apply, since environment variable scrubbing is independent of the filesystem layer.
-* Sandboxed commands inherit your shell's `$TMPDIR` instead of the session temp directory, since every temp directory is writable.
-* [`autoAllowBashIfSandboxed`](/docs/en/settings#sandbox-settings) still defaults to `true`, so sandboxed commands keep running without prompts. Set it to `false` to keep prompting for sandboxed commands.
-
-### Protect credentials
-
-The `sandbox.credentials` setting declares credential files and environment variables to protect from sandboxed commands. Each entry names a file path or an environment variable and a `mode`. The dedicated `credentials` block keeps credential rules grouped together and separate from general filesystem rules. Requires Claude Code v2.1.187 or later.
-
-For entries with `"mode": "deny"`, file paths are denied for reads inside the sandbox, the same restriction that `filesystem.denyRead` applies, and environment variables are unset before each sandboxed command runs. The file protection is part of the filesystem layer, so it doesn't apply if you [disable filesystem isolation](#disable-filesystem-isolation); the environment variable protection still does.
-
-The example below blocks reads of the AWS credentials file and the SSH directory and removes `GITHUB_TOKEN` and `NPM_TOKEN` from the environment of sandboxed commands:
+下面的示例阻止读取 AWS 凭证文件和 SSH 目录，并从沙箱化命令的环境中删除 `GITHUB_TOKEN` 和 `NPM_TOKEN`：
 
 ```json theme={null}
 {
@@ -264,21 +228,23 @@ The example below blocks reads of the AWS credentials file and the SSH directory
 }
 ```
 
-File entries support only `"mode": "deny"`. Environment variable entries also accept `"mode": "mask"`, described below.
+文件条目仅支持 `"mode": "deny"`。环境变量条目也接受 `"mode": "mask"`，如下所述。
 
-File paths follow the same [prefix rules](/docs/en/settings#sandbox-path-prefixes) as `sandbox.filesystem.*` settings, and `deny` entries from every [settings scope](/docs/en/settings#settings-precedence) are merged. A `deny` entry only ever narrows access, so any scope can add one, but no scope can remove one that another scope added.
+文件路径遵循与 `sandbox.filesystem.*` 设置相同的 [prefix rules](/docs/zh-CN/settings#sandbox-path-prefixes)，来自每个 [settings scope](/docs/zh-CN/settings#settings-precedence) 的 `deny` 条目被合并。`deny` 条目只会缩小访问权限，因此任何范围都可以添加一个，但没有任何范围可以删除另一个范围添加的条目。
 
-There is no built-in credential deny list, so only the files and variables you list are restricted. The setting affects sandboxed Bash commands only. To strip Anthropic and cloud provider credentials from all subprocesses regardless of sandboxing, set [`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`](/docs/en/env-vars).
+没有内置的凭证拒绝列表，因此只有你列出的文件和变量被限制。该设置仅影响沙箱化的 Bash 命令。要从所有子进程中删除 Anthropic 和云提供商凭证，无论是否进行沙箱处理，请设置 [`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`](/docs/zh-CN/env-vars)。
 
-#### Mask environment variables
+<h4 id="mask-environment-variables">
+  掩盖环境变量
+</h4>
 
-`"mode": "mask"` protects a credential while keeping the tools that authenticate with it working. `deny` removes the variable entirely, which also breaks tools that need it, such as `gh` or `npm`. Requires Claude Code v2.1.199 or later.
+`"mode": "mask"` 保护凭证，同时保持使用它进行身份验证的工具正常工作。`deny` 完全删除变量，这也会破坏需要它的工具，例如 `gh` 或 `npm`。需要 Claude Code v2.1.199 或更高版本。
 
-With `mask`, the sandboxed command sees a per-session sentinel value instead of the real one. When a request leaves the sandbox for one of the credential's `injectHosts`, the [sandbox proxy](#network-isolation) replaces the sentinel with the real value. The command and anything it logs never hold the real credential, but its requests still authenticate.
+使用 `mask`，沙箱化命令看到的是每个会话的哨兵值，而不是真实值。当请求离开沙箱前往凭证的 `injectHosts` 之一时，[sandbox proxy](#network-isolation) 将哨兵值替换为真实值。命令及其记录的任何内容都不会持有真实凭证，但其请求仍然进行身份验证。
 
-The proxy substitutes the credential inside request contents, so it has to see them. Set [`network.tlsTerminate`](/docs/en/settings#sandbox-settings) so the proxy terminates TLS itself. Without it, masking fails closed: the command still sees only the sentinel, but the sentinel reaches the server unchanged and authentication fails. Claude Code reports this misconfiguration at startup.
+代理在请求内容中替换凭证，因此它必须看到它们。设置 [`network.tlsTerminate`](/docs/zh-CN/settings#sandbox-settings) 以便代理自己终止 TLS。没有它，掩盖会失败关闭：命令仍然只看到哨兵值，但哨兵值不变地到达服务器，身份验证失败。Claude Code 在启动时报告此配置错误。
 
-The example below masks two tokens. `GH_TOKEN` is substituted only on requests to `api.github.com`, while `NPM_TOKEN` has no `injectHosts` and is substituted on requests to every host in `network.allowedDomains`. Each `injectHosts` entry must itself be covered by `network.allowedDomains`.
+下面的示例掩盖两个令牌。`GH_TOKEN` 仅在对 `api.github.com` 的请求上被替换，而 `NPM_TOKEN` 没有 `injectHosts`，在对 `network.allowedDomains` 中每个主机的请求上被替换。每个 `injectHosts` 条目本身必须被 `network.allowedDomains` 覆盖。
 
 ```json theme={null}
 {
@@ -298,102 +264,118 @@ The example below masks two tokens. `GH_TOKEN` is substituted only on requests t
 }
 ```
 
-Unlike `deny`, masking authorizes the proxy to send your real credential to the listed hosts, so it is honored only from settings you or your administrator control: user settings, managed settings, and the `--settings` CLI flag. `mask` entries, `network.tlsTerminate`, and [`credentials.allowPlaintextInject`](/docs/en/settings#sandbox-settings) in a repository's `.claude/settings.json` or `.claude/settings.local.json` are ignored.
+与 `deny` 不同，掩盖授权代理将你的真实凭证发送到列出的主机，因此它仅从你或你的管理员控制的设置中被遵守：用户设置、托管设置和 `--settings` CLI 标志。`mask` 条目、`network.tlsTerminate` 和 [`credentials.allowPlaintextInject`](/docs/zh-CN/settings#sandbox-settings) 在存储库的 `.claude/settings.json` 或 `.claude/settings.local.json` 中被忽略。
 
-When the same variable is listed with `deny` in any scope, `deny` takes precedence.
+当相同的变量在任何范围中以 `deny` 列出时，`deny` 优先。
 
-## How sandboxing works
+<h2 id="how-sandboxing-works">
+  沙箱如何工作
+</h2>
 
-### Filesystem isolation
+<h3 id="filesystem-isolation">
+  文件系统隔离
+</h3>
 
-The sandboxed Bash tool restricts file system access to specific directories:
+沙箱化 Bash 工具将文件系统访问限制在特定目录：
 
-* **Default write behavior**: read and write access to the current working directory and its subdirectories, plus the session temp directory that `$TMPDIR` points to
-* **Default read behavior**: read access to the entire computer, except certain denied directories. Note that this default still allows reading credential files such as `~/.aws/credentials` and `~/.ssh/`. Use [`sandbox.credentials`](#protect-credentials) to block reads of these files and unset secret environment variables, or add the paths to `denyRead`.
-* **Blocked access**: cannot modify files outside the current working directory and session temp directory without explicit permission, including shell configuration files such as `~/.bashrc` and system binaries in `/bin/`
-* **Git worktrees**: when the working directory is a [linked git worktree](/docs/en/worktrees), the sandbox also allows writes to the main repository's shared `.git` directory so commands such as `git commit` can update refs and the index. Writes to `hooks/` and `config` inside that directory remain denied.
-* **Configurable**: define custom allowed and denied paths through settings
+* **默认写入行为**：对当前工作目录及其子目录的读写访问，加上 `$TMPDIR` 指向的会话临时目录
+* **默认读取行为**：对整个计算机的读取访问，除了某些被拒绝的目录。注意此默认仍允许读取凭证文件，例如 `~/.aws/credentials` 和 `~/.ssh/`。使用 [`sandbox.credentials`](#protect-credentials) 阻止读取这些文件并取消设置密钥环境变量，或将路径添加到 `denyRead`。
+* **被阻止的访问**：无法在没有明确权限的情况下修改当前工作目录和会话临时目录外的文件，包括 shell 配置文件（例如 `~/.bashrc`）和 `/bin/` 中的系统二进制文件
+* **Git worktrees**：当工作目录是[链接的 git worktree](/docs/zh-CN/worktrees)时，沙箱还允许写入主存储库的共享 `.git` 目录，以便 `git commit` 等命令可以更新引用和索引。对该目录内的 `hooks/` 和 `config` 的写入仍然被拒绝。
+* **可配置**：通过设置定义自定义允许和拒绝的路径
 
-You can grant write access to additional paths using `sandbox.filesystem.allowWrite` in your settings. These restrictions are enforced at the OS level, so they apply to all subprocess commands, including tools like `kubectl`, `terraform`, and `npm`, not just Claude's file tools. To skip filesystem isolation entirely while keeping network isolation, set [`sandbox.filesystem.disabled`](#disable-filesystem-isolation).
+你可以使用设置中的 `sandbox.filesystem.allowWrite` 向其他路径授予写入访问权限。这些限制在操作系统级别强制执行，因此它们适用于所有子进程命令，包括 `kubectl`、`terraform` 和 `npm` 等工具，而不仅仅是 Claude 的文件工具。
 
-### Network isolation
+<h3 id="network-isolation">
+  网络隔离
+</h3>
 
-Network access is controlled through a proxy server running outside the sandbox:
+网络访问通过在沙箱外运行的代理服务器进行控制：
 
-* **Domain restrictions**: no domains are pre-allowed by default. The first time a command needs a new domain, Claude Code prompts for approval. {/* min-version: 2.1.191 */}As of v2.1.191, choosing Yes allows the host for the rest of the current session, so later connections to the same host do not prompt again. Pre-allow domains with [`allowedDomains`](/docs/en/settings#sandbox-settings) to avoid the prompt entirely. `WebFetch` allow rules also pre-allow domains, as described in [Permission rules](#permission-rules).
-* **Strict allowlist**: {/* min-version: 2.1.219 */}if you set [`strictAllowlist`](/docs/en/settings#sandbox-settings) to `true` in user, managed, or CLI `--settings` settings, Claude Code denies sandboxed commands access to any host outside the allowlist instead of prompting. The allowlist is the same one the sandbox otherwise prompts against: `allowedDomains` plus domains from `WebFetch(domain:...)` allow rules, or only the managed settings entries when `allowManagedDomainsOnly` is set. Claude Code enforces this for sandboxed commands only; in-process tools such as `WebFetch` still follow their [permission rules](#permission-rules). Setting it in a repository's `.claude/settings.json` or `.claude/settings.local.json` has no effect. Requires Claude Code v2.1.219 or later.
-* **Managed lockdown**: if [`allowManagedDomainsOnly`](/docs/en/settings#sandbox-settings) is set in managed settings, non-allowed domains are blocked automatically instead of prompting, and only `allowedDomains` and `WebFetch(domain:...)` allow rules from managed settings are honored.
-* **Custom proxy support**: advanced users can implement custom rules on outgoing traffic
-* **Comprehensive coverage**: restrictions apply to all scripts, programs, and subprocesses spawned by commands
+* **域名限制**：没有预先允许的域名。命令第一次需要新的域名时，Claude Code 会提示批准。{/* min-version: 2.1.191 */}从 v2.1.191 开始，选择"是"会在当前会话的其余时间内允许该主机，因此稍后连接到同一主机时不会再次提示。使用 [`allowedDomains`](/docs/zh-CN/settings#sandbox-settings) 预先允许域名以避免提示。
+* **托管锁定**：如果在托管设置中设置了 [`allowManagedDomainsOnly`](/docs/zh-CN/settings#sandbox-settings)，非允许的域名会自动被阻止而不是提示，只有来自托管设置的 `allowedDomains` 被尊重。
+* **自定义代理支持**：高级用户可以在出站流量上实现自定义规则
+* **全面覆盖**：限制适用于所有脚本、程序和由命令生成的子进程
 
 <Note>
-  The built-in proxy enforces the allowlist based on the requested hostname and, by default, does not terminate or inspect TLS traffic. {/* min-version: 2.1.199 */}The experimental [`network.tlsTerminate`](/docs/en/settings#sandbox-settings) setting, available in Claude Code v2.1.199 and later, makes the built-in proxy terminate TLS itself, which [`mask` credential entries](#protect-credentials) require. See [Security limitations](#security-limitations) for the implications of the default, and [Custom proxy configuration](#custom-proxy-configuration) if your threat model requires TLS inspection.
+  内置代理基于请求的主机名强制执行允许列表，默认情况下不会终止或检查 TLS 流量。{/* min-version: 2.1.199 */}实验性的 [`network.tlsTerminate`](/docs/zh-CN/settings#sandbox-settings) 设置在 Claude Code v2.1.199 及更高版本中可用，使内置代理自行终止 TLS，这是 [`mask` 凭证条目](#protect-credentials)所需的。有关默认设置的含义，请参阅 [Security limitations](#security-limitations)，如果你的威胁模型需要 TLS 检查，请参阅 [Custom proxy configuration](#custom-proxy-configuration)。
 </Note>
 
-### OS-level enforcement
+<h3 id="os-level-enforcement">
+  操作系统级强制执行
+</h3>
 
-The sandboxed Bash tool leverages operating system security primitives:
+沙箱化 Bash 工具利用操作系统安全原语：
 
-* **macOS**: uses Seatbelt for sandbox enforcement
-* **Linux**: uses [bubblewrap](https://github.com/containers/bubblewrap) for isolation
-* **WSL2**: uses bubblewrap, same as Linux
+* **macOS**：使用 Seatbelt 进行沙箱强制执行
+* **Linux**：使用 [bubblewrap](https://github.com/containers/bubblewrap) 进行隔离
+* **WSL2**：使用 bubblewrap，与 Linux 相同
 
-WSL1 is not supported because bubblewrap requires kernel features only available in WSL2. These OS-level restrictions ensure that all child processes spawned by Claude Code's commands inherit the same security boundaries.
+不支持 WSL1，因为 bubblewrap 需要仅在 WSL2 中可用的内核功能。这些操作系统级限制确保由 Claude Code 命令生成的所有子进程都继承相同的安全边界。
 
-These same primitives are available as the standalone [`@anthropic-ai/sandbox-runtime`](https://github.com/anthropic-experimental/sandbox-runtime) package, which the [Sandbox environments](/docs/en/sandbox-environments#sandbox-runtime) page covers as a separate approach for wrapping the entire Claude Code process.
+这些相同的原语作为独立的 [`@anthropic-ai/sandbox-runtime`](https://github.com/anthropic-experimental/sandbox-runtime) 包提供，[Sandbox environments](/docs/zh-CN/sandbox-environments#sandbox-runtime) 页面将其作为包装整个 Claude Code 进程的单独方法进行介绍。
 
-## How sandboxing relates to permissions and permission modes
+<h2 id="how-sandboxing-relates-to-permissions-and-permission-modes">
+  沙箱如何与权限和权限模式相关
+</h2>
 
-Sandboxing, [permission rules](/docs/en/permissions), and [permission modes](/docs/en/permission-modes) are complementary layers. The sections below cover how the sandbox interacts with each.
+沙箱、[permission rules](/docs/zh-CN/permissions) 和 [permission modes](/docs/zh-CN/permission-modes) 是互补的层。下面的部分介绍沙箱如何与每个交互。
 
-### Permission rules
+<h3 id="permission-rules">
+  权限规则
+</h3>
 
-Permission rules and sandboxing control different things:
+权限规则和沙箱控制不同的事物：
 
-* **Permission rules** control which tools Claude Code can use and are evaluated before any tool runs. They apply to every tool: Bash, Read, Edit, WebFetch, MCP, and others, except that a deny or ask rule can't block [`EndConversation`](/docs/en/tools-reference#endconversation-tool-behavior) while any other tool remains.
-* **Sandboxing** provides OS-level enforcement that restricts what Bash commands can access at the filesystem and network level. It applies only to Bash commands and their child processes.
+* **权限规则**控制 Claude Code 可以使用哪些工具，在任何工具运行之前进行评估。它们适用于所有工具：Bash、Read、Edit、WebFetch、MCP 和其他工具。
+* **沙箱**提供操作系统级强制执行，限制 Bash 命令在文件系统和网络级别可以访问的内容。它仅适用于 Bash 命令及其子进程。
 
-The two layers also differ in how they are enforced. Claude Code evaluates permission decisions before a command runs, based on the command string and, in auto mode, a separate classifier's judgment about whether the command is safe. The operating system enforces the sandbox boundary on the running process, so it holds regardless of what the model chose to run and even if an allowed command does more than its name suggests.
+这两个层在强制执行方式上也有所不同。Claude Code 在命令运行之前根据命令字符串和（在自动模式下）单独分类器关于命令是否安全的判断来评估权限决定。操作系统在运行的进程上强制执行沙箱边界，因此无论模型选择运行什么，它都成立，即使允许的命令做的比其名称暗示的更多。
 
-Filesystem and network restrictions are configured through both sandbox settings and permission rules:
+文件系统和网络限制通过沙箱设置和权限规则进行配置：
 
-| Setting or rule                                                  | What it does                                                                                                                                |
-| :--------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sandbox.filesystem.allowWrite`                                  | Grants subprocess write access to paths outside the working directory                                                                       |
-| `sandbox.filesystem.denyWrite` and `sandbox.filesystem.denyRead` | Block subprocess access to specific paths                                                                                                   |
-| `sandbox.filesystem.allowRead`                                   | Re-allows reading specific paths within a `denyRead` region                                                                                 |
-| [`sandbox.filesystem.disabled`](#disable-filesystem-isolation)   | {/* min-version: 2.1.216 */}Turns the filesystem layer off entirely while keeping network isolation; requires Claude Code v2.1.216 or later |
-| `Edit` allow rules                                               | Grant write access to specific paths, the same way `sandbox.filesystem.allowWrite` does                                                     |
-| `Read` and `Edit` deny rules                                     | Block access to specific files or directories                                                                                               |
-| `WebFetch` allow and deny rules                                  | Control domain access                                                                                                                       |
-| Sandbox `allowedDomains`                                         | Controls which domains Bash commands can reach                                                                                              |
-| Sandbox `deniedDomains`                                          | Blocks specific domains even when a broader `allowedDomains` wildcard would otherwise permit them                                           |
+| 设置或规则                                                          | 它做什么                                                |
+| :------------------------------------------------------------- | :-------------------------------------------------- |
+| `sandbox.filesystem.allowWrite`                                | 向工作目录外的路径授予子进程写入访问权限                                |
+| `sandbox.filesystem.denyWrite` 和 `sandbox.filesystem.denyRead` | 阻止子进程访问特定路径                                         |
+| `sandbox.filesystem.allowRead`                                 | 重新允许读取被 `denyRead` 区域内的特定路径                         |
+| `Edit` 允许规则                                                    | 授予对特定路径的写入访问权限，与 `sandbox.filesystem.allowWrite` 相同 |
+| `Read` 和 `Edit` 拒绝规则                                           | 阻止访问特定文件或目录                                         |
+| `WebFetch` 允许和拒绝规则                                             | 控制域名访问                                              |
+| 沙箱 `allowedDomains`                                            | 控制 Bash 命令可以到达的域名                                   |
+| 沙箱 `deniedDomains`                                             | 阻止特定域名，即使更广泛的 `allowedDomains` 通配符会允许它们             |
 
-Paths from both `sandbox.filesystem` settings and permission rules are merged together into the final sandbox configuration.
+来自 `sandbox.filesystem` 设置和权限规则的路径被合并到最终沙箱配置中。
 
-The [claude-code repository's examples directory](https://github.com/anthropics/claude-code/tree/main/examples/settings) includes starter settings configurations for common deployment scenarios, including sandbox-specific examples. Use these as starting points and adjust them to fit your needs.
+[claude-code repository 的示例目录](https://github.com/anthropics/claude-code/tree/main/examples/settings)包括常见部署场景的启动设置配置，包括沙箱特定的示例。使用这些作为起点，并根据你的需求调整它们。
 
-### Permission modes
+<h3 id="permission-modes">
+  权限模式
+</h3>
 
-`/sandbox` is not a [permission mode](/docs/en/permission-modes). Permission modes decide whether a tool call runs and whether you are prompted first, while the sandbox restricts what a Bash command can access once it runs. They differ in what they control and what replaces the per-action prompt:
+`/sandbox` 不是 [permission mode](/docs/zh-CN/permission-modes)。权限模式决定工具调用是否运行以及是否首先提示你，而沙箱限制 Bash 命令运行后可以访问的内容。它们在控制的内容和替换每个操作提示的内容上有所不同：
 
-|                                                                    | What it controls                            | What replaces the prompt                                                                                                                                                                                                                                                                                                                                                                                     |
-| :----------------------------------------------------------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/sandbox`                                                         | What a Bash command can access once it runs | The sandbox boundary itself, in [auto-allow mode](#sandbox-modes)                                                                                                                                                                                                                                                                                                                                            |
-| [Auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) | Whether each tool call runs                 | A classifier that reviews actions                                                                                                                                                                                                                                                                                                                                                                            |
-| `--dangerously-skip-permissions`                                   | Whether each tool call runs                 | Nothing. [Protected path](/docs/en/permission-modes#protected-paths) checks are also skipped; only explicit [ask rules](/docs/en/permissions#manage-permissions), connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), MCP tools marked [`requiresUserInteraction`](/docs/en/mcp#require-approval-for-a-specific-tool), and removing `/` or your home directory still prompt |
+|                                                                       | 它控制什么             | 替换提示的内容                                                                                                                                                                                                                                                                                                            |
+| :-------------------------------------------------------------------- | :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/sandbox`                                                            | Bash 命令运行后可以访问的内容 | 沙箱边界本身，在 [auto-allow mode](#sandbox-modes) 中                                                                                                                                                                                                                                                                       |
+| [Auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) | 每个工具调用是否运行        | 审查操作的分类器                                                                                                                                                                                                                                                                                                           |
+| `--dangerously-skip-permissions`                                      | 每个工具调用是否运行        | 无。[Protected path](/docs/zh-CN/permission-modes#protected-paths) 检查也被跳过；仅显式 [ask rules](/docs/zh-CN/permissions#manage-permissions)、连接器工具 [你的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)、标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具，以及删除 `/` 或你的主目录仍会提示 |
 
-The sandbox's [auto-allow mode](#sandbox-modes) is separate from [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode): auto-allow approves Bash commands because the sandbox boundary contains them, while auto mode uses a classifier to review actions. The two work independently and can be combined. To choose an isolation boundary for unattended runs, see [Sandbox environments](/docs/en/sandbox-environments#how-isolation-relates-to-permission-modes).
+沙箱的 [auto-allow mode](#sandbox-modes) 与 [auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) 分开：自动允许批准 Bash 命令，因为沙箱边界包含它们，而自动模式使用分类器审查操作。两者独立工作，可以结合。要为无人值守运行选择隔离边界，请参阅 [Sandbox environments](/docs/zh-CN/sandbox-environments#how-isolation-relates-to-permission-modes)。
 
-## Configure the sandbox for your organization
+<h2 id="configure-the-sandbox-for-your-organization">
+  为你的组织配置沙箱
+</h2>
 
-Administrators can require sandboxing for every user, keep developers from widening the policy, and route sandbox traffic through a corporate proxy.
+管理员可以为每个用户要求沙箱，防止开发者扩大策略，并通过公司代理路由沙箱流量。
 
-### Enforce sandboxing with managed settings
+<h3 id="enforce-sandboxing-with-managed-settings">
+  使用托管设置强制执行沙箱
+</h3>
 
-To require the sandbox for every developer, deliver the `sandbox` keys through [managed settings](/docs/en/settings#settings-files), either as a file managed by your MDM or through [server-managed settings](/docs/en/server-managed-settings) on Claude.ai.
+要为每个开发者要求沙箱，通过 [managed settings](/docs/zh-CN/settings#settings-files) 提供 `sandbox` 密钥，可以是由你的 MDM 管理的文件，也可以是通过 Claude.ai 上的 [server-managed settings](/docs/zh-CN/server-managed-settings)。
 
-The following managed settings configuration enables the sandbox, refuses to start Claude Code if the sandbox cannot initialize, and prevents the model from retrying commands outside the sandbox:
+以下托管设置配置启用沙箱，如果沙箱无法初始化则拒绝启动 Claude Code，并防止模型在沙箱外重试命令：
 
 ```json theme={null}
 {
@@ -405,35 +387,37 @@ The following managed settings configuration enables the sandbox, refuses to sta
 }
 ```
 
-The two keys beyond `enabled` control what happens when the sandbox cannot run a command:
+超过 `enabled` 的两个密钥控制沙箱无法运行命令时会发生什么：
 
-* **`failIfUnavailable`**: a missing dependency such as bubblewrap on Linux blocks Claude Code from starting rather than showing a warning and falling back to unsandboxed execution
-* **`allowUnsandboxedCommands: false`**: the `dangerouslyDisableSandbox` escape hatch is ignored, so commands that fail under the sandbox cannot be retried outside it
+* **`failIfUnavailable`**：缺少的依赖项（例如 Linux 上的 bubblewrap）会阻止 Claude Code 启动，而不是显示警告并回退到非沙箱化执行
+* **`allowUnsandboxedCommands: false`**：`dangerouslyDisableSandbox` 逃生舱被忽略，因此在沙箱下失败的命令无法在其外重试
 
-Two additions are worth considering alongside them. Add `excludedCommands` for any organization-approved tools that must run without isolation. Add [`sandbox.credentials`](#protect-credentials) entries for credential directories such as `~/.aws` and `~/.ssh` and for secret environment variables, since the default read policy still allows them.
+值得考虑与它们一起添加两个补充。为任何必须在没有隔离的情况下运行的组织批准的工具添加 `excludedCommands`。为凭证目录（例如 `~/.aws` 和 `~/.ssh`）和秘密环境变量添加 [`sandbox.credentials`](#protect-credentials) 条目，因为默认读取策略仍允许这些。
 
-The sandbox does not run on native Windows, so if your fleet includes Windows hosts, scope this configuration to macOS and Linux or have those users run Claude Code inside WSL2 or a container.
+沙箱不在原生 Windows 上运行，因此如果你的队伍包括 Windows 主机，请将此配置的范围限制在 macOS 和 Linux，或让这些用户在 WSL2 或容器内运行 Claude Code。
 
-### Keep developers from widening the policy
+<h3 id="keep-developers-from-widening-the-policy">
+  防止开发者扩大策略
+</h3>
 
-For boolean keys such as `enabled` and `failIfUnavailable`, Claude Code uses the managed value and ignores anything a developer sets locally. For array keys such as `excludedCommands` and `allowRead`, Claude Code merges entries from every scope, so a developer can append entries that widen the policy.
+对于布尔密钥（例如 `enabled` 和 `failIfUnavailable`），Claude Code 使用托管值并忽略开发者在本地设置的任何内容。对于数组密钥（例如 `excludedCommands` 和 `allowRead`），Claude Code 合并来自每个范围的条目，因此开发者可以追加扩大策略的条目。
 
-Set `allowManagedReadPathsOnly` to `true` in managed settings so that only `allowRead` entries from managed settings are honored. User, project, and local `allowRead` entries are ignored. This prevents developers from widening read access beyond the organization-approved paths. To lock network domains to the managed values the same way, set [`allowManagedDomainsOnly`](/docs/en/settings#sandbox-settings).
+在托管设置中将 `allowManagedReadPathsOnly` 设置为 `true`，以便仅尊重来自托管设置的 `allowRead` 条目。用户、项目和本地 `allowRead` 条目被忽略。这防止开发者扩大读取访问权限超过组织批准的路径。要以相同的方式将网络域锁定到托管值，请设置 [`allowManagedDomainsOnly`](/docs/zh-CN/settings#sandbox-settings)。
 
-When managed settings configure `sandbox.filesystem` or list any `sandbox.credentials.files` entry, only managed settings can set [`filesystem.disabled`](#disable-filesystem-isolation), so developers can't switch off administrator-deployed filesystem restrictions.
+`excludedCommands` 没有等效的仅托管锁定，因此开发者总是可以追加在沙箱外运行其他命令的条目。保持托管列表狭窄。
 
-`excludedCommands` has no equivalent managed-only lockdown, so a developer can always append entries that run additional commands outside the sandbox. Keep the managed list narrow.
+<h3 id="custom-proxy-configuration">
+  自定义代理配置
+</h3>
 
-### Custom proxy configuration
+对于需要高级网络安全的组织，你可以实现自定义代理以：
 
-For organizations requiring advanced network security, you can implement a custom proxy to:
+* 解密和检查 HTTPS 流量
+* 应用自定义过滤规则
+* 记录所有网络请求
+* 与现有安全基础设施集成
 
-* Decrypt and inspect HTTPS traffic
-* Apply custom filtering rules
-* Log all network requests
-* Integrate with existing security infrastructure
-
-To point Claude Code at your proxy, set the proxy ports in [sandbox settings](/docs/en/settings#sandbox-settings):
+要将 Claude Code 指向你的代理，请在 [sandbox settings](/docs/zh-CN/settings#sandbox-settings) 中设置代理端口：
 
 ```json theme={null}
 {
@@ -446,60 +430,72 @@ To point Claude Code at your proxy, set the proxy ports in [sandbox settings](/d
 }
 ```
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-Some commands fail inside the sandbox even though they work outside it. The fixes below cover the most common cases.
+某些命令在沙箱内失败，即使它们在沙箱外工作。下面的修复涵盖最常见的情况。
 
-* **Commands fail with a host-not-allowed error**: many CLI tools need to reach specific hosts. Granting permission when prompted adds the host to your allowed list so the tool runs inside the sandbox in future.
-* **`jest` hangs or fails**: `watchman` is incompatible with the sandbox. Run `jest --no-watchman` instead.
-* **Go-based CLIs fail TLS verification on macOS**: tools such as `gh`, `gcloud`, and `terraform` may fail TLS verification under Seatbelt. List these tools in `excludedCommands` to run them outside the sandbox. If you are using `httpProxyPort` with a MITM proxy and custom CA, set [`enableWeakerNetworkIsolation`](/docs/en/settings#sandbox-settings) to `true` instead.
-* **`open`, `osascript`, or browser-based auth flows fail with error `-600` on macOS**: the sandbox blocks Apple Events by default. Set [`allowAppleEvents`](/docs/en/settings#sandbox-settings) to `true` in your user, managed, or CLI settings to allow them. Project settings are ignored for this key. Enabling it removes code-execution isolation, since sandboxed commands can then launch other applications unsandboxed with no user prompt and send AppleScript commands to running applications, subject to the macOS automation-consent prompt (TCC). Alternatively, add the command to `excludedCommands` to run it outside the sandbox.
-* **`docker` commands fail**: `docker` is incompatible with the sandbox. Add `docker *` to `excludedCommands` to run it outside the sandbox.
-* **Bubblewrap fails to start inside a container**: in an unprivileged container, bubblewrap cannot mount a fresh `/proc` filesystem. Set [`enableWeakerNestedSandbox`](/docs/en/settings#sandbox-settings) to `true` so the inner sandbox bind-mounts the container's existing `/proc` instead. Only use this setting when the outer container already provides the isolation boundary you need, since it exposes process information to sandboxed commands that a fresh `/proc` mount would hide.
-* **Seccomp filter on Linux**: the seccomp filter is required to block Unix domain sockets. The Dependencies tab in `/sandbox` appears only when a dependency is missing; if you don't see the tab after a restart, the filter is already installed. If the filter is missing, run `npm install -g @anthropic-ai/sandbox-runtime` to install the helper, then restart Claude Code so the startup dependency check detects it.
-* **`--dangerously-skip-permissions` fails as root**: this flag is blocked when running as root or via sudo on Linux and macOS, because root access combined with no permission prompts can modify any file or service on the system. The check is skipped automatically inside a recognized sandbox. To run autonomously in a container, use the [dev container](/docs/en/devcontainer) configuration, which runs Claude Code as a non-root user.
+* **命令因主机不允许错误而失败**：许多 CLI 工具需要到达特定的主机。在提示时授予权限会将主机添加到你的允许列表，以便该工具在将来在沙箱内运行。
+* **`jest` 挂起或失败**：`watchman` 与沙箱不兼容。改为运行 `jest --no-watchman`。
+* **Go 基础 CLI 在 macOS 上 TLS 验证失败**：`gh`、`gcloud` 和 `terraform` 等工具在 Seatbelt 下可能无法进行 TLS 验证。在 `excludedCommands` 中列出这些工具以在沙箱外运行它们。如果你使用 `httpProxyPort` 与 MITM 代理和自定义 CA，请改为将 [`enableWeakerNetworkIsolation`](/docs/zh-CN/settings#sandbox-settings) 设置为 `true`。
+* **`open`、`osascript` 或基于浏览器的身份验证流在 macOS 上因错误 `-600` 失败**：沙箱默认阻止 Apple Events。在你的用户、托管或 CLI 设置中将 [`allowAppleEvents`](/docs/zh-CN/settings#sandbox-settings) 设置为 `true` 以允许它们。项目设置对此密钥被忽略。启用它会移除代码执行隔离，因为沙箱化命令随后可以在没有用户提示的情况下启动其他未沙箱化的应用程序，并向运行的应用程序发送 AppleScript 命令，受 macOS 自动化同意提示 (TCC) 的约束。或者，将命令添加到 `excludedCommands` 以在沙箱外运行它。
+* **`docker` 命令失败**：`docker` 与沙箱不兼容。将 `docker *` 添加到 `excludedCommands` 以在沙箱外运行它。
+* **Bubblewrap 在容器内启动失败**：在无特权容器中，bubblewrap 无法挂载新的 `/proc` 文件系统。将 [`enableWeakerNestedSandbox`](/docs/zh-CN/settings#sandbox-settings) 设置为 `true`，以便内部沙箱绑定挂载容器的现有 `/proc`。仅在外部容器已提供你需要的隔离边界时使用此设置，因为它向沙箱化命令公开进程信息，而新的 `/proc` 挂载会隐藏这些信息。
+* **Linux 上的 Seccomp 过滤器**：seccomp 过滤器需要阻止 Unix 域套接字。`/sandbox` 中的 Dependencies 选项卡显示它是否可用。如果缺少，请运行 `npm install -g @anthropic-ai/sandbox-runtime` 以安装助手。
+* **`--dangerously-skip-permissions` 以 root 身份失败**：当在 Linux 和 macOS 上以 root 身份或通过 sudo 运行时，此标志被阻止，因为 root 访问加上没有权限提示可以修改系统上的任何文件或服务。检查在识别的沙箱内自动跳过。要在容器中自主运行，请使用 [dev container](/docs/zh-CN/devcontainer) 配置，它以非 root 用户身份运行 Claude Code。
 
-## Limitations
+<h2 id="limitations">
+  限制
+</h2>
 
-Sandboxing reduces risk but is not a complete isolation boundary. Review the limitations below before relying on it as a hard security control.
+沙箱降低风险，但不是完整的隔离边界。在依赖它作为硬安全控制之前，请查看下面的限制。
 
-### Security limitations
+<h3 id="security-limitations">
+  安全限制
+</h3>
 
-* **Network filtering**: the sandbox restricts which domains processes can connect to. By default the built-in proxy does not terminate or inspect TLS on outbound traffic, so the contents of encrypted connections are not examined. The experimental [`network.tlsTerminate`](/docs/en/settings#sandbox-settings) setting terminates TLS at the proxy for [`mask` credential substitution](#protect-credentials) but does not add content filtering. You are responsible for ensuring that only trusted domains are allowed in your policy.
-
-<Warning>
-  Allowing broad domains such as `github.com` can create paths for data exfiltration. Because the proxy makes its allow decision from the client-supplied hostname without inspecting TLS, code running inside the sandbox can potentially use [domain fronting](https://en.wikipedia.org/wiki/Domain_fronting) or similar techniques to reach hosts outside the allowlist. If your threat model requires stronger guarantees, configure a [custom proxy](#custom-proxy-configuration) that terminates TLS and inspects traffic, and install its CA certificate inside the sandbox. Stronger TLS-aware network isolation is an active area of development.
-</Warning>
-
-* **Privilege escalation via Unix sockets**: the `allowUnixSockets` configuration can inadvertently grant access to powerful system services that could lead to sandbox bypasses. For example, allowing access to `/var/run/docker.sock` effectively grants access to the host system through the Docker socket. Consider carefully any Unix sockets that you allow through the sandbox.
-* **Filesystem permission escalation**: overly broad filesystem write permissions can enable privilege escalation attacks. Allowing writes to directories containing executables in `$PATH`, system configuration directories, or user shell configuration files such as `.bashrc` or `.zshrc` can lead to code execution in different security contexts when other users or system processes access these files.
-* **Linux sandbox strength**: the Linux implementation provides strong filesystem and network isolation but includes an `enableWeakerNestedSandbox` mode that enables it to work inside Docker environments without privileged namespaces, or on Linux hosts where unprivileged user namespaces are disabled by sysctl. This option considerably weakens security and should only be used when additional isolation is otherwise enforced.
-* **Apple Events on macOS**: the macOS sandbox blocks Apple Events by default. The `allowAppleEvents` setting lifts this restriction so tools such as `open` and `osascript` work, but it removes code-execution isolation: sandboxed commands can launch other applications unsandboxed with no user prompt, and can send AppleScript commands to running applications, subject to the per-app macOS automation-consent prompt (TCC). It is only honored from user, managed, or CLI settings. Project settings cannot enable it.
-* **Settings files protected**: the sandbox automatically denies write access to Claude Code's `settings.json` files at every scope and to the managed settings directory, so a sandboxed command can't modify its own policy unless you [disable filesystem isolation](#disable-filesystem-isolation), which turns these deny rules off. {/* min-version: 2.1.210 */}The deny rules resolve symlinks: when a symlink appears at a protected settings file path after startup, the sandbox adds its target to the deny list for the next command, so a linked settings file can't be edited through the link. Before v2.1.210, the deny rules didn't resolve symlinks.
-
-### Platform and tool compatibility
-
-* **Platform support**: supports macOS, Linux, and WSL2. WSL1 and native Windows are not supported.
-* **Performance overhead**: minimal, but some filesystem operations may be slightly slower.
-* **Tool compatibility**: some tools that require specific system access patterns may need configuration adjustments, or may need to be run outside the sandbox.
-
-### Scope
-
-The sandbox isolates Bash subprocesses. Other tools operate under different boundaries:
-
-* **Built-in file tools**: Read, Edit, and Write use the permission system directly rather than running through the sandbox. See [permissions](/docs/en/permissions).
-* **Computer use**: when Claude opens apps and controls your screen, it runs on your actual desktop rather than in an isolated environment. Per-app permission prompts gate each application. See [computer use in the CLI](/docs/en/computer-use) or [computer use in Desktop](/docs/en/desktop#let-claude-use-your-computer).
-* **Environment variables**: sandboxed Bash commands inherit the parent process environment by default, including any credentials set there. Use [`sandbox.credentials`](#protect-credentials) to unset or mask specific variables for sandboxed commands, or set [`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`](/docs/en/env-vars) to strip Anthropic and cloud provider credentials from all subprocesses.
-* **Subagents**: [subagents](/docs/en/sub-agents) run in the same process as the parent session and use the same sandbox configuration. Bash commands inside a subagent are sandboxed when sandboxing is enabled in the parent session.
+* **网络过滤**：沙箱限制进程可以连接的域。默认情况下，内置代理不会终止或检查出站流量上的 TLS，因此不会检查加密连接的内容。实验性的 [`network.tlsTerminate`](/docs/zh-CN/settings#sandbox-settings) 设置在代理处终止 TLS 以进行 [`mask` 凭证替换](#protect-credentials)，但不添加内容过滤。你负责确保只有受信任的域在你的策略中被允许。
 
 <Warning>
-  Effective sandboxing requires both filesystem and network isolation. Without network isolation, a compromised agent could exfiltrate sensitive files like SSH keys. Without filesystem isolation, whether from a permissive policy or from [disabling the filesystem layer](#disable-filesystem-isolation), a compromised agent could backdoor system resources to gain network access. When you widen the defaults, check that an `allowWrite` path, a broad `allowedDomains` entry, or an `excludedCommands` exception does not undo a restriction on the other side.
+  允许广泛的域名（例如 `github.com`）可能会为数据泄露创建路径。因为代理从客户端提供的主机名做出允许决定而不检查 TLS，在沙箱内运行的代码可能会使用 [domain fronting](https://en.wikipedia.org/wiki/Domain_fronting) 或类似技术来到达允许列表外的主机。如果你的威胁模型需要更强的保证，请配置一个 [custom proxy](#custom-proxy-configuration)，它终止 TLS 并检查流量，并在沙箱内安装其 CA 证书。更强的 TLS 感知网络隔离是一个活跃的开发领域。
 </Warning>
 
-## See also
+* **通过 Unix 套接字的权限提升**：`allowUnixSockets` 配置可能会无意中授予对可能导致沙箱绕过的强大系统服务的访问权限。例如，允许访问 `/var/run/docker.sock` 有效地通过 Docker 套接字授予对主机系统的访问权限。仔细考虑你通过沙箱允许的任何 Unix 套接字。
+* **文件系统权限提升**：过于宽泛的文件系统写入权限可能导致权限提升攻击。允许写入包含 `$PATH` 中的可执行文件、系统配置目录或用户 shell 配置文件（例如 `.bashrc` 或 `.zshrc`）的目录可能导致当其他用户或系统进程访问这些文件时在不同的安全上下文中执行代码。
+* **Linux 沙箱强度**：Linux 实现提供强大的文件系统和网络隔离，但包括一个 `enableWeakerNestedSandbox` 模式，使其能够在 Docker 环境中工作而无需特权命名空间，或在禁用无特权用户命名空间的 Linux 主机上。此选项大大削弱了安全性，应仅在其他隔离被强制执行时使用。
+* **macOS 上的 Apple Events**：macOS 沙箱默认阻止 Apple Events。`allowAppleEvents` 设置解除此限制，以便 `open` 和 `osascript` 等工具可以工作，但它移除了代码执行隔离：沙箱化命令可以在没有用户提示的情况下启动其他未沙箱化的应用程序，并可以向运行的应用程序发送 AppleScript 命令，受限于每个应用程序的 macOS 自动化同意提示 (TCC)。它仅从用户、托管或 CLI 设置中被遵守。项目设置无法启用它。
+* **设置文件受保护**：沙箱自动拒绝对 Claude Code 的 `settings.json` 文件在每个范围和托管设置目录的写入访问，因此沙箱化命令无法修改其自己的策略。
 
-* [Sandbox environments](/docs/en/sandbox-environments): compare the built-in sandbox with dev containers, containers, and VMs
-* [Security](/docs/en/security): comprehensive security features and best practices
-* [Permissions](/docs/en/permissions): permission configuration and access control
-* [Settings](/docs/en/settings): complete configuration reference
-* [CLI reference](/docs/en/cli-reference): command-line options
+<h3 id="platform-and-tool-compatibility">
+  平台和工具兼容性
+</h3>
+
+* **平台支持**：支持 macOS、Linux 和 WSL2。不支持 WSL1 和原生 Windows。
+* **性能开销**：最小，但某些文件系统操作可能稍慢。
+* **工具兼容性**：某些需要特定系统访问模式的工具可能需要配置调整，或可能需要在沙箱外运行。
+
+<h3 id="scope">
+  范围
+</h3>
+
+沙箱隔离 Bash 子进程。其他工具在不同的边界下运行：
+
+* **内置文件工具**：Read、Edit 和 Write 直接使用权限系统，而不是通过沙箱运行。请参阅 [permissions](/docs/zh-CN/permissions)。
+* **计算机使用**：当 Claude 打开应用程序并控制你的屏幕时，它在你的实际桌面上运行，而不是在隔离的环境中。每个应用程序的权限提示控制每个应用程序。请参阅 [CLI 中的计算机使用](/docs/zh-CN/computer-use) 或 [Desktop 中的计算机使用](/docs/zh-CN/desktop#let-claude-use-your-computer)。
+* **环境变量**：沙箱化 Bash 命令默认继承父进程环境，包括在那里设置的任何凭证。使用 [`sandbox.credentials`](#protect-credentials) 为沙箱化命令取消设置或掩盖特定变量，或设置 [`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`](/docs/zh-CN/env-vars) 以从所有子进程中删除 Anthropic 和云提供商凭证。
+* **子代理**：[subagents](/docs/zh-CN/sub-agents) 在与父会话相同的进程中运行，并使用相同的沙箱配置。当在父会话中启用沙箱时，子代理内的 Bash 命令被沙箱化。
+
+<Warning>
+  有效的沙箱需要同时进行文件系统和网络隔离。没有网络隔离，被破坏的代理可能会泄露敏感文件，如 SSH 密钥。没有文件系统隔离，被破坏的代理可能会后门系统资源以获得网络访问权限。当你扩大默认值时，检查 `allowWrite` 路径、广泛的 `allowedDomains` 条目或 `excludedCommands` 异常是否不会撤销另一侧的限制。
+</Warning>
+
+<h2 id="see-also">
+  另请参阅
+</h2>
+
+* [Sandbox environments](/docs/zh-CN/sandbox-environments)：比较内置沙箱与开发容器、容器和虚拟机
+* [Security](/docs/zh-CN/security)：全面的安全功能和最佳实践
+* [Permissions](/docs/zh-CN/permissions)：权限配置和访问控制
+* [Settings](/docs/zh-CN/settings)：完整的配置参考
+* [CLI reference](/docs/zh-CN/cli-reference)：命令行选项

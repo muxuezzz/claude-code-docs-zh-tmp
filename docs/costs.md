@@ -2,159 +2,184 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Manage costs effectively
+# 有效管理成本
 
-> Track token usage, set team spend limits, and reduce Claude Code costs with context management, model selection, extended thinking settings, and preprocessing hooks.
+> 跟踪令牌使用情况，设置团队支出限制，并通过上下文管理、模型选择、扩展思考设置和预处理 hooks 来降低 Claude Code 成本。
 
-Claude Code charges by API token consumption. For subscription plan pricing (Pro, Max, Team, Enterprise), see [claude.com/pricing](https://claude.com/pricing). Per-developer costs vary widely based on model selection, codebase size, and usage patterns such as running multiple instances or automation.
+Claude Code 按 API 令牌消耗收费。有关订阅计划定价（Pro、Max、Team、Enterprise），请参阅 [claude.com/pricing](https://claude.com/pricing)。每个开发者的成本差异很大，取决于模型选择、代码库大小和使用模式，例如运行多个实例或自动化。
 
-Across enterprise deployments, the average cost is around \$13 per developer per active day and \$150-250 per developer per month, with costs remaining below \$30 per active day for 90% of users. To estimate spend for your own team, start with a small pilot group and use the tracking tools below to establish a baseline before wider rollout.
+在企业部署中，平均成本约为每个开发者每个活跃日 $13，每个开发者每月 $150-250，90% 的用户每个活跃日成本保持在 \$30 以下。要估计您自己团队的支出，请从一个小的试点团体开始，并使用下面的跟踪工具建立基线，然后再进行更广泛的推出。
 
-This page covers how to [track your costs](#track-your-costs), [manage costs for your organization](#manage-costs-for-your-organization), and [reduce token usage](#reduce-token-usage).
+本页面介绍如何[跟踪成本](#track-your-costs)、[管理团队成本](#manage-costs-for-your-organization)和[减少令牌使用](#reduce-token-usage)。
 
-## Track your costs
+<h2 id="track-your-costs">
+  跟踪成本
+</h2>
 
-### Using the `/usage` command
+<h3 id="using-the-/usage-command">
+  使用 `/usage` 命令
+</h3>
 
 <Note>
-  The Session block in `/usage` shows API token usage and is intended for API users. Claude Max and Pro subscribers have usage included in their subscription, so the session cost figure isn't relevant for billing purposes. Subscribers see plan usage bars, activity stats, and a usage breakdown on the same screen.
+  `/usage` 中的 Session 块显示 API 令牌使用情况，适用于 API 用户。Claude Max 和 Pro 订阅者的使用情况包含在订阅中，因此会话成本数据与计费无关。订阅者在同一屏幕上看到计划使用条和活动统计以及使用情况明细。
 </Note>
 
-The Session block at the top of `/usage` shows detailed token usage statistics for your current session. Claude Code computes the dollar figure locally from token counts priced at standard list rates, so it doesn't reflect promotional pricing or contracted discounts and may differ from your actual bill. For authoritative billing, see the Usage page in the [Claude Console](https://platform.claude.com/usage).
+`/usage` 顶部的 Session 块显示当前会话的详细令牌使用统计。美元数字是从令牌计数本地计算的估计值，可能与您的实际账单不同。有关权威计费，请参阅 [Claude Console](https://platform.claude.com/usage) 中的使用情况页面。
 
 ```text theme={null}
 Total cost:            $0.55
-Total duration (API):  6m 20s
-Total duration (wall): 6h 33m 10s
+Total duration (API):  6m 19.7s
+Total duration (wall): 6h 33m 10.2s
 Total code changes:    0 lines added, 0 lines removed
-Usage by model:
-   claude-sonnet-4-6:  1.2k input, 5.3k output, 940.0k cache read, 50.0k cache write ($0.55)
 ```
 
-These totals reset when `/clear` starts a new session, so the next session's total cost starts at \$0. Before v2.1.211, they kept accumulating across `/clear` for the lifetime of the Claude Code process.
+在 Pro、Max、Team 或 Enterprise 计划上，`/usage` 还显示计入您的计划限制的内容明细。它将最近的使用情况归属于 skills、subagents、plugins 和各个 MCP 服务器，每个都显示为总数的百分比。按 `d` 或 `w` 在过去 24 小时和过去 7 天之间切换。这些数据是近似值，从此机器上的本地会话历史记录计算，因此不包括来自其他设备或 claude.ai 的使用情况。
 
-On a Pro, Max, Team, or Enterprise plan, `/usage` also shows a breakdown of what counts against your plan limits. It attributes recent usage to skills, subagents, plugins, and individual MCP servers, with each shown as a percentage of the total. It also flags behaviors such as long context or cache misses when one accounts for 10% or more of recent usage. Press `d` or `w` to switch between the last 24 hours and the last 7 days. The figures are approximate and computed from local session history on this machine, so usage from other devices or claude.ai is not included.
+当您的计划限制请求失败时（通常是因为使用情况端点受到速率限制），`/usage` 会显示它在过去 60 分钟内在此机器上加载的最后一个使用情况条，以及一个 `Showing last-known usage` 注释，说明该数据是多久前获取的。按 `r` 重试；成功重试会用新数据替换最后已知的条。如果没有过去 60 分钟内的快照，`/usage` 会报告使用情况端点受到速率限制，并提供相同的重试快捷方式。在 v2.1.208 之前，在尚未加载使用情况的会话中受速率限制的请求始终显示错误，没有条。
 
-When the request for your plan limits fails, most often because the usage endpoint is rate limited, `/usage` shows the last usage bars it loaded on this machine within the past 60 minutes, along with a `Showing last-known usage` note stating how long ago that data was fetched. Press `r` to retry; a successful retry replaces the last-known bars with fresh data. Without a snapshot from the past 60 minutes, `/usage` reports that the usage endpoint is rate limited and offers the same retry shortcut. Before v2.1.208, a rate-limited request in a session that hadn't loaded usage yet always showed the error with no bars.
+在 [VS Code 扩展](/docs/zh-CN/vs-code#check-account-and-usage) 中，相同的明细显示在"账户和使用情况"对话框中，带有"日"和"周"切换。需要 Claude Code v2.1.174 或更高版本。
 
-In the [VS Code extension](/docs/en/vs-code#check-account-and-usage), the same breakdown appears in the Account & usage dialog with a Day and Week toggle. Requires Claude Code v2.1.174 or later.
+<h3 id="set-a-spend-limit-on-pro-and-max">
+  在 Pro 和 Max 上设置支出限制
+</h3>
 
-### Add usage credits to your subscription
+在 Pro 和 Max 计划上，`/usage-credits` 命令在 CLI 中打开一个对话框，您可以在其中管理 [使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans)。从对话框中，您可以：
 
-[Usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) let you keep working past your plan's usage limit. To manage them, run `/usage-credits` after signing in with your claude.ai subscription through `/login`; the command isn't available with API key authentication. What it opens depends on your role:
+* 为您的账户启用使用额度
+* 购买更多使用额度，可以是列出的套餐或自定义金额
+* 设置、更改或移除您的每月支出限制
+* 配置自动重新加载，当您的余额低于您设置的阈值时自动购买更多使用额度
 
-| Your role                                        | What `/usage-credits` does                                                                                                                                                     |
-| :----------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pro or Max subscriber                            | Opens your billing settings in the browser                                                                                                                                     |
-| Team or Enterprise member with billing access    | Opens your organization's usage settings in the browser                                                                                                                        |
-| Team or Enterprise member without billing access | {/* min-version: 2.1.211 */}Asks you to confirm, then sends a request to your organization's admins. Before v2.1.211, Claude Code sent the request without a confirmation step |
+在 Claude Code v2.1.207 之前的版本以及 CLI 内对话框不可用的账户上，`/usage-credits` 会在您的浏览器中打开使用额度计费页面。在 Team 和 Enterprise 计划上，具有计费访问权限的成员获得相同的浏览器页面，没有计费访问权限的成员从 CLI 发送请求，要求其管理员启用使用额度或提高限制。
 
-For Team and Enterprise members without billing access, the confirmation appears only in interactive sessions: in non-interactive mode with the `-p` flag and from [Remote Control](/docs/en/remote-control), the command sends no request and tells you to run it in an interactive session instead.
+更改每月支出限制需要账户的计费访问权限。如果您在仍有使用额度可用时达到该限制，Claude Code 会提示您提高或移除该限制，以便您可以继续使用而无需离开 CLI。
 
-On Pro and Max plans, when you reach your spend limit with usage credits still available, Claude Code prompts you to raise or remove the limit without leaving the CLI. If the server rejects the change, see [Could not update your spend limit](/docs/en/errors#could-not-update-your-spend-limit).
+您输入到对话框中的金额，例如自定义购买金额、每月支出限制或自动重新加载阈值和目标，必须是数字，可选地后跟一个句号和一到两个小数位，例如 `20` 或 `20.50`。任何其他输入（包括逗号）都会显示内联错误，不会被保存。v2.1.207 之前的版本不显示对话框，而是打开计费页面。
 
-## Manage costs for your organization
+Claude Code 要求您输入 `yes` 来确认每次购买和每次自动重新加载更改，无论金额多少，购买确认显示您批准的税后总额。更改每月支出限制仅在超过 \$1,000 或非美元计费货币的 1,000 个单位时要求相同的输入确认。在 v2.1.208 之前，购买和自动重新加载更改也使用该阈值，因此较小的金额通过标准对话框流程进行，没有额外的输入 `yes` 步骤。
 
-Which controls you have depends on how your organization accesses Claude Code: a Claude for Teams or Enterprise plan, the Claude Console, or a cloud provider. On Teams and Enterprise plans, usage draws from each member's seat allowance. On the Console and on cloud providers, usage is billed per token to your organization. If your organization mixes sign-in methods, each developer is metered according to the one they authenticated with.
+金额字段打开时预填充建议值，您输入的第一个数字替换建议而不是追加到它。启用使用额度的屏幕打开时选中"取消"，因此启用它需要刻意选择而不是误按 Enter。两者都需要 Claude Code v2.1.208 或更高版本。
 
-The table maps each setup to where you see spend, where you cap it, and how you pull per-user numbers.
+<h2 id="manage-costs-for-your-organization">
+  管理组织的成本
+</h2>
 
-| Your setup                                                                              | See spend                                                                                                                           | Cap spend                      | Per-user reporting                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Claude for Teams or Enterprise](#claude-for-teams-and-enterprise)                      | [Spend report in org analytics](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans) | Spend limits in admin settings | [Spend report CSV](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans); [Enterprise Analytics API](https://platform.claude.com/docs/en/api/admin/analytics) on Enterprise |
-| [Claude Console (API)](#claude-console)                                                 | [Console usage page](https://platform.claude.com/usage)                                                                             | Workspace spend limits         | [Console dashboard](https://platform.claude.com/claude-code), [Claude Code Analytics API](https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api)                                                |
-| [Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry](#cloud-providers) | Your cloud billing console                                                                                                          | Your cloud's budget controls   | [OpenTelemetry](/docs/en/monitoring-usage) or an [LLM gateway](/docs/en/llm-gateway)                                                                                                                                                |
+您对 Claude Code 的控制方式取决于您的组织如何访问 Claude Code：通过 Claude for Teams 或 Enterprise 计划、Claude Console 或云提供商。在 Teams 和 Enterprise 计划中，使用情况从每个成员的座位额度中扣除。在 Console 和云提供商上，使用情况按令牌计费到您的组织。如果您的组织混合使用登录方法，每个开发者将根据他们进行身份验证的方法进行计量。
 
-[OpenTelemetry export](/docs/en/monitoring-usage) works on every setup and is the only option that streams per-user token and cost metrics into your own observability stack in near real time.
+该表将每种设置映射到您查看支出的位置、您限制支出的位置以及如何提取每用户数字。
 
-### Claude for Teams and Enterprise
+| 您的设置                                                                                 | 查看支出                                                                                                             | 限制支出        | 每用户报告                                                                                                                                                                                                            |
+| :----------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :---------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Claude for Teams 或 Enterprise](#claude-for-teams-and-enterprise)                    | [组织分析中的支出报告](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans) | 管理员设置中的支出限制 | [支出报告 CSV](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans)；Enterprise 上的 [Enterprise Analytics API](https://platform.claude.com/docs/en/api/admin/analytics) |
+| [Claude Console (API)](#claude-console)                                              | [Console 使用情况页面](https://platform.claude.com/usage)                                                              | 工作区支出限制     | [Console 仪表板](https://platform.claude.com/claude-code)、[Claude Code Analytics API](https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api)                                              |
+| [Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry](#cloud-providers) | 您的云计费控制台                                                                                                         | 您的云预算控制     | [OpenTelemetry](/docs/zh-CN/monitoring-usage) 或 [LLM gateway](/docs/zh-CN/llm-gateway)                                                                                                                                     |
 
-On Claude for Teams and Enterprise plans, each member's Claude Code usage draws from a per-seat allowance that resets on a rolling five-hour window and a weekly window. The allowance is shared with Claude chat and Cowork, and its size depends on the member's [seat tier](https://support.claude.com/en/articles/11845131-use-claude-code-with-your-team-or-enterprise-plan) (Standard or Premium). Your controls live in the claude.ai admin console, not the Claude Console.
+[OpenTelemetry 导出](/docs/zh-CN/monitoring-usage)适用于每种设置，是唯一能够以近实时方式将每用户令牌和成本指标流式传输到您自己的可观测性堆栈的选项。
 
-* **See spend**: the [spend report in org analytics](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans) shows estimated spend per user and per model, with CSV export, updated daily. The report covers usage-credit spend and appears once usage credits are turned on. Usage inside the seat allowance isn't metered in dollars.
-* **See adoption**: the [analytics dashboard](https://claude.ai/analytics/claude-code) shows daily active users, sessions, and contribution metrics, with CSV export of contribution data. See [track team usage with analytics](/docs/en/analytics).
-* **Cap spend**: the seat allowance is the default ceiling. To let members continue past it, turn on [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) and set spend limits at the organization, group, or individual member level.
-* **Pull per-user numbers**: on the Enterprise plan, the [Enterprise Analytics API](https://platform.claude.com/docs/en/api/admin/analytics) returns per-user usage and cost reports across Claude surfaces, including Claude Code. A Primary Owner creates a key with the `read:analytics` scope at [claude.ai/analytics/api-keys](https://claude.ai/analytics/api-keys). On the Teams plan, export the [spend report CSV](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans), which lists token usage and estimated spend per user and per model.
+<h3 id="claude-for-teams-and-enterprise">
+  Claude for Teams 和 Enterprise
+</h3>
 
-The [Claude Enterprise consumption guide](https://support.claude.com/en/articles/14782391-claude-enterprise-consumption-guide) is the planning reference for admins. It explains how consumption differs across Claude chat, Claude Code, and Cowork, and gives per-user dollar starting points for budgeting. Budget more for a coding seat than a chat seat: each Claude Code turn carries file contents, tool calls, and multi-step reasoning, so one debugging session can consume more than a day of chat.
+在 Claude for Teams 和 Enterprise 计划中，每个成员的 Claude Code 使用情况从按座位额度中扣除，该额度在滚动五小时窗口和每周窗口上重置。该额度与 Claude chat 和 Cowork 共享，其大小取决于成员的[座位等级](https://support.claude.com/en/articles/11845131-use-claude-code-with-your-team-or-enterprise-plan)（Standard 或 Premium）。您的控制位于 claude.ai 管理控制台中，而不是 Claude Console。
 
-### Claude Console
+* **查看支出**：[组织分析中的支出报告](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans)显示每个用户和每个模型的估计支出，带有 CSV 导出，每日更新。该报告涵盖使用额度支出，并在启用使用额度后出现。座位额度内的使用情况不以美元计量。
+* **查看采用情况**：[分析仪表板](https://claude.ai/analytics/claude-code)显示每日活跃用户、会话和贡献指标，带有贡献数据的 CSV 导出。请参阅[使用分析跟踪团队使用情况](/docs/zh-CN/analytics)。
+* **限制支出**：座位额度是默认上限。要让成员继续超过它，请启用[使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans)并在组织、组或个人成员级别设置支出限制。
+* **提取每用户数字**：在 Enterprise 计划中，[Enterprise Analytics API](https://platform.claude.com/docs/en/api/admin/analytics) 返回跨 Claude 表面（包括 Claude Code）的每用户使用情况和成本报告。主所有者在 [claude.ai/analytics/api-keys](https://claude.ai/analytics/api-keys) 处使用 `read:analytics` 范围创建密钥。在 Teams 计划中，导出[支出报告 CSV](https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans)，其中列出了每个用户和每个模型的令牌使用情况和估计支出。
 
-API organizations manage Claude Code spend through [workspaces](https://platform.claude.com/docs/en/build-with-claude/workspaces). You can [set workspace spend limits](https://platform.claude.com/docs/en/build-with-claude/workspaces#workspace-limits) on total Claude Code spend and [view cost and usage reporting](https://platform.claude.com/docs/en/build-with-claude/workspaces#usage-and-cost-tracking) in the Console.
+[Claude Enterprise 消费指南](https://support.claude.com/en/articles/14782391-claude-enterprise-consumption-guide)是管理员的规划参考。它解释了消费如何在 Claude chat、Claude Code 和 Cowork 中有所不同，并为预算提供了每用户美元起点。为编码座位预算比聊天座位更多：每个 Claude Code 轮次都包含文件内容、工具调用和多步推理，因此一个调试会话可能会消耗超过一天的聊天。
 
-<Note>
-  When you first authenticate Claude Code with your Claude Console account, a workspace called "Claude Code" is automatically created for you. This workspace provides centralized cost tracking and management for all Claude Code usage in your organization. You cannot create API keys for this workspace; it is exclusively for Claude Code authentication and usage.
+<h3 id="claude-console">
+  Claude Console
+</h3>
 
-  For organizations with custom rate limits, Claude Code traffic in this workspace counts toward your organization's overall API rate limits. You can set a [workspace rate limit](https://platform.claude.com/docs/en/api/rate-limits#setting-lower-limits-for-workspaces) on this workspace's Limits page in the Claude Console to cap Claude Code's share and protect other production workloads.
-</Note>
-
-For per-user reporting, the [Console dashboard](https://platform.claude.com/claude-code) shows spend and accepted lines per member, and the [Claude Code Analytics API](https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api) returns the same daily per-user metrics programmatically with an [Admin API key](https://platform.claude.com/settings/admin-keys). See [analytics for API customers](/docs/en/analytics#access-analytics-for-api-customers).
-
-#### Rate limit recommendations
-
-When setting up Claude Code for teams, consider these Token Per Minute (TPM) and Request Per Minute (RPM) per-user recommendations based on your organization size:
-
-| Team size     | TPM per user | RPM per user |
-| ------------- | ------------ | ------------ |
-| 1-5 users     | 200k-300k    | 5-7          |
-| 5-20 users    | 100k-150k    | 2.5-3.5      |
-| 20-50 users   | 50k-75k      | 1.25-1.75    |
-| 50-100 users  | 25k-35k      | 0.62-0.87    |
-| 100-500 users | 15k-20k      | 0.37-0.47    |
-| 500+ users    | 10k-15k      | 0.25-0.35    |
-
-For example, if you have 200 users, you might request 20k TPM for each user, or 4 million total TPM (200\*20,000 = 4 million).
-
-The TPM per user decreases as team size grows because fewer users tend to use Claude Code concurrently in larger organizations. These rate limits apply at the organization level, not per individual user, which means individual users can temporarily consume more than their calculated share when others aren't actively using the service.
+API 组织通过[工作区](https://platform.claude.com/docs/en/build-with-claude/workspaces)管理 Claude Code 支出。您可以[设置工作区支出限制](https://platform.claude.com/docs/en/build-with-claude/workspaces#workspace-limits)以限制 Claude Code 总支出，并在 Console 中[查看成本和使用情况报告](https://platform.claude.com/docs/en/build-with-claude/workspaces#usage-and-cost-tracking)。
 
 <Note>
-  If you anticipate scenarios with unusually high concurrent usage (such as live training sessions with large groups), you may need higher TPM allocations per user.
+  当您首次使用 Claude Console 账户对 Claude Code 进行身份验证时，会自动为您创建一个名为"Claude Code"的工作区。此工作区为您的组织中的所有 Claude Code 使用情况提供集中式成本跟踪和管理。您无法为此工作区创建 API 密钥；它专门用于 Claude Code 身份验证和使用。
+
+  对于具有自定义速率限制的组织，此工作区中的 Claude Code 流量计入您的组织整体 API 速率限制。您可以在 Claude Console 的此工作区的 Limits 页面上设置[工作区速率限制](https://platform.claude.com/docs/zh-CN/api/rate-limits#setting-lower-limits-for-workspaces)，以限制 Claude Code 的份额并保护其他生产工作负载。
 </Note>
 
-### Cloud providers
+对于每用户报告，[Console 仪表板](https://platform.claude.com/claude-code)显示每个成员的支出和接受的行数，[Claude Code Analytics API](https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api)使用[管理员 API 密钥](https://platform.claude.com/settings/admin-keys)以编程方式返回相同的每日每用户指标。请参阅[API 客户的分析](/docs/zh-CN/analytics#access-analytics-for-api-customers)。
 
-On Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, Claude Code is billed per token to your cloud account, and spend controls live in your cloud provider's billing console. Claude Code does not send metrics from your cloud back to Anthropic, so the [analytics dashboards](/docs/en/analytics) and the Claude Code Analytics API do not cover this usage.
+<h4 id="rate-limit-recommendations">
+  速率限制建议
+</h4>
 
-For per-user cost attribution, you have three options:
+为团队设置 Claude Code 时，请根据您的组织规模考虑这些每用户的令牌/分钟 (TPM) 和请求/分钟 (RPM) 建议：
 
-* **OpenTelemetry**: [export metrics](/docs/en/monitoring-usage) from each developer's machine to your own observability stack. This gives you per-user token counts, costs, and tool activity regardless of provider.
-* **A Claude apps gateway**: a self-hosted [Claude apps gateway](/docs/en/claude-apps-gateway) provides per-user usage attribution, OTLP metrics with token counts, and [per-user spend limits](/docs/en/claude-apps-gateway-spend-limits) on these providers.
-* **An LLM gateway**: route all Claude Code traffic through a proxy that tracks spend per key. Several large enterprises reported using [LiteLLM](/docs/en/llm-gateway), an open-source tool that [tracks spend by key](https://docs.litellm.ai/docs/proxy/virtual_keys#tracking-spend). This project is unaffiliated with Anthropic and has not been audited for security.
+| 团队规模       | 每用户 TPM   | 每用户 RPM   |
+| ---------- | --------- | --------- |
+| 1-5 用户     | 200k-300k | 5-7       |
+| 5-20 用户    | 100k-150k | 2.5-3.5   |
+| 20-50 用户   | 50k-75k   | 1.25-1.75 |
+| 50-100 用户  | 25k-35k   | 0.62-0.87 |
+| 100-500 用户 | 15k-20k   | 0.37-0.47 |
+| 500+ 用户    | 10k-15k   | 0.25-0.35 |
 
-### When a developer asks about a limit
+例如，如果您有 200 个用户，您可能会为每个用户请求 20k TPM，或总共 400 万 TPM (200\*20,000 = 400 万)。
 
-Developers usually bring limit questions to their admin, so it helps to know which ceiling they hit. The three situations mean different things:
+随着团队规模的增长，每用户的 TPM 会减少，因为在较大的组织中，往往较少的用户同时使用 Claude Code。这些速率限制在组织级别应用，而不是按个人用户应用，这意味着当其他人未积极使用该服务时，个人用户可以暂时消耗超过其计算份额的资源。
 
-* **"You've hit your session limit" or "You've hit your weekly limit"**: a seat-based usage window on a subscription plan. These windows are shared across all models, so switching models with `/model` doesn't restore access, though it does keep the developer working after the model-specific "You've hit your Opus limit" message. The message shows when the window resets, and the developer can run `/usage-credits` to request usage beyond the allowance if you have [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) turned on. See [usage limit errors](/docs/en/errors#youve-hit-your-session-limit).
-* **A context or auto-compact warning**: not a usage limit. The conversation has grown close to the model's maximum input size, and Claude Code summarizes older history to free space. Point the developer at [reduce token usage](#reduce-token-usage).
-* **Unexpectedly high spend on an API or cloud-provider plan**: usually traces back to long sessions that were never cleared or to Opus left as the default model. The highest-impact habits to share are clearing between unrelated tasks and matching the model to the job, both covered in [reduce token usage](#reduce-token-usage).
+<Note>
+  如果您预期会出现异常高的并发使用情况（例如与大型团体进行的实时培训会话），您可能需要更高的每用户 TPM 分配。
+</Note>
 
-### Agent team token costs
+<h3 id="cloud-providers">
+  云提供商
+</h3>
 
-[Agent teams](/docs/en/agent-teams) spawn multiple Claude Code instances, each with its own context window. Token usage scales with the number of active teammates and how long each one runs.
+在 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上，Claude Code 按令牌计费到您的云账户，支出控制位于您的云提供商的计费控制台中。Claude Code 不会从您的云向 Anthropic 发送指标，因此[分析仪表板](/docs/zh-CN/analytics)和 Claude Code Analytics API 不涵盖此使用情况。
 
-To keep agent team costs manageable:
+对于每用户成本归因，您有三个选项：
 
-* Use Sonnet for teammates. It balances capability and cost for coordination tasks.
-* Keep teams small. Each teammate runs its own context window, so token usage is roughly proportional to team size.
-* Keep spawn prompts focused. Teammates load CLAUDE.md, MCP servers, and skills automatically, but everything in the spawn prompt adds to their context from the start.
-* Shut down teammates when their work is done. Each active teammate continues consuming tokens until it exits or the session ends.
-* Agent teams are disabled by default. Set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in your [settings.json](/docs/en/settings) or environment to enable them. See [enable agent teams](/docs/en/agent-teams#enable-agent-teams).
+* **OpenTelemetry**：[导出指标](/docs/zh-CN/monitoring-usage)从每个开发者的机器到您自己的可观测性堆栈。这为您提供每用户令牌计数、成本和工具活动，无论提供商如何。
+* **Claude apps gateway**：自托管的 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway)提供每用户使用情况归因、带有令牌计数的 OTLP 指标，以及这些提供商上的[每用户支出限制](/docs/zh-CN/claude-apps-gateway-spend-limits)。
+* **LLM gateway**：通过代理路由所有 Claude Code 流量，该代理按密钥跟踪支出。几个大型企业报告使用[LiteLLM](/docs/zh-CN/llm-gateway)，一个开源工具，可以[按密钥跟踪支出](https://docs.litellm.ai/docs/proxy/virtual_keys#tracking-spend)。此项目与 Anthropic 无关，尚未进行安全审计。
 
-## Reduce token usage
+<h3 id="when-a-developer-asks-about-a-limit">
+  当开发者询问限制时
+</h3>
 
-Token costs scale with context size: the more context Claude processes, the more tokens you use. Claude Code automatically optimizes costs through [prompt caching](/docs/en/prompt-caching), which reduces costs for repeated content like system prompts, and auto-compaction, which summarizes conversation history when approaching context limits.
+开发者通常会向他们的管理员提出限制问题，因此了解他们遇到的上限会很有帮助。这三种情况意味着不同的事情：
 
-The following strategies help you keep context small and reduce per-message costs.
+* **"您已达到会话限制"或"您已达到每周限制"**：订阅计划上基于座位的使用窗口。这些窗口在所有模型中共享，因此使用 `/model` 切换模型不会恢复访问权限，尽管在模型特定的"您已达到 Opus 限制"消息之后它确实让开发者继续工作。该消息显示窗口何时重置，开发者可以运行 `/usage-credits` 来请求超过额度的使用情况（如果您已启用[使用额度](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans)）。请参阅[使用限制错误](/docs/zh-CN/errors#youve-hit-your-session-limit)。
+* **上下文或自动压缩警告**：不是使用限制。对话已接近模型的最大输入大小，Claude Code 总结较早的历史以释放空间。将开发者指向[减少令牌使用](#reduce-token-usage)。
+* **API 或云提供商计划上的意外高支出**：通常可以追溯到从未清除的长会话或将 Opus 作为默认模型。要分享的最高影响习惯是在不相关的任务之间清除和将模型与工作相匹配，两者都在[减少令牌使用](#reduce-token-usage)中涵盖。
 
-### Manage context proactively
+<h3 id="agent-team-token-costs">
+  Agent 团队令牌成本
+</h3>
 
-Use `/usage` to check your current token usage, or [configure your status line](/docs/en/statusline#context-window-usage) to display it continuously.
+[Agent 团队](/docs/zh-CN/agent-teams)生成多个 Claude Code 实例，每个实例都有自己的上下文窗口。令牌使用情况随活跃队友的数量和每个队友运行的时间长度而扩展。
 
-* **Clear between tasks**: Use `/clear` to start fresh when switching to unrelated work. Stale context wastes tokens on every subsequent message. Use `/rename` before clearing so you can easily find the session later, then `/resume` to return to it.
-* **Add custom compaction instructions**: `/compact Focus on code samples and API usage` tells Claude what to preserve during summarization. In a fresh session, `/compact` prints `Not enough messages to compact.` because there's no conversation history to summarize yet.
+为了保持 agent 团队成本可控：
 
-You can also customize compaction behavior in your CLAUDE.md file at the root of your project:
+* 为队友使用 Sonnet。它为协调任务平衡了能力和成本。
+* 保持团队规模小。每个队友运行自己的上下文窗口，因此令牌使用大致与团队规模成正比。
+* 保持生成提示的重点。队友会自动加载 CLAUDE.md、MCP servers 和 skills，但生成提示中的所有内容都会从一开始就添加到其上下文中。
+* 工作完成后关闭队友。每个活跃的队友会继续消耗令牌，直到它退出或会话结束。
+* Agent 团队默认被禁用。在您的[settings.json](/docs/zh-CN/settings)或环境中设置 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 以启用它们。请参阅[启用 agent 团队](/docs/zh-CN/agent-teams#enable-agent-teams)。
+
+<h2 id="reduce-token-usage">
+  减少令牌使用
+</h2>
+
+令牌成本随上下文大小而扩展：Claude 处理的上下文越多，您使用的令牌就越多。Claude Code 通过 [prompt caching](/docs/zh-CN/prompt-caching)（减少重复内容（如系统提示）的成本）和 auto-compact（在接近上下文限制时总结对话历史）自动优化成本。
+
+以下策略可帮助您保持上下文较小并降低每条消息的成本。
+
+<h3 id="manage-context-proactively">
+  主动管理上下文
+</h3>
+
+使用 `/usage` 检查您当前的令牌使用情况，或[配置您的状态行](/docs/zh-CN/statusline#context-window-usage)以连续显示它。
+
+* **在任务之间清除**：使用 `/clear` 在切换到不相关的工作时重新开始。陈旧的上下文会在随后的每条消息上浪费令牌。在清除之前使用 `/rename` 以便您稍后可以轻松找到会话，然后使用 `/resume` 返回到它。
+* **添加自定义 compaction 指令**：`/compact Focus on code samples and API usage` 告诉 Claude 在总结期间保留什么。
+
+您还可以在项目根目录的 CLAUDE.md 文件中自定义 compaction 行为：
 
 ```markdown theme={null}
 # Compact instructions
@@ -162,32 +187,40 @@ You can also customize compaction behavior in your CLAUDE.md file at the root of
 When you are using compact, please focus on test output and code changes
 ```
 
-### Choose the right model
+<h3 id="choose-the-right-model">
+  选择正确的模型
+</h3>
 
-Sonnet handles most coding tasks well and costs less than Opus. Reserve Opus for complex architectural decisions or multi-step reasoning. Use `/model` to switch models mid-session, or set a default in `/config`. For simple subagent tasks, specify `model: haiku` in your [subagent configuration](/docs/en/sub-agents#choose-a-model).
+Sonnet 处理大多数编码任务效果很好，成本低于 Opus。为复杂的架构决策或多步推理保留 Opus。使用 `/model` 在会话中途切换模型，或在 `/config` 中设置默认值。对于简单的 subagent 任务，在您的 [subagent 配置](/docs/zh-CN/sub-agents#choose-a-model)中指定 `model: haiku`。
 
-### Reduce MCP server overhead
+<h3 id="reduce-mcp-server-overhead">
+  减少 MCP server 开销
+</h3>
 
-MCP tool definitions are [deferred by default](/docs/en/mcp#scale-with-mcp-tool-search), so only tool names enter context until Claude uses a specific tool. Run `/context` to see what's consuming space.
+MCP 工具定义[默认被延迟](/docs/zh-CN/mcp#scale-with-mcp-tool-search)，因此只有工具名称进入上下文，直到 Claude 使用特定工具。运行 `/context` 查看占用空间的内容。
 
-* **Prefer CLI tools when available**: Tools like `gh`, `aws`, `gcloud`, and `sentry-cli` are still more context-efficient than MCP servers because they don't add any per-tool listing. Claude can run CLI commands directly.
-* **Disable unused servers**: Run `/mcp` to see configured servers and disable any you're not actively using.
+* **在可用时优先使用 CLI 工具**：`gh`、`aws`、`gcloud` 和 `sentry-cli` 等工具比 MCP servers 更节省上下文，因为它们不添加任何每工具列表。Claude 可以直接运行 CLI 命令。
+* **禁用未使用的 servers**：运行 `/mcp` 查看配置的 servers 并禁用您未积极使用的任何 servers。
 
-### Install code intelligence plugins for typed languages
+<h3 id="install-code-intelligence-plugins-for-typed-languages">
+  为类型化语言安装代码智能插件
+</h3>
 
-[Code intelligence plugins](/docs/en/discover-plugins#code-intelligence) give Claude precise symbol navigation instead of text-based search, reducing unnecessary file reads when exploring unfamiliar code. A single "go to definition" call replaces what might otherwise be a grep followed by reading multiple candidate files. Installed language servers also report type errors automatically after edits, so Claude catches mistakes without running a compiler.
+[代码智能插件](/docs/zh-CN/discover-plugins#code-intelligence)为 Claude 提供精确的符号导航，而不是基于文本的搜索，减少在探索不熟悉的代码时不必要的文件读取。单个"转到定义"调用替代了可能需要的 grep 后跟读取多个候选文件。已安装的语言服务器还会在编辑后自动报告类型错误，因此 Claude 无需运行编译器即可捕获错误。
 
-### Offload processing to hooks and skills
+<h3 id="offload-processing-to-hooks-and-skills">
+  将处理卸载到 hooks 和 skills
+</h3>
 
-Custom [hooks](/docs/en/hooks) can preprocess data before Claude sees it. Instead of Claude reading a 10,000-line log file to find errors, a hook can grep for `ERROR` and return only matching lines, reducing context from tens of thousands of tokens to hundreds.
+自定义 [hooks](/docs/zh-CN/hooks)可以在 Claude 看到数据之前对其进行预处理。Claude 不是读取 10,000 行日志文件来查找错误，hook 可以 grep `ERROR` 并仅返回匹配的行，将上下文从数万个令牌减少到数百个。
 
-A [skill](/docs/en/skills) can give Claude domain knowledge so it doesn't have to explore. For example, a "codebase-overview" skill could describe your project's architecture, key directories, and naming conventions. When Claude invokes the skill, it gets this context immediately instead of spending tokens reading multiple files to understand the structure.
+[skill](/docs/zh-CN/skills)可以为 Claude 提供领域知识，这样它就不必进行探索。例如，"codebase-overview" skill 可以描述您的项目架构、关键目录和命名约定。当 Claude 调用该 skill 时，它会立即获得此上下文，而不是花费令牌读取多个文件来理解结构。
 
-For example, this PreToolUse hook filters test output to show only failures:
+例如，此 PreToolUse hook 过滤测试输出以仅显示失败：
 
 <Tabs>
   <Tab title="settings.json">
-    Add this to your [settings.json](/docs/en/settings#settings-files) to run the hook before every Bash command:
+    将此添加到您的 [settings.json](/docs/zh-CN/settings#settings-files)以在每个 Bash 命令之前运行 hook：
 
     ```json theme={null}
     {
@@ -209,7 +242,7 @@ For example, this PreToolUse hook filters test output to show only failures:
   </Tab>
 
   <Tab title="filter-test-output.sh">
-    The hook calls this script. Create the folder with `mkdir -p ~/.claude/hooks`, save the script below as `~/.claude/hooks/filter-test-output.sh`, and make it executable with `chmod +x ~/.claude/hooks/filter-test-output.sh`. It checks if the command is a test runner and modifies it to show only failures:
+    hook 调用此脚本。使用 `mkdir -p ~/.claude/hooks` 创建文件夹，将下面的脚本保存为 `~/.claude/hooks/filter-test-output.sh`，并使用 `chmod +x ~/.claude/hooks/filter-test-output.sh` 使其可执行。它检查命令是否为测试运行器并修改它以仅显示失败：
 
     ```bash theme={null}
     #!/bin/bash
@@ -227,65 +260,60 @@ For example, this PreToolUse hook filters test output to show only failures:
   </Tab>
 </Tabs>
 
-To verify the setup, run `/hooks` and check that the hook appears under PreToolUse. You can also start Claude Code with `claude --debug` and run a test command such as `npm test`. The debug log shows `modified tool input keys: [command]` when the hook rewrites the command.
+<h3 id="move-instructions-from-claude-md-to-skills">
+  将指令从 CLAUDE.md 移动到 skills
+</h3>
 
-### Move instructions from CLAUDE.md to skills
+您的 [CLAUDE.md](/docs/zh-CN/memory)文件在会话开始时加载到上下文中。如果它包含特定工作流的详细指令（如 PR 审查或数据库迁移），即使您在做不相关的工作时，这些令牌也会存在。[Skills](/docs/zh-CN/skills)仅在调用时按需加载，因此将专门指令移动到 skills 中可以保持您的基础上下文较小。目标是通过仅包含必要内容来将 CLAUDE.md 保持在 200 行以下。
 
-Your [CLAUDE.md](/docs/en/memory) file is loaded into context at session start. If it contains detailed instructions for specific workflows (like PR reviews or database migrations), those tokens are present even when you're doing unrelated work. [Skills](/docs/en/skills) load on-demand only when invoked, so moving specialized instructions into skills keeps your base context smaller. Aim to keep CLAUDE.md under 200 lines by including only essentials.
+<h3 id="adjust-extended-thinking">
+  调整扩展思考
+</h3>
 
-### Adjust extended thinking
+扩展思考默认启用，因为它显著改进了复杂规划和推理任务的性能。思考令牌作为输出令牌计费，默认预算可能是每个请求数万个令牌，具体取决于模型。对于不需要深度推理的更简单任务，您可以通过在 `/effort` 中或在 `/model` 中降低 [effort level](/docs/zh-CN/model-config#adjust-effort-level)、在 `/config` 中禁用思考或在具有[固定思考预算](/docs/zh-CN/model-config#adaptive-reasoning-and-fixed-thinking-budgets)的模型上通过设置 `MAX_THINKING_TOKENS` [环境变量](/docs/zh-CN/env-vars)（例如 `MAX_THINKING_TOKENS=8000`）来降低预算来降低成本。自适应推理模型忽略非零预算，因此请改用 effort levels。Fable 5 上不提供禁用思考，它始终使用扩展思考。
 
-Extended thinking is enabled by default because it significantly improves performance on complex planning and reasoning tasks. Thinking tokens are billed as output tokens, and the default budget can be tens of thousands of tokens per request depending on the model. For simpler tasks where deep reasoning isn't needed, you can reduce costs by lowering the [effort level](/docs/en/model-config#adjust-effort-level) with `/effort` or in `/model`, disabling thinking in `/config`, or, on models with a [fixed thinking budget](/docs/en/model-config#adaptive-reasoning-and-fixed-thinking-budgets), lowering the budget by setting the `MAX_THINKING_TOKENS` [environment variable](/docs/en/env-vars), for example `MAX_THINKING_TOKENS=8000`. Adaptive-reasoning models ignore nonzero budgets, so use effort levels there instead. Disabling thinking is not available on Fable 5, which always uses extended thinking.
+<h3 id="delegate-verbose-operations-to-subagents">
+  将冗长的操作委托给 subagents
+</h3>
 
-### Delegate verbose operations to subagents
+运行测试、获取文档或处理日志文件可能会消耗大量上下文。将这些委托给 [subagents](/docs/zh-CN/sub-agents#isolate-high-volume-operations)，以便冗长的输出保留在 subagent 的上下文中，而只有摘要返回到您的主对话。
 
-Running tests, fetching documentation, or processing log files can consume significant context. Delegate these to [subagents](/docs/en/sub-agents#isolate-high-volume-operations) so the verbose output stays in the subagent's context while only a summary returns to your main conversation.
+<h3 id="manage-agent-team-costs">
+  管理 agent 团队成本
+</h3>
 
-### Manage agent team costs
+当队友在 plan mode 中运行时，Agent 团队使用的令牌大约是标准会话的 7 倍，因为每个队友维护自己的上下文窗口并作为单独的 Claude 实例运行。保持团队任务小且独立，以限制每个队友的令牌使用。有关详细信息，请参阅 [agent 团队](/docs/zh-CN/agent-teams)。
 
-Agent teams use approximately 7x more tokens than standard sessions when teammates run in plan mode, because each teammate maintains its own context window and runs as a separate Claude instance. Keep team tasks small and self-contained to limit per-teammate token usage. See [agent teams](/docs/en/agent-teams) for details.
+<h3 id="write-specific-prompts">
+  编写具体的提示
+</h3>
 
-### Write specific prompts
+模糊的请求（如"改进此代码库"）会触发广泛扫描。具体的请求（如"向 auth.ts 中的登录函数添加输入验证"）让 Claude 能够以最少的文件读取高效地工作。
 
-Vague requests like "improve this codebase" trigger broad scanning. Specific requests like "add input validation to the login function in auth.ts" let Claude work efficiently with minimal file reads.
+<h3 id="work-efficiently-on-complex-tasks">
+  高效处理复杂任务
+</h3>
 
-### Work efficiently on complex tasks
+对于较长或更复杂的工作，这些习惯有助于避免因走错路而浪费的令牌：
 
-For longer or more complex work, these habits help avoid wasted tokens from going down the wrong path:
+* **对复杂任务使用 plan mode**：按 Shift+Tab 进入 [plan mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode)，然后再进行实现。Claude 探索代码库并提出一个方法供您批准，防止当初始方向错误时的昂贵返工。
+* **尽早纠正方向**：如果 Claude 开始朝错误的方向发展，按 Escape 立即停止。使用 `/rewind` 或双击 Escape 将对话和代码恢复到之前的 checkpoint。
+* **给出验证目标**：在您的提示中包含测试用例、粘贴屏幕截图或定义预期输出。当 Claude 可以验证自己的工作时，它会在您需要请求修复之前捕获问题。
+* **增量测试**：编写一个文件，测试它，然后继续。这会在问题便宜时尽早捕获问题。
 
-* **Use plan mode for complex tasks**: Press Shift+Tab to cycle to [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode) before implementation. Claude explores the codebase and proposes an approach for your approval, preventing expensive re-work when the initial direction is wrong.
-* **Course-correct early**: If Claude starts heading the wrong direction, press Escape to stop immediately. Use `/rewind` or double-tap Escape to restore conversation and code to a previous checkpoint.
-* **Give verification targets**: Include test cases, paste screenshots, or define expected output in your prompt. When Claude can verify its own work, it catches issues before you need to request fixes.
-* **Test incrementally**: Write one file, test it, then continue. This catches issues early when they're cheap to fix.
+<h2 id="background-token-usage">
+  后台令牌使用
+</h2>
 
-## Background token usage
+Claude Code 即使在空闲时也会为某些后台功能使用令牌：
 
-Claude Code uses tokens for some background functionality even when idle:
+* **对话总结**：为 `claude --resume` 功能总结以前对话的后台作业
+* **命令处理**：某些命令（如 `/usage`）可能会生成请求以检查状态
 
-* **Conversation summarization**: Background jobs that summarize previous conversations for the `claude --resume` feature
-* **Command processing**: Some commands like `/usage` may generate requests to check status
+这些后台进程即使没有活跃交互也会消耗少量令牌（通常每个会话不到 \$0.04）。
 
-These background processes consume a small amount of tokens (typically under \$0.04 per session) even without active interaction.
+<h2 id="understanding-changes-in-claude-code-behavior">
+  了解 Claude Code 行为的变化
+</h2>
 
-## Why usage climbs in a long session
-
-A session that has been open for hours can use far more of your plan limits than your activity suggests, usually for one of these reasons:
-
-* **Long context**: Claude Code sends your full conversation with every request, and each time Claude uses tools it sends another request carrying that batch of tool results. With [prompt caching](/docs/en/prompt-caching), Claude Code re-reads that history at the [cached token rate](https://platform.claude.com/docs/en/about-claude/pricing), so a one-line question in a session that has been open all day still draws usage for the whole conversation. See [Manage context proactively](#manage-context-proactively) for ways to keep your context small
-* **Cache misses**: your first message after a break longer than the [cache lifetime](/docs/en/prompt-caching#cache-lifetime) misses the cache and reprocesses your full context. The lifetime is an hour on a subscription and drops to five minutes once you're drawing on [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans); on an API key or cloud provider, it's five minutes by default. On Pro and Max plans, when you resume a large session after a long break, Claude Code [offers to resume from a summary](/docs/en/sessions#resume-from-a-summary) so later requests don't carry the full history
-* **Scheduled tasks**: a [scheduled task](/docs/en/scheduled-tasks) fires on its interval even while the session is idle, sending your full context each time
-* **Agent teammates**: each active [teammate](#agent-team-token-costs) keeps consuming tokens until it exits
-* **Compaction**: `/compact` reads the conversation it summarizes, so [compacting a large context](/docs/en/prompt-caching#compacting-the-conversation) is itself a large request. When you want a fresh start instead of continuity, `/clear` costs nothing
-
-On a Pro, Max, Team, or Enterprise plan, the `/usage` breakdown flags behaviors that account for 10% or more of your recent usage, such as long context or cache misses, each with a tip to reduce it.
-
-## Understanding changes in Claude Code behavior
-
-Claude Code regularly receives updates that may change how features work, including cost reporting. Run `claude --version` to check your current version.
-
-For billing questions about your specific account, contact Anthropic support through the in-product messenger:
-
-* **Subscription plans** (Pro, Max, Team, Enterprise): sign in at [claude.ai](https://claude.ai), click your initials in the lower left, and select **Get help**
-* **Console (API) billing**: sign in at [platform.claude.com](https://platform.claude.com), click your initials, and select **Get help**
-
-See [How to get support](https://support.claude.com/en/articles/9015913-how-to-get-support) for the full flow, including who can reach a human agent on each plan.
+Claude Code 定期接收可能改变功能工作方式的更新，包括成本报告。运行 `claude --version` 检查您的当前版本。如有具体计费问题，请通过您的[Console 账户](https://platform.claude.com/login)联系 Anthropic 支持。

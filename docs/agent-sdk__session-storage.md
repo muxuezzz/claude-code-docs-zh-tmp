@@ -2,26 +2,28 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Persist sessions to external storage
+# 将会话持久化到外部存储
 
-> Mirror session transcripts to S3, Redis, or your own backend so any host can resume them.
+> 将会话记录镜像到 S3、Redis 或您自己的后端，以便任何主机都可以恢复它们。
 
-By default, the SDK writes session transcripts to JSONL files under `~/.claude/projects/` on the local filesystem. A `SessionStore` adapter lets you mirror those transcripts to your own backend, such as S3, Redis, or a database, so a session created on one host can be resumed on another.
+默认情况下，SDK 将会话记录写入本地文件系统上 `~/.claude/projects/` 下的 JSONL 文件。`SessionStore` 适配器允许您将这些记录镜像到您自己的后端，例如 S3、Redis 或数据库，以便在一个主机上创建的会话可以在另一个主机上恢复。
 
-Common reasons to use a session store:
+使用会话存储的常见原因：
 
-* **Multi-host deployments.** Serverless functions, autoscaled workers, and CI runners don't share a filesystem. A shared store lets any replica resume any session.
-* **Durability.** Local containers are ephemeral. A store backed by S3 or a database survives restarts and redeploys.
-* **Compliance and audit.** Keep transcripts in storage you already govern, with your own retention rules, encryption, and access controls.
+* **多主机部署。** 无服务器函数、自动扩展的工作进程和 CI 运行器不共享文件系统。共享存储允许任何副本恢复任何会话。
+* **持久性。** 本地容器是临时的。由 S3 或数据库支持的存储可以在重启和重新部署后继续存在。
+* **合规性和审计。** 将记录保存在您已经管理的存储中，使用您自己的保留规则、加密和访问控制。
 
-## The `SessionStore` interface
+<h2 id="the-sessionstore-interface">
+  `SessionStore` 接口
+</h2>
 
-A `SessionStore` is an object with two required methods, `append` and `load`, and four optional methods. The SDK calls `append` to write transcript entries during a query and `load` to read them back for resume.
+`SessionStore` 是一个对象，具有两个必需的方法 `append` 和 `load`，以及三个可选方法。SDK 调用 `append` 在查询期间写入记录条目，调用 `load` 读取它们以便恢复。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
   // Exported from @anthropic-ai/claude-agent-sdk as
-  // SessionStore, SessionKey, SessionStoreEntry, SessionSummaryEntry.
+  // SessionStore, SessionKey, SessionStoreEntry.
 
   type SessionKey = {
     projectKey: string;
@@ -38,24 +40,17 @@ A `SessionStore` is an object with two required methods, `append` and `load`, an
     listSessions?(
       projectKey: string,
     ): Promise<Array<{ sessionId: string; mtime: number }>>;
-    listSessionSummaries?(projectKey: string): Promise<SessionSummaryEntry[]>;
     delete?(key: SessionKey): Promise<void>;
     listSubkeys?(key: {
       projectKey: string;
       sessionId: string;
     }): Promise<string[]>;
   };
-
-  type SessionSummaryEntry = {
-    sessionId: string;
-    mtime: number;
-    data: Record<string, unknown>;
-  };
   ```
 
   ```python Python theme={null}
   # Exported from claude_agent_sdk as
-  # SessionStore, SessionKey, SessionStoreEntry, SessionSummaryEntry.
+  # SessionStore, SessionKey, SessionStoreEntry.
 
   class SessionKey(TypedDict):
       project_key: str
@@ -73,37 +68,26 @@ A `SessionStore` is an object with two required methods, `append` and `load`, an
       async def list_sessions(
           self, project_key: str
       ) -> list[SessionStoreListEntry]: ...
-      async def list_session_summaries(
-          self, project_key: str
-      ) -> list[SessionSummaryEntry]: ...
       async def delete(self, key: SessionKey) -> None: ...
       async def list_subkeys(self, key: SessionListSubkeysKey) -> list[str]: ...
-
-  class SessionSummaryEntry(TypedDict):
-      session_id: str
-      mtime: int
-      data: dict[str, Any]
   ```
 </CodeGroup>
 
-`SessionKey` addresses one transcript. `projectKey` is a stable, filesystem-safe encoding of the working directory, `sessionId` is the session UUID, and `subpath` is set when the entry belongs to a subagent transcript or sidecar file rather than the main conversation. Treat `subpath` as an opaque key suffix; it follows the on-disk layout, for example `subagents/agent-<id>`. When `subpath` is undefined the key refers to the main transcript.
+`SessionKey` 寻址一个记录。`projectKey` 是工作目录的稳定的、文件系统安全的编码，`sessionId` 是会话 UUID，`subpath` 在条目属于子代理记录或边车文件而不是主对话时设置。将 `subpath` 视为不透明的密钥后缀；它遵循磁盘上的布局，例如 `subagents/agent-<id>`。当 `subpath` 未定义时，密钥指的是主记录。
 
-| Method                 | Required | Called when                                                                                                                                                                                                                                                                                               |
-| :--------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `append`               | Yes      | After each batch of transcript entries is written locally. Entries are JSON-safe objects, one per line in the local JSONL.                                                                                                                                                                                |
-| `load`                 | Yes      | Before the subprocess spawns when `resume` is set, and once per session when listing falls back from `listSessionSummaries`. Return `null` if the session is unknown.                                                                                                                                     |
-| `listSessions`         | No       | By `listSessions({ sessionStore })` and by `query()`/`startup()` with `continue: true`. If undefined, `continue: true` throws, and `listSessions({ sessionStore })` throws unless `listSessionSummaries` is implemented.                                                                                  |
-| `listSessionSummaries` | No       | By `listSessions({ sessionStore })` to read metadata for all sessions in one call. Maintain the summaries inside `append`. If undefined, listing falls back to `listSessions` plus a per-session `load`.                                                                                                  |
-| `delete`               | No       | By `deleteSession({ sessionStore })`. Deleting the main key (no `subpath`) must cascade to all subkeys for that session and also remove the session's summary entry, so a deleted session stops appearing in `listSessionSummaries`. If undefined, deletion is a no-op, which suits append-only backends. |
-| `listSubkeys`          | No       | During resume, to discover subagent transcripts. If undefined, only the main transcript is restored.                                                                                                                                                                                                      |
+| 方法             | 必需 | 调用时机                                                                                              |
+| :------------- | :- | :------------------------------------------------------------------------------------------------ |
+| `append`       | 是  | 在每批记录条目本地写入后。条目是 JSON 安全的对象，本地 JSONL 中每行一个。                                                       |
+| `load`         | 是  | 在子进程生成之前一次，当设置 `resume` 时。如果会话未知，返回 `null`。                                                       |
+| `listSessions` | 否  | 由 `listSessions({ sessionStore })` 和 `query()`/`startup()` 与 `continue: true` 调用。如果未定义，这些调用会抛出异常。 |
+| `delete`       | 否  | 由 `deleteSession({ sessionStore })` 调用。删除主密钥（无 `subpath`）必须级联到该会话的所有子密钥。如果未定义，删除是无操作的，这适合仅追加的后端。  |
+| `listSubkeys`  | 否  | 在恢复期间，发现子代理记录。如果未定义，仅恢复主记录。                                                                       |
 
-In a `SessionSummaryEntry`, `mtime` is the sidecar's storage write time and must share a clock source with the `mtime` values `listSessions` returns. `data` is opaque SDK-owned state; persist it verbatim without interpreting it.
+<h2 id="quick-start">
+  快速开始
+</h2>
 
-Build the entries by calling the exported `foldSessionSummary` helper, `fold_session_summary` in Python, on each batch inside `append`. Skip batches whose key has a `subpath`; subagent transcripts must not contribute to the main session's summary. The fold never sets `mtime`: stamp it at persist time, through the `options.mtime` argument in TypeScript or by overwriting the field on the returned entry in Python. Concurrent `append` calls for the same session can race on the sidecar, so serialize the read-fold-write with a transaction, a compare-and-swap, or a per-session lock; the fold itself is pure.
-
-## Quick start
-
-The SDK ships an `InMemorySessionStore` for development and testing. The example below runs a query with the store attached, captures the session ID from the result message, then resumes from the store in a second `query()` call. The second call passes the same store instance plus `resume`, so the SDK loads the transcript from the store instead of the local filesystem:
+SDK 附带一个 `InMemorySessionStore` 用于开发和测试。下面的示例使用附加的存储运行查询，从结果消息中捕获会话 ID，然后在第二个 `query()` 调用中从存储恢复。第二个调用传递相同的存储实例加上 `resume`，因此 SDK 从存储而不是本地文件系统加载记录：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -112,20 +96,13 @@ The SDK ships an `InMemorySessionStore` for development and testing. The example
   const store = new InMemorySessionStore();
 
   let sessionId: string | undefined;
-  try {
-    for await (const message of query({
-      prompt: "List the TypeScript files under src/",
-      options: { sessionStore: store },
-    })) {
-      if (message.type === "result") {
-        sessionId = message.session_id;
-      }
+  for await (const message of query({
+    prompt: "List the TypeScript files under src/",
+    options: { sessionStore: store },
+  })) {
+    if (message.type === "result") {
+      sessionId = message.session_id;
     }
-  } catch (error) {
-    // A single-shot query() throws after yielding an error result. If the
-    // failure was an error result, sessionId was already captured by the loop
-    // above; connection or process failures yield no result message.
-    console.error(`Session ended with an error: ${error}`);
   }
 
   // Resume from the store. The agent has full context from the first call.
@@ -153,18 +130,12 @@ The SDK ships an `InMemorySessionStore` for development and testing. The example
 
   async def main():
       session_id = None
-      try:
-          async for message in query(
-              prompt="List the Python files under src/",
-              options=ClaudeAgentOptions(session_store=store),
-          ):
-              if isinstance(message, ResultMessage):
-                  session_id = message.session_id
-      except Exception as error:
-          # A single-shot query() raises after yielding an error result. If the
-          # failure was an error result, session_id was already captured by the
-          # loop above; connection or process failures yield no result message.
-          print(f"Session ended with an error: {error}")
+      async for message in query(
+          prompt="List the Python files under src/",
+          options=ClaudeAgentOptions(session_store=store),
+      ):
+          if isinstance(message, ResultMessage):
+              session_id = message.session_id
 
       # Resume from the store. The agent has full context from the first call.
       async for message in query(
@@ -179,25 +150,29 @@ The SDK ships an `InMemorySessionStore` for development and testing. The example
   ```
 </CodeGroup>
 
-The second query prints a summary of the files from the first query, which shows the agent resumed with full context from the store.
+第二个查询打印来自第一个查询的文件摘要，这表明代理从存储中恢复了完整的上下文。
 
-## Write your own adapter
+<h2 id="write-your-own-adapter">
+  编写您自己的适配器
+</h2>
 
-Implement `append` and `load` against your backend. Add `listSessions`, `listSessionSummaries`, `delete`, and `listSubkeys` if you want `listSessions()`, one-call metadata reads, `deleteSession()`, and subagent resume to work against the store.
+针对您的后端实现 `append` 和 `load`。如果您希望 `listSessions()`、`deleteSession()` 和子代理恢复针对存储工作，请添加 `listSessions`、`delete` 和 `listSubkeys`。
 
-Entries passed to `append` are typed as `SessionStoreEntry` (a `{ type: string; ... }` object). Treat them as opaque JSON-safe values: persist them in order and return them from `load` in the same order. `load` must return entries that are deep-equal to what was appended; byte-equal serialization is not required, so backends like Postgres `jsonb` that reorder object keys are fine.
+传递给 `append` 的条目类型为 `SessionStoreEntry`（一个 `{ type: string; ... }` 对象）。将它们视为不透明的 JSON 安全值：按顺序持久化它们，并从 `load` 以相同的顺序返回它们。`load` 必须返回与追加的条目深度相等的条目；不需要字节相等的序列化，因此像 Postgres `jsonb` 这样重新排序对象键的后端是可以的。
 
-## Reference implementations
+<h2 id="reference-implementations">
+  参考实现
+</h2>
 
-The TypeScript SDK repository includes runnable reference adapters for S3, Redis, and Postgres under [`examples/session-stores/`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores). They are not published to npm; copy the `src/` file you need into your project and install the corresponding backend client.
+TypeScript SDK 存储库在 [`examples/session-stores/`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores) 下包含 S3、Redis 和 Postgres 的可运行参考适配器。它们未发布到 npm；将您需要的 `src/` 文件复制到您的项目中并安装相应的后端客户端。
 
-| Adapter                                                                                                                        | Backend client       | Storage model                                                                |
-| :----------------------------------------------------------------------------------------------------------------------------- | :------------------- | :--------------------------------------------------------------------------- |
-| [`S3SessionStore`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores/s3)             | `@aws-sdk/client-s3` | One JSONL part file per `append()`; `load()` lists, sorts, and concatenates. |
-| [`RedisSessionStore`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores/redis)       | `ioredis`            | `RPUSH`/`LRANGE` list per transcript, plus a sorted-set session index.       |
-| [`PostgresSessionStore`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores/postgres) | `pg`                 | One row per entry in a `jsonb` table, ordered by `BIGSERIAL`.                |
+| 适配器                                                                                                                            | 后端客户端                | 存储模型                                           |
+| :----------------------------------------------------------------------------------------------------------------------------- | :------------------- | :--------------------------------------------- |
+| [`S3SessionStore`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores/s3)             | `@aws-sdk/client-s3` | 每个 `append()` 一个 JSONL 部分文件；`load()` 列出、排序和连接。 |
+| [`RedisSessionStore`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores/redis)       | `ioredis`            | 每个记录的 `RPUSH`/`LRANGE` 列表，加上排序集会话索引。           |
+| [`PostgresSessionStore`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores/postgres) | `pg`                 | `jsonb` 表中每个条目一行，按 `BIGSERIAL` 排序。             |
 
-Each adapter takes a pre-configured client instance, so you control credentials, TLS, region, and pooling. For example, with S3:
+每个适配器都采用预配置的客户端实例，因此您可以控制凭证、TLS、区域和池。例如，使用 S3：
 
 ```typescript TypeScript theme={null}
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -228,79 +203,87 @@ for await (const message of query({
 }
 ```
 
-### Validate your adapter
+<h3 id="validate-your-adapter">
+  验证您的适配器
+</h3>
 
-Both SDKs ship a conformance suite that asserts the behavioral contract `append`, `load`, and the optional methods must satisfy. Tests for optional methods skip automatically when those methods are not implemented.
+两个 SDK 都附带一个一致性套件，该套件断言 `append`、`load` 和可选方法必须满足的行为契约。当未实现这些方法时，可选方法的测试会自动跳过。
 
-In TypeScript, copy [`shared/conformance.ts`](https://github.com/anthropics/claude-agent-sdk-typescript/blob/main/examples/session-stores/shared/conformance.ts) from the example directory into your test suite. In Python, the suite ships in the package. To run it with pytest, which isn't an SDK dependency, install pytest first:
-
-```bash theme={null}
-pip install pytest
-```
-
-Then pass your adapter to the suite in a test file as a zero-argument factory, which `run_session_store_conformance` calls once per contract to build a fresh store:
+在 TypeScript 中，从示例目录将 [`shared/conformance.ts`](https://github.com/anthropics/claude-agent-sdk-typescript/blob/main/examples/session-stores/shared/conformance.ts) 复制到您的测试套件中。在 Python 中，该套件在包中提供：
 
 ```python Python theme={null}
 import pytest
 from claude_agent_sdk.testing import run_session_store_conformance
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_my_store_conformance():
     await run_session_store_conformance(MyRedisStore)
 ```
 
-Passing the `MyRedisStore` class itself, as this example does, works when the constructor takes no arguments. For an adapter that takes a pre-configured client, pass a lambda that constructs the store instead. Because the contracts reuse the same session keys, each store the factory returns must start with empty storage, so have the lambda provision isolated backing storage per call, such as a fresh in-memory fake, a unique key prefix, or a new test database.
+<h2 id="behavior-notes">
+  行为说明
+</h2>
 
-## Behavior notes
+<h3 id="dual-write-architecture">
+  双写架构
+</h3>
 
-### Dual-write architecture
+存储是镜像，不是替代品。Claude Code 子进程始终首先写入本地磁盘；SDK 然后将每批转发到 `append()`。如果您希望本地副本是临时的，请在 `options.env` 中将 `CLAUDE_CONFIG_DIR` 指向临时目录。因为镜像依赖于本地写入，`sessionStore` 不能与 `persistSession: false` 结合；如果您同时设置两者，SDK 会抛出异常。如果与 `enableFileCheckpointing` 结合，它也会抛出异常，因为文件历史备份 blob 直接写入本地磁盘，不会镜像到存储。
 
-The store is a mirror, not a replacement. The Claude Code subprocess always writes to local disk first; the SDK then forwards each batch to `append()`. If you want the local copy to be ephemeral, point `CLAUDE_CONFIG_DIR` at a temp directory in `options.env`.
+<h3 id="mirror-writes-are-best-effort">
+  镜像写入是尽力而为的
+</h3>
 
-Because the mirror depends on local writes, the TypeScript SDK throws if you combine `sessionStore` with `persistSession: false`. Both SDKs also throw if you combine the store with file checkpointing, `enableFileCheckpointing` in TypeScript or `enable_file_checkpointing` in Python, since file-history backup blobs are written directly to local disk and are not mirrored to the store.
+如果 `append()` 拒绝，SDK 会以短退避重试该批次最多两次，总共最多三次尝试。超时的调用不会重试，因为原始调用可能仍然会成功。如果批次仍然失败，错误会被记录，一个 `{ type: "system", subtype: "mirror_error" }` 消息被发出到迭代器中，批次被丢弃，查询继续。本地记录已经在磁盘上持久化，所以存储中断不会中断代理或在本地丢失数据。监视 `mirror_error` 如果您需要检测存储数据丢失。因为重试的批次可以重新传递已经成功的条目，请在您的 `append()` 实现中按 `entry.uuid` 进行去重。
 
-### Mirror writes are best-effort
+<h3 id="getsessionmessages-returns-the-post-compaction-chain">
+  `getSessionMessages` 返回后压缩链
+</h3>
 
-If `append()` rejects, the SDK retries the batch up to two more times with a short backoff, for at most three attempts in total. A call that times out isn't retried, since the original call may still land. If the batch still fails, the error is logged, a `{ type: "system", subtype: "mirror_error" }` message is emitted into the iterator, the batch is dropped, and the query continues. The local transcript is already durable on disk, so a store outage doesn't interrupt the agent or lose data locally. Monitor for `mirror_error` if you need to detect store data loss. Because a retried batch can re-deliver entries that already landed, deduplicate by `entry.uuid` in your `append()` implementation.
+`getSessionMessages({ sessionStore })` 返回代理在恢复时会看到的链接消息链。自动压缩后，早期的轮次被摘要替换，因此存储中包含 503 个原始条目的会话可能从 `getSessionMessages` 返回 18 条消息。对于完整的原始历史记录，包括压缩前的轮次和元数据条目，直接调用 `store.load(key)`。
 
-### `getSessionMessages` returns the post-compaction chain
+<h3 id="forksession-is-not-a-byte-copy">
+  `forkSession` 不是字节副本
+</h3>
 
-`getSessionMessages({ sessionStore })` returns the linked message chain the agent would see on resume. After auto-compaction, earlier turns are replaced by a summary, so a session whose store holds 503 raw entries may return 18 messages from `getSessionMessages`. For the full raw history, including pre-compaction turns and metadata entries, call `store.load(key)` directly.
+`forkSession({ sessionStore })` 读取源条目，重写每个 `sessionId` 字段并重新映射消息 UUID，然后在新密钥下追加转换后的条目。适配器级别的副本或 `CopyObject` 快捷方式会产生仍然引用旧会话 ID 的记录，因此 SDK 不使用它。
 
-### `forkSession` is not a byte copy
+<h3 id="subagent-transcripts">
+  子代理记录
+</h3>
 
-`forkSession({ sessionStore })` reads the source entries, rewrites every `sessionId` field and remaps message UUIDs, then appends the transformed entries under a new key. An adapter-level copy or `CopyObject` shortcut would produce a transcript that still references the old session ID, so the SDK does not use one.
+子代理记录在 `subpath: "subagents/agent-<id>"` 下镜像。`listSubagents({ sessionStore })` 要求适配器实现 `listSubkeys`；`getSubagentMessages({ sessionStore })` 在可用时使用它，但在未定义时回退到直接子路径。恢复也调用 `listSubkeys` 来恢复子代理文件；没有它，仅实现主记录。
 
-### Subagent transcripts
+<h3 id="retention">
+  保留
+</h3>
 
-Subagent transcripts are mirrored under `subpath: "subagents/agent-<id>"`. `listSubagents({ sessionStore })` requires the adapter to implement `listSubkeys`; `getSubagentMessages({ sessionStore })` uses it when available but falls back to the direct subpath when it is undefined. Resume also calls `listSubkeys` to restore subagent files; without it, only the main transcript is materialized.
+SDK 永远不会自行从您的存储中删除。保留是适配器的责任：根据您的合规要求实现 TTL、S3 生命周期策略或计划清理。`CLAUDE_CONFIG_DIR` 下的本地记录由 `cleanupPeriodDays` 设置独立清理。
 
-### Retention
+<h2 id="supported-on">
+  支持的功能
+</h2>
 
-The SDK never deletes from your store on its own. Retention is the adapter's responsibility: implement TTLs, S3 lifecycle policies, or scheduled cleanup according to your compliance requirements. Local transcripts under `CLAUDE_CONFIG_DIR` are swept independently by the `cleanupPeriodDays` setting.
+以下 SDK 函数接受 `sessionStore` 选项，当提供时针对存储而不是本地文件系统操作：
 
-## Supported on
+* [`query()`](/docs/zh-CN/agent-sdk/typescript#query)
+* [`startup()`](/docs/zh-CN/agent-sdk/typescript#startup)
+* [`listSessions()`](/docs/zh-CN/agent-sdk/typescript#listsessions)
+* [`getSessionInfo()`](/docs/zh-CN/agent-sdk/typescript#getsessioninfo)
+* [`getSessionMessages()`](/docs/zh-CN/agent-sdk/typescript#getsessionmessages)
+* [`renameSession()`](/docs/zh-CN/agent-sdk/typescript#renamesession)
+* [`tagSession()`](/docs/zh-CN/agent-sdk/typescript#tagsession)
+* [`deleteSession()`](/docs/zh-CN/agent-sdk/typescript)
+* [`forkSession()`](/docs/zh-CN/agent-sdk/typescript)
+* [`listSubagents()`](/docs/zh-CN/agent-sdk/typescript)
+* [`getSubagentMessages()`](/docs/zh-CN/agent-sdk/typescript)
 
-The following TypeScript SDK functions accept a `sessionStore` option and operate against the store instead of the local filesystem when it is provided:
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* [`query()`](/docs/en/agent-sdk/typescript#query)
-* [`startup()`](/docs/en/agent-sdk/typescript#startup)
-* [`listSessions()`](/docs/en/agent-sdk/typescript#listsessions)
-* [`getSessionInfo()`](/docs/en/agent-sdk/typescript#getsessioninfo)
-* [`getSessionMessages()`](/docs/en/agent-sdk/typescript#getsessionmessages)
-* [`renameSession()`](/docs/en/agent-sdk/typescript#renamesession)
-* [`tagSession()`](/docs/en/agent-sdk/typescript#tagsession)
-* [`deleteSession()`](/docs/en/agent-sdk/typescript)
-* [`forkSession()`](/docs/en/agent-sdk/typescript)
-* [`listSubagents()`](/docs/en/agent-sdk/typescript)
-* [`getSubagentMessages()`](/docs/en/agent-sdk/typescript)
-
-In the Python SDK, set `session_store` in [`ClaudeAgentOptions`](/docs/en/agent-sdk/python#claudeagentoptions) to run `query()` against a store. The remaining operations each have a store-backed Python function that takes the store as an argument: `list_sessions_from_store()`, `get_session_info_from_store()`, `get_session_messages_from_store()`, `list_subagents_from_store()`, `get_subagent_messages_from_store()`, `rename_session_via_store()`, `tag_session_via_store()`, `delete_session_via_store()`, and `fork_session_via_store()`. `startup()` has no Python equivalent. The standalone functions documented in the [Python SDK reference](/docs/en/agent-sdk/python#functions), such as `list_sessions()`, read local session files.
-
-## Related resources
-
-* [Work with sessions](/docs/en/agent-sdk/sessions): Continue, resume, and fork without a custom store
-* [Host the SDK](/docs/en/agent-sdk/hosting): Deployment patterns for multi-host environments
-* [TypeScript `Options`](/docs/en/agent-sdk/typescript#options): Full option reference
-* [`examples/session-stores/`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores): Runnable S3, Redis, and Postgres reference adapters
+* [使用会话](/docs/zh-CN/agent-sdk/sessions)：在没有自定义存储的情况下继续、恢复和分叉
+* [托管 SDK](/docs/zh-CN/agent-sdk/hosting)：多主机环境的部署模式
+* [TypeScript `Options`](/docs/zh-CN/agent-sdk/typescript#options)：完整的选项参考
+* [`examples/session-stores/`](https://github.com/anthropics/claude-agent-sdk-typescript/tree/main/examples/session-stores)：可运行的 S3、Redis 和 Postgres 参考适配器

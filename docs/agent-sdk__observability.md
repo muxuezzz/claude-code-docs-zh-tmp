@@ -2,45 +2,49 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Observability with OpenTelemetry
+# 使用 OpenTelemetry 进行可观测性
 
-> Export traces, metrics, and events from the Agent SDK to your observability backend using OpenTelemetry.
+> 使用 OpenTelemetry 将来自 Agent SDK 的跟踪、指标和事件导出到您的可观测性后端。
 
-When you run agents in production, you need visibility into what they did:
+在生产环境中运行代理时，您需要了解它们的行为：
 
-* which tools they called
-* how long each model request took
-* how many tokens were spent
-* where failures occurred
+* 它们调用了哪些工具
+* 每个模型请求花费了多长时间
+* 花费了多少个令牌
+* 失败发生在哪里
 
-The Agent SDK can export this data as OpenTelemetry traces, metrics, and log events to any backend that accepts the OpenTelemetry Protocol (OTLP), such as Honeycomb, Datadog, Grafana, Langfuse, or a self-hosted collector.
+Agent SDK 可以将此数据作为 OpenTelemetry 跟踪、指标和日志事件导出到任何接受 OpenTelemetry 协议 (OTLP) 的后端，例如 Honeycomb、Datadog、Grafana、Langfuse 或自托管收集器。
 
-This guide explains how the SDK emits telemetry, how to configure the export, and how to tag and filter the data once it reaches your backend. To read token usage and cost directly from the SDK response stream instead of exporting to a backend, see [Track cost and usage](/docs/en/agent-sdk/cost-tracking).
+本指南说明了 SDK 如何发出遥测数据、如何配置导出，以及如何在数据到达后端后对其进行标记和过滤。要直接从 SDK 响应流读取令牌使用情况和成本，而不是导出到后端，请参阅[跟踪成本和使用情况](/docs/zh-CN/agent-sdk/cost-tracking)。
 
-## How telemetry flows from the SDK
+<h2 id="how-telemetry-flows-from-the-sdk">
+  遥测如何从 SDK 流动
+</h2>
 
-The Agent SDK runs the Claude Code CLI as a child process and communicates with it over a local pipe. The CLI has OpenTelemetry instrumentation built in: it records spans around each model request and tool execution, emits metrics for token and cost counters, and emits structured log events for prompts and tool results. The SDK does not produce telemetry of its own. Instead, it passes configuration through to the CLI process, and the CLI exports directly to your collector.
+Agent SDK 将 Claude Code CLI 作为子进程运行，并通过本地管道与其通信。CLI 内置了 OpenTelemetry 检测：它在每个模型请求和工具执行周围记录跨度，为令牌和成本计数器发出指标，并为提示和工具结果发出结构化日志事件。SDK 本身不产生遥测数据。相反，它将配置传递给 CLI 进程，CLI 直接导出到您的收集器。
 
-Configuration is passed as environment variables. By default, the child process inherits your application's environment, so you can configure telemetry in either of two places:
+配置作为环境变量传递。默认情况下，子进程继承您的应用程序的环境，因此您可以在以下两个位置之一配置遥测：
 
-* **Process environment:** set the variables in your shell, container, or orchestrator before your application starts. Every `query()` call picks them up automatically with no code change. This is the recommended approach for production deployments.
-* **Per-call options:** set the variables in `ClaudeAgentOptions.env` (Python) or `options.env` (TypeScript). Use this when different agents in the same process need different telemetry settings. In Python, `env` is merged on top of the inherited environment. In TypeScript, `env` replaces the inherited environment entirely, so include `...process.env` in the object you pass.
+* **进程环境：** 在应用程序启动前在您的 shell、容器或编排器中设置变量。每个 `query()` 调用都会自动获取它们，无需代码更改。这是生产部署的推荐方法。
+* **按调用选项：** 在 `ClaudeAgentOptions.env`（Python）或 `options.env`（TypeScript）中设置变量。当同一进程中的不同代理需要不同的遥测设置时，请使用此方法。在 Python 中，`env` 合并在继承的环境之上。在 TypeScript 中，`env` 完全替换继承的环境，因此在您传递的对象中包含 `...process.env`。
 
-The CLI exports three independent OpenTelemetry signals. Each has its own enable switch and its own exporter, so you can turn on only the ones you need.
+CLI 导出三个独立的 OpenTelemetry 信号。每个都有自己的启用开关和自己的导出器，因此您只能打开需要的信号。
 
-| Signal     | What it contains                                                            | Enable with                                                         |
-| ---------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Metrics    | Counters for tokens, cost, sessions, lines of code, and tool decisions      | `OTEL_METRICS_EXPORTER`                                             |
-| Log events | Structured records for each prompt, API request, API error, and tool result | `OTEL_LOGS_EXPORTER`                                                |
-| Traces     | Spans for each interaction, model request, tool call, and hook (beta)       | `OTEL_TRACES_EXPORTER` plus `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` |
+| 信号         | 包含内容                          | 启用方式                                                              |
+| ---------- | ----------------------------- | ----------------------------------------------------------------- |
+| Metrics    | 令牌、成本、会话、代码行数和工具决策的计数器        | `OTEL_METRICS_EXPORTER`                                           |
+| Log events | 每个提示、API 请求、API 错误和工具结果的结构化记录 | `OTEL_LOGS_EXPORTER`                                              |
+| Traces     | 每个交互、模型请求、工具调用和 hook 的跨度（测试版） | `OTEL_TRACES_EXPORTER` 加上 `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` |
 
-For the complete list of metric names, event names, and attributes, see the Claude Code [Monitoring](/docs/en/monitoring-usage) reference. The Agent SDK emits the same data because it runs the same CLI. Span names are listed in [Read agent traces](#read-agent-traces) below.
+有关完整的指标名称、事件名称和属性列表，请参阅 Claude Code [监控](/docs/zh-CN/monitoring-usage)参考。Agent SDK 发出相同的数据，因为它运行相同的 CLI。跨度名称列在下面的[读取代理跟踪](#read-agent-traces)中。
 
-## Enable telemetry export
+<h2 id="enable-telemetry-export">
+  启用遥测导出
+</h2>
 
-Telemetry is off until you set `CLAUDE_CODE_ENABLE_TELEMETRY=1` and choose at least one exporter. The most common configuration sends all three signals over OTLP HTTP to a collector.
+遥测默认关闭，直到您设置 `CLAUDE_CODE_ENABLE_TELEMETRY=1` 并选择至少一个导出器。最常见的配置是通过 OTLP HTTP 将所有三个信号发送到收集器。
 
-The following example sets the variables in a dictionary and passes them through `options.env`. The agent runs a single task, and the CLI exports spans, metrics, and events to the collector at `collector.example.com` while the loop consumes the response stream:
+以下示例在字典中设置变量并通过 `options.env` 传递它们。代理运行单个任务，CLI 将跨度、指标和事件导出到 `collector.example.com` 处的收集器，同时循环消费响应流：
 
 <CodeGroup>
   ```python Python theme={null}
@@ -49,13 +53,13 @@ The following example sets the variables in a dictionary and passes them through
 
   OTEL_ENV = {
       "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
-      # Required for traces, which are in beta. Metrics and log events do not need this.
+      # 跟踪需要此项，跟踪处于测试版。指标和日志事件不需要此项。
       "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA": "1",
-      # Choose an exporter per signal. Use otlp for the SDK; see the Note below.
+      # 为每个信号选择一个导出器。对于 SDK 使用 otlp；请参阅下面的注意。
       "OTEL_TRACES_EXPORTER": "otlp",
       "OTEL_METRICS_EXPORTER": "otlp",
       "OTEL_LOGS_EXPORTER": "otlp",
-      # Standard OTLP transport configuration.
+      # 标准 OTLP 传输配置。
       "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
       "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.example.com:4318",
       "OTEL_EXPORTER_OTLP_HEADERS": "Authorization=Bearer your-token",
@@ -78,13 +82,13 @@ The following example sets the variables in a dictionary and passes them through
 
   const otelEnv = {
     CLAUDE_CODE_ENABLE_TELEMETRY: "1",
-    // Required for traces, which are in beta. Metrics and log events do not need this.
+    // 跟踪需要此项，跟踪处于测试版。指标和日志事件不需要此项。
     CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: "1",
-    // Choose an exporter per signal. Use otlp for the SDK; see the Note below.
+    // 为每个信号选择一个导出器。对于 SDK 使用 otlp；请参阅下面的注意。
     OTEL_TRACES_EXPORTER: "otlp",
     OTEL_METRICS_EXPORTER: "otlp",
     OTEL_LOGS_EXPORTER: "otlp",
-    // Standard OTLP transport configuration.
+    // 标准 OTLP 传输配置。
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf",
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector.example.com:4318",
     OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Bearer your-token",
@@ -92,8 +96,8 @@ The following example sets the variables in a dictionary and passes them through
 
   for await (const message of query({
     prompt: "List the files in this directory",
-    // env replaces the inherited environment in TypeScript, so spread
-    // process.env first to keep PATH, ANTHROPIC_API_KEY, and other variables.
+    // env 在 TypeScript 中替换继承的环境，因此首先展开
+    // process.env 以保留 PATH、ANTHROPIC_API_KEY 和其他变量。
     options: { env: { ...process.env, ...otelEnv } },
   })) {
     console.log(message);
@@ -101,28 +105,24 @@ The following example sets the variables in a dictionary and passes them through
   ```
 </CodeGroup>
 
-Because the child process inherits your application's environment by default, you can achieve the same result by exporting these variables in a Dockerfile, Kubernetes manifest, or shell profile and omitting `options.env` entirely.
-
-To confirm that export is working, check your collector's logs for incoming spans, metrics, and log events after the task completes. The CLI fails silently on export errors by default: if the endpoint is unreachable or rejects the data, the agent still runs normally and the CLI drops the telemetry without surfacing an error in your application. To surface exporter errors, set [`CLAUDE_CODE_OTEL_DIAG_STDERR=1`](/docs/en/env-vars) alongside the exporter variables and read the diagnostics through the SDK's `stderr` callback (Python) or `stderr` option (TypeScript). {/* min-version: 2.1.179 */}Requires Claude Code v2.1.179 or later.
+因为子进程默认继承您的应用程序的环境，您可以通过在 Dockerfile、Kubernetes 清单或 shell 配置文件中导出这些变量并完全省略 `options.env` 来实现相同的结果。
 
 <Note>
-  The `console` exporter writes telemetry to standard output, which the SDK uses
-  as its message channel. Do not set `console` as an exporter value when running
-  through the SDK. To inspect telemetry locally, point
-  `OTEL_EXPORTER_OTLP_ENDPOINT` at a local collector or an all-in-one Jaeger
-  container instead.
+  `console` 导出器将遥测写入标准输出，SDK 将其用作其消息通道。在通过 SDK 运行时，不要将 `console` 设置为导出器值。要在本地检查遥测，请将 `OTEL_EXPORTER_OTLP_ENDPOINT` 指向本地收集器或一体化 Jaeger 容器。
 </Note>
 
-### Flush telemetry from short-lived calls
+<h3 id="flush-telemetry-from-short-lived-calls">
+  从短期调用刷新遥测
+</h3>
 
-The CLI batches telemetry and exports on an interval. On a clean process exit it attempts to flush pending data, but the flush is bounded by a short timeout, so spans can still be dropped if the collector is slow to respond. If your process is killed before the CLI shuts down, anything still in the batch buffer is lost. Lowering the export intervals reduces both windows.
+CLI 批处理遥测并按间隔导出。在干净的进程退出时，它尝试刷新待处理数据，但刷新受短超时限制，因此如果收集器响应缓慢，跨度仍可能被丢弃。如果您的进程在 CLI 关闭前被杀死，批处理缓冲区中的任何内容都会丢失。降低导出间隔会减少两个时间窗口。
 
-By default, metrics export every 60 seconds and traces and logs export every 5 seconds. The following example shortens all three intervals so that data reaches the collector while a short task is still running:
+默认情况下，指标每 60 秒导出一次，跟踪和日志每 5 秒导出一次。以下示例缩短了所有三个间隔，以便数据在短任务仍在运行时到达收集器：
 
 <CodeGroup>
   ```python Python theme={null}
   OTEL_ENV = {
-      # ... exporter configuration from the previous example ...
+      # ... 来自前面示例的导出器配置 ...
       "OTEL_METRIC_EXPORT_INTERVAL": "1000",
       "OTEL_LOGS_EXPORT_INTERVAL": "1000",
       "OTEL_TRACES_EXPORT_INTERVAL": "1000",
@@ -131,7 +131,7 @@ By default, metrics export every 60 seconds and traces and logs export every 5 s
 
   ```typescript TypeScript theme={null}
   const otelEnv = {
-    // ... exporter configuration from the previous example ...
+    // ... 来自前面示例的导出器配置 ...
     OTEL_METRIC_EXPORT_INTERVAL: "1000",
     OTEL_LOGS_EXPORT_INTERVAL: "1000",
     OTEL_TRACES_EXPORT_INTERVAL: "1000",
@@ -139,46 +139,48 @@ By default, metrics export every 60 seconds and traces and logs export every 5 s
   ```
 </CodeGroup>
 
-## Read agent traces
+<h2 id="read-agent-traces">
+  读取代理跟踪
+</h2>
 
-Traces give you the most detailed view of an agent run. With `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` set, each step of the agent loop becomes a span you can inspect in your tracing backend:
+跟踪为您提供了代理运行的最详细视图。设置 `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` 后，代理循环的每一步都会成为您可以在跟踪后端中检查的跨度：
 
-* **`claude_code.interaction`:** wraps a single turn of the agent loop, from receiving a prompt to producing a response.
-* **`claude_code.llm_request`:** wraps each call to the Claude API, with model name, latency, and token counts as attributes.
-* **`claude_code.tool`:** wraps each tool invocation, with child spans for the permission wait (`claude_code.tool.blocked_on_user`) and the execution itself (`claude_code.tool.execution`).
-* **`claude_code.hook`:** wraps each [hook](/docs/en/agent-sdk/hooks) execution. Requires detailed beta tracing (`ENABLE_BETA_TRACING_DETAILED=1` and `BETA_TRACING_ENDPOINT`) in addition to the variables above.
+* **`claude_code.interaction`：** 包装代理循环的单个转折，从接收提示到生成响应。
+* **`claude_code.llm_request`：** 包装对 Claude API 的每个调用，具有模型名称、延迟和令牌计数作为属性。
+* **`claude_code.tool`：** 包装每个工具调用，具有权限等待的子跨度（`claude_code.tool.blocked_on_user`）和执行本身（`claude_code.tool.execution`）。
+* **`claude_code.hook`：** 包装每个 [hook](/docs/zh-CN/agent-sdk/hooks) 执行。除了上述变量外，还需要详细的测试版跟踪（`ENABLE_BETA_TRACING_DETAILED=1` 和 `BETA_TRACING_ENDPOINT`）。
 
-The `llm_request`, `tool`, and `hook` spans are children of the enclosing `claude_code.interaction` span. When the agent spawns a subagent through the Task tool, the subagent's `llm_request` and `tool` spans nest under the parent agent's `claude_code.tool` span, so the full delegation chain appears as one trace.
+`llm_request`、`tool` 和 `hook` 跨度是封闭 `claude_code.interaction` 跨度的子级。当代理通过 Task 工具生成子代理时，子代理的 `llm_request` 和 `tool` 跨度嵌套在父代理的 `claude_code.tool` 跨度下，因此完整的委派链显示为一个跟踪。
 
-Spans carry a `session.id` attribute by default. When you make several `query()` calls against the same [session](/docs/en/agent-sdk/sessions), filter on `session.id` in your backend to see them as one timeline. Claude Code omits the attribute if you set `OTEL_METRICS_INCLUDE_SESSION_ID` to a falsy value.
+跨度默认携带 `session.id` 属性。当您对同一[会话](/docs/zh-CN/agent-sdk/sessions)进行多个 `query()` 调用时，在您的后端中按 `session.id` 过滤以将它们视为一个时间线。如果 `OTEL_METRICS_INCLUDE_SESSION_ID` 设置为假值，则省略该属性。
 
 <Note>
-  Tracing is in beta. Span names and attributes may change between releases. See
-  [Traces (beta)](/docs/en/monitoring-usage#traces-beta) in the Monitoring reference
-  for the trace exporter configuration variables.
+  跟踪处于测试版。跨度名称和属性可能在版本之间更改。有关跟踪导出器配置变量，请参阅监控参考中的[跟踪（测试版）](/docs/zh-CN/monitoring-usage#traces-beta)。
 </Note>
 
-## Link traces to your application
+<h2 id="link-traces-to-your-application">
+  将跟踪链接到您的应用程序
+</h2>
 
-The SDK automatically propagates W3C trace context into the CLI subprocess. When you call `query()` while an OpenTelemetry span is active in your application, the SDK injects `TRACEPARENT` and `TRACESTATE` into the child process environment, and the CLI reads them so its `claude_code.interaction` span becomes a child of your span. The agent run then appears inside your application's trace instead of as a disconnected root.
+SDK 自动将 W3C 跟踪上下文传播到 CLI 子进程。当您在应用程序中有活跃的 OpenTelemetry 跨度时调用 `query()`，SDK 将 `TRACEPARENT` 和 `TRACESTATE` 注入到子进程环境中，CLI 读取它们，使其 `claude_code.interaction` 跨度成为您的跨度的子级。代理运行随后出现在您的应用程序的跟踪中，而不是作为断开连接的根。
 
-OTLP event log records emitted during the run carry the same trace context: with `TRACEPARENT` set, each record's `trace_id` and `span_id` match your application's trace, so you can join [events](/docs/en/monitoring-usage#events) to spans in your backend. {/* min-version: 2.1.212 */}Before v2.1.212, event records emitted outside an active span didn't carry `trace_id` or `span_id`.
+启用跟踪上下文传播后，CLI 还将 `TRACEPARENT` 转发到它运行的每个 Bash 和 PowerShell 命令。如果通过 Bash 工具启动的命令发出自己的 OpenTelemetry 跨度，这些跨度会嵌套在包装该命令的 `claude_code.tool.execution` 跨度下。
 
-When trace-context propagation is enabled, the CLI also forwards `TRACEPARENT` to every Bash and PowerShell command it runs. If a command launched through the Bash tool emits its own OpenTelemetry spans, those spans nest under the `claude_code.tool.execution` span that wraps the command.
+当您在 `options.env` 中显式设置 `TRACEPARENT` 时，自动注入被跳过，因此您可以固定特定的父上下文（如果需要）。交互式 CLI 会话完全忽略入站 `TRACEPARENT`；只有 Agent SDK 和 `claude -p` 运行遵守它。有关完整的跨度和属性参考，请参阅监控参考中的[跟踪（测试版）](/docs/zh-CN/monitoring-usage#traces-beta)。
 
-Auto-injection is skipped when you set `TRACEPARENT` explicitly in `options.env`, so you can pin a specific parent context if needed. Interactive CLI sessions ignore inbound `TRACEPARENT` entirely; only Agent SDK and `claude -p` runs honor it. See [Traces (beta)](/docs/en/monitoring-usage#traces-beta) in the Monitoring reference for the full span and attribute reference.
+<h2 id="tag-telemetry-from-your-agent">
+  从您的代理标记遥测
+</h2>
 
-## Tag telemetry from your agent
+默认情况下，CLI 将 `service.name` 报告为 `claude-code`。如果您运行多个代理，或将 SDK 与导出到同一收集器的其他服务一起运行，请覆盖服务名称并添加资源属性，以便您可以在后端中按代理过滤。
 
-By default, the CLI reports `service.name` as `claude-code`. If you run several agents, or run the SDK alongside other services that export to the same collector, override the service name and add resource attributes so you can filter by agent in your backend.
-
-The following example renames the service and attaches deployment metadata. These values are applied as OpenTelemetry resource attributes on every span, metric, and event the agent emits:
+以下示例重命名服务并附加部署元数据。这些值作为 OpenTelemetry 资源属性应用于代理发出的每个跨度、指标和事件：
 
 <CodeGroup>
   ```python Python theme={null}
   options = ClaudeAgentOptions(
       env={
-          # ... exporter configuration from the Enable telemetry export example ...
+          # ... 导出器配置 ...
           "OTEL_SERVICE_NAME": "support-triage-agent",
           "OTEL_RESOURCE_ATTRIBUTES": "service.version=1.4.0,deployment.environment=production",
       },
@@ -189,20 +191,22 @@ The following example renames the service and attaches deployment metadata. Thes
   const options = {
     env: {
       ...process.env,
-      // ... exporter configuration from the Enable telemetry export example ...
+      // ... 导出器配置 ...
       OTEL_SERVICE_NAME: "support-triage-agent",
-      OTEL_RESOURCE_ATTRIBUTES:
+      OTEL_RESOURCE_ATTRIBUTES":
         "service.version=1.4.0,deployment.environment=production",
     },
   };
   ```
 </CodeGroup>
 
-## Attribute actions to your end users
+<h2 id="attribute-actions-to-your-end-users">
+  将属性操作归属于您的最终用户
+</h2>
 
-The CLI attaches [identity attributes](/docs/en/monitoring-usage#standard-attributes) to every event based on the credential it uses to call Anthropic. When you build an application that serves many end users from one deployment, these attributes identify your service's credential, not the end user on whose behalf the agent acted.
+CLI 根据它用来调用 Anthropic 的凭证将[身份属性](/docs/zh-CN/monitoring-usage#standard-attributes)附加到每个事件。当您构建一个从一个部署为许多最终用户服务的应用程序时，这些属性标识您的服务的凭证，而不是代理代表其行动的最终用户。
 
-To make tool calls and MCP activity attributable to your application's end users, inject end-user identity as resource attributes on each `query()` call. Percent-encode values before interpolating them, since `OTEL_RESOURCE_ATTRIBUTES` [reserves commas, spaces, and equals signs](/docs/en/monitoring-usage#multi-team-organization-support). The following example attaches the requesting user and tenant to every span and event from one request. It assumes a `request` object from your web framework carrying the user and tenant IDs:
+要使工具调用和 MCP 活动可归属于您的应用程序的最终用户，请在每个 `query()` 调用上注入最终用户身份作为资源属性。在插值前对值进行百分比编码，因为 `OTEL_RESOURCE_ATTRIBUTES` [保留逗号、空格和等号](/docs/zh-CN/monitoring-usage#multi-team-organization-support)。以下示例将请求用户和租户附加到来自一个请求的每个跨度和事件。它假设您的 Web 框架中有一个 `request` 对象，其中包含用户和租户 ID：
 
 <CodeGroup>
   ```python Python theme={null}
@@ -210,8 +214,7 @@ To make tool calls and MCP activity attributable to your application's end users
 
   options = ClaudeAgentOptions(
       env={
-          # ... exporter configuration from the Enable telemetry export example ...
-          # request is the incoming request object from your web framework.
+          # ... 导出器配置 ...
           "OTEL_RESOURCE_ATTRIBUTES": f"enduser.id={quote(request.user_id)},tenant.id={quote(request.tenant_id)}",
       },
   )
@@ -221,33 +224,36 @@ To make tool calls and MCP activity attributable to your application's end users
   const options = {
     env: {
       ...process.env,
-      // ... exporter configuration from the Enable telemetry export example ...
-      // request is the incoming request object from your web framework.
+      // ... 导出器配置 ...
       OTEL_RESOURCE_ATTRIBUTES: `enduser.id=${encodeURIComponent(request.userId)},tenant.id=${encodeURIComponent(request.tenantId)}`,
     },
   };
   ```
 </CodeGroup>
 
-With end-user identity attached, the `tool_decision`, `tool_result`, `mcp_server_connection`, and `permission_mode_changed` events, which export as log records named with a `claude_code.` prefix, become a per-user audit trail you can forward to a Security Information and Event Management (SIEM) platform. See [Audit security events](/docs/en/monitoring-usage#audit-security-events) in the Monitoring reference for the full list of security-relevant events and the attributes each one carries.
+附加最终用户身份后，`tool_decision`、`tool_result`、`mcp_server_connection` 和 `permission_mode_changed` 事件（这些事件导出为以 `claude_code.` 前缀命名的日志记录）成为每个用户的审计跟踪，您可以转发到安全信息和事件管理 (SIEM) 平台。有关完整的安全相关事件列表和每个事件携带的属性，请参阅监控参考中的[审计安全事件](/docs/zh-CN/monitoring-usage#audit-security-events)。
 
-## Control sensitive data in exports
+<h2 id="control-sensitive-data-in-exports">
+  控制导出中的敏感数据
+</h2>
 
-Telemetry is structural by default. Durations, model names, and tool names are recorded on every span; token counts are recorded when the underlying API request returns usage data, so spans for failed or aborted requests may omit them. The content your agent reads and writes is not recorded by default. These opt-in variables add content to the exported data:
+遥测在结构上是默认的。持续时间、模型名称和工具名称记录在每个跨度上；令牌计数在底层 API 请求返回使用情况数据时记录，因此失败或中止请求的跨度可能会省略它们。您的代理读取和写入的内容默认不记录。这些选择加入变量将内容添加到导出的数据：
 
-| Variable                  | Adds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OTEL_LOG_USER_PROMPTS=1` | Prompt text on `claude_code.user_prompt` events and on the `claude_code.interaction` span                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `OTEL_LOG_TOOL_DETAILS=1` | Tool input arguments (file paths, shell commands, search patterns) on `claude_code.tool_result` events                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `OTEL_LOG_TOOL_CONTENT=1` | Full tool input and output bodies as span events on `claude_code.tool`, truncated at 60 KB by default, configurable via `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH`, {/* min-version: 2.1.214 */}which requires Claude Code v2.1.214 or later. Requires [tracing](#read-agent-traces) to be enabled                                                                                                                                                                                                                                                                                                                                |
-| `OTEL_LOG_RAW_API_BODIES` | Full Anthropic Messages API request and response JSON as `claude_code.api_request_body` and `claude_code.api_response_body` log events. Set to `1` for inline bodies truncated at 60 KB by default, or `file:<dir>` for untruncated bodies on disk with a `body_ref` path in the event. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` configures the inline truncation limit, {/* min-version: 2.1.214 */}and requires Claude Code v2.1.214 or later. Bodies include the entire conversation history and have extended-thinking content redacted. Enabling this implies consent to everything the three variables above would reveal |
+| 变量                        | 添加                                                                                                                                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OTEL_LOG_USER_PROMPTS=1` | `claude_code.user_prompt` 事件和 `claude_code.interaction` 跨度上的提示文本                                                                                                                                                                      |
+| `OTEL_LOG_TOOL_DETAILS=1` | `claude_code.tool_result` 事件上的工具输入参数（文件路径、shell 命令、搜索模式）                                                                                                                                                                              |
+| `OTEL_LOG_TOOL_CONTENT=1` | `claude_code.tool` 上的完整工具输入和输出体作为跨度事件，在 60 KB 处截断。需要启用[跟踪](#read-agent-traces)                                                                                                                                                        |
+| `OTEL_LOG_RAW_API_BODIES` | 完整的 Anthropic Messages API 请求和响应 JSON 作为 `claude_code.api_request_body` 和 `claude_code.api_response_body` 日志事件。设置为 `1` 表示在 60 KB 处截断的内联体，或 `file:<dir>` 表示磁盘上的未截断体，事件中有 `body_ref` 路径。体包括整个对话历史记录，并且扩展思考内容被编辑。启用此项意味着同意上述三个变量将揭示的所有内容 |
 
-Leave these unset unless your observability pipeline is approved to store the data your agent handles. See [Security and privacy](/docs/en/monitoring-usage#security-and-privacy) in the Monitoring reference for the full list of attributes and redaction behavior.
+除非您的可观测性管道被批准存储您的代理处理的数据，否则请不要设置这些。有关完整的属性列表和编辑行为，请参阅监控参考中的[安全和隐私](/docs/zh-CN/monitoring-usage#security-and-privacy)。
 
-## Related documentation
+<h2 id="related-documentation">
+  相关文档
+</h2>
 
-These guides cover adjacent topics for monitoring and deploying agents:
+这些指南涵盖了监控和部署代理的相邻主题：
 
-* [Track cost and usage](/docs/en/agent-sdk/cost-tracking): read token and cost data from the message stream without an external backend.
-* [Hosting the Agent SDK](/docs/en/agent-sdk/hosting): deploy agents in containers where you can set OpenTelemetry variables at the environment level.
-* [Monitoring](/docs/en/monitoring-usage): the complete reference for every environment variable, metric, and event the CLI emits.
+* [跟踪成本和使用情况](/docs/zh-CN/agent-sdk/cost-tracking)：从消息流读取令牌和成本数据，无需外部后端。
+* [托管 Agent SDK](/docs/zh-CN/agent-sdk/hosting)：在容器中部署代理，您可以在环境级别设置 OpenTelemetry 变量。
+* [监控](/docs/zh-CN/monitoring-usage)：CLI 发出的每个环境变量、指标和事件的完整参考。

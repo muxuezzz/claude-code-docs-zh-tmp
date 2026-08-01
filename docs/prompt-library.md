@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Prompt library
+# 提示词库
 
-> Copy-paste prompts for Claude Code, tagged by task and role.
+> 复制粘贴提示词到 Claude Code，按任务和角色标记。
 
 export const PromptLibrary = ({text = {}, labels = {}, tagLabels = {}, phaseLabels = {}, sourceLabels = {}, catLabels = {}}) => {
   const RAW = useMemo(() => [{
@@ -996,394 +996,400 @@ export const PromptLibrary = ({text = {}, labels = {}, tagLabels = {}, phaseLabe
     </div>;
 };
 
-This is a library of prompts to copy into Claude Code. Use it to explore ways of working you haven't tried, or when you're not sure where to start.
+这是一个提示词库，可以复制到 Claude Code 中使用。使用它来探索你还没有尝试过的工作方式，或者当你不确定从哪里开始时。
 
-The prompts are collected from various Anthropic guides, including [Common workflows](/docs/en/common-workflows), [Best practices](/docs/en/best-practices), and [How Anthropic teams use Claude Code](https://claude.com/blog/how-anthropic-teams-use-claude-code). They're starting points rather than scripts. Open **Why this works** under any prompt to see the pattern behind it so you can write your own.
+这些提示词来自各种 Anthropic 指南，包括[常见工作流](/docs/zh-CN/common-workflows)、[最佳实践](/docs/zh-CN/best-practices)和[Anthropic 团队如何使用 Claude Code](https://claude.com/blog/how-anthropic-teams-use-claude-code)。它们是起点而不是脚本。打开任何提示词下的**为什么这样做有效**来查看其背后的模式，这样你可以编写自己的提示词。
 
 export const labels = {
-  startHere: "Start here",
-  startHereHeader: "Five prompts to try first",
-  showAll: "Show all {n} prompts",
-  search: "Search prompts…",
-  clear: "Clear",
-  prompt: "prompt",
-  prompts: "prompts",
-  noMatch: "No prompts match",
-  fillAndCopy: "Fill in and copy",
-  copyThis: "Copy this prompt",
-  hintBefore: "Type in the",
-  hintChip: "highlighted",
-  hintAfter: "fields to customize, then copy.",
-  copy: "Copy",
-  copied: "Copied",
-  whyWorks: "Why this works",
-  makeItStick: "Make it stick",
-  from: "From",
+  startHere: "从这里开始",
+  startHereHeader: "五个首先尝试的提示词",
+  showAll: "显示全部 {n} 个提示词",
+  search: "搜索提示词…",
+  clear: "清除",
+  prompt: "提示词",
+  prompts: "提示词",
+  noMatch: "没有匹配的提示词",
+  fillAndCopy: "填写并复制",
+  copyThis: "复制此提示词",
+  hintBefore: "在",
+  hintChip: "高亮显示的",
+  hintAfter: "字段中输入以自定义，然后复制。",
+  copy: "复制",
+  copied: "已复制",
+  whyWorks: "为什么这样做有效",
+  makeItStick: "使其坚持",
+  from: "来自",
   paste: {
-    mockup: "Paste, drag, or @-mention your mockup image, then send this:",
-    design: "Paste, drag, or @-mention your design image, then send this:",
-    screenshot: "Paste, drag, or @-mention your screenshot, then send this:",
-    plan: "Paste your plan output into the prompt first, then send this:",
-    error: "Paste the error output into the prompt first, then send this:",
-    csv: "Drag your file into the prompt, or replace the path below with an @-mention of your own:"
+    mockup: "粘贴、拖动或 @-提及你的模型图像，然后发送此内容：",
+    design: "粘贴、拖动或 @-提及你的设计图像，然后发送此内容：",
+    screenshot: "粘贴、拖动或 @-提及你的屏幕截图，然后发送此内容：",
+    plan: "首先将你的计划输出粘贴到提示词中，然后发送此内容：",
+    error: "首先将错误输出粘贴到提示词中，然后发送此内容：",
+    csv: "将你的文件拖到提示词中，或将下面的路径替换为你自己的 @-提及："
   },
-  needsLabel: "Needs",
+  needsLabel: "需要",
   needs: {
-    tracker: "your issue tracker added as a [claude.ai connector](/docs/en/mcp#use-mcp-servers-from-claude-ai) or [MCP server](/docs/en/mcp).",
-    gh: "the [gh CLI](https://cli.github.com) authenticated, or GitHub added as a [claude.ai connector](/docs/en/mcp#use-mcp-servers-from-claude-ai).",
-    browser: "a way for Claude to render and screenshot the result. The [Desktop app](/docs/en/desktop#preview-your-app) has this built in. In the terminal, install the [Chrome extension](/docs/en/chrome) or a Playwright [MCP](/docs/en/mcp) server.",
-    db: "your data warehouse or log store added as a [claude.ai connector](/docs/en/mcp#use-mcp-servers-from-claude-ai) or [MCP server](/docs/en/mcp)."
+    tracker: "你的问题跟踪器添加为 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai) 或 [MCP 服务器](/docs/zh-CN/mcp)。",
+    gh: "[gh CLI](https://cli.github.com) 已认证，或 GitHub 添加为 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)。",
+    browser: "Claude 能够呈现和截图结果的方式。[桌面应用](/docs/zh-CN/desktop#preview-your-app)内置了此功能。在终端中，安装 [Chrome 扩展](/docs/zh-CN/chrome)或 Playwright [MCP](/docs/zh-CN/mcp) 服务器。",
+    db: "你的数据仓库或日志存储添加为 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai) 或 [MCP 服务器](/docs/zh-CN/mcp)。"
   }
 };
 
 export const tagLabels = {
-  understand: "Understand",
-  plan: "Plan",
-  prototype: "Prototype",
-  build: "Build",
-  test: "Test",
-  refactor: "Refactor",
-  review: "Review",
-  steer: "Steer",
-  debug: "Debug",
+  understand: "理解",
+  plan: "计划",
+  prototype: "原型",
+  build: "构建",
+  test: "测试",
+  refactor: "重构",
+  review: "审查",
+  steer: "引导",
+  debug: "调试",
   git: "Git",
-  release: "Release",
-  data: "Data",
-  automate: "Automate",
-  pm: "Product",
-  design: "Design",
-  docs: "Docs",
-  marketing: "Marketing",
-  security: "Security",
-  ops: "On-call"
+  release: "发布",
+  data: "数据",
+  automate: "自动化",
+  pm: "产品",
+  design: "设计",
+  docs: "文档",
+  marketing: "营销",
+  security: "安全",
+  ops: "值班"
 };
 
 export const phaseLabels = {
-  discover: "Discover",
-  design: "Design",
-  build: "Build",
-  ship: "Ship",
-  operate: "Operate"
+  discover: "发现",
+  design: "设计",
+  build: "构建",
+  ship: "发布",
+  operate: "运营"
 };
 
 export const sourceLabels = {
-  workflows: "Common workflows",
-  teams: "How Anthropic teams use Claude Code",
-  legal: "How Anthropic uses Claude in Legal",
-  cybersecurity: "How Anthropic uses Claude in Cybersecurity",
-  "best-practices": "Best practices",
-  ebook: "Scaling agentic coding guide"
+  workflows: "常见工作流",
+  teams: "Anthropic 团队如何使用 Claude Code",
+  legal: "Anthropic 如何在法律中使用 Claude",
+  cybersecurity: "Anthropic 如何在网络安全中使用 Claude",
+  "best-practices": "最佳实践",
+  ebook: "扩展代理编码指南"
 };
 
 export const catLabels = {
-  Onboard: "Onboard",
-  Understand: "Understand",
-  Plan: "Plan",
-  Prototype: "Prototype",
-  Implement: "Implement",
-  Test: "Test",
-  Refactor: "Refactor",
-  Review: "Review",
-  Steer: "Steer",
+  Onboard: "入职",
+  Understand: "理解",
+  Plan: "计划",
+  Prototype: "原型",
+  Implement: "实现",
+  Test: "测试",
+  Refactor: "重构",
+  Review: "审查",
+  Steer: "引导",
   Git: "Git",
-  Release: "Release",
-  Debug: "Debug",
-  Incident: "Incident",
-  Data: "Data",
-  Automate: "Automate"
+  Release: "发布",
+  Debug: "调试",
+  Incident: "事件",
+  Data: "数据",
+  Automate: "自动化"
 };
 
 export const text = {
   "get-oriented-in-a": {
-    title: "Get oriented in a new repository",
-    teaches: "Describe what you want to know, not which files to read. Claude explores the project on its own and returns a summary of how it fits together.",
-    next: "Run `/init` to set up `CLAUDE.md` so Claude remembers this every session"
+    title: "在新存储库中定位",
+    teaches: "描述你想了解的内容，而不是要读哪些文件。Claude 自己探索项目并返回它如何组合在一起的摘要。",
+    next: "运行 `/init` 来设置 `CLAUDE.md`，以便 Claude 在每个会话中记住这一点"
   },
   "explain-unfamiliar-code": {
-    title: "Explain unfamiliar code",
-    teaches: "Name the file and say what format you want the answer in. Swap the HTML page for a diagram, bullet points, or whatever fits how you learn.",
-    next: "Set an output style so Claude always explains in your preferred format"
+    title: "解释不熟悉的代码",
+    teaches: "命名文件并说出你想要答案的格式。将 HTML 页面交换为图表、项目符号或任何适合你学习方式的内容。",
+    next: "设置输出样式，以便 Claude 始终以你喜欢的格式进行解释"
   },
   "find-where-something-happens": {
-    title: "Find where something happens",
-    teaches: "Search by behavior instead of by filename. The search works even when you don't know what the file is called or which directory it lives in."
+    title: "找到某事发生的地方",
+    teaches: "按行为而不是按文件名搜索。即使你不知道文件叫什么或它位于哪个目录，搜索也能工作。"
   },
   "see-what-depends-on": {
-    title: "Check what breaks before you delete",
-    teaches: "Ask before you remove anything. The list of callers and downstream effects tells you whether you're looking at a one-line cleanup or a change you need to coordinate."
+    title: "在删除前检查什么会破坏",
+    teaches: "在删除任何内容之前询问。调用者列表和下游影响告诉你是在看一行清理还是需要协调的更改。"
   },
   "trace-how-code-evolved": {
-    title: "Trace how code evolved",
-    teaches: "Point at commit history when the question is why, not what. Claude reads the log and blame for whatever version control you use and explains the decisions behind the current implementation."
+    title: "追踪代码如何演变",
+    teaches: "当问题是为什么而不是什么时，指向提交历史。Claude 读取你使用的任何版本控制的日志和责备，并解释当前实现背后的决策。"
   },
   "scope-a-change-before": {
-    title: "Scope a change before you start",
-    teaches: "Size the work before you commit it to a roadmap. The file list tells you whether you're looking at one component or a cross-cutting change."
+    title: "在开始前确定更改的范围",
+    teaches: "在将工作提交到路线图之前调整其大小。文件列表告诉你是在看一个组件还是跨越式更改。"
   },
   "ask-the-codebase-a": {
-    title: "Ask the codebase a product question",
-    teaches: "State your role so the answer is pitched at the right level. Claude explains what the product actually does from the source code, without you needing to read it.",
-    next: "Set an output style so Claude always pitches answers at this level"
+    title: "向代码库提出产品问题",
+    teaches: "说出你的角色，以便答案在正确的级别上。Claude 从源代码解释产品实际做什么，无需你阅读它。",
+    next: "设置输出样式，以便 Claude 始终在此级别上提出答案"
   },
   "plan-a-multi-file": {
-    title: "Plan a multi-file change before touching code",
-    teaches: "Adding \"don't edit yet\" separates exploration from changes, so you see the approach before any code moves. To make plan-first the default on every prompt, press Shift+Tab for [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode)."
+    title: "在触及代码前计划多文件更改",
+    teaches: "添加\"不要编辑\"将探索与更改分开，所以你在任何代码移动前看到方法。要使计划优先成为每个提示词的默认值，按 Shift+Tab 进入[计划模式](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode)。"
   },
   "draft-a-spec-by": {
-    title: "Draft a spec by interview",
-    teaches: "Ask to be interviewed instead of writing the spec yourself. Claude asks you structured questions until the requirements are complete, then writes the result to a file.",
-    next: "Save your interview questions as a `/spec` skill so every spec starts the same way"
+    title: "通过采访起草规范",
+    teaches: "要求被采访而不是自己编写规范。Claude 提出结构化问题，直到需求完成，然后将结果写入文件。",
+    next: "将你的采访问题保存为 `/spec` 技能，以便每个规范都以相同的方式开始"
   },
   "turn-a-meeting-into": {
-    title: "Turn a meeting into tickets",
-    teaches: "Skip the transcription step. Claude pulls action items from the unstructured input and writes them straight into your tracker via [MCP](/docs/en/mcp), so you review the tickets, not the transcript.",
-    next: "Save this as a `/tickets` skill"
+    title: "将会议转变为工单",
+    teaches: "跳过转录步骤。Claude 从非结构化输入中提取行动项，并通过 [MCP](/docs/zh-CN/mcp) 直接将其写入你的跟踪器，所以你审查工单，而不是转录。",
+    next: "将此保存为 `/tickets` 技能"
   },
   "map-edge-cases-before": {
-    title: "Map edge cases before building",
-    teaches: "Ask for what's missing, not what's there. Claude lists the error states, empty states, and edge cases a happy-path design tends to skip."
+    title: "在构建前映射边界情况",
+    teaches: "要求缺少什么，而不是有什么。Claude 列出快乐路径设计倾向于跳过的错误状态、空状态和边界情况。"
   },
   "turn-a-mockup-into": {
-    title: "Turn a mockup into a working prototype",
-    teaches: "A clickable prototype answers questions a static mockup can't. Hand the working code to engineering instead of explaining the interactions in a doc."
+    title: "将模型转变为工作原型",
+    teaches: "可点击的原型回答静态模型无法回答的问题。将工作代码交给工程部门，而不是在文档中解释交互。"
   },
   "implement-from-a-screenshot": {
-    title: "Implement from a screenshot and self-check",
-    teaches: "This gives Claude a verification loop: it renders, compares against the source image, and iterates without you pointing out each gap.",
-    next: "Use `/goal` to keep Claude iterating until the screenshots match"
+    title: "从屏幕截图实现并自检",
+    teaches: "这给 Claude 一个验证循环：它呈现、与源图像比较，并迭代，无需你指出每个差距。",
+    next: "使用 `/goal` 让 Claude 继续迭代，直到屏幕截图匹配"
   },
   "follow-an-existing-pattern": {
-    title: "Follow an existing pattern",
-    teaches: "Point at code you already like. Without a reference, Claude defaults to general best practices. With one, it matches the conventions your codebase actually uses.",
-    next: "Ask Claude to write the pattern it followed into `CLAUDE.md` so future sessions match it without the reference"
+    title: "遵循现有模式",
+    teaches: "指向你已经喜欢的代码。没有参考，Claude 默认为一般最佳实践。有了参考，它匹配你的代码库实际使用的约定。",
+    next: "要求 Claude 将其遵循的模式写入 `CLAUDE.md`，以便未来会话无需参考即可匹配它"
   },
   "add-a-small-well": {
-    title: "Add a small, well-defined feature",
-    teaches: "State the inputs and outputs, not how to build it. Claude finds where similar code lives and adds yours alongside it."
+    title: "添加一个小的、定义明确的功能",
+    teaches: "说明输入和输出，而不是如何构建它。Claude 找到类似代码的位置并在其旁边添加你的代码。"
   },
   "build-a-small-internal": {
-    title: "Build a small internal tool from scratch",
-    teaches: "You don't need a project, a framework, or a build step. Describe the tool and ask Claude to open it so you see it working immediately."
+    title: "从头开始构建一个小的内部工具",
+    teaches: "你不需要项目、框架或构建步骤。描述工具并要求 Claude 打开它，以便你立即看到它工作。"
   },
   "work-an-issue-end": {
-    title: "Work an issue end to end",
-    teaches: "Give the issue number, not a summary. Claude reads the full ticket itself, so requirements you'd forget to mention come through, and it validates the change before reporting back."
+    title: "端到端处理问题",
+    teaches: "给出问题编号，而不是摘要。Claude 自己读取完整工单，所以你会忘记提及的需求会通过，它在报告前验证更改。"
   },
   "find-and-update-copy": {
-    title: "Find and update copy across the codebase",
-    teaches: "Ask for variants and say what to skip. Claude finds phrasings a literal search would miss and leaves test fixtures and history untouched, so you review only the copy users actually see."
+    title: "在代码库中查找和更新副本",
+    teaches: "要求变体并说出要跳过的内容。Claude 找到字面搜索会遗漏的措辞，并保持测试夹具和历史不变，所以你只审查用户实际看到的副本。"
   },
   "draft-from-past-examples": {
-    title: "Draft a document from past examples",
-    teaches: "Point at a folder of finished work instead of describing your style. Claude learns the structure and voice from what you've already shipped, so the first draft reads like one of yours.",
-    next: "Save the voice as a skill so every draft starts there"
+    title: "从过去的例子起草文档",
+    teaches: "指向已完成工作的文件夹，而不是描述你的风格。Claude 从你已经发布的内容学习结构和声音，所以第一稿读起来像你的。",
+    next: "将声音保存为技能，以便每个草稿都从那里开始"
   },
   "write-tests-run-them": {
-    title: "Write tests, run them, fix failures",
-    teaches: "Ask for write, run, and fix together so Claude iterates without stopping for instructions.",
-    next: "Run `/init` so Claude learns your test command automatically"
+    title: "编写测试、运行它们、修复失败",
+    teaches: "一起要求编写、运行和修复，以便 Claude 迭代而无需停止以获取说明。",
+    next: "运行 `/init` 以便 Claude 自动学习你的测试命令"
   },
   "drive-implementation-from-tests": {
-    title: "Drive implementation from tests",
-    teaches: "Test-driven development: the tests define when the work is complete, and Claude iterates on the implementation until they pass."
+    title: "从测试驱动实现",
+    teaches: "测试驱动开发：测试定义工作何时完成，Claude 迭代实现直到它们通过。"
   },
   "fill-gaps-from-a": {
-    title: "Fill gaps from a coverage report",
-    teaches: "Point at the coverage report instead of guessing what's untested. Claude reads the actual numbers and writes tests for the files that need them most.",
-    next: "Set this as a `/goal` so Claude keeps writing tests until coverage hits the target"
+    title: "从覆盖率报告填补空白",
+    teaches: "指向覆盖率报告而不是猜测什么是未测试的。Claude 读取实际数字并为最需要的文件编写测试。",
+    next: "将此设置为 `/goal`，以便 Claude 继续编写测试，直到覆盖率达到目标"
   },
   "port-code-between-languages": {
-    title: "Port code to another language",
-    teaches: "Say what to preserve, not just the target language. Naming the API or behavior that must stay the same gives Claude a contract to check the port against."
+    title: "将代码移植到另一种语言",
+    teaches: "说出要保留的内容，而不仅仅是目标语言。命名必须保持相同的 API 或行为给 Claude 一个合同来检查端口。"
   },
   "generate-docs-for-code": {
-    title: "Generate docs for undocumented code",
-    teaches: "Name the scope and the format. Claude finds what's missing and matches the comment style already in the file, so the new docs read like the rest."
+    title: "为未记录的代码生成文档",
+    teaches: "命名范围和格式。Claude 找到缺少的内容并匹配文件中已有的注释风格，所以新文档读起来像其余部分。"
   },
   "migrate-a-pattern-across": {
-    title: "Migrate a pattern across the codebase",
-    teaches: "Describe the old pattern and the new one. Asking Claude to identify every place first means the call sites are listed in the response, so you can check none were missed."
+    title: "在代码库中迁移模式",
+    teaches: "描述旧模式和新模式。要求 Claude 首先识别每个地方意味着调用站点在响应中列出，所以你可以检查没有遗漏。"
   },
   "optimize-against-a-measurable": {
-    title: "Optimize against a measurable target",
-    teaches: "Stating the metric and target gives Claude a clear definition of done.",
-    next: "Set this as a `/goal` so Claude keeps measuring and iterating until it hits the number"
+    title: "针对可测量目标进行优化",
+    teaches: "说明指标和目标给 Claude 一个明确的完成定义。",
+    next: "将此设置为 `/goal`，以便 Claude 继续测量和迭代，直到达到数字"
   },
   "fix-a-precise-visual": {
-    title: "Fix a precise visual bug",
-    teaches: "Precise visual feedback gets a precise fix. State the exact element, measurement, and viewport.",
-    next: "Add a preview tool so Claude screenshots and verifies the fix itself"
+    title: "修复精确的视觉错误",
+    teaches: "精确的视觉反馈得到精确的修复。说明确切的元素、测量和视口。",
+    next: "添加预览工具，以便 Claude 自己截图并验证修复"
   },
   "review-your-changes-before": {
-    title: "Review your changes before you commit",
-    teaches: "Catch problems while they're still cheap to fix. Claude reads the changed files in full, not just the diff lines, so it spots issues a quick self-review misses.",
-    next: "Run `/code-review` for the same check in one command"
+    title: "在提交前审查你的更改",
+    teaches: "在问题仍然便宜时捕获它们。Claude 完整读取更改的文件，而不仅仅是差异行，所以它发现快速自审会遗漏的问题。",
+    next: "运行 `/code-review` 以在一个命令中进行相同的检查"
   },
   "review-a-pull-request": {
-    title: "Review a pull request",
-    teaches: "Claude reviews with the whole codebase in context, not just the diff. It reads the changed code and what it calls, so it catches problems a diff-only review would miss.",
-    next: "Turn this on for every PR with Code Review"
+    title: "审查拉取请求",
+    teaches: "Claude 在整个代码库的背景下审查，而不仅仅是差异。它读取更改的代码和它调用的内容，所以它捕获仅差异审查会遗漏的问题。",
+    next: "使用代码审查为每个 PR 打开此功能"
   },
   "review-infrastructure-changes-before": {
-    title: "Review infrastructure changes before applying",
-    teaches: "Plan output is dense and hard to scan. Pasting it gets you a plain-language summary of what's actually going to change before you apply it."
+    title: "在应用前审查基础设施更改",
+    teaches: "计划输出密集且难以扫描。粘贴它会得到一个关于实际将要更改的内容的纯文本摘要，然后再应用它。"
   },
   "run-a-security-review": {
-    title: "Run a security review with a subagent",
-    teaches: "A [subagent](/docs/en/sub-agents) runs the audit in its own context window and reports back a summary, so a long security review doesn't fill up your main session. The built-in general-purpose subagent handles this without extra setup.",
-    next: "Set up a dedicated security-review subagent your whole team can use"
+    title: "使用子代理运行安全审查",
+    teaches: "[子代理](/docs/zh-CN/sub-agents)在其自己的上下文窗口中运行审计并报告回摘要，所以长安全审查不会填满你的主会话。内置的通用子代理无需额外设置即可处理此问题。",
+    next: "设置一个专用的安全审查子代理，你的整个团队都可以使用"
   },
   "review-content-before-sending": {
-    title: "Catch issues before formal review",
-    teaches: "Get a first pass before a human spends time on it. Name the concerns you want checked so the review is focused, then fix what it finds and send a cleaner draft.",
-    next: "Capture your review checklist as a skill your whole team can run"
+    title: "在正式审查前捕获问题",
+    teaches: "在人类花时间之前获得第一遍。命名你想检查的关注点，以便审查是有针对性的，然后修复它找到的内容并发送更清洁的草稿。",
+    next: "将你的审查清单捕获为你的整个团队可以运行的技能"
   },
   "course-correct-a-wrong": {
-    title: "Course-correct a wrong approach",
-    teaches: "Name the constraint Claude missed, not just that it's wrong. A specific reason gives Claude a concrete constraint to satisfy on the retry, instead of guessing again.",
-    next: "Press `Esc` twice to open the rewind menu and restore code and conversation so the retry starts clean"
+    title: "纠正错误的方法",
+    teaches: "命名 Claude 遗漏的约束，而不仅仅是它是错误的。具体的原因给 Claude 一个具体的约束来满足重试，而不是再次猜测。",
+    next: "按 `Esc` 两次打开倒带菜单并恢复代码和对话，以便重试从干净开始"
   },
   "narrow-the-scope-of": {
-    title: "Narrow the scope of a change",
-    teaches: "When the direction is right but the change went too broad, ask Claude to keep part of it rather than rewinding everything. A stated boundary keeps a small fix from becoming a refactor."
+    title: "缩小更改的范围",
+    teaches: "当方向正确但更改过于宽泛时，要求 Claude 保留其中一部分而不是倒带所有内容。说明的边界使小修复不会变成重构。"
   },
   "turn-a-correction-into": {
-    title: "Turn a correction into a rule",
-    teaches: "A correction in chat isn't shared with your team. A rule in the project's [CLAUDE.md](/docs/en/memory) is shared once you commit it, and Claude reads it at the start of every session.",
-    next: "Open `/memory` to review what Claude wrote"
+    title: "将更正转变为规则",
+    teaches: "聊天中的更正不与你的团队共享。项目的 [CLAUDE.md](/docs/zh-CN/memory) 中的规则在你提交后共享，Claude 在每个会话开始时读取它。",
+    next: "打开 `/memory` 来审查 Claude 写了什么"
   },
   "resolve-merge-conflicts": {
-    title: "Resolve merge conflicts",
-    teaches: "Say what state you want, not which markers to keep. Asking for the reasoning makes the merge reviewable instead of a black box."
+    title: "解决合并冲突",
+    teaches: "说出你想要的状态，而不是要保留哪些标记。要求推理使合并可审查，而不是黑盒。"
   },
   "commit-with-a-generated": {
-    title: "Commit with a generated message",
-    teaches: "Let Claude derive the message from the diff. It matches your repository's existing commit style."
+    title: "使用生成的消息提交",
+    teaches: "让 Claude 从差异中推导消息。它匹配你的存储库的现有提交风格。"
   },
   "open-a-pull-request": {
-    title: "Open a pull request from a ticket",
-    teaches: "Skip the context switch between tracker, editor, and GitHub. One prompt reads the spec, makes the change, and opens the PR."
+    title: "从工单打开拉取请求",
+    teaches: "跳过跟踪器、编辑器和 GitHub 之间的上下文切换。一个提示词读取规范、进行更改并打开 PR。"
   },
   "draft-release-notes-from": {
-    title: "Draft release notes from git history",
-    teaches: "Give two reference points and the structure you want. Claude reads the commit log between them and drafts a changelog you can edit.",
-    next: "Save this as a `/changelog` skill"
+    title: "从 git 历史起草发布说明",
+    teaches: "给出两个参考点和你想要的结构。Claude 读取它们之间的提交日志并起草你可以编辑的更改日志。",
+    next: "将此保存为 `/changelog` 技能"
   },
   "write-a-ci-workflow": {
-    title: "Write a CI workflow",
-    teaches: "Describe when it should run and what it should do; the YAML is generated for you, matched to your project's build and test commands."
+    title: "编写 CI 工作流",
+    teaches: "描述它应该何时运行以及它应该做什么；YAML 为你生成，与你的项目的构建和测试命令匹配。"
   },
   "find-and-fix-a": {
-    title: "Find and fix a failing test",
-    teaches: "Describe the symptom; you don't need to know which file is broken. Claude runs the test to see the failure, traces it into source, and fixes it."
+    title: "找到并修复失败的测试",
+    teaches: "描述症状；你不需要知道哪个文件被破坏。Claude 运行测试以查看失败，将其追踪到源中，并修复它。"
   },
   "investigate-a-reported-error": {
-    title: "Investigate a reported error",
-    teaches: "Describe the symptom and location; Claude reads the relevant code path and traces likely causes. Paste stack traces or logs if you have them.",
-    next: "Put a deeplink in your runbook that opens Claude with this prompt pre-filled"
+    title: "调查报告的错误",
+    teaches: "描述症状和位置；Claude 读取相关代码路径并追踪可能的原因。如果你有堆栈跟踪或日志，请粘贴它们。",
+    next: "在你的运行手册中放置一个深层链接，用此提示词预填打开 Claude"
   },
   "fix-a-build-error": {
-    title: "Fix a build error at the root",
-    teaches: "Asking for root cause and verification prevents surface-level patches that suppress the error without fixing it."
+    title: "在根处修复构建错误",
+    teaches: "要求根本原因和验证可防止表面级补丁抑制错误而不修复它。"
   },
   "investigate-a-production-incident": {
-    title: "Investigate a production incident",
-    teaches: "List the evidence sources to correlate, not the steps to take. Claude reads logs, git history, and config together to narrow the cause.",
-    next: "Connect Sentry or your log store via MCP"
+    title: "调查生产事件",
+    teaches: "列出要关联的证据来源，而不是要采取的步骤。Claude 一起读取日志、git 历史和配置以缩小原因。",
+    next: "通过 MCP 连接 Sentry 或你的日志存储"
   },
   "query-logs-in-plain": {
-    title: "Query logs in plain English",
-    teaches: "Ask the question instead of writing the SQL. Claude builds the query, runs it against your connected logs, and shows both the query and the result so you can check what ran."
+    title: "用纯英文查询日志",
+    teaches: "问问题而不是编写 SQL。Claude 构建查询，针对你连接的日志运行它，并显示查询和结果，以便你可以检查运行了什么。"
   },
   "diagnose-from-a-console": {
-    title: "Diagnose from a console screenshot",
-    teaches: "Cloud consoles show you the problem but not the commands to fix it. Claude reads the screenshot and translates the dashboard into the kubectl, gcloud, or aws commands to run."
+    title: "从控制台屏幕截图诊断",
+    teaches: "云控制台向你显示问题，但不显示修复它的命令。Claude 读取屏幕截图并将仪表板转换为要运行的 kubectl、gcloud 或 aws 命令。"
   },
   "analyze-a-data-file": {
-    title: "Analyze a data file",
-    teaches: "A one-off question doesn't need a one-off script. Point at a file in your project folder and Claude reads it directly, finds the patterns, and writes the output where you ask.",
-    next: "Connect the data source via MCP instead of exporting files"
+    title: "分析数据文件",
+    teaches: "一次性问题不需要一次性脚本。指向项目文件夹中的文件，Claude 直接读取它，找到模式，并将输出写入你要求的位置。",
+    next: "通过 MCP 连接数据源，而不是导出文件"
   },
   "generate-variations-from-performance": {
-    title: "Generate variations from performance data",
-    teaches: "State the constraint at the start so generation stays within the limit. Claude reads the metrics, picks what to replace, and produces alternatives that fit.",
-    next: "Connect the ad platform via MCP instead of exporting a file"
+    title: "从性能数据生成变体",
+    teaches: "在开始时说明约束，以便生成保持在限制内。Claude 读取指标，选择要替换的内容，并生成适合的替代方案。",
+    next: "通过 MCP 连接广告平台，而不是导出文件"
   },
   "turn-a-recurring-task": {
-    title: "Turn a recurring task into a skill",
-    teaches: "Name the steps once; reuse them as a command. Claude writes a [skill](/docs/en/skills) anyone on your team can run."
+    title: "将重复任务转变为技能",
+    teaches: "命名步骤一次；将其重用为命令。Claude 编写任何团队成员都可以运行的 [技能](/docs/zh-CN/skills)。"
   },
   "add-a-hook-for": {
-    title: "Add a hook for repeat behavior",
-    teaches: "Hooks make a behavior automatic instead of something you have to remember to ask for. Describe the trigger and action and Claude writes the [hook](/docs/en/hooks) configuration."
+    title: "为重复行为添加钩子",
+    teaches: "钩子使行为自动化，而不是你必须记住要求的东西。描述触发器和操作，Claude 编写 [钩子](/docs/zh-CN/hooks) 配置。"
   },
   "connect-a-tool-with": {
-    title: "Connect a tool with MCP",
-    teaches: "Connect the source once instead of pasting data every session. After [MCP](/docs/en/mcp) setup, Claude reads from the tool directly when you ask about it."
+    title: "使用 MCP 连接工具",
+    teaches: "连接源一次，而不是每个会话粘贴数据。在 [MCP](/docs/zh-CN/mcp) 设置后，当你询问它时，Claude 直接从工具读取。"
   },
   "capture-what-to-remember": {
-    title: "Capture what to remember for next time",
-    teaches: "Ask before you forget. Claude knows what it had to figure out this session and proposes [CLAUDE.md](/docs/en/memory) entries so the next session starts with that context."
+    title: "捕获下次要记住的内容",
+    teaches: "在你忘记之前询问。Claude 知道它在这个会话中必须弄清楚什么，并提议 [CLAUDE.md](/docs/zh-CN/memory) 条目，以便下一个会话以该上下文开始。"
   }
 };
 
 <PromptLibrary text={text} labels={labels} tagLabels={tagLabels} phaseLabels={phaseLabels} sourceLabels={sourceLabels} catLabels={catLabels} />
 
-## What makes these prompts work
+<h2 id="what-makes-these-prompts-work">
+  这些提示词为什么有效
+</h2>
 
-The prompts above share a few patterns. Recognizing them helps you adapt any prompt here to your own task.
+上面的提示词共享一些模式。识别它们有助于你将此处的任何提示词调整到你自己的任务。
 
-**Describe the outcome, not the steps.** Say what you want and let Claude find the files. The prompt below works without naming a single file path.
+**描述结果，而不是步骤。** 说出你想要的内容，让 Claude 找到文件。下面的提示词无需命名单个文件路径即可工作。
 
-```text wrap theme={null}
+```text theme={null}
 add rate limiting to the public API and make sure existing tests still pass
 ```
 
-**Give it a way to check its own work.** Ask for run, test, compare, or verify in the same prompt so Claude iterates instead of stopping after one attempt.
+**给它一种检查自己工作的方式。** 在同一提示词中要求运行、测试、比较或验证，以便 Claude 迭代而不是在一次尝试后停止。
 
-```text wrap theme={null}
+```text theme={null}
 write the migration, run it against the dev database, and confirm the schema matches
 ```
 
-**Point at a reference.** Name an existing file, test, or pattern to match so the new code is consistent with what you already have.
+**指向参考。** 命名现有文件、测试或模式以匹配，以便新代码与你已有的内容一致。
 
-```text wrap theme={null}
+```text theme={null}
 add a settings page that follows the same layout as the profile page
 ```
 
-**State the measurable target.** When the goal is performance or coverage, give the metric and threshold so completion is unambiguous.
+**说明可测量的目标。** 当目标是性能或覆盖率时，给出指标和阈值，以便完成是明确的。
 
-```text wrap theme={null}
+```text theme={null}
 get the bundle size under 200KB and show me what you removed
 ```
 
-**Give it the artifact.** Paste errors, logs, screenshots, and plan output directly in the prompt, or type `@` to reference a file. Claude reads the source instead of your description of it.
+**给它工件。** 直接在提示词中粘贴错误、日志、屏幕截图和计划输出，或键入 `@` 来引用文件。Claude 读取源而不是你对它的描述。
 
-```text wrap theme={null}
+```text theme={null}
 why is the build failing? @build.log
 ```
 
-**Say how you want the answer.** Name the format, length, or audience so the explanation fits how you'll use it. To make a format the default for every response, set an [output style](/docs/en/output-styles).
+**说出你想要答案的方式。** 命名格式、长度或受众，以便解释适合你将如何使用它。要使格式成为每个响应的默认值，请设置 [输出样式](/docs/zh-CN/output-styles)。
 
-```text wrap theme={null}
+```text theme={null}
 explain how the payment retry logic works as an HTML page with a diagram, then open it in my browser
 ```
 
-For more on each pattern, see [best practices](/docs/en/best-practices).
+有关每个模式的更多信息，请参阅[最佳实践](/docs/zh-CN/best-practices)。
 
-## Where these come from
+<h2 id="where-these-come-from">
+  这些来自哪里
+</h2>
 
-These prompts are based on patterns from published Anthropic resources. Each card links to its source:
+这些提示词基于已发布的 Anthropic 资源中的模式。每张卡片都链接到其来源：
 
-* [Common workflows](/docs/en/common-workflows): step-by-step guides for the core tasks
-* [Best practices](/docs/en/best-practices): prompting patterns and project setup
-* [How Anthropic teams use Claude Code](https://claude.com/blog/how-anthropic-teams-use-claude-code): real workflows from engineering, product, design, and data teams, with deep dives on [legal](https://claude.com/blog/how-anthropic-uses-claude-legal), [marketing](https://claude.com/blog/how-anthropic-uses-claude-marketing), and [cybersecurity](https://claude.com/blog/how-anthropic-uses-claude-cybersecurity)
-* [Scaling agentic coding guide](https://resources.anthropic.com/hubfs/Scaling%20agentic%20coding%20across%20your%20organization.pdf): the enterprise adoption guide
+* [常见工作流](/docs/zh-CN/common-workflows)：核心任务的分步指南
+* [最佳实践](/docs/zh-CN/best-practices)：提示词模式和项目设置
+* [Anthropic 团队如何使用 Claude Code](https://claude.com/blog/how-anthropic-teams-use-claude-code)：来自工程、产品、设计和数据团队的真实工作流，深入探讨[法律](https://claude.com/blog/how-anthropic-uses-claude-legal)、[营销](https://claude.com/blog/how-anthropic-uses-claude-marketing)和[网络安全](https://claude.com/blog/how-anthropic-uses-claude-cybersecurity)
+* [扩展代理编码指南](https://resources.anthropic.com/hubfs/Scaling%20agentic%20coding%20across%20your%20organization.pdf)：企业采用指南
 
-For video walkthroughs of these patterns, see the free [Claude Code in Action](https://anthropic.skilljar.com/claude-code-in-action) course on Anthropic Academy.
+有关这些模式的视频演练，请参阅 Anthropic Academy 上的免费 [Claude Code in Action](https://anthropic.skilljar.com/claude-code-in-action) 课程。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-The prompts on this page are starting points. Once one works for your project, the next step is making it repeatable: save it as a [skill](/docs/en/skills) so anyone on your team can run it as a `/command`, and record the conventions Claude learned in [CLAUDE.md](/docs/en/memory) so every session starts with that context instead of Claude relearning it. For larger or riskier changes, [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode) shows you the file list before any edits happen.
+此页面上的提示词是起点。一旦一个对你的项目有效，下一步是使其可重复：将其保存为 [技能](/docs/zh-CN/skills)，以便团队中的任何人都可以将其作为 `/command` 运行，并在 [CLAUDE.md](/docs/zh-CN/memory) 中记录 Claude 学到的约定，以便每个会话都以该上下文开始，而不是 Claude 重新学习它。对于更大或更危险的更改，[Plan Mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode) 在任何编辑发生前显示文件列表。
 
-If you're introducing Claude Code across a team, see [administration](/docs/en/admin-setup) for managed settings and policy, and [costs and usage](/docs/en/costs) for how this work is billed on your plan.
+如果你在团队中引入 Claude Code，请参阅[管理](/docs/zh-CN/admin-setup)以获取托管设置和策略，以及[成本和使用](/docs/zh-CN/costs)以了解此工作如何在你的计划上计费。

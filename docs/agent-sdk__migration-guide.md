@@ -2,59 +2,67 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Migrate to Claude Agent SDK
+# 迁移到 Claude Agent SDK
 
-> Guide for migrating the Claude Code TypeScript and Python SDKs to the Claude Agent SDK
+> 将 Claude Code TypeScript 和 Python SDK 迁移到 Claude Agent SDK 的指南
 
-## Overview
+<h2 id="overview">
+  概述
+</h2>
 
-The Claude Code SDK has been renamed to the **Claude Agent SDK** and its documentation has been reorganized. This change reflects the SDK's broader capabilities for building AI agents beyond just coding tasks.
+Claude Code SDK 已重命名为 **Claude Agent SDK**，其文档已重新组织。这一变化反映了该 SDK 在构建超越编码任务的 AI 代理方面的更广泛功能。
 
-## What's Changed
+<h2 id="what’s-changed">
+  变更内容
+</h2>
 
-| Aspect                     | Old                         | New                              |
-| :------------------------- | :-------------------------- | :------------------------------- |
-| **Package Name (TS/JS)**   | `@anthropic-ai/claude-code` | `@anthropic-ai/claude-agent-sdk` |
-| **Python Package**         | `claude-code-sdk`           | `claude-agent-sdk`               |
-| **Documentation Location** | Claude Code docs            | API Guide → Agent SDK section    |
+| 方面              | 旧版本                         | 新版本                              |
+| :-------------- | :-------------------------- | :------------------------------- |
+| **包名称 (TS/JS)** | `@anthropic-ai/claude-code` | `@anthropic-ai/claude-agent-sdk` |
+| **Python 包**    | `claude-code-sdk`           | `claude-agent-sdk`               |
+| **文档位置**        | Claude Code 文档              | API 指南 → Agent SDK 部分            |
 
 <Note>
-  **Documentation Changes:** The Agent SDK documentation has moved from the Claude Code docs to the API Guide under a dedicated [Agent SDK](/docs/en/agent-sdk/overview) section. The Claude Code docs now focus on the CLI tool and automation features.
+  **文档变更：** Agent SDK 文档已从 Claude Code 文档移至 API 指南下的专门 [Agent SDK](/docs/zh-CN/agent-sdk/overview) 部分。Claude Code 文档现在专注于 CLI 工具和自动化功能。
 </Note>
 
-## Migration Steps
+<h2 id="migration-steps">
+  迁移步骤
+</h2>
 
-### For TypeScript/JavaScript Projects
+<h3 id="for-typescript/javascript-projects">
+  对于 TypeScript/JavaScript 项目
+</h3>
 
-**1. Uninstall the old package:**
+**1. 卸载旧包：**
 
 ```bash theme={null}
 npm uninstall @anthropic-ai/claude-code
 ```
 
-**2. Install the new package:**
+**2. 安装新包：**
 
 ```bash theme={null}
 npm install @anthropic-ai/claude-agent-sdk
 ```
 
-**3. Update your imports:**
+**3. 更新导入：**
 
-Change all imports from `@anthropic-ai/claude-code` to `@anthropic-ai/claude-agent-sdk`:
+将所有导入从 `@anthropic-ai/claude-code` 更改为 `@anthropic-ai/claude-agent-sdk`：
 
 ```typescript theme={null}
-// Before
+// 之前
 import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-code";
 
-// After
+// 之后
 import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
 ```
 
-**4. Update package.json dependencies:**
+**4. 更新 package.json 依赖项：**
 
-If you have the package listed in your `package.json`, update it:
+如果您在 `package.json` 中列出了该包，请更新它：
 
-Before:
+之前：
 
 ```json theme={null}
 {
@@ -64,109 +72,115 @@ Before:
 }
 ```
 
-After:
+之后：
 
 ```json theme={null}
 {
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.3.0"
+    "@anthropic-ai/claude-agent-sdk": "^0.2.0"
   }
 }
 ```
 
-**5. Review [breaking changes](#breaking-changes)**
+**5. 查看 [破坏性变更](#breaking-changes)**
 
-Make any code changes needed to complete the migration.
+进行完成迁移所需的任何代码更改。
 
-### For Python Projects
+<h3 id="for-python-projects">
+  对于 Python 项目
+</h3>
 
-**1. Uninstall the old package:**
+**1. 卸载旧包：**
 
 ```bash theme={null}
-pip uninstall -y claude-code-sdk
+pip uninstall claude-code-sdk
 ```
 
-If the old package isn't installed, pip prints `WARNING: Skipping claude-code-sdk as it is not installed.` That's expected and you can continue to the next step.
-
-**2. Install the new package:**
+**2. 安装新包：**
 
 ```bash theme={null}
 pip install claude-agent-sdk
 ```
 
-**3. Update your imports:**
+**3. 更新导入：**
 
-Change all imports from `claude_code_sdk` to `claude_agent_sdk`:
+将所有导入从 `claude_code_sdk` 更改为 `claude_agent_sdk`：
 
 ```python theme={null}
-# Before
+# 之前
 from claude_code_sdk import query, ClaudeCodeOptions
 
-# After
+# 之后
 from claude_agent_sdk import query, ClaudeAgentOptions
 ```
 
-**4. Update type names:**
+**4. 更新类型名称：**
 
-Change `ClaudeCodeOptions` to `ClaudeAgentOptions`:
+将 `ClaudeCodeOptions` 更改为 `ClaudeAgentOptions`：
 
 ```python theme={null}
-# Before
+# 之前
 from claude_code_sdk import query, ClaudeCodeOptions
 
 options = ClaudeCodeOptions(model="claude-opus-4-7")
 
-# After
+# 之后
 from claude_agent_sdk import query, ClaudeAgentOptions
 
 options = ClaudeAgentOptions(model="claude-opus-4-7")
 ```
 
-**5. Review [breaking changes](#breaking-changes)**
+**5. 查看 [破坏性变更](#breaking-changes)**
 
-Make any code changes needed to complete the migration.
+进行完成迁移所需的任何代码更改。
 
-## Breaking changes
+<h2 id="breaking-changes">
+  破坏性变更
+</h2>
 
 <Warning>
-  To improve isolation and explicit configuration, Claude Agent SDK v0.1.0 introduces breaking changes for users migrating from Claude Code SDK. Review this section carefully before migrating.
+  为了改进隔离和显式配置，Claude Agent SDK v0.1.0 为从 Claude Code SDK 迁移的用户引入了破坏性变更。在迁移前请仔细查看本部分。
 </Warning>
 
-### Python: ClaudeCodeOptions renamed to ClaudeAgentOptions
+<h3 id="python-claudecodeoptions-renamed-to-claudeagentoptions">
+  Python：ClaudeCodeOptions 重命名为 ClaudeAgentOptions
+</h3>
 
-**What changed:** The Python SDK type `ClaudeCodeOptions` has been renamed to `ClaudeAgentOptions`.
+**变更内容：** Python SDK 类型 `ClaudeCodeOptions` 已重命名为 `ClaudeAgentOptions`。
 
-**Migration:**
+**迁移：**
 
 ```python theme={null}
-# BEFORE (claude-code-sdk)
+# 之前 (claude-code-sdk)
 from claude_code_sdk import query, ClaudeCodeOptions
 
 options = ClaudeCodeOptions(model="claude-opus-4-7", permission_mode="acceptEdits")
 
-# AFTER (claude-agent-sdk)
+# 之后 (claude-agent-sdk)
 from claude_agent_sdk import query, ClaudeAgentOptions
 
 options = ClaudeAgentOptions(model="claude-opus-4-7", permission_mode="acceptEdits")
 ```
 
-**Why this changed:** The type name now matches the "Claude Agent SDK" branding and provides consistency across the SDK's naming conventions.
+**为什么变更：** 类型名称现在与"Claude Agent SDK"品牌相匹配，并在 SDK 的命名约定中提供一致性。
 
-### System prompt no longer default
+<h3 id="system-prompt-no-longer-default">
+  系统提示不再是默认值
+</h3>
 
-**What changed:** The SDK no longer uses Claude Code's system prompt by default.
+**变更内容：** SDK 不再默认使用 Claude Code 的系统提示。
 
-**Migration:**
+**迁移：**
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
-  // BEFORE (v0.0.x) - Used Claude Code's system prompt by default
+  // 之前 (v0.0.x) - 默认使用 Claude Code 的系统提示
   const before = query({ prompt: "Hello" });
 
-  // AFTER (v0.1.0) - Uses minimal system prompt by default
-  // To get the old behavior, explicitly request Claude Code's preset:
+  // 之后 (v0.1.0) - 默认使用最小系统提示
+  // 要获得旧行为，请显式请求 Claude Code 的预设：
   const presetResult = query({
     prompt: "Hello",
     options: {
@@ -174,7 +188,7 @@ options = ClaudeAgentOptions(model="claude-opus-4-7", permission_mode="acceptEdi
     }
   });
 
-  // Or use a custom system prompt:
+  // 或使用自定义系统提示：
   const customResult = query({
     prompt: "Hello",
     options: {
@@ -184,46 +198,42 @@ options = ClaudeAgentOptions(model="claude-opus-4-7", permission_mode="acceptEdi
   ```
 
   ```python Python theme={null}
+  # 之前 (v0.0.x) - 默认使用 Claude Code 的系统提示
+  async for message in query(prompt="Hello"):
+      print(message)
+
+  # 之后 (v0.1.0) - 默认使用最小系统提示
+  # 要获得旧行为，请显式请求 Claude Code 的预设：
   from claude_agent_sdk import query, ClaudeAgentOptions
-  import asyncio
 
+  async for message in query(
+      prompt="Hello",
+      options=ClaudeAgentOptions(
+          system_prompt={"type": "preset", "preset": "claude_code"}  # 使用预设
+      ),
+  ):
+      print(message)
 
-  async def main():
-      # BEFORE (v0.0.x) - Used Claude Code's system prompt by default
-      async for message in query(prompt="Hello"):
-          print(message)
-
-      # AFTER (v0.1.0) - Uses minimal system prompt by default
-      # To get the old behavior, explicitly request Claude Code's preset:
-      async for message in query(
-          prompt="Hello",
-          options=ClaudeAgentOptions(
-              system_prompt={"type": "preset", "preset": "claude_code"}  # Use the preset
-          ),
-      ):
-          print(message)
-
-      # Or use a custom system prompt:
-      async for message in query(
-          prompt="Hello",
-          options=ClaudeAgentOptions(system_prompt="You are a helpful coding assistant"),
-      ):
-          print(message)
-
-
-  asyncio.run(main())
+  # 或使用自定义系统提示：
+  async for message in query(
+      prompt="Hello",
+      options=ClaudeAgentOptions(system_prompt="You are a helpful coding assistant"),
+  ):
+      print(message)
   ```
 </CodeGroup>
 
-**Why this changed:** Provides better control and isolation for SDK applications. You can now build agents with custom behavior without inheriting Claude Code's CLI-focused instructions.
+**为什么变更：** 为 SDK 应用程序提供更好的控制和隔离。您现在可以构建具有自定义行为的代理，而无需继承 Claude Code 的 CLI 焦点指令。
 
-### Settings sources default
+<h3 id="settings-sources-default">
+  设置源默认值
+</h3>
 
-This default was briefly changed in v0.1.0 and then reverted, so no migration action is needed.
+此默认值在 v0.1.0 中曾短暂更改，然后被还原，因此无需迁移操作。
 
-**Current behavior:** Omitting `settingSources` on `query()` loads user, project, and local filesystem settings, matching the CLI. This includes `~/.claude/settings.json`, `.claude/settings.json`, `.claude/settings.local.json`, CLAUDE.md files, and custom commands.
+**当前行为：** 在 `query()` 上省略 `settingSources` 会加载用户、项目和本地文件系统设置，与 CLI 匹配。这包括 `~/.claude/settings.json`、`.claude/settings.json`、`.claude/settings.local.json`、CLAUDE.md 文件和自定义命令。
 
-To run isolated from filesystem settings, pass an empty array:
+要从文件系统设置中隔离运行，请传递空数组：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -232,78 +242,78 @@ To run isolated from filesystem settings, pass an empty array:
   const isolatedResult = query({
     prompt: "Hello",
     options: {
-      settingSources: [] // No filesystem settings loaded
+      settingSources: [] // 未加载文件系统设置
     }
   });
 
-  // Or load only specific sources:
+  // 或仅加载特定源：
   const projectOnlyResult = query({
     prompt: "Hello",
     options: {
-      settingSources: ["project"] // Only project settings
+      settingSources: ["project"] // 仅项目设置
     }
   });
   ```
 
   ```python Python theme={null}
   from claude_agent_sdk import query, ClaudeAgentOptions
-  import asyncio
 
+  async for message in query(
+      prompt="Hello",
+      options=ClaudeAgentOptions(setting_sources=[]),  # 未加载文件系统设置
+  ):
+      print(message)
 
-  async def main():
-      async for message in query(
-          prompt="Hello",
-          options=ClaudeAgentOptions(setting_sources=[]),  # No filesystem settings loaded
-      ):
-          print(message)
-
-      # Or load only specific sources:
-      async for message in query(
-          prompt="Hello",
-          options=ClaudeAgentOptions(
-              setting_sources=["project"]  # Only project settings
-          ),
-      ):
-          print(message)
-
-
-  asyncio.run(main())
+  # 或仅加载特定源：
+  async for message in query(
+      prompt="Hello",
+      options=ClaudeAgentOptions(
+          setting_sources=["project"]  # 仅项目设置
+      ),
+  ):
+      print(message)
   ```
 </CodeGroup>
 
-Isolation is especially important for CI/CD pipelines, deployed applications, test environments, and multi-tenant systems where local customizations should not leak in.
+隔离对于 CI/CD 管道、已部署的应用程序、测试环境和多租户系统特别重要，其中本地自定义不应泄露。
 
 <Note>
-  SDK v0.1.0 briefly defaulted to no settings loaded; this was reverted in subsequent releases. Python SDK 0.1.59 and earlier treated an empty list the same as omitting the option, so upgrade before relying on `setting_sources=[]`. See [What settingSources does not control](/docs/en/agent-sdk/claude-code-features#what-settingsources-does-not-control) for inputs that are read even when `settingSources` is `[]`.
+  SDK v0.1.0 曾短暂默认为不加载任何设置；这在后续版本中被还原。Python SDK 0.1.59 及更早版本将空列表视为与省略选项相同，因此在依赖 `setting_sources=[]` 之前请升级。有关即使 `settingSources` 为 `[]` 时仍会读取的输入，请参阅 [settingSources 不控制的内容](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control)。
 </Note>
 
-## Why the Rename?
+<h2 id="why-the-rename">
+  为什么重命名？
+</h2>
 
-The Claude Code SDK was originally designed for coding tasks, but it has evolved into a powerful framework for building all types of AI agents. The new name "Claude Agent SDK" better reflects its capabilities:
+Claude Code SDK 最初是为编码任务设计的，但它已发展成为构建所有类型 AI 代理的强大框架。新名称"Claude Agent SDK"更好地反映了其功能：
 
-* Building business agents (legal assistants, finance advisors, customer support)
-* Creating specialized coding agents (SRE bots, security reviewers, code review agents)
-* Developing custom agents for any domain with tool use, MCP integration, and more
+* 构建业务代理（法律助手、财务顾问、客户支持）
+* 创建专门的编码代理（SRE 机器人、安全审查员、代码审查代理）
+* 为任何领域开发自定义代理，具有工具使用、MCP 集成等功能
 
-## Getting Help
+<h2 id="getting-help">
+  获取帮助
+</h2>
 
-If you encounter any issues during migration:
+如果您在迁移过程中遇到任何问题：
 
-**For TypeScript/JavaScript:**
+**对于 TypeScript/JavaScript：**
 
-1. Check that all imports are updated to use `@anthropic-ai/claude-agent-sdk`
-2. Verify your package.json has the new package name
-3. Run `npm install` to ensure dependencies are updated
+1. 检查所有导入是否已更新为使用 `@anthropic-ai/claude-agent-sdk`
+2. 验证您的 package.json 具有新的包名称
+3. 运行 `npm install` 以确保依赖项已更新
 
-**For Python:**
+**对于 Python：**
 
-1. Check that all imports are updated to use `claude_agent_sdk`
-2. Verify your requirements.txt or pyproject.toml has the new package name
-3. Run `pip install claude-agent-sdk` to ensure the package is installed
+1. 检查所有导入是否已更新为使用 `claude_agent_sdk`
+2. 验证您的 requirements.txt 或 pyproject.toml 具有新的包名称
+3. 运行 `pip install claude-agent-sdk` 以确保包已安装
 
-## Next Steps
+<h2 id="next-steps">
+  后续步骤
+</h2>
 
-* Explore the [Agent SDK Overview](/docs/en/agent-sdk/overview) to learn about available features
-* Check out the [TypeScript SDK Reference](/docs/en/agent-sdk/typescript) for detailed API documentation
-* Review the [Python SDK Reference](/docs/en/agent-sdk/python) for Python-specific documentation
-* Learn about [Custom Tools](/docs/en/agent-sdk/custom-tools) and [MCP Integration](/docs/en/agent-sdk/mcp)
+* 探索 [Agent SDK 概述](/docs/zh-CN/agent-sdk/overview) 以了解可用功能
+* 查看 [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript) 以获取详细的 API 文档
+* 查看 [Python SDK 参考](/docs/zh-CN/agent-sdk/python) 以获取 Python 特定文档
+* 了解 [自定义工具](/docs/zh-CN/agent-sdk/custom-tools) 和 [MCP 集成](/docs/zh-CN/agent-sdk/mcp)

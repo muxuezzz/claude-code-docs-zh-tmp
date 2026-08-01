@@ -2,65 +2,65 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Week 26 · June 22–26, 2026
+# 第 26 周 · 2026 年 6 月 22–26 日
 
-> Authenticate MCP servers from your shell with claude mcp login, get a response to shell mode command output with the ! prefix, and resume a conversation from before /clear with /rewind.
+> 使用 claude mcp login 从 shell 中对 MCP 服务器进行身份验证，使用 ! 前缀获取对 shell 模式命令输出的响应，以及使用 /rewind 从 /clear 之前恢复对话。
 
 <div className="digest-meta">
-  <span>Releases <a href="/docs/docs/en/changelog#2-1-185">v2.1.185 → v2.1.193</a></span>
-  <span>2 features · June 22–26</span>
+  <span>发布版本 <a href="/docs/docs/en/changelog#2-1-185">v2.1.185 → v2.1.193</a></span>
+  <span>2 项功能 · 6 月 22–26 日</span>
 </div>
 
 <div className="digest-feature">
   <div className="digest-feature-header">
-    <span className="digest-feature-title">Authenticate MCP servers from the CLI</span>
+    <span className="digest-feature-title">从 CLI 对 MCP 服务器进行身份验证</span>
     <span className="digest-feature-pill">v2.1.186</span>
   </div>
 
-  <p className="digest-feature-lede">New `claude mcp login <name>` and `claude mcp logout <name>` commands authenticate a configured MCP server from your shell instead of the interactive <code>/mcp</code> menu. `claude mcp login` runs the server's OAuth flow directly, and `claude mcp logout` clears the stored credentials.</p>
+  <p className="digest-feature-lede">新的 `claude mcp login <name>` 和 `claude mcp logout <name>` 命令从 shell 而不是交互式 <code>/mcp</code> 菜单对配置的 MCP 服务器进行身份验证。`claude mcp login` 直接运行服务器的 OAuth 流程，`claude mcp logout` 清除存储的凭证。</p>
 
-  <p className="digest-feature-try">Run the OAuth flow for a configured server without opening a session:</p>
+  <p className="digest-feature-try">为配置的服务器运行 OAuth 流程而无需打开会话：</p>
 
   ```bash terminal theme={null}
   claude mcp login sentry
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/mcp#authenticate-from-the-command-line">Authenticate from the command line</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/mcp#authenticate-from-the-command-line">从命令行进行身份验证</a>
 </div>
 
 <div className="digest-feature">
   <div className="digest-feature-header">
-    <span className="digest-feature-title">Shell mode responds to command output</span>
+    <span className="digest-feature-title">Shell 模式响应命令输出</span>
     <span className="digest-feature-pill">v2.1.186</span>
   </div>
 
-  <p className="digest-feature-lede">Commands you run with the <code>!</code> prefix now get a response from Claude once the output lands in the transcript, so you can run <code>! npm test</code> and get an explanation of the failures without a second prompt. The response costs the same as sending a normal prompt. To keep the earlier behavior, where the output is added to context without a response, set <code>respondToBashCommands</code> to <code>false</code> in <code>settings.json</code>.</p>
+  <p className="digest-feature-lede">使用 <code>!</code> 前缀运行的命令现在会在输出进入记录后从 Claude 获得响应，因此您可以运行 <code>! npm test</code> 并获得对失败的解释，而无需第二个提示。响应成本与发送普通提示相同。要保持之前的行为（其中输出被添加到上下文而不获得响应），请在 <code>settings.json</code> 中将 <code>respondToBashCommands</code> 设置为 <code>false</code>。</p>
 
-  <p className="digest-feature-try">Run a command and get a response to its output:</p>
+  <p className="digest-feature-try">运行命令并获得对其输出的响应：</p>
 
   ```text Claude Code theme={null}
   > ! npm test
   ```
 
-  <a className="digest-feature-link" href="/docs/docs/en/interactive-mode#shell-mode-with-prefix">Shell mode with the ! prefix</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/docs/interactive-mode#shell-mode-with-prefix">带有 ! 前缀的 Shell 模式</a>
 </div>
 
 <div className="digest-wins">
-  <p className="digest-wins-title">Other wins</p>
+  <p className="digest-wins-title">其他改进</p>
 
   <div className="digest-wins-grid">
-    <div><code>/rewind</code> can now resume a conversation from before <code>/clear</code> was run</div>
-    <div>New <code>sandbox.credentials</code> setting blocks sandboxed commands from reading credential files and secret environment variables</div>
-    <div>Org-configured model restrictions now apply to the model picker, `--model`, <code>/model</code>, and <code>ANTHROPIC\_MODEL</code>, with a "restricted by your organization's settings" message when a restricted model is selected</div>
-    <div>New <code>autoMode.classifyAllShell</code> setting routes all Bash and PowerShell commands through the auto-mode classifier, and denial reasons now show in the transcript, the denial toast, and <code>/permissions</code></div>
-    <div>New <code>claude\_code.assistant\_response</code> OpenTelemetry log event carries the model's response text; deployments that already log prompt content start receiving it on upgrade, so set <code>OTEL\_LOG\_ASSISTANT\_RESPONSES=0</code> to keep prompts only</div>
-    <div>Background subagents now surface permission prompts in the main session instead of auto-denying; the dialog shows which agent is asking, and Esc denies only that tool</div>
-    <div><code>/install-github-app</code> can now install only the GitHub App and skip the Actions workflow and secret steps</div>
-    <div>Hosts you allow in the sandbox network permission dialog are remembered for the rest of the session instead of re-prompting on every connection</div>
-    <div>Streaming responses use about 37% less CPU, and long-session memory growth from the terminal output cache is reduced</div>
-    <div>`/review <pr>` now uses the same review engine as <code>/code-review medium</code></div>
-    <div>Bash mode <code>!</code> commands get live file path autocomplete</div>
+    <div><code>/rewind</code> 现在可以从运行 <code>/clear</code> 之前恢复对话</div>
+    <div>新的 <code>sandbox.credentials</code> 设置阻止沙箱命令读取凭证文件和秘密环境变量</div>
+    <div>组织配置的模型限制现在适用于模型选择器、`--model`、<code>/model</code> 和 <code>ANTHROPIC\_MODEL</code>，当选择受限制的模型时显示"受您的组织设置限制"消息</div>
+    <div>新的 <code>autoMode.classifyAllShell</code> 设置将所有 Bash 和 PowerShell 命令路由通过自动模式分类器，拒绝原因现在显示在记录、拒绝提示和 <code>/permissions</code> 中</div>
+    <div>新的 <code>claude\_code.assistant\_response</code> OpenTelemetry 日志事件携带模型的响应文本；已经记录提示内容的部署在升级时开始接收它，因此设置 <code>OTEL\_LOG\_ASSISTANT\_RESPONSES=0</code> 以仅保留提示</div>
+    <div>后台子代理现在在主会话中显示权限提示而不是自动拒绝；对话框显示哪个代理在请求，Esc 仅拒绝该工具</div>
+    <div><code>/install-github-app</code> 现在可以仅安装 GitHub App 并跳过 Actions 工作流和秘密步骤</div>
+    <div>您在沙箱网络权限对话框中允许的主机在会话的其余部分被记住，而不是在每次连接时重新提示</div>
+    <div>流式响应使用的 CPU 减少约 37%，来自终端输出缓存的长会话内存增长被减少</div>
+    <div>`/review <pr>` 现在使用与 <code>/code-review medium</code> 相同的审查引擎</div>
+    <div>Bash 模式 <code>!</code> 命令获得实时文件路径自动完成</div>
   </div>
 </div>
 
-[Full changelog for v2.1.185–v2.1.193 →](/docs/en/changelog#2-1-185)
+[v2.1.185–v2.1.193 的完整更改日志 →](/docs/en/changelog#2-1-185)

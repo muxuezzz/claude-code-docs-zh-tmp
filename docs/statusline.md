@@ -2,46 +2,50 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Customize your status line
+# 自定义你的状态行
 
-> Configure a custom status bar to monitor context window usage, costs, and git status in Claude Code
+> 配置自定义状态栏以监控 Claude Code 中的上下文窗口使用情况、成本和 git 状态
 
-The status line is a customizable bar at the bottom of Claude Code that runs any shell script you configure. It receives JSON session data on stdin and displays whatever your script prints, giving you a persistent, at-a-glance view of context usage, costs, git status, or anything else you want to track.
+状态行是 Claude Code 底部的可自定义栏，可以运行你配置的任何 shell 脚本。它通过 stdin 接收 JSON 会话数据，并显示你的脚本打印的任何内容，为你提供一个持久的、一目了然的上下文使用情况、成本、git 状态或任何其他你想跟踪的内容的视图。
 
-Status lines are useful when you:
+状态行在以下情况下很有用：
 
-* Want to monitor context window usage as you work
-* Need to track session costs
-* Work across multiple sessions and need to distinguish them
-* Want git branch and status always visible
+* 你想在工作时监控上下文窗口使用情况
+* 你需要跟踪会话成本
+* 你在多个会话中工作，需要区分它们
+* 你希望 git 分支和状态始终可见
 
-The status line renders in its own row above the built-in footer badges and does not replace them. To add clickable link badges to the footer when an ID appears in the conversation, without writing a script, configure [`footerLinksRegexes`](/docs/en/settings#footer-link-badges) instead.
+状态行在其自己的行中呈现，位于内置页脚徽章上方，不会替换它们。要在对话中出现 ID 时向页脚添加可点击的链接徽章，而无需编写脚本，请改为配置 [`footerLinksRegexes`](/docs/zh-CN/settings#footer-link-badges)。
 
-Here's an example of a [multi-line status line](#display-multiple-lines) that displays git info on the first line and a color-coded context bar on the second.
+这是一个[多行状态行](#display-multiple-lines)的示例，它在第一行显示 git 信息，在第二行显示颜色编码的上下文栏。
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-multiline.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=60f11387658acc9ff75158ae85f2ac87" alt="A multi-line status line showing model name, directory, git branch on the first line, and a context usage progress bar with cost and duration on the second line" width="776" height="212" data-path="images/statusline-multiline.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-multiline.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=60f11387658acc9ff75158ae85f2ac87" alt="一个多行状态行，显示第一行上的模型名称、目录、git 分支，第二行上的上下文使用进度条、成本和持续时间" width="776" height="212" data-path="images/statusline-multiline.png" />
 </Frame>
 
-This page walks through [setting up a basic status line](#set-up-a-status-line), explains [how the data flows](#how-status-lines-work) from Claude Code to your script, lists [all the fields you can display](#available-data), and provides [ready-to-use examples](#examples) for common patterns like git status, cost tracking, and progress bars.
+本页面介绍了[设置基本状态行](#set-up-a-status-line)，解释了[数据如何从 Claude Code 流向你的脚本](#how-status-lines-work)，列出了[你可以显示的所有字段](#available-data)，并提供了[常见模式的现成示例](#examples)，如 git 状态、成本跟踪和进度条。
 
-## Set up a status line
+<h2 id="set-up-a-status-line">
+  设置状态行
+</h2>
 
-Use the [`/statusline` command](#use-the-%2Fstatusline-command) to have Claude Code generate a script for you, or [manually create a script](#manually-configure-a-status-line) and add it to your settings.
+使用[`/statusline` 命令](#use-the-%2Fstatusline-command)让 Claude Code 为你生成脚本，或[手动创建脚本](#manually-configure-a-status-line)并将其添加到你的设置中。
 
-### Use the /statusline command
+<h3 id="use-the-/statusline-command">
+  使用 /statusline 命令
+</h3>
 
-The `/statusline` command accepts natural language instructions describing what you want displayed. Claude Code generates a script file in `~/.claude/` and updates your settings automatically:
+`/statusline` 命令接受描述你想显示的内容的自然语言指令。Claude Code 在 `~/.claude/` 中生成脚本文件并自动更新你的设置：
 
 ```text theme={null}
 /statusline show model name and context percentage with a progress bar
 ```
 
-Approve the file edit prompts if Claude Code asks for permission during setup.
+<h3 id="manually-configure-a-status-line">
+  手动配置状态行
+</h3>
 
-### Manually configure a status line
-
-Add a `statusLine` field to your user settings (`~/.claude/settings.json`, where `~` is your home directory) or [project settings](/docs/en/settings#settings-files). Set `type` to `"command"` and point `command` to a script path or an inline shell command. For a full walkthrough of creating a script, see [Build a status line step by step](#build-a-status-line-step-by-step).
+将 `statusLine` 字段添加到你的用户设置（`~/.claude/settings.json`，其中 `~` 是你的主目录）或[项目设置](/docs/zh-CN/settings#settings-files)。将 `type` 设置为 `"command"` 并将 `command` 指向脚本路径或内联 shell 命令。有关创建脚本的完整演练，请参阅[逐步构建状态行](#build-a-status-line-step-by-step)。
 
 ```json theme={null}
 {
@@ -53,7 +57,7 @@ Add a `statusLine` field to your user settings (`~/.claude/settings.json`, where
 }
 ```
 
-The `command` field runs in a shell, so you can also use inline commands instead of a script file. This example uses `jq` to parse the JSON input and display the model name and context percentage:
+`command` 字段在 shell 中运行，所以你也可以使用内联命令而不是脚本文件。此示例使用 `jq` 解析 JSON 输入并显示模型名称和上下文百分比：
 
 ```json theme={null}
 {
@@ -64,33 +68,37 @@ The `command` field runs in a shell, so you can also use inline commands instead
 }
 ```
 
-The optional `padding` field adds extra horizontal spacing (in characters) to the status line content. Defaults to `0`. This padding is in addition to the interface's built-in spacing, so it controls relative indentation rather than absolute distance from the terminal edge.
+可选的 `padding` 字段为状态行内容添加额外的水平间距（以字符为单位）。默认为 `0`。此填充是在界面的内置间距之外的，所以它控制相对缩进而不是距离终端边缘的绝对距离。
 
-The optional `refreshInterval` field re-runs your command every N seconds in addition to the [event-driven updates](#how-status-lines-work). The minimum is `1`. Set this when your status line shows time-based data such as a clock, or when background subagents change git state while the main session is idle. Leave it unset to run only on events.
+可选的 `refreshInterval` 字段除了[事件驱动的更新](#how-status-lines-work)外，每 N 秒重新运行一次你的命令。最小值为 `1`。当你的状态行显示基于时间的数据（如时钟）或后台子代理在主会话空闲时更改 git 状态时，设置此选项。如果不设置，则仅在事件上运行。
 
-The optional `hideVimModeIndicator` field suppresses the built-in `-- INSERT --` text below the prompt. Set this to `true` when your script renders [`vim.mode`](#available-data) itself, so the mode is not shown twice.
+可选的 `hideVimModeIndicator` 字段会抑制提示符下方的内置 `-- INSERT --` 文本。当你的脚本自己呈现 [`vim.mode`](#available-data) 时，将此设置为 `true`，这样模式就不会显示两次。
 
-### Disable the status line
+<h3 id="disable-the-status-line">
+  禁用状态行
+</h3>
 
-Run `/statusline` and ask it to remove or clear your status line (e.g., `/statusline delete`, `/statusline clear`, `/statusline remove it`). You can also manually delete the `statusLine` field from your settings.json.
+运行 `/statusline` 并要求它删除或清除你的状态行（例如，`/statusline delete`、`/statusline clear`、`/statusline remove it`）。你也可以手动从 settings.json 中删除 `statusLine` 字段。
 
-## Build a status line step by step
+<h2 id="build-a-status-line-step-by-step">
+  逐步构建状态行
+</h2>
 
-This walkthrough shows what's happening under the hood by manually creating a status line that displays the current model, working directory, and context window usage percentage.
+本演练展示了通过手动创建显示当前模型、工作目录和上下文窗口使用百分比的状态行来了解幕后发生的情况。
 
-<Note>Running [`/statusline`](#use-the-%2Fstatusline-command) with a description of what you want configures all of this for you automatically.</Note>
+<Note>使用[`/statusline`](#use-the-%2Fstatusline-command)和你想要的内容的描述会自动为你配置所有这些。</Note>
 
-These examples use Bash scripts, which work on macOS and Linux. On Windows, see [Windows configuration](#windows-configuration) for PowerShell and Git Bash examples.
+这些示例使用 Bash 脚本，在 macOS 和 Linux 上工作。在 Windows 上，请参阅[Windows 配置](#windows-configuration)了解 PowerShell 和 Git Bash 示例。
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-quickstart.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=696445e59ca0059213250651ad23db6b" alt="A status line showing model name, directory, and context percentage" width="726" height="164" data-path="images/statusline-quickstart.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-quickstart.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=696445e59ca0059213250651ad23db6b" alt="一个状态行，显示模型名称、目录和上下文百分比" width="726" height="164" data-path="images/statusline-quickstart.png" />
 </Frame>
 
 <Steps>
-  <Step title="Create a script that reads JSON and prints output">
-    Claude Code sends JSON data to your script via stdin. This script uses [`jq`](https://jqlang.org/), a command-line JSON parser you may need to install, to extract the model name, directory, and context percentage, then prints a formatted line.
+  <Step title="创建一个读取 JSON 并打印输出的脚本">
+    Claude Code 通过 stdin 向你的脚本发送 JSON 数据。此脚本使用 [`jq`](https://jqlang.github.io/jq/)，一个你可能需要安装的命令行 JSON 解析器，来提取模型名称、目录和上下文百分比，然后打印格式化的行。
 
-    Save this to `~/.claude/statusline.sh` (where `~` is your home directory, such as `/Users/username` on macOS or `/home/username` on Linux):
+    将其保存到 `~/.claude/statusline.sh`（其中 `~` 是你的主目录，例如 macOS 上的 `/Users/username` 或 Linux 上的 `/home/username`）：
 
     ```bash theme={null}
     #!/bin/bash
@@ -108,16 +116,16 @@ These examples use Bash scripts, which work on macOS and Linux. On Windows, see 
     ```
   </Step>
 
-  <Step title="Make it executable">
-    Mark the script as executable so your shell can run it:
+  <Step title="使其可执行">
+    将脚本标记为可执行，以便你的 shell 可以运行它：
 
     ```bash theme={null}
     chmod +x ~/.claude/statusline.sh
     ```
   </Step>
 
-  <Step title="Add to settings">
-    Tell Claude Code to run your script as the status line. Add this configuration to `~/.claude/settings.json`, which sets `type` to `"command"` (meaning "run this shell command") and points `command` to your script:
+  <Step title="添加到设置">
+    告诉 Claude Code 运行你的脚本作为状态行。将此配置添加到 `~/.claude/settings.json`，它将 `type` 设置为 `"command"`（意思是"运行此 shell 命令"）并将 `command` 指向你的脚本：
 
     ```json theme={null}
     {
@@ -128,87 +136,80 @@ These examples use Bash scripts, which work on macOS and Linux. On Windows, see 
     }
     ```
 
-    Your status line appears at the bottom of the interface. Settings reload automatically, but changes won't appear until your next interaction with Claude Code.
+    你的状态行出现在界面的底部。设置会自动重新加载，但更改在你与 Claude Code 的下一次交互之前不会出现。
   </Step>
 </Steps>
 
-## How status lines work
+<h2 id="how-status-lines-work">
+  状态行如何工作
+</h2>
 
-Claude Code runs your script and pipes [JSON session data](#available-data) to it via stdin. Your script reads the JSON, extracts what it needs, and prints text to stdout. Claude Code displays whatever your script prints.
+Claude Code 运行你的脚本并通过 stdin 向其传输 [JSON 会话数据](#available-data)。你的脚本读取 JSON，提取它需要的内容，并将文本打印到 stdout。Claude Code 显示你的脚本打印的任何内容。
 
-**When it updates**
+**何时更新**
 
-Your script runs once when a session starts, including when you resume one. After that, it runs again when:
+你的脚本在每条新的助手消息之后、`/compact` 完成后、权限模式更改时或 vim 模式切换时运行。更新在 300ms 处进行防抖，这意味着快速更改会批处理在一起，你的脚本在事情稳定后运行一次。如果在你的脚本仍在运行时触发新的更新，则会取消正在进行的执行。如果你编辑你的脚本，更改在 Claude Code 的下一次交互触发更新之前不会出现。
 
-* A new assistant message arrives
-* `/compact` finishes
-* The permission mode changes
-* Vim mode toggles
-* A [`refreshInterval`](#manually-configure-a-status-line) timer elapses, if you set one
+这些触发器在主会话空闲时可能会安静，例如当协调器等待后台子代理时。为了在空闲期间保持基于时间或外部来源的段的最新状态，将 [`refreshInterval`](#manually-configure-a-status-line) 设置为也在固定计时器上重新运行命令。
 
-{/* min-version: 2.1.216 */}Before v2.1.216, resuming a session ran the command twice in quick succession, so the first result could flicker before being replaced.
+**你的脚本可以输出什么**
 
-Claude Code debounces updates at 300ms, so rapid changes batch together and your script runs once after the changes stop. If a new update triggers while your script is still running, Claude Code cancels the in-flight script. If you edit your script, the changes appear the next time an update trigger re-runs it.
+* **多行**：每个 `echo` 或 `print` 语句显示为单独的行。请参阅[多行示例](#display-multiple-lines)。
+* **颜色**：使用 [ANSI 转义码](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)，如 `\033[32m` 表示绿色（终端必须支持它们）。请参阅 [git 状态示例](#git-status-with-colors)。
+* **链接**：使用 [OSC 8 转义序列](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC) 使文本可点击（macOS 上为 Cmd+click，Windows/Linux 上为 Ctrl+click）。需要支持超链接的终端，如 iTerm2、Kitty 或 WezTerm。请参阅[可点击链接示例](#clickable-links)。
 
-The event-driven triggers can go quiet when the main session is idle, for example while a coordinator waits on background subagents. To keep time-based or externally-sourced segments current during idle periods, set [`refreshInterval`](#manually-configure-a-status-line) to also re-run the command on a fixed timer.
+**调整输出大小以适应终端**
 
-**What your script can output**
+Claude Code 捕获你的脚本输出而不是直接将其连接到终端，因此 `tput cols` 和语言级宽度检测无法从脚本内部读取终端大小。{/* min-version: 2.1.153 */}改为读取 `COLUMNS` 和 `LINES` 环境变量。Claude Code 在运行你的脚本之前将这些设置为当前终端尺寸。需要 Claude Code v2.1.153 或更高版本。
 
-* **Multiple lines**: each `echo` or `print` statement displays as a separate row. See the [multi-line example](#display-multiple-lines).
-* **Colors**: use [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) like `\033[32m` for green (terminal must support them). See the [git status example](#git-status-with-colors).
-* **Links**: use [OSC 8 escape sequences](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC) to make text clickable (Cmd+click on macOS, Ctrl+click on Windows/Linux). Requires a terminal that supports hyperlinks like iTerm2, Kitty, or WezTerm. See the [clickable links example](#clickable-links).
+<Note>状态行在本地运行，不消耗 API 令牌。在某些 UI 交互期间，它会临时隐藏，包括自动完成建议、帮助菜单和权限提示。</Note>
 
-**Sizing output to the terminal**
+<h2 id="available-data">
+  可用数据
+</h2>
 
-Claude Code captures your script's output instead of connecting it directly to the terminal, so `tput cols` and language-level width detection cannot read the terminal size from inside the script. {/* min-version: 2.1.153 */}Read the `COLUMNS` and `LINES` environment variables instead. Claude Code sets these to the current terminal dimensions before running your script. Requires Claude Code v2.1.153 or later.
+Claude Code 通过 stdin 向你的脚本发送以下 JSON 字段：
 
-<Note>The status line runs locally and does not consume API tokens. It temporarily hides during certain UI interactions, including autocomplete suggestions, the help menu, and permission prompts.</Note>
+| 字段                                                                               | 描述                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `model.id`, `model.display_name`                                                 | 当前模型标识符和显示名称                                                                                                                                                                              |
+| `cwd`, `workspace.current_dir`                                                   | 当前工作目录。两个字段包含相同的值；为了与 `workspace.project_dir` 保持一致，首选 `workspace.current_dir`。                                                                                                            |
+| `workspace.project_dir`                                                          | 启动 Claude Code 的目录，如果在会话期间工作目录更改，可能与 `cwd` 不同                                                                                                                                             |
+| `workspace.added_dirs`                                                           | 通过 `/add-dir` 或 `--add-dir` 添加的其他目录。如果未添加任何目录，则为空数组                                                                                                                                       |
+| `workspace.git_worktree`                                                         | 当前目录在使用 `git worktree add` 创建的链接 worktree 内时的 Git worktree 名称。在主工作树中不存在。对于任何 git worktree 都会填充，不同于仅适用于 `--worktree` 会话的 `worktree.*`                                                      |
+| `workspace.repo.host`, `workspace.repo.owner`, `workspace.repo.name`             | 从 `origin` 远程解析的存储库标识，例如 `"github.com"`、`"anthropics"`、`"claude-code"`。在 git 存储库外或未配置 `origin` 远程时不存在                                                                                     |
+| `cost.total_cost_usd`                                                            | 以美元计的估计会话成本，在客户端计算。可能与你的实际账单不同                                                                                                                                                            |
+| `cost.total_duration_ms`                                                         | 自会话开始以来的总挂钟时间（毫秒）                                                                                                                                                                         |
+| `cost.total_api_duration_ms`                                                     | 等待 API 响应的总时间（毫秒）                                                                                                                                                                         |
+| `cost.total_lines_added`, `cost.total_lines_removed`                             | 更改的代码行数                                                                                                                                                                                   |
+| `context_window.total_input_tokens`, `context_window.total_output_tokens`        | 当前在上下文窗口中的令牌计数，来自最近的 API 响应。输入包括缓存读取和写入。{/* min-version: 2.1.132 */}在 v2.1.132 之前，这些是累积的会话总计                                                                                              |
+| `context_window.context_window_size`                                             | 最大上下文窗口大小（令牌）。默认为 200000，或对于具有扩展上下文的模型为 1000000。                                                                                                                                          |
+| `context_window.used_percentage`                                                 | 预计算的已使用上下文窗口百分比                                                                                                                                                                           |
+| `context_window.remaining_percentage`                                            | 预计算的剩余上下文窗口百分比                                                                                                                                                                            |
+| `context_window.current_usage`                                                   | 来自最后一次 API 调用的令牌计数，在[上下文窗口字段](#context-window-fields)中描述                                                                                                                                  |
+| `exceeds_200k_tokens`                                                            | 最近一次 API 响应中的总令牌计数（输入、缓存和输出令牌合并）是否超过 200k。这是一个固定阈值，与实际上下文窗口大小无关。                                                                                                                          |
+| `effort.level`                                                                   | 当前推理工作量（`low`、`medium`、`high`、`xhigh` 或 `max`）。反映实时会话值，包括中途 `/effort` 更改。Ultracode 不是一个独立的级别，报告为 `xhigh`。当当前模型不支持工作量参数时不存在                                                                |
+| `thinking.enabled`                                                               | 是否为会话启用了扩展思考                                                                                                                                                                              |
+| `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage` | 消耗的 5 小时或 7 天速率限制的百分比，从 0 到 100                                                                                                                                                           |
+| `rate_limits.five_hour.resets_at`, `rate_limits.seven_day.resets_at`             | Unix 纪元秒，当 5 小时或 7 天速率限制窗口重置时                                                                                                                                                             |
+| `session_id`                                                                     | 唯一的会话标识符                                                                                                                                                                                  |
+| `session_name`                                                                   | 使用 `--name` 标志或 `/rename` 设置的自定义会话名称。如果未设置自定义名称，则不存在                                                                                                                                      |
+| `prompt_id`                                                                      | 标识当前正在处理的用户提示的 UUID。与 OpenTelemetry 事件上的 [`prompt.id` 属性](/docs/zh-CN/monitoring-usage#event-correlation-attributes)匹配。在第一次用户输入之前不存在。{/* min-version: 2.1.196 */}需要 Claude Code v2.1.196 或更高版本 |
+| `transcript_path`                                                                | 对话记录文件的路径                                                                                                                                                                                 |
+| `version`                                                                        | Claude Code 版本                                                                                                                                                                            |
+| `output_style.name`                                                              | 当前输出样式的名称                                                                                                                                                                                 |
+| `vim.mode`                                                                       | 启用 [vim 模式](/docs/zh-CN/interactive-mode#vim-editor-mode) 时的当前 vim 模式（`NORMAL`、`INSERT`、`VISUAL` 或 `VISUAL LINE`）                                                                              |
+| `agent.name`                                                                     | 使用 `--agent` 标志或配置的代理设置运行时的代理名称                                                                                                                                                           |
+| `pr.number`, `pr.url`                                                            | 当前分支的开放拉取请求。镜像底部状态栏中的 PR 徽章。在找到 PR 之前、不在 git 存储库中或 PR 合并或关闭后不存在                                                                                                                           |
+| `pr.review_state`                                                                | 开放 PR 的审查状态：`approved`、`pending`、`changes_requested` 或 `draft`。即使 `pr` 存在，也可能独立不存在                                                                                                        |
+| `worktree.name`                                                                  | 活跃 worktree 的名称。仅在 `--worktree` 会话期间出现                                                                                                                                                    |
+| `worktree.path`                                                                  | worktree 目录的绝对路径                                                                                                                                                                          |
+| `worktree.branch`                                                                | worktree 的 Git 分支名称（例如，`"worktree-my-feature"`）。对于基于钩子的 worktree 不存在                                                                                                                      |
+| `worktree.original_cwd`                                                          | Claude 进入 worktree 之前所在的目录                                                                                                                                                                |
+| `worktree.original_branch`                                                       | 进入 worktree 之前检出的 Git 分支。对于基于钩子的 worktree 不存在                                                                                                                                             |
 
-## Available data
-
-Claude Code sends the following JSON fields to your script via stdin:
-
-| Field                                                                            | Description                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `model.id`, `model.display_name`                                                 | Current model identifier and display name                                                                                                                                                                                                                                                                                        |
-| `cwd`, `workspace.current_dir`                                                   | Current working directory. Both fields contain the same value; `workspace.current_dir` is preferred for consistency with `workspace.project_dir`.                                                                                                                                                                                |
-| `workspace.project_dir`                                                          | Directory where Claude Code was launched, which may differ from `cwd` if the working directory changes during a session                                                                                                                                                                                                          |
-| `workspace.added_dirs`                                                           | Additional directories added via `/add-dir` or `--add-dir`. Empty array if none have been added                                                                                                                                                                                                                                  |
-| `workspace.git_worktree`                                                         | Git worktree name when the current directory is inside a linked worktree created with `git worktree add`. Absent in the main working tree. Populated for any git worktree, unlike `worktree.*` which applies only to `--worktree` sessions                                                                                       |
-| `workspace.repo.host`, `workspace.repo.owner`, `workspace.repo.name`             | Repository identity parsed from the `origin` remote, for example `"github.com"`, `"anthropics"`, `"claude-code"`. Absent outside a git repository or when no `origin` remote is configured                                                                                                                                       |
-| `cost.total_cost_usd`                                                            | Estimated session cost in USD, computed client-side. May differ from your actual bill. {/* min-version: 2.1.211 */}Resets to \$0 when `/clear` starts a new session                                                                                                                                                              |
-| `cost.total_duration_ms`                                                         | Total wall-clock time since the session started, in milliseconds                                                                                                                                                                                                                                                                 |
-| `cost.total_api_duration_ms`                                                     | Total time spent waiting for API responses in milliseconds                                                                                                                                                                                                                                                                       |
-| `cost.total_lines_added`, `cost.total_lines_removed`                             | Lines of code changed                                                                                                                                                                                                                                                                                                            |
-| `context_window.total_input_tokens`, `context_window.total_output_tokens`        | Token counts currently in the context window, from the most recent API response. Input includes cache reads and writes. {/* min-version: 2.1.132 */}Before v2.1.132 these were cumulative session totals                                                                                                                         |
-| `context_window.context_window_size`                                             | Maximum context window size in tokens. 200000 by default, or 1000000 for models with extended context.                                                                                                                                                                                                                           |
-| `context_window.used_percentage`                                                 | Pre-calculated percentage of context window used                                                                                                                                                                                                                                                                                 |
-| `context_window.remaining_percentage`                                            | Pre-calculated percentage of context window remaining                                                                                                                                                                                                                                                                            |
-| `context_window.current_usage`                                                   | Token counts from the last API call, described in [context window fields](#context-window-fields)                                                                                                                                                                                                                                |
-| `exceeds_200k_tokens`                                                            | Whether the total token count (input, cache, and output tokens combined) from the most recent API response exceeds 200k. This is a fixed threshold regardless of actual context window size.                                                                                                                                     |
-| `fast_mode`                                                                      | Whether [fast mode](/docs/en/fast-mode) is enabled for the session                                                                                                                                                                                                                                                                    |
-| `effort.level`                                                                   | Current reasoning effort (`low`, `medium`, `high`, `xhigh`, or `max`). Reflects the live session value, including mid-session `/effort` changes. Ultracode is not a distinct level and reports as `xhigh`. Absent when the current model does not support the effort parameter                                                   |
-| `thinking.enabled`                                                               | Whether extended thinking is enabled for the session                                                                                                                                                                                                                                                                             |
-| `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage` | Percentage of the 5-hour or 7-day rate limit consumed, from 0 to 100                                                                                                                                                                                                                                                             |
-| `rate_limits.five_hour.resets_at`, `rate_limits.seven_day.resets_at`             | Unix epoch seconds when the 5-hour or 7-day rate limit window resets                                                                                                                                                                                                                                                             |
-| `session_id`                                                                     | Unique session identifier                                                                                                                                                                                                                                                                                                        |
-| `session_name`                                                                   | Session name. Uses the custom name set with the `--name` flag or `/rename` when one exists, otherwise the AI-generated session title. The [default display name](/docs/en/sessions#name-your-sessions), such as `my-app-3f`, doesn't populate this field. Absent when the session has neither a custom name nor an AI-generated title |
-| `prompt_id`                                                                      | UUID identifying the user prompt currently being processed. Matches the [`prompt.id` attribute on OpenTelemetry events](/docs/en/monitoring-usage#event-correlation-attributes). Absent until the first user input. {/* min-version: 2.1.196 */}Requires Claude Code v2.1.196 or later                                                |
-| `transcript_path`                                                                | Path to conversation transcript file                                                                                                                                                                                                                                                                                             |
-| `version`                                                                        | Claude Code version                                                                                                                                                                                                                                                                                                              |
-| `output_style.name`                                                              | Name of the current output style                                                                                                                                                                                                                                                                                                 |
-| `vim.mode`                                                                       | Current vim mode (`NORMAL`, `INSERT`, `VISUAL`, or `VISUAL LINE`) when [vim mode](/docs/en/interactive-mode#vim-editor-mode) is enabled                                                                                                                                                                                               |
-| `agent.name`                                                                     | Agent name when running with the `--agent` flag or agent settings configured                                                                                                                                                                                                                                                     |
-| `pr.number`, `pr.url`                                                            | Open pull request for the current branch. Mirrors the PR badge in the bottom status bar. Absent until a PR is found, when not in a git repository, or once the PR merges or closes                                                                                                                                               |
-| `pr.review_state`                                                                | Review status of the open PR: `approved`, `pending`, `changes_requested`, or `draft`. May be independently absent even when `pr` is present                                                                                                                                                                                      |
-| `worktree.name`                                                                  | Name of the active worktree. Present only during `--worktree` sessions                                                                                                                                                                                                                                                           |
-| `worktree.path`                                                                  | Absolute path to the worktree directory                                                                                                                                                                                                                                                                                          |
-| `worktree.branch`                                                                | Git branch name for the worktree (for example, `"worktree-my-feature"`). Absent for hook-based worktrees                                                                                                                                                                                                                         |
-| `worktree.original_cwd`                                                          | The directory Claude was in before entering the worktree                                                                                                                                                                                                                                                                         |
-| `worktree.original_branch`                                                       | Git branch checked out before entering the worktree. Absent for hook-based worktrees                                                                                                                                                                                                                                             |
-
-<Accordion title="Full JSON schema">
-  Your status line command receives this JSON structure via stdin:
+<Accordion title="完整 JSON 架构">
+  你的状态行命令通过 stdin 接收此 JSON 结构：
 
   ```json theme={null}
   {
@@ -218,7 +219,7 @@ Claude Code sends the following JSON fields to your script via stdin:
     "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
     "transcript_path": "/path/to/transcript.jsonl",
     "model": {
-      "id": "claude-opus-5",
+      "id": "claude-opus-4-8",
       "display_name": "Opus"
     },
     "workspace": {
@@ -257,7 +258,6 @@ Claude Code sends the following JSON fields to your script via stdin:
       }
     },
     "exceeds_200k_tokens": false,
-    "fast_mode": false,
     "effort": {
       "level": "high"
     },
@@ -295,65 +295,71 @@ Claude Code sends the following JSON fields to your script via stdin:
   }
   ```
 
-  **Fields that may be absent** (not present in JSON):
+  **可能不存在的字段**（不在 JSON 中）：
 
-  * `session_name`: appears when a custom name has been set with `--name` or `/rename`, or once an AI-generated session title exists. The default display name, such as `my-app-3f`, doesn't populate it
-  * `prompt_id`: appears only after the first user input
-  * `workspace.git_worktree`: appears only when the current directory is inside a linked git worktree
-  * `workspace.repo`: appears only inside a git repository with an `origin` remote configured
-  * `effort`: appears only when the current model supports the reasoning effort parameter
-  * `vim`: appears only when vim mode is enabled
-  * `agent`: appears only when running with the `--agent` flag or agent settings configured
-  * `pr`: appears only while an open PR is found for the current branch, and is removed once the PR merges or closes. `pr.review_state` may be independently absent
-  * `worktree`: appears only during `--worktree` sessions. When present, `branch` and `original_branch` may also be absent for hook-based worktrees
-  * `rate_limits`: appears only for Claude.ai subscribers (Pro/Max) after the first API response in the session. Each window (`five_hour`, `seven_day`) may be independently absent. Use `jq -r '.rate_limits.five_hour.used_percentage // empty'` to handle absence gracefully.
+  * `session_name`：仅在使用 `--name` 或 `/rename` 设置自定义名称时出现
+  * `prompt_id`：仅在第一次用户输入后出现
+  * `workspace.git_worktree`：仅当当前目录在链接的 git worktree 内时出现
+  * `workspace.repo`：仅在 git 存储库内且配置了 `origin` 远程时出现
+  * `effort`：仅当当前模型支持推理工作量参数时出现
+  * `vim`：仅在启用 vim 模式时出现
+  * `agent`：仅在使用 `--agent` 标志或配置的代理设置运行时出现
+  * `pr`：仅在为当前分支找到开放 PR 时出现，一旦 PR 合并或关闭就会被移除。`pr.review_state` 可能独立不存在
+  * `worktree`：仅在 `--worktree` 会话期间出现。当存在时，`branch` 和 `original_branch` 对于基于钩子的 worktree 也可能不存在
+  * `rate_limits`：仅对 Claude.ai 订阅者（Pro/Max）在会话中第一次 API 响应后出现。每个窗口（`five_hour`、`seven_day`）可能独立不存在。使用 `jq -r '.rate_limits.five_hour.used_percentage // empty'` 来优雅地处理缺失。
 
-  **Fields that may be `null`**:
+  **可能为 `null` 的字段**：
 
-  * `context_window.current_usage`: `null` before the first API call in a session, and again after `/compact` until the next API call repopulates it
-  * `context_window.used_percentage`, `context_window.remaining_percentage`: may be `null` early in the session
+  * `context_window.current_usage`：在会话中第一次 API 调用之前为 `null`，以及在 `/compact` 之后直到下一次 API 调用重新填充它为止为 `null`
+  * `context_window.used_percentage`, `context_window.remaining_percentage`：在会话早期可能为 `null`
 
-  Handle missing fields with conditional access and null values with fallback defaults in your scripts.
+  在你的脚本中使用条件访问处理缺失字段，使用回退默认值处理 null 值。
 </Accordion>
 
-### Context window fields
+<h3 id="context-window-fields">
+  上下文窗口字段
+</h3>
 
-The `context_window` object describes the live context window from the most recent API response. As of v2.1.132, `total_input_tokens` and `total_output_tokens` reflect current context usage, not cumulative session totals.
+`context_window` 对象描述来自最近一次 API 响应的实时上下文窗口。从 v2.1.132 开始，`total_input_tokens` 和 `total_output_tokens` 反映当前上下文使用情况，而不是累积的会话总计。
 
-* **Combined totals** (`total_input_tokens`, `total_output_tokens`): tokens currently in the context window. `total_input_tokens` is the sum of `input_tokens`, `cache_creation_input_tokens`, and `cache_read_input_tokens`; `total_output_tokens` is the output tokens from the most recent response. Both are `0` before the first API response.
-* **Per-component usage** (`current_usage`): the same token counts broken out by category. Use this when you need cache hits separate from fresh input.
+* **合并总计**（`total_input_tokens`, `total_output_tokens`）：当前在上下文窗口中的令牌。`total_input_tokens` 是 `input_tokens`、`cache_creation_input_tokens` 和 `cache_read_input_tokens` 的总和；`total_output_tokens` 是最近一次响应中的输出令牌。在第一次 API 响应之前，两者都是 `0`。
+* **按组件使用情况**（`current_usage`）：相同的令牌计数按类别分解。当你需要将缓存命中与新输入分开时，使用此选项。
 
-The `current_usage` object contains:
+`current_usage` 对象包含：
 
-* `input_tokens`: input tokens in current context
-* `output_tokens`: output tokens generated
-* `cache_creation_input_tokens`: tokens written to cache
-* `cache_read_input_tokens`: tokens read from cache
+* `input_tokens`：当前上下文中的输入令牌
+* `output_tokens`：生成的输出令牌
+* `cache_creation_input_tokens`：写入缓存的令牌
+* `cache_read_input_tokens`：从缓存读取的令牌
 
-For what the cache fields mean and how they're billed, see [check cache performance](/docs/en/prompt-caching#check-cache-performance).
+有关缓存字段的含义以及它们如何计费的信息，请参阅[检查缓存性能](/docs/zh-CN/prompt-caching#check-cache-performance)。
 
-The `used_percentage` field is calculated from input tokens only: `input_tokens + cache_creation_input_tokens + cache_read_input_tokens`. It does not include `output_tokens`.
+`used_percentage` 字段仅从输入令牌计算：`input_tokens + cache_creation_input_tokens + cache_read_input_tokens`。它不包括 `output_tokens`。
 
-If you calculate context percentage manually from `current_usage`, use the same input-only formula to match `used_percentage`.
+如果你从 `current_usage` 手动计算上下文百分比，使用相同的仅输入公式来匹配 `used_percentage`。
 
-The `current_usage` object is `null` before the first API call in a session, and again immediately after `/compact` until the next API call repopulates it.
+`current_usage` 对象在会话中第一次 API 调用之前为 `null`，以及在 `/compact` 之后直到下一次 API 调用重新填充它为止再次为 `null`。
 
-## Examples
+<h2 id="examples">
+  示例
+</h2>
 
-These examples show common status line patterns. To use any example:
+这些示例展示了常见的状态行模式。要使用任何示例：
 
-1. Save the script to a file like `~/.claude/statusline.sh` (or `.py`/`.js`)
-2. Make it executable: `chmod +x ~/.claude/statusline.sh`
-3. Add the path to your [settings](#manually-configure-a-status-line)
+1. 将脚本保存到文件，如 `~/.claude/statusline.sh`（或 `.py`/`.js`）
+2. 使其可执行：`chmod +x ~/.claude/statusline.sh`
+3. 将路径添加到你的[设置](#manually-configure-a-status-line)
 
-The Bash examples use [`jq`](https://jqlang.org/) to parse JSON. Python and Node.js have built-in JSON parsing.
+Bash 示例使用 [`jq`](https://jqlang.github.io/jq/) 来解析 JSON。Python 和 Node.js 具有内置的 JSON 解析。
 
-### Context window usage
+<h3 id="context-window-usage">
+  上下文窗口使用情况
+</h3>
 
-Display the current model and context window usage with a visual progress bar. Each script reads JSON from stdin, extracts the `used_percentage` field, and builds a 10-character bar where filled blocks (▓) represent usage:
+显示当前模型和上下文窗口使用情况，带有可视进度条。每个脚本从 stdin 读取 JSON，提取 `used_percentage` 字段，并构建一个 10 字符的栏，其中填充的块（▓）代表使用情况：
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-context-window-usage.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=15b58ab3602f036939145dde3165c6f7" alt="A status line showing model name and a progress bar with percentage" width="448" height="152" data-path="images/statusline-context-window-usage.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-context-window-usage.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=15b58ab3602f036939145dde3165c6f7" alt="一个状态行，显示模型名称和带有百分比的进度条" width="448" height="152" data-path="images/statusline-context-window-usage.png" />
 </Frame>
 
 <CodeGroup>
@@ -415,15 +421,17 @@ Display the current model and context window usage with a visual progress bar. E
   ```
 </CodeGroup>
 
-### Git status with colors
+<h3 id="git-status-with-colors">
+  Git 状态与颜色
+</h3>
 
-Show git branch with color-coded indicators for staged and modified files. This script uses [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) for terminal colors: `\033[32m` is green, `\033[33m` is yellow, and `\033[0m` resets to default.
+显示 git 分支，带有暂存和修改文件的颜色编码指示器。此脚本使用[ANSI 转义码](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)表示终端颜色：`\033[32m` 是绿色，`\033[33m` 是黄色，`\033[0m` 重置为默认值。
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-git-context.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=e656f34f90d1d9a1d0e220988914345f" alt="A status line showing model, directory, git branch, and colored indicators for staged and modified files" width="742" height="178" data-path="images/statusline-git-context.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-git-context.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=e656f34f90d1d9a1d0e220988914345f" alt="一个状态行，显示模型、目录、git 分支和暂存和修改文件的彩色指示器" width="742" height="178" data-path="images/statusline-git-context.png" />
 </Frame>
 
-Each script checks if the current directory is a git repository, counts staged and modified files, and displays color-coded indicators:
+每个脚本检查当前目录是否是 git 存储库，计算暂存和修改文件，并显示颜色编码的指示器：
 
 <CodeGroup>
   ```bash Bash theme={null}
@@ -509,14 +517,16 @@ Each script checks if the current directory is a git repository, counts staged a
   ```
 </CodeGroup>
 
-### Cost and duration tracking
+<h3 id="cost-and-duration-tracking">
+  成本和持续时间跟踪
+</h3>
 
-Track your session's API costs and elapsed time. The `cost.total_cost_usd` field accumulates the estimated cost of all API calls in the current session. The `cost.total_duration_ms` field measures total elapsed time since the session started, while `cost.total_api_duration_ms` tracks only the time spent waiting for API responses.
+跟踪你的会话的 API 成本和经过的时间。`cost.total_cost_usd` 字段累积当前会话中所有 API 调用的估计成本。`cost.total_duration_ms` 字段测量自会话开始以来的总经过时间，而 `cost.total_api_duration_ms` 仅跟踪等待 API 响应的时间。
 
-Each script formats cost as currency and converts milliseconds to minutes and seconds:
+每个脚本将成本格式化为货币并将毫秒转换为分钟和秒：
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-cost-tracking.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=e3444a51fe6f3440c134bd5f1f08ad29" alt="A status line showing model name, session cost, and duration" width="588" height="180" data-path="images/statusline-cost-tracking.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-cost-tracking.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=e3444a51fe6f3440c134bd5f1f08ad29" alt="一个状态行，显示模型名称、会话成本和持续时间" width="588" height="180" data-path="images/statusline-cost-tracking.png" />
 </Frame>
 
 <CodeGroup>
@@ -570,15 +580,17 @@ Each script formats cost as currency and converts milliseconds to minutes and se
   ```
 </CodeGroup>
 
-### Display multiple lines
+<h3 id="display-multiple-lines">
+  显示多行
+</h3>
 
-Your script can output multiple lines to create a richer display. Each `echo` statement produces a separate row in the status area.
+你的脚本可以输出多行来创建更丰富的显示。每个 `echo` 语句在状态区域中产生单独的行。
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-multiline.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=60f11387658acc9ff75158ae85f2ac87" alt="A multi-line status line showing model name, directory, git branch on the first line, and a context usage progress bar with cost and duration on the second line" width="776" height="212" data-path="images/statusline-multiline.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-multiline.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=60f11387658acc9ff75158ae85f2ac87" alt="一个多行状态行，显示第一行上的模型名称、目录、git 分支，第二行上的上下文使用进度条、成本和持续时间" width="776" height="212" data-path="images/statusline-multiline.png" />
 </Frame>
 
-This example combines several techniques: threshold-based colors (green under 70%, yellow 70-89%, red 90%+), a progress bar, and git branch info. Each `print` or `echo` statement creates a separate row:
+此示例结合了几种技术：基于阈值的颜色（70% 以下为绿色，70-89% 为黄色，90%+ 为红色）、进度条和 git 分支信息。每个 `print` 或 `echo` 语句创建单独的行：
 
 <CodeGroup>
   ```bash Bash theme={null}
@@ -677,15 +689,17 @@ This example combines several techniques: threshold-based colors (green under 70
   ```
 </CodeGroup>
 
-### Clickable links
+<h3 id="clickable-links">
+  可点击链接
+</h3>
 
-This example creates a clickable link to your GitHub repository. It reads the git remote URL, converts SSH format to HTTPS with `sed`, and wraps the repo name in OSC 8 escape codes. Hold Cmd (macOS) or Ctrl (Windows/Linux) and click to open the link in your browser.
+此示例创建指向你的 GitHub 存储库的可点击链接。它读取 git 远程 URL，使用 `sed` 将 SSH 格式转换为 HTTPS，并将存储库名称包装在 OSC 8 转义码中。按住 Cmd（macOS）或 Ctrl（Windows/Linux）并单击以在浏览器中打开链接。
 
 <Frame>
-  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-links.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=4bcc6e7deb7cf52f41ab85a219b52661" alt="A status line showing a clickable link to a GitHub repository" width="726" height="198" data-path="images/statusline-links.png" />
+  <img src="https://mintcdn.com/claude-code/nibzesLaJVh4ydOq/images/statusline-links.png?fit=max&auto=format&n=nibzesLaJVh4ydOq&q=85&s=4bcc6e7deb7cf52f41ab85a219b52661" alt="一个状态行，显示指向 GitHub 存储库的可点击链接" width="726" height="198" data-path="images/statusline-links.png" />
 </Frame>
 
-Each script gets the git remote URL, converts SSH format to HTTPS, and wraps the repo name in OSC 8 escape codes. The Bash version uses `printf '%b'` which interprets backslash escapes more reliably than `echo -e` across different shells:
+每个脚本获取 git 远程 URL，将 SSH 格式转换为 HTTPS，并将存储库名称包装在 OSC 8 转义码中。Bash 版本使用 `printf '%b'`，它比 `echo -e` 更可靠地跨不同 shell 解释反斜杠转义：
 
 <CodeGroup>
   ```bash Bash theme={null}
@@ -757,11 +771,13 @@ Each script gets the git remote URL, converts SSH format to HTTPS, and wraps the
   ```
 </CodeGroup>
 
-### Rate limit usage
+<h3 id="rate-limit-usage">
+  速率限制使用情况
+</h3>
 
-Display Claude.ai subscription rate limit usage in the status line. The `rate_limits` object contains `five_hour` (5-hour rolling window) and `seven_day` (weekly) windows. Each window provides `used_percentage` (0-100) and `resets_at` (Unix epoch seconds when the window resets).
+在状态行中显示 Claude.ai 订阅速率限制使用情况。`rate_limits` 对象包含 `five_hour`（5 小时滚动窗口）和 `seven_day`（每周）窗口。每个窗口提供 `used_percentage`（0-100）和 `resets_at`（Unix 纪元秒，当窗口重置时）。
 
-This field is only present for Claude.ai subscribers (Pro/Max) after the first API response. Each script handles the absent field gracefully:
+此字段仅对 Claude.ai 订阅者（Pro/Max）在第一次 API 响应后出现。每个脚本优雅地处理缺失字段：
 
 <CodeGroup>
   ```bash Bash theme={null}
@@ -823,13 +839,15 @@ This field is only present for Claude.ai subscribers (Pro/Max) after the first A
   ```
 </CodeGroup>
 
-### Cache expensive operations
+<h3 id="cache-expensive-operations">
+  缓存昂贵的操作
+</h3>
 
-Your status line script runs frequently during active sessions. Commands like `git status` or `git diff` can be slow, especially in large repositories. This example caches git information to a temp file and only refreshes it every 5 seconds.
+你的状态行脚本在活跃会话期间频繁运行。像 `git status` 或 `git diff` 这样的命令可能很慢，特别是在大型存储库中。此示例将 git 信息缓存到临时文件，并仅每 5 秒刷新一次。
 
-The cache filename needs to be stable across status line invocations within a session, but unique across sessions so concurrent sessions in different repositories don't read each other's cached git state. Process-based identifiers like `$$`, `os.getpid()`, or `process.pid` change on every invocation and defeat the cache. Use the `session_id` from the JSON input instead: it's stable for the lifetime of a session and unique per session.
+缓存文件名需要在会话内的状态行调用中保持稳定，但在会话之间是唯一的，以便不同存储库中的并发会话不会读取彼此的缓存 git 状态。基于进程的标识符如 `$$`、`os.getpid()` 或 `process.pid` 在每次调用时都会改变，会破坏缓存。改用 JSON 输入中的 `session_id`：它在会话的生命周期内是稳定的，并且对每个会话是唯一的。
 
-Each script checks if the cache file is missing or older than 5 seconds before running git commands:
+每个脚本在运行 git 命令之前检查缓存文件是否缺失或早于 5 秒：
 
 <CodeGroup>
   ```bash Bash theme={null}
@@ -845,11 +863,8 @@ Each script checks if the cache file is missing or older than 5 seconds before r
 
   cache_is_stale() {
       [ ! -f "$CACHE_FILE" ] || \
-      # stat -c %Y (Linux) or stat -f %m (macOS) prints the file's last-modified
-      # time. The Linux form must run first: on Linux, the macOS form prints a
-      # filesystem report to stdout before failing, and that output would be
-      # captured by the command substitution and break the arithmetic.
-      [ $(($(date +%s) - $(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0))) -gt $CACHE_MAX_AGE ]
+      # stat -f %m is macOS, stat -c %Y is Linux
+      [ $(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0))) -gt $CACHE_MAX_AGE ]
   }
 
   if cache_is_stale; then
@@ -957,13 +972,15 @@ Each script checks if the cache file is missing or older than 5 seconds before r
   ```
 </CodeGroup>
 
-### Windows configuration
+<h3 id="windows-configuration">
+  Windows 配置
+</h3>
 
-On Windows, Claude Code runs status line commands through Git Bash when Git Bash is installed, or through PowerShell when Git Bash is absent.
+在 Windows 上，Claude Code 通过 Git Bash 运行状态行命令（如果已安装 Git Bash），或在没有 Git Bash 时通过 PowerShell 运行。
 
-Git Bash treats unquoted backslashes as escape characters, so a Windows-style path such as `C:\Users\username\script.mjs` reaches the script runner with its separators removed and the command fails without a visible error. Write file paths in the `command` string with forward slashes, as shown in the examples below. The `~` shorthand also works and expands to your Windows home directory.
+Git Bash 将未引用的反斜杠视为转义字符，因此 Windows 风格的路径（如 `C:\Users\username\script.mjs`）到达脚本运行器时会删除其分隔符，命令会失败而没有可见的错误。在 `command` 字符串中使用正斜杠编写文件路径，如下面的示例所示。`~` 快捷方式也有效，并扩展到你的 Windows 主目录。
 
-To run a PowerShell script as your status line, invoke it via `powershell`. This works whether Claude Code routes the command through Git Bash or PowerShell:
+要将 PowerShell 脚本作为状态行运行，请通过 `powershell` 调用它。无论 Claude Code 通过 Git Bash 还是 PowerShell 路由命令，这都有效：
 
 <CodeGroup>
   ```json settings.json theme={null}
@@ -990,7 +1007,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
   ```
 </CodeGroup>
 
-Or, when Git Bash is installed, run a Bash script directly:
+或者，当安装了 Git Bash 时，直接运行 Bash 脚本：
 
 <CodeGroup>
   ```json settings.json theme={null}
@@ -1012,9 +1029,11 @@ Or, when Git Bash is installed, run a Bash script directly:
   ```
 </CodeGroup>
 
-## Subagent status lines
+<h2 id="subagent-status-lines">
+  子代理状态行
+</h2>
 
-The `subagentStatusLine` setting renders a custom row body for each [subagent](/docs/en/sub-agents) shown in the agent panel below the prompt. Use it to replace the default `name · description · token count` row with your own formatting.
+`subagentStatusLine` 设置为代理面板中显示的每个[子代理](/docs/zh-CN/sub-agents)呈现自定义行体。使用它来替换默认的 `name · description · token count` 行为你自己的格式。
 
 ```json theme={null}
 {
@@ -1025,89 +1044,91 @@ The `subagentStatusLine` setting renders a custom row body for each [subagent](/
 }
 ```
 
-The command runs once per refresh tick and receives all visible subagent rows as a single JSON object on stdin. The input includes the [base hook fields](/docs/en/hooks#common-input-fields), a `columns` field with the usable row width, and a `tasks` array. Each task has `id`, `name`, `type`, `status`, `description`, `label`, `startTime`, `model`, `effort`, `contextWindowSize`, `tokenCount`, `tokenSamples`, and `cwd`.
+该命令在每个刷新周期运行一次，所有可见的子代理行作为单个 JSON 对象传递到 stdin。输入包括[基本钩子字段](/docs/zh-CN/hooks#common-input-fields)、`columns` 字段（可用行宽）和 `tasks` 数组。每个任务有 `id`、`name`、`type`、`status`、`description`、`label`、`startTime`、`model`、`contextWindowSize`、`tokenCount`、`tokenSamples` 和 `cwd`。
 
-The per-task `model` field is the resolved model ID the task runs on. `contextWindowSize` is that model's context window in tokens, computed the same way as the main status line's `context_window.context_window_size`, so you can render a per-row percentage from `tokenCount`. Both fields require Claude Code v2.1.205 or later and are omitted for a task whose model isn't resolved yet.
+每个任务的 `model` 字段是任务运行的已解析模型 ID。`contextWindowSize` 是该模型的上下文窗口（以令牌计），计算方式与主状态行的 `context_window.context_window_size` 相同，因此你可以从 `tokenCount` 呈现每行百分比。这两个字段需要 Claude Code v2.1.205 或更高版本，对于模型尚未解析的任务会被省略。
 
-The per-task `effort` field is the reasoning effort set for that subagent, in its [definition frontmatter](/docs/en/sub-agents#supported-frontmatter-fields) or on the individual invocation. The value is either one of the effort level strings `low`, `medium`, `high`, `xhigh`, or `max`, or a numeric token budget. The field reports the configured value as written: if the model doesn't support that level, the effort Claude Code actually applies may differ. The field requires Claude Code v2.1.214 or later and is absent when the subagent inherits the session's effort level.
+将一个 JSON 行写入 stdout，用于你想覆盖的每一行，形式为 `{"id": "<task id>", "content": "<row body>"}` 。`content` 字符串按原样呈现，包括 ANSI 颜色和 OSC 8 超链接。省略任务的 `id` 以保持该行的默认呈现；发出空 `content` 字符串以隐藏它。
 
-Write one JSON line to stdout per row you want to override, in the form `{"id": "<task id>", "content": "<row body>"}`. The `content` string is rendered as-is, including ANSI colors and OSC 8 hyperlinks. Omit a task's `id` to keep the default rendering for that row; emit an empty `content` string to hide it.
+适用于 `statusLine` 的相同信任和 `disableAllHooks` 门控也适用于此处。插件可以在其[`settings.json`](/docs/zh-CN/plugins-reference#standard-plugin-layout)中提供默认的 `subagentStatusLine`。
 
-The same trust and `disableAllHooks` gates that apply to `statusLine` apply here. Plugins can ship a default `subagentStatusLine` in their [`settings.json`](/docs/en/plugins-reference#standard-plugin-layout).
+<h2 id="tips">
+  提示
+</h2>
 
-## Tips
+* **使用模拟输入测试**：`echo '{"model":{"display_name":"Opus"},"workspace":{"current_dir":"/home/user/project"},"context_window":{"used_percentage":25},"session_id":"test-session-abc"}' | ./statusline.sh`
+* **保持输出简短**：状态栏的宽度有限，所以长输出可能会被截断或换行不当
+* **缓存慢速操作**：你的脚本在活跃会话期间频繁运行，所以像 `git status` 这样的命令可能会导致延迟。请参阅[缓存示例](#cache-expensive-operations)了解如何处理这个问题。
 
-* **Test with mock input**: `echo '{"model":{"display_name":"Opus"},"workspace":{"current_dir":"/home/user/project"},"context_window":{"used_percentage":25},"session_id":"test-session-abc"}' | ./statusline.sh`
-* **Keep output short**: the status bar has limited width, so long output may get truncated or wrap awkwardly
-* **Cache slow operations**: your script runs frequently during active sessions, so commands like `git status` can cause lag. See the [caching example](#cache-expensive-operations) for how to handle this.
+社区项目如 [ccstatusline](https://github.com/sirmalloc/ccstatusline) 和 [starship-claude](https://github.com/martinemde/starship-claude) 提供带有主题和其他功能的预构建配置。
 
-Community projects like [ccstatusline](https://github.com/sirmalloc/ccstatusline) and [starship-claude](https://github.com/martinemde/starship-claude) provide pre-built configurations with themes and additional features.
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-## Troubleshooting
+**状态行未出现**
 
-**Status line not appearing**
+* 验证你的脚本是可执行的：`chmod +x ~/.claude/statusline.sh`
+* 检查你的脚本输出到 stdout，而不是 stderr
+* 手动运行你的脚本以验证它产生输出
+* 在安装了 Git Bash 的 Windows 上，`command` 路径中的反斜杠可能在脚本运行前被当作转义字符消耗。在路径中使用正斜杠。参见 [Windows 配置](#windows-configuration)。
+* 如果 `disableAllHooks` 在你的设置中设置为 `true`，状态行也会被禁用。删除此设置或将其设置为 `false` 以重新启用。
+* 运行 `claude --debug` 以记录会话中第一次状态行调用的退出代码和 stderr
+* 要求 Claude 读取你的设置文件并直接执行 `statusLine` 命令以显示错误
 
-* Verify your script is executable: `chmod +x ~/.claude/statusline.sh`
-* Check that your script outputs to stdout, not stderr
-* Run your script manually to verify it produces output
-* On Windows with Git Bash installed, backslashes in the `command` path are likely being consumed as escape characters before the script runs. Use forward slashes in the path. See [Windows configuration](#windows-configuration).
-* If `disableAllHooks` is set to `true` in your settings, the status line is also disabled. Remove this setting or set it to `false` to re-enable.
-* Run `claude --debug` to log the exit code and stderr from the first status line invocation in a session
-* Ask Claude to read your settings file and execute the `statusLine` command directly to surface errors
+**状态行显示 `--` 或空值**
 
-**Status line shows `--` or empty values**
+* 在第一次 API 响应完成之前，字段可能为 `null`
+* 在你的脚本中使用回退处理 null 值，如 jq 中的 `// 0`
+* 如果值在多条消息后仍然为空，请重新启动 Claude Code
 
-* Fields may be `null` before the first API response completes
-* Handle null values in your script with fallbacks such as `// 0` in jq
-* Restart Claude Code if values remain empty after multiple messages
+**上下文百分比显示意外值**
 
-**Context percentage shows unexpected values**
+* 使用 `used_percentage` 获得最简单的准确上下文状态
+* 上下文百分比可能与 `/context` 输出不同，因为每个的计算时间不同
 
-* Use `used_percentage` for the simplest accurate context state
-* Context percentage may differ from `/context` output due to when each is calculated
+**OSC 8 链接不可点击**
 
-**OSC 8 links not clickable**
+* 验证你的终端支持 OSC 8 超链接（iTerm2、Kitty、WezTerm）
 
-* Verify your terminal supports OSC 8 hyperlinks (iTerm2, Kitty, WezTerm)
+* Terminal.app 不支持可点击链接
 
-* Terminal.app does not support clickable links
-
-* If link text appears but isn't clickable, Claude Code may not have detected hyperlink support in your terminal. This commonly affects Windows Terminal and other emulators not in the auto-detection list. Set the `FORCE_HYPERLINK` environment variable to override detection before launching Claude Code:
+* 如果链接文本出现但不可点击，Claude Code 可能未检测到你的终端中的超链接支持。这通常影响 Windows Terminal 和其他不在自动检测列表中的模拟器。在启动 Claude Code 之前设置 `FORCE_HYPERLINK` 环境变量以覆盖检测：
 
   ```bash theme={null}
   FORCE_HYPERLINK=1 claude
   ```
 
-  In PowerShell, set the variable in the current session first:
+  在 PowerShell 中，首先在当前会话中设置变量：
 
   ```powershell theme={null}
   $env:FORCE_HYPERLINK = "1"; claude
   ```
 
-* SSH and tmux sessions may strip OSC sequences depending on configuration
+* SSH 和 tmux 会话可能根据配置剥离 OSC 序列
 
-* If escape sequences appear as literal text like `\e]8;;`, use `printf '%b'` instead of `echo -e` for more reliable escape handling
+* 如果转义序列显示为文字文本，如 `\e]8;;`，使用 `printf '%b'` 而不是 `echo -e` 以获得更可靠的转义处理
 
-**Display glitches with escape sequences**
+**转义序列显示故障**
 
-* Complex escape sequences (ANSI colors, OSC 8 links) can occasionally cause garbled output if they overlap with other UI updates
-* If you see corrupted text, try simplifying your script to plain text output
-* Multi-line status lines with escape codes are more prone to rendering issues than single-line plain text
+* 复杂的转义序列（ANSI 颜色、OSC 8 链接）如果与其他 UI 更新重叠，偶尔会导致输出混乱
+* 如果你看到损坏的文本，尝试简化你的脚本为纯文本输出
+* 带有转义码的多行状态行比单行纯文本更容易出现渲染问题
 
-**Workspace trust required**
+**工作区信任需要**
 
-* The status line command only runs if you've accepted the workspace trust dialog for the current directory. Because `statusLine` executes a shell command, it requires the same trust acceptance as hooks and other shell-executing settings.
-* If you haven't accepted the [workspace trust dialog](/docs/en/security) for this folder, the status line stays blank, and `claude --debug` logs `Status line command skipped: workspace trust not accepted`. Restart Claude Code and accept the trust dialog to enable it.
+* 状态行命令仅在你接受当前目录的工作区信任对话框时运行。因为 `statusLine` 执行 shell 命令，它需要与 hooks 和其他执行 shell 的设置相同的信任接受。
+* 如果未接受信任，你将看到通知 `statusline skipped · restart to fix` 而不是你的状态行输出。重新启动 Claude Code 并接受信任提示以启用它。
 
-**Script errors or hangs**
+**脚本错误或挂起**
 
-* Scripts that exit with non-zero codes or produce no output cause the status line to go blank
-* Slow scripts block the status line from updating until they complete. Keep scripts fast to avoid stale output.
-* If a new update triggers while a slow script is running, the in-flight script is cancelled
-* Test your script independently with mock input before configuring it
+* 以非零代码退出或不产生输出的脚本会导致状态行变为空白
+* 慢速脚本会阻止状态行更新，直到它们完成。保持脚本快速以避免陈旧输出。
+* 如果在慢速脚本运行时触发新的更新，正在进行的脚本会被取消
+* 在配置之前使用模拟输入独立测试你的脚本
 
-**Notifications share the status line row**
+**通知共享状态行行**
 
-* System notifications like MCP server errors and auto-updates display on the right side of the same row as your status line. Transient notifications such as the context-low warning also cycle through this area.
-* Enabling verbose mode adds a token counter to this area
-* On narrow terminals, these notifications may truncate your status line output
+* 系统通知，如 MCP 服务器错误和自动更新，显示在与你的状态行相同行的右侧。临时通知，如上下文低警告，也会循环通过此区域。
+* 启用详细模式会向此区域添加令牌计数器
+* 在窄终端上，这些通知可能会截断你的状态行输出

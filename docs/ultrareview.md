@@ -2,116 +2,81 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Find bugs with ultrareview
+# 使用 Ultrareview 查找错误
 
-> Run a deep, multi-agent code review in the cloud with /code-review ultra to find and verify bugs before you merge.
+> 使用 /code-review ultra 在云中运行深度多代理代码审查，在合并前查找和验证错误。
 
 <Note>
-  Ultrareview is a research preview feature. The feature, pricing, and availability may change based on feedback. The command is `/code-review ultra`. When ultrareview is available to your account, `/ultrareview` is an alias.
+  Ultrareview 是一个研究预览功能。该功能、定价和可用性可能会根据反馈而改变。该命令现在通过 `/code-review ultra` 调用，`/ultrareview` 仍然作为别名保留。
 </Note>
 
-Ultrareview is a deep code review that runs on Claude Code on the web infrastructure. When you run `/code-review ultra`, Claude Code launches a fleet of reviewer agents in a remote sandbox to find bugs in your branch or pull request.
+Ultrareview 是在 Claude Code 网络基础设施上运行的深度代码审查。当您运行 `/code-review ultra` 时，Claude Code 在远程沙箱中启动一队审查代理来查找您的分支或拉取请求中的错误。
 
-Compared to a local `/code-review` or `/review`, ultrareview offers:
+与本地 `/code-review` 或 `/review` 相比，ultrareview 提供：
 
-* **Higher signal**: every reported finding is independently reproduced and verified, so the results focus on real bugs rather than style suggestions
-* **Broader coverage**: a larger fleet of reviewer agents explores the change in parallel, which surfaces issues that a local review can miss
-* **No local resource use**: the review runs entirely in a remote sandbox, so your terminal stays free for other work while it runs
+* **更高的信号质量**：每个报告的发现都经过独立复现和验证，因此结果专注于真实的错误而不是风格建议
+* **更广泛的覆盖范围**：许多审查代理并行探索更改，这会发现本地审查可能遗漏的问题
+* **无本地资源使用**：审查完全在远程沙箱中运行，因此您的终端在运行时保持空闲，可用于其他工作
 
-Ultrareview requires authentication with a claude.ai account because it runs on Claude Code on the web infrastructure. If you are signed in with an API key only, run `/login` and authenticate with claude.ai first. Ultrareview is not available when using Claude Code with Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry, and it is not available to organizations that have enabled Zero Data Retention. When ultrareview is not available, `/code-review ultra` runs a local review in your session instead.
+Ultrareview 需要使用 Claude.ai 账户进行身份验证，因为它在 Claude Code 网络基础设施上运行。如果您仅使用 API 密钥登录，请先运行 `/login` 并使用 Claude.ai 进行身份验证。当使用 Claude Code 与 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 时，Ultrareview 不可用，对于已启用零数据保留的组织也不可用。
 
-## Run ultrareview from the CLI
+<h2 id="run-ultrareview-from-the-cli">
+  从 CLI 运行 ultrareview
+</h2>
 
-Start a review from any git repository:
+从 Claude Code CLI 中的任何 git 存储库启动审查。
 
 ```text theme={null}
 /code-review ultra
 ```
 
-Without arguments, ultrareview reviews the diff between your current branch and the default branch, including uncommitted and staged changes. For a branch review, Claude Code bundles the repository state and uploads it to a remote sandbox; when you [review a pull request](#review-a-pull-request), Claude Code uploads nothing from your machine.
+不带参数时，ultrareview 审查您当前分支与默认分支之间的差异，包括工作树中任何未提交和暂存的更改。Claude Code 捆绑存储库状态并将其上传到远程沙箱进行审查。
 
-Before launching, Claude Code shows a confirmation dialog with the review scope, your remaining free runs, and the estimated cost; for a branch review, the scope includes the file and line count. After you confirm, the review continues in the background while you keep using your session.
-
-The command runs only when you invoke it with `/code-review ultra`; Claude doesn't start an ultrareview on its own.
-
-### Review against a different base
-
-To compare against a base other than the default branch, pass the branch name. This example reviews your current branch against `develop` instead:
-
-```text theme={null}
-/code-review ultra develop
-```
-
-The base branch doesn't need to exist in your local clone; Claude Code fetches it from `origin`. If the name has a typo, Claude Code suggests the closest branch name in the error.
-
-### Review a pull request
-
-To review a GitHub pull request instead of a local branch, pass the PR number:
+要审查 GitHub 拉取请求，请传递 PR 编号。
 
 ```text theme={null}
 /code-review ultra 1234
 ```
 
-The command also accepts `#1234`, `PR 1234`, and pasted PR URLs; a pasted URL must point to the repository in your current directory.
-
-In PR mode, the remote sandbox clones the pull request directly from the host rather than bundling your local working tree. PR mode works with repositories on `github.com` and on [GitHub Enterprise Server](/docs/en/github-enterprise-server) instances that an Owner has connected to Claude Code.
-
-### Pass a request in plain words
-
-On Claude Code v2.1.218 or later, you can also describe what you're working on in plain words:
-
-```text theme={null}
-/code-review ultra check my auth changes
-```
-
-The review still covers your current branch, the same scope as running with no argument. Claude keeps your text as a note, shown in the launch dialog, and relates the findings to it when they arrive.
-
-Claude Code treats your text as a note only when it has more than one word and isn't a branch name or PR reference. It reads a single word as a branch name or PR reference, so a mistyped branch name gets the closest-branch error from [Review against a different base](#review-against-a-different-base) instead of launching with a note. If your text combines a PR reference with other words, such as `check PR 123 again`, Claude Code doesn't launch either; it asks you to rerun with the PR number alone to review that PR, or without the reference to review your current branch.
+在 PR 模式下，远程沙箱直接从主机克隆拉取请求，而不是捆绑您的本地工作树。PR 模式适用于 `github.com` 上的存储库以及 Owner 已连接到 Claude Code 的 [GitHub Enterprise Server](/docs/zh-CN/github-enterprise-server) 实例。
 
 <Tip>
-  If your repository is too large to bundle, Claude Code prompts you to use PR mode instead. Push your branch and open a draft PR, then run `/code-review ultra <PR-number>`.
+  如果您的存储库太大而无法捆绑，Claude Code 会提示您改用 PR 模式。推送您的分支并打开草稿 PR，然后运行 `/code-review ultra <PR-number>`。
+
+  如果拉取请求的差异太大，Claude Code 会在任何审查工作运行之前以范围提示拒绝审查。
 </Tip>
 
-### Diff limits and fallbacks
+启动前，Claude Code 显示一个确认对话框，其中包含审查范围（包括审查分支时的文件和行数）、您剩余的免费运行次数和估计成本。确认后，审查在后台继续进行，您可以继续使用您的会话。该命令仅在您使用 `/code-review ultra` 调用时运行；Claude 不会自动启动 ultrareview。
 
-Ultrareview checks the diff before any review work runs and tells you when it can't review it as-is:
+<h2 id="pricing-and-free-runs">
+  定价和免费运行
+</h2>
 
-* **Diff too large**: a branch review can include up to 500 changed files and 8,000 changed lines by default. The exact values can change, and the [refusal](/docs/en/errors#diff-is-too-large-for-ultrareview) names the ones in effect, the size of your diff, and the files with the most changed lines. Claude Code refuses a too-large pull request the same way, naming its file and line counts but not the per-file breakdown
-* **Nothing to review**: when the diff against the base is empty, Claude Code says so and suggests staging or committing local edits, or passing a different base
-* **No merge base**: when your branch shares no history with the base branch, Claude Code offers to review every tracked file in the repository instead; the fallback requires a full clone and applies the same size limits
+Ultrareview 是一项高级功能，按额外使用量而不是您计划的包含使用量计费。
 
-## Pricing and free runs
+| 计划                | 包含的免费运行 | 免费运行后                                                                                              |
+| ----------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| Pro               | 3 次免费运行 | 按 [额外使用量](https://support.claude.com/zh-CN/articles/12429409-extra-usage-for-paid-claude-plans) 计费 |
+| Max               | 3 次免费运行 | 按 [额外使用量](https://support.claude.com/zh-CN/articles/12429409-extra-usage-for-paid-claude-plans) 计费 |
+| Team 和 Enterprise | 无       | 按 [额外使用量](https://support.claude.com/zh-CN/articles/12429409-extra-usage-for-paid-claude-plans) 计费 |
 
-Ultrareview is a premium feature that bills against usage credits rather than your plan's included usage.
+Pro 和 Max 订阅者获得三次免费 ultrareview 运行来尝试该功能。这三次运行是每个账户的一次性分配，不会刷新。使用完这三次后，或在免费运行期结束后，每次审查都按额外使用量计费，通常根据更改的大小花费 \$5 到 \$20。一次运行在远程会话启动后计数，因此您提前停止或未能完成的审查仍然会使用一次免费运行。对于付费审查，额外使用量仅对运行的部分计费。
 
-| Plan                | Included free runs | After free runs                                                                                              |
-| ------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------ |
-| Pro                 | 3 free runs        | billed as [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
-| Max                 | 3 free runs        | billed as [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
-| Team and Enterprise | none               | billed as [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
+由于 ultrareview 在免费运行之外始终按额外使用量计费，您的账户或组织必须在启动付费审查之前启用额外使用量。如果未启用额外使用量，Claude Code 会阻止启动并将您链接到计费设置，您可以在那里打开它。您也可以运行 `/usage-credits` 来检查或更改您的当前设置。
 
-* **Free runs**: the three Pro and Max runs are a one-time allotment per account and don't refresh.
-* **Cost per review**: after you use the free runs, or after the free-run period ends, typically \$5 to \$25 in usage credits depending on the size of the change, matching the estimate the launch dialog shows before each run.
-* **When a run counts**: once the cloud session starts. A review you stop early or that fails to complete still uses a free run; a paid review bills only for the portion that ran.
+<h2 id="track-a-running-review">
+  跟踪正在运行的审查
+</h2>
 
-Because ultrareview always bills as usage credits outside the free runs, your account or organization must have usage credits turned on before you can launch a paid review. If usage credits aren't turned on, Claude Code blocks the launch, and how you turn them on depends on your billing access:
+审查通常需要 5 到 10 分钟。审查作为后台任务运行，因此您可以继续在会话中工作、启动其他命令或完全关闭终端。
 
-* If you can manage billing for your account, Claude Code links you to the billing settings where you can turn on usage credits.
-* On Team and Enterprise plans, members without billing access send a request from the CLI asking their admin to turn on usage credits.
+使用 `/tasks` 查看正在运行和已完成的审查、打开审查的详细视图或停止正在进行的审查。停止审查会存档云会话，部分发现不会返回。审查完成后，验证的发现会在您的会话中显示为通知。每个发现都包括文件位置和问题的解释，因此您可以要求 Claude 直接修复它。
 
-You can also run `/usage-credits` to check or change your usage-credits setting.
+<h2 id="run-ultrareview-non-interactively">
+  非交互式运行 ultrareview
+</h2>
 
-Claude Code asks you to confirm usage-credits billing once per conversation: when you start a new conversation, for example with `/clear`, Claude Code shows the confirmation again for the next paid review.
-
-## Track a running review
-
-A review typically takes 5 to 10 minutes. The review runs as a background task, so you can keep working in your session, start other commands, or close the terminal entirely.
-
-Use `/tasks` to see running and completed reviews, open the detail view for a review, or stop a review that is in progress. If you stop a review, Claude Code archives the cloud session and doesn't return partial findings. When the review finishes, the verified findings appear as a notification in your session. Each finding includes the file location and an explanation of the issue so you can ask Claude to fix it directly.
-
-## Run ultrareview non-interactively
-
-Use the `claude ultrareview` subcommand to start an ultrareview from CI or a script without an interactive session. The subcommand launches the same review as `/code-review ultra`, blocks until the remote review finishes, prints the findings to stdout, and exits with code 0 on success or 1 on failure.
+使用 `claude ultrareview` 子命令从 CI 或脚本启动 ultrareview，无需交互式会话。该子命令启动与 `/code-review ultra` 相同的审查，阻止直到远程审查完成，将发现打印到 stdout，成功时以代码 0 退出，失败时以代码 1 退出。
 
 ```bash theme={null}
 claude ultrareview
@@ -119,40 +84,40 @@ claude ultrareview 1234
 claude ultrareview origin/main
 ```
 
-Without arguments, the subcommand reviews the diff between your current branch and the default branch, with the same [whole-repository fallback](#diff-limits-and-fallbacks) as `/code-review ultra` when no merge base exists. Pass a PR number to review a pull request, or a base branch to review against it; [base-branch handling](#review-against-a-different-base) matches the interactive command.
+不带参数时，该子命令审查您当前分支与默认分支之间的差异。传递 PR 编号来审查拉取请求，或传递基础分支来审查与该分支的差异。调用该子命令表示同意交互式命令显示的计费和条款提示。
 
-You consent to the whole-repository fallback and to the billing and terms prompt when you run the subcommand, so the run starts without waiting for input.
+进度消息和实时会话 URL 转到 stderr，以便 stdout 保持可解析。使用这些标志来控制输出和超时：
 
-{/* min-version: 2.1.218 */}On Claude Code v2.1.218 or later, you can also start the cloud review by running `/code-review ultra` in a non-interactive session, for example `claude -p '/code-review ultra'`. Claude Code launches the review and prints a tracking link without waiting for the findings, unlike `claude ultrareview`, which blocks until they arrive. When the review would bill usage credits, Claude Code stops before launching and points you to `claude ultrareview`, because the billing confirmation needs an interactive session. Before v2.1.218, `/code-review ultra` in a non-interactive session ran a local review.
+| 标志                    | 描述                             |
+| --------------------- | ------------------------------ |
+| `--json`              | 打印原始 `bugs.json` 有效负载而不是格式化的发现 |
+| `--timeout <minutes>` | 等待审查完成的最大分钟数。默认为 30            |
 
-Progress messages and the live session URL go to stderr so stdout stays parseable. Use these flags to control the output and timeout:
+运行 `claude ultrareview` 需要与 `/code-review ultra` 相同的身份验证和使用额度配置。当审查完成时（无论是否有发现）子命令以代码 0 退出，当审查无法启动、远程会话出错或超时时以代码 1 退出，当使用 Ctrl-C 中断时以代码 130 退出。如果您中断子命令，远程审查会继续运行；按照打印到 stderr 的会话 URL 在浏览器中观看它。
 
-| Flag                  | Description                                                         |
-| --------------------- | ------------------------------------------------------------------- |
-| `--json`              | Print the raw `bugs.json` payload instead of the formatted findings |
-| `--timeout <minutes>` | Maximum minutes to wait for the review to finish. Defaults to 30    |
+对于 GitHub 拉取请求上的自动审查，[Code Review](/docs/zh-CN/code-review) 直接与您的存储库集成，并将发现作为内联 PR 注释发布，无需 CLI 步骤。
 
-Running `claude ultrareview` requires the same authentication and usage credit configuration as `/code-review ultra`. The subcommand exits with code 0 when the review completes with or without findings, code 1 when the review fails to launch, the cloud session errors, or the timeout elapses, and code 130 when interrupted with Ctrl-C. The remote review keeps running if you interrupt the subcommand; follow the session URL printed to stderr to watch it in the browser.
+<h2 id="how-ultrareview-compares-to-/code-review-and-/review">
+  ultrareview 与 /code-review 和 /review 的比较
+</h2>
 
-For automatic reviews on GitHub pull requests, [Code Review](/docs/en/code-review) integrates with your repository directly and posts findings as inline PR comments without a CLI step.
+所有三个命令都审查代码，但它们针对工作流的不同阶段。
 
-## How ultrareview compares to /code-review and /review
+|      | `/code-review` | `/review <pr>`      | `/code-review ultra`            |
+| ---- | -------------- | ------------------- | ------------------------------- |
+| 目标   | 您的工作差异         | GitHub pull request | 您的工作差异或 pull request            |
+| 运行位置 | 在您的会话中本地运行     | 在您的会话中本地运行          | 在云沙箱中远程运行                       |
+| 深度   | 随着 effort 参数扩展 | 会话的 effort 级别的单次审查  | 具有独立验证的多代理队列                    |
+| 持续时间 | 几秒到几分钟         | 几秒到几分钟              | 大约 5 到 10 分钟                    |
+| 成本   | 计入正常使用量        | 计入正常使用量             | 免费运行，然后大约 \$5 到 \$20 每次审查作为使用额度 |
+| 最适合  | 迭代时的快速反馈       | 在批准前审查团队成员的 PR      | 合并前对重大更改的信心                     |
 
-All three commands review code, but they target different stages of your workflow.
+使用 `/code-review` 获得工作时的快速反馈。使用 `/review <pr>` 查看 pull request，就像您在批准前所做的那样。在合并重大更改前使用 `/code-review ultra`，当您想要更深入的审查来捕捉单次审查可能遗漏的问题时。
 
-|          | `/code-review`                  | `/review <pr>`                               | `/code-review ultra`                                            |
-| -------- | ------------------------------- | -------------------------------------------- | --------------------------------------------------------------- |
-| Target   | your working diff               | a GitHub pull request                        | your working diff or a pull request                             |
-| Runs     | locally in your session         | locally in your session                      | remotely in a cloud sandbox                                     |
-| Depth    | scales with the effort argument | a single-pass review at the session's effort | multi-agent fleet with independent verification                 |
-| Duration | seconds to a few minutes        | seconds to a few minutes                     | roughly 5 to 10 minutes                                         |
-| Cost     | counts toward normal usage      | counts toward normal usage                   | free runs, then roughly \$5 to \$25 per review as usage credits |
-| Best for | quick feedback while iterating  | reviewing a teammate's PR before approving   | pre-merge confidence on substantial changes                     |
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-Use `/code-review` for fast feedback as you work. Use `/review <pr>` to look over a pull request the same way you would before approving it. Use `/code-review ultra` before merging a substantial change when you want a deeper pass that catches issues a local review might miss.
-
-## Related resources
-
-* [Claude Code on the web](/docs/en/claude-code-on-the-web): learn how cloud sessions and cloud sandboxes work
-* [Plan complex changes with ultraplan](/docs/en/ultraplan): the planning counterpart to ultrareview for upfront design work
-* [Manage costs effectively](/docs/en/costs): track usage and set spending limits
+* [Claude Code 网络版](/docs/zh-CN/claude-code-on-the-web)：了解远程会话和云沙箱如何工作
+* [使用 ultraplan 规划复杂更改](/docs/zh-CN/ultraplan)：ultrareview 的规划对应物，用于前期设计工作
+* [有效管理成本](/docs/zh-CN/costs)：跟踪使用情况并设置支出限制

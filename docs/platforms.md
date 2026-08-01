@@ -2,44 +2,50 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Platforms and integrations
+# 平台和集成
 
-> Choose where to run Claude Code and what to connect it to. Compare the CLI, Desktop, VS Code, JetBrains, web, mobile, and integrations like Chrome, Slack, and CI/CD.
+> 选择在哪里运行 Claude Code 以及连接什么工具。比较 CLI、Desktop、VS Code、JetBrains、Web 以及 Chrome、Slack 和 CI/CD 等集成。
 
-Claude Code runs the same underlying engine everywhere, but each surface is tuned for a different way of working. This page helps you pick the right platform for your workflow and connect the tools you already use.
+Claude Code 在任何地方运行相同的底层引擎，但每个界面都针对不同的工作方式进行了优化。本页面帮助您为工作流选择合适的平台，并连接您已经使用的工具。
 
-## Where to run Claude Code
+<h2 id="where-to-run-claude-code">
+  在哪里运行 Claude Code
+</h2>
 
-Choose a platform based on how you like to work and where your project lives.
+根据您喜欢的工作方式和项目所在位置选择平台。
 
-| Platform                          | Best for                                                                                           | What you get                                                                                                                                                                              |
-| :-------------------------------- | :------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [CLI](/docs/en/quickstart)             | Terminal workflows, scripting, remote servers                                                      | Full feature set, [Agent SDK](/docs/en/headless), [computer use](/docs/en/computer-use) on macOS (Pro and Max), third-party providers                                                               |
-| [Desktop](/docs/en/desktop)            | Visual review, parallel sessions, managed setup                                                    | Diff viewer, app preview, [computer use](/docs/en/desktop#let-claude-use-your-computer) and [Dispatch](/docs/en/desktop#sessions-from-dispatch) on Pro and Max                                      |
-| [VS Code](/docs/en/vs-code)            | Working inside VS Code without switching to a terminal                                             | Inline diffs, integrated terminal, file context                                                                                                                                           |
-| [JetBrains](/docs/en/jetbrains)        | Working inside IntelliJ, PyCharm, WebStorm, or other JetBrains IDEs                                | Diff viewer, selection sharing, terminal session                                                                                                                                          |
-| [Web](/docs/en/claude-code-on-the-web) | Long-running tasks that don't need much steering, or work that should continue when you're offline | Anthropic-managed cloud, continues after you disconnect                                                                                                                                   |
-| [Mobile](/docs/en/mobile)              | Starting and monitoring tasks while away from your computer                                        | Cloud sessions from the Claude app for iOS and Android, [Remote Control](/docs/en/remote-control) for local sessions, [Dispatch](/docs/en/desktop#sessions-from-dispatch) to Desktop on Pro and Max |
+| 平台                                   | 最适合                                               | 您获得的功能                                                                                                                                                    |
+| :----------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [CLI](/docs/zh-CN/quickstart)             | 终端工作流、脚本编写、远程服务器                                  | 完整功能集、[Agent SDK](/docs/zh-CN/headless)、[计算机使用](/docs/zh-CN/computer-use)在 macOS 上（Pro 和 Max）、第三方提供商                                                                |
+| [Desktop](/docs/zh-CN/desktop)            | 视觉审查、并行会话、托管设置                                    | Diff 查看器、应用预览、Pro 和 Max 上的[计算机使用](/docs/zh-CN/desktop#let-claude-use-your-computer)和 [Dispatch](/docs/zh-CN/desktop#sessions-from-dispatch)                         |
+| [VS Code](/docs/zh-CN/vs-code)            | 在 VS Code 内工作而无需切换到终端                             | 内联 diff、集成终端、文件上下文                                                                                                                                        |
+| [JetBrains](/docs/zh-CN/jetbrains)        | 在 IntelliJ、PyCharm、WebStorm 或其他 JetBrains IDE 内工作 | Diff 查看器、选择共享、终端会话                                                                                                                                        |
+| [Web](/docs/zh-CN/claude-code-on-the-web) | 不需要太多操作的长时间运行任务，或应该在您离线时继续的工作                     | Anthropic 托管云、断开连接后继续运行                                                                                                                                   |
+| Mobile                               | 在远离计算机时启动和监控任务                                    | 来自 iOS 和 Android 版 Claude 应用的云会话、用于本地会话的 [Remote Control](/docs/zh-CN/remote-control)、Pro 和 Max 上的 [Dispatch](/docs/zh-CN/desktop#sessions-from-dispatch) 到 Desktop |
 
-The CLI is the most complete surface for terminal-native work: scripting and the Agent SDK are CLI-only. Third-party providers also work in [VS Code](/docs/en/vs-code#use-third-party-providers). Enterprise [Desktop](/docs/en/desktop) deployments support Google Cloud's Agent Platform, and Desktop supports [gateway providers](/docs/en/llm-gateway-connect#desktop-app); for Amazon Bedrock or Microsoft Foundry, use the CLI or VS Code, or [Claude Desktop on 3P](https://claude.com/docs/third-party/claude-desktop/overview), which runs the Code tab on those providers. Desktop and the IDE extensions trade some CLI-only features for visual review and tighter editor integration. The web runs in Anthropic's cloud, so tasks keep going after you disconnect. Mobile is a thin client into those same cloud sessions or into a local session via Remote Control, and can send tasks to Desktop with Dispatch.
+CLI 是终端原生工作的最完整界面：脚本编写和 Agent SDK 仅限 CLI。第三方提供商也可在 [VS Code](/docs/zh-CN/vs-code#use-third-party-providers) 中使用。企业 [Desktop](/docs/zh-CN/desktop) 部署支持 Google Cloud 的 Agent Platform，Desktop 支持[网关提供商](/docs/zh-CN/llm-gateway-connect#desktop-app)；对于 Amazon Bedrock 或 Microsoft Foundry，请使用 CLI 或 VS Code，或 [Claude Desktop on 3P](https://claude.com/docs/third-party/claude-desktop/overview)，它在这些提供商上运行 Code 选项卡。Desktop 和 IDE 扩展为了视觉审查和更紧密的编辑器集成而放弃了一些仅限 CLI 的功能。Web 在 Anthropic 的云中运行，因此任务在您断开连接后继续进行。Mobile 是这些相同云会话的瘦客户端，或通过 Remote Control 进入本地会话，并可以使用 Dispatch 向 Desktop 发送任务。
 
-You can mix surfaces on the same project. Configuration, project memory, and MCP servers are shared across the local surfaces.
+您可以在同一项目上混合使用多个界面。配置、项目内存和 MCP 服务器在本地界面之间共享。
 
-## Connect your tools
+<h2 id="connect-your-tools">
+  连接您的工具
+</h2>
 
-Integrations let Claude work with services outside your codebase.
+集成让 Claude 与代码库外的服务协作。
 
-| Integration                          | What it does                                       | Use it for                                                       |
-| :----------------------------------- | :------------------------------------------------- | :--------------------------------------------------------------- |
-| [Chrome](/docs/en/chrome)                 | Controls your browser with your logged-in sessions | Testing web apps, filling forms, automating sites without an API |
-| [GitHub Actions](/docs/en/github-actions) | Runs Claude in your CI pipeline                    | Automated PR reviews, issue triage, scheduled maintenance        |
-| [GitLab CI/CD](/docs/en/gitlab-ci-cd)     | Same as GitHub Actions for GitLab                  | CI-driven automation on GitLab                                   |
-| [Code Review](/docs/en/code-review)       | Reviews every PR automatically                     | Catching bugs before human review                                |
-| [Slack](/docs/en/slack)                   | Responds to `@Claude` mentions in your channels    | Turning bug reports into pull requests from team chat            |
+| 集成                                      | 功能                             | 用途                           |
+| :-------------------------------------- | :----------------------------- | :--------------------------- |
+| [Chrome](/docs/zh-CN/chrome)                 | 使用您登录的会话控制浏览器                  | 测试 Web 应用、填充表单、自动化没有 API 的网站 |
+| [GitHub Actions](/docs/zh-CN/github-actions) | 在 CI 管道中运行 Claude              | 自动化 PR 审查、问题分类、计划维护          |
+| [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd)     | 与 GitHub Actions 相同，但用于 GitLab | GitLab 上的 CI 驱动自动化           |
+| [Code Review](/docs/zh-CN/code-review)       | 自动审查每个 PR                      | 在人工审查前捕获错误                   |
+| [Slack](/docs/zh-CN/slack)                   | 响应频道中的 `@Claude` 提及            | 将错误报告转换为团队聊天中的拉取请求           |
 
-For integrations not listed here, [MCP servers](/docs/en/mcp) and [connectors](/docs/en/desktop#connect-external-tools) let you connect almost anything: Linear, Notion, Google Drive, or your own internal APIs.
+对于此处未列出的集成，[MCP 服务器](/docs/zh-CN/mcp)和[连接器](/docs/zh-CN/desktop#connect-external-tools)让您连接几乎任何东西：Linear、Notion、Google Drive 或您自己的内部 API。
 
-## Work when you are away from your terminal
+<h2 id="work-when-you-are-away-from-your-terminal">
+  远离终端时工作
+</h2>
 
 Claude Code offers several ways to work when you're not at your terminal. They differ in what triggers the work, where Claude runs, and how much you need to set up.
 
@@ -51,31 +57,39 @@ Claude Code offers several ways to work when you're not at your terminal. They d
 | [Slack](/docs/en/slack)                             | Mention `@Claude` in a team channel                                                            | Anthropic cloud                                                                              | [Install the Slack app](/docs/en/slack#setting-up-claude-code-in-slack) with [Claude Code on the web](/docs/en/claude-code-on-the-web) enabled | PRs and reviews from team chat                                |
 | [Scheduled tasks](/docs/en/scheduled-tasks)         | Set a schedule                                                                                 | [CLI](/docs/en/scheduled-tasks), [Desktop](/docs/en/desktop-scheduled-tasks), or [cloud](/docs/en/routines) | Pick a frequency                                                                                                                     | Recurring automation like daily reviews                       |
 
-If you're not sure where to start, [install the CLI](/docs/en/quickstart) and run it in a project directory. If you'd rather not use a terminal, [Desktop](/docs/en/desktop-quickstart) gives you the same engine with a graphical interface.
+如果您不确定从哪里开始，[安装 CLI](/docs/zh-CN/quickstart) 并在项目目录中运行它。如果您不想使用终端，[Desktop](/docs/zh-CN/desktop-quickstart) 为您提供相同的引擎和图形界面。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-### Platforms
+<h3 id="platforms">
+  平台
+</h3>
 
-* [CLI quickstart](/docs/en/quickstart): install and run your first command in the terminal
-* [Desktop](/docs/en/desktop): visual diff review, parallel sessions, computer use, and Dispatch
-* [VS Code](/docs/en/vs-code): the Claude Code extension inside your editor
-* [JetBrains](/docs/en/jetbrains): the extension for IntelliJ, PyCharm, and other JetBrains IDEs
-* [Claude Code on the web](/docs/en/claude-code-on-the-web): cloud sessions that keep running when you disconnect
-* [Mobile](/docs/en/mobile): the Claude app for [iOS](https://apps.apple.com/us/app/claude-by-anthropic/id6473753684) and [Android](https://play.google.com/store/apps/details?id=com.anthropic.claude) for starting and monitoring tasks while away from your computer
+* [CLI 快速入门](/docs/zh-CN/quickstart)：在终端中安装并运行您的第一个命令
+* [Desktop](/docs/zh-CN/desktop)：视觉 diff 审查、并行会话、计算机使用和 Dispatch
+* [VS Code](/docs/zh-CN/vs-code)：编辑器内的 Claude Code 扩展
+* [JetBrains](/docs/zh-CN/jetbrains)：IntelliJ、PyCharm 和其他 JetBrains IDE 的扩展
+* [Web 上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)：断开连接时继续运行的云会话
+* Mobile：用于在远离计算机时启动和监控任务的 [iOS](https://apps.apple.com/us/app/claude-by-anthropic/id6473753684) 和 [Android](https://play.google.com/store/apps/details?id=com.anthropic.claude) 版 Claude 应用
 
-### Integrations
+<h3 id="integrations">
+  集成
+</h3>
 
-* [Chrome](/docs/en/chrome): automate browser tasks with your logged-in sessions
-* [Computer use](/docs/en/computer-use): let Claude open apps and control your screen on macOS
-* [GitHub Actions](/docs/en/github-actions): run Claude in your CI pipeline
-* [GitLab CI/CD](/docs/en/gitlab-ci-cd): the same for GitLab
-* [Code Review](/docs/en/code-review): automatic review on every pull request
-* [Slack](/docs/en/slack): send tasks from team chat, get PRs back
+* [Chrome](/docs/zh-CN/chrome)：使用您登录的会话自动化浏览器任务
+* [计算机使用](/docs/zh-CN/computer-use)：让 Claude 在 macOS 上打开应用和控制您的屏幕
+* [GitHub Actions](/docs/zh-CN/github-actions)：在 CI 管道中运行 Claude
+* [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd)：GitLab 的相同功能
+* [Code Review](/docs/zh-CN/code-review)：每个拉取请求上的自动审查
+* [Slack](/docs/zh-CN/slack)：从团队聊天发送任务，获取 PR 返回
 
-### Remote access
+<h3 id="remote-access">
+  远程访问
+</h3>
 
-* [Dispatch](/docs/en/desktop#sessions-from-dispatch): message a task from your phone and it can spawn a Desktop session
-* [Remote Control](/docs/en/remote-control): drive a running session from your phone or browser
-* [Channels](/docs/en/channels): push events from chat apps or your own servers into a session
-* [Scheduled tasks](/docs/en/scheduled-tasks): run prompts on a recurring schedule
+* [Dispatch](/docs/zh-CN/desktop#sessions-from-dispatch)：从您的手机发送任务，它可以生成 Desktop 会话
+* [Remote Control](/docs/zh-CN/remote-control)：从您的手机或浏览器驱动运行中的会话
+* [Channels](/docs/zh-CN/channels)：将来自聊天应用或您自己的服务器的事件推送到会话中
+* [Scheduled tasks](/docs/zh-CN/scheduled-tasks)：按定期计划运行提示

@@ -4,63 +4,73 @@
 
 # Claude Code GitLab CI/CD
 
-> Learn about integrating Claude Code into your development workflow with GitLab CI/CD
+> 了解如何将 Claude Code 集成到您的 GitLab CI/CD 开发工作流中
 
 <Info>
-  Claude Code for GitLab CI/CD is currently in beta. Features and functionality may evolve as we refine the experience.
+  Claude Code for GitLab CI/CD 目前处于测试阶段。随着我们完善体验，功能和特性可能会发生变化。
 
-  This integration is maintained by GitLab. For support, see the following [GitLab issue](https://gitlab.com/gitlab-org/gitlab/-/issues/573776).
+  此集成由 GitLab 维护。如需支持，请参阅以下 [GitLab issue](https://gitlab.com/gitlab-org/gitlab/-/issues/573776)。
 </Info>
 
 <Note>
-  This integration is built on top of the [Claude Code CLI and Agent SDK](/docs/en/agent-sdk/overview), enabling programmatic use of Claude in your CI/CD jobs and custom automation workflows.
+  此集成基于 [Claude Code CLI and Agent SDK](/docs/zh-CN/agent-sdk/overview) 构建，可在您的 CI/CD 作业和自定义自动化工作流中以编程方式使用 Claude。
 </Note>
 
-## Why use Claude Code with GitLab?
+<h2 id="why-use-claude-code-with-gitlab">
+  为什么在 GitLab 中使用 Claude Code？
+</h2>
 
-* **Instant MR creation**: Describe what you need, and Claude proposes a complete MR with changes and explanation
-* **Automated implementation**: Turn issues into working code with a single command or mention
-* **Project-aware**: Claude follows your `CLAUDE.md` guidelines and existing code patterns
-* **Simple setup**: Add one job to `.gitlab-ci.yml` and a masked CI/CD variable
-* **Enterprise-ready**: Choose Claude API, Amazon Bedrock, or Google Cloud's Agent Platform to meet data residency and procurement needs
-* **Secure by default**: Runs in your GitLab runners with your branch protection and approvals
+* **即时 MR 创建**：描述您的需求，Claude 会提议一个完整的 MR，包含更改和说明
+* **自动化实现**：使用单个命令或提及将问题转化为可工作的代码
+* **项目感知**：Claude 遵循您的 `CLAUDE.md` 指南和现有代码模式
+* **简单设置**：向 `.gitlab-ci.yml` 添加一个作业和一个掩码 CI/CD 变量
+* **企业就绪**：选择 Claude API、Amazon Bedrock 或 Google Cloud 的 Agent Platform 以满足数据驻留和采购需求
+* **默认安全**：在您的 GitLab runners 中运行，具有您的分支保护和批准
 
-## How it works
+<h2 id="how-it-works">
+  工作原理
+</h2>
 
-Claude Code uses GitLab CI/CD to run AI tasks in isolated jobs and commit results back via MRs:
+Claude Code 使用 GitLab CI/CD 在隔离的作业中运行 AI 任务，并通过 MR 将结果提交回来：
 
-1. **Event-driven orchestration**: GitLab listens for your chosen triggers (for example, a comment that mentions `@claude` in an issue, MR, or review thread). The job collects context from the thread and repository, builds prompts from that input, and runs Claude Code.
+1. **事件驱动的编排**：GitLab 监听您选择的触发器（例如，在问题、MR 或审查线程中提及 `@claude` 的评论）。该作业从线程和存储库收集上下文，从该输入构建提示，并运行 Claude Code。
 
-2. **Provider abstraction**: Use the provider that fits your environment:
+2. **提供商抽象**：使用适合您环境的提供商：
    * Claude API (SaaS)
-   * Amazon Bedrock (IAM-based access, cross-region options)
-   * Google Cloud's Agent Platform (GCP-native, Workload Identity Federation)
+   * Amazon Bedrock（基于 IAM 的访问、跨区域选项）
+   * Google Cloud 的 Agent Platform（GCP 原生、Workload Identity Federation）
 
-3. **Sandboxed execution**: Each interaction runs in a container with strict network and filesystem rules. Claude Code enforces workspace-scoped permissions to constrain writes. Every change flows through an MR so reviewers see the diff and approvals still apply.
+3. **沙箱执行**：每次交互都在具有严格网络和文件系统规则的容器中运行。Claude Code 强制执行工作区范围的权限以限制写入。每项更改都通过 MR 流动，以便审查者可以看到差异，批准仍然适用。
 
-Pick regional endpoints to reduce latency and meet data-sovereignty requirements while using existing cloud agreements.
+选择区域端点以降低延迟并满足数据主权要求，同时使用现有的云协议。
 
-## What can Claude do?
+<h2 id="what-can-claude-do">
+  Claude 可以做什么？
+</h2>
 
-Claude Code enables powerful CI/CD workflows that transform how you work with code:
+Claude Code 支持强大的 CI/CD 工作流，改变您处理代码的方式：
 
-* Create and update MRs from issue descriptions or comments
-* Analyze performance regressions and propose optimizations
-* Implement features directly in a branch, then open an MR
-* Fix bugs and regressions identified by tests or comments
-* Respond to follow-up comments to iterate on requested changes
+* 从问题描述或评论创建和更新 MR
+* 分析性能回归并提议优化
+* 直接在分支中实现功能，然后打开 MR
+* 修复由测试或评论识别的错误和回归
+* 响应后续评论以迭代所请求的更改
 
-## Setup
+<h2 id="setup">
+  设置
+</h2>
 
-### Quick setup
+<h3 id="quick-setup">
+  快速设置
+</h3>
 
-The fastest way to get started is to add a minimal job to your `.gitlab-ci.yml` and set your API key as a masked variable.
+最快的入门方式是向您的 `.gitlab-ci.yml` 添加一个最小作业，并将您的 API 密钥设置为掩码变量。
 
-1. **Add a masked CI/CD variable**
-   * Go to **Settings** → **CI/CD** → **Variables**
-   * Add `ANTHROPIC_API_KEY` (masked, protected as needed)
+1. **添加掩码 CI/CD 变量**
+   * 转到 **Settings** → **CI/CD** → **Variables**
+   * 添加 `ANTHROPIC_API_KEY`（掩码，根据需要保护）
 
-2. **Add a Claude job to `.gitlab-ci.yml`**
+2. **向 `.gitlab-ci.yml` 添加 Claude 作业**
 
 ```yaml theme={null}
 stages:
@@ -69,10 +79,10 @@ stages:
 claude:
   stage: ai
   image: node:24-alpine3.21
-  # Adjust rules to fit how you want to trigger the job:
-  # - manual runs
-  # - merge request events
-  # - web/API triggers when a comment contains '@claude'
+  # 调整规则以适应您想要触发作业的方式：
+  # - 手动运行
+  # - 合并请求事件
+  # - 当评论包含 '@claude' 时的 web/API 触发
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -83,9 +93,9 @@ claude:
     - apk add --no-cache git curl bash
     - curl -fsSL https://claude.ai/install.sh | bash
   script:
-    # Optional: start a GitLab MCP server if your setup provides one
+    # 可选：如果您的设置提供了 GitLab MCP 服务器，请启动它
     - /bin/gitlab-mcp-server || true
-    # Use AI_FLOW_* variables when invoking via web/API triggers with context payloads
+    # 通过 web/API 触发器使用 AI_FLOW_* 变量调用时使用上下文有效负载
     - echo "$AI_FLOW_INPUT for $AI_FLOW_CONTEXT on $AI_FLOW_EVENT"
     - >
       claude
@@ -95,154 +105,170 @@ claude:
       --debug
 ```
 
-After adding the job and your `ANTHROPIC_API_KEY` variable, test by running the job manually from **CI/CD** → **Pipelines**, or trigger it from an MR to let Claude propose updates in a branch and open an MR if needed.
+添加作业和您的 `ANTHROPIC_API_KEY` 变量后，通过从 **CI/CD** → **Pipelines** 手动运行作业进行测试，或从 MR 触发它，让 Claude 在分支中提议更新并在需要时打开 MR。
 
 <Note>
-  To run on Amazon Bedrock or Google Cloud's Agent Platform instead of the Claude API, see the [Using with Amazon Bedrock and Google Cloud](#using-with-amazon-bedrock-and-google-cloud) section below for authentication and environment setup.
+  要改为在 Amazon Bedrock 或 Google Cloud 的 Agent Platform 上运行而不是 Claude API，请参阅下面的 [Using with Amazon Bedrock and Google Cloud](#using-with-amazon-bedrock-and-google-cloud) 部分，了解身份验证和环境设置。
 </Note>
 
-### Manual setup (recommended for production)
+<h3 id="manual-setup-recommended-for-production">
+  手动设置（建议用于生产）
+</h3>
 
-If you prefer a more controlled setup or need enterprise providers:
+如果您更喜欢更受控的设置或需要企业提供商：
 
-1. **Configure provider access**:
-   * **Claude API**: Create and store `ANTHROPIC_API_KEY` as a masked CI/CD variable
-   * **Amazon Bedrock**: **Configure GitLab** → **AWS OIDC** and create an IAM role for Amazon Bedrock
-   * **Google Cloud's Agent Platform**: **Configure Workload Identity Federation for GitLab** → **GCP**
+1. **配置提供商访问**：
+   * **Claude API**：创建并将 `ANTHROPIC_API_KEY` 存储为掩码 CI/CD 变量
+   * **Amazon Bedrock**：**Configure GitLab** → **AWS OIDC** 并为 Amazon Bedrock 创建 IAM 角色
+   * **Google Cloud 的 Agent Platform**：**Configure Workload Identity Federation for GitLab** → **GCP**
 
-2. **Add project credentials for GitLab API operations**:
-   * Use `CI_JOB_TOKEN` by default, or create a Project Access Token with `api` scope
-   * Store as `GITLAB_ACCESS_TOKEN` (masked) if using a PAT
+2. **为 GitLab API 操作添加项目凭证**：
+   * 默认使用 `CI_JOB_TOKEN`，或创建具有 `api` 范围的项目访问令牌
+   * 如果使用 PAT，则存储为 `GITLAB_ACCESS_TOKEN`（掩码）
 
-3. **Add the Claude job to `.gitlab-ci.yml`** (see examples below)
+3. **向 `.gitlab-ci.yml` 添加 Claude 作业**（请参阅下面的示例）
 
-4. **(Optional) Enable mention-driven triggers**:
-   * Add a project webhook for "Comments (notes)" to your event listener (if you use one)
-   * Have the listener call the pipeline trigger API with variables like `AI_FLOW_INPUT` and `AI_FLOW_CONTEXT` when a comment contains `@claude`
+4. **（可选）启用提及驱动的触发器**：
+   * 为"Comments (notes)"添加项目 webhook 到您的事件监听器（如果您使用）
+   * 当评论包含 `@claude` 时，让监听器使用 `AI_FLOW_INPUT` 和 `AI_FLOW_CONTEXT` 等变量调用管道触发 API
 
-## Example use cases
+<h2 id="example-use-cases">
+  示例用例
+</h2>
 
-### Turn issues into MRs
+<h3 id="turn-issues-into-mrs">
+  将问题转化为 MR
+</h3>
 
-In an issue comment:
+在问题评论中：
 
-```text wrap theme={null}
+```text theme={null}
 @claude implement this feature based on the issue description
 ```
 
-Claude analyzes the issue and codebase, writes changes in a branch, and opens an MR for review.
+Claude 分析问题和代码库，在分支中编写更改，并打开 MR 供审查。
 
-### Get implementation help
+<h3 id="get-implementation-help">
+  获取实现帮助
+</h3>
 
-In an MR discussion:
+在 MR 讨论中：
 
-```text wrap theme={null}
+```text theme={null}
 @claude suggest a concrete approach to cache the results of this API call
 ```
 
-Claude proposes changes, adds code with appropriate caching, and updates the MR.
+Claude 提议更改，添加具有适当缓存的代码，并更新 MR。
 
-### Fix bugs quickly
+<h3 id="fix-bugs-quickly">
+  快速修复错误
+</h3>
 
-In an issue or MR comment:
+在问题或 MR 评论中：
 
-```text wrap theme={null}
+```text theme={null}
 @claude fix the TypeError in the user dashboard component
 ```
 
-Claude locates the bug, implements a fix, and updates the branch or opens a new MR.
+Claude 定位错误，实现修复，并更新分支或打开新 MR。
 
-## Using with Amazon Bedrock and Google Cloud
+<h2 id="using-with-amazon-bedrock-and-google-cloud">
+  使用 Amazon Bedrock 和 Google Cloud
+</h2>
 
-For enterprise environments, you can run Claude Code entirely on your cloud infrastructure with the same developer experience.
+对于企业环境，您可以在云基础设施上完全运行 Claude Code，具有相同的开发者体验。
 
 <Tabs>
   <Tab title="Amazon Bedrock">
-    ### Prerequisites
+    ### 前置条件
 
-    Before setting up Claude Code with Amazon Bedrock, you need:
+    在使用 Amazon Bedrock 设置 Claude Code 之前，您需要：
 
-    1. An AWS account with Amazon Bedrock access to the desired Claude models
-    2. GitLab configured as an OIDC identity provider in AWS IAM
-    3. An IAM role with Amazon Bedrock permissions and a trust policy restricted to your GitLab project/refs
-    4. GitLab CI/CD variables for role assumption:
-       * `AWS_ROLE_TO_ASSUME` (role ARN)
-       * `AWS_REGION` (Amazon Bedrock region)
+    1. 具有对所需 Claude 模型的 Amazon Bedrock 访问权限的 AWS 账户
+    2. 在 AWS IAM 中配置为 OIDC 身份提供商的 GitLab
+    3. 具有 Amazon Bedrock 权限和信任策略的 IAM 角色，限制为您的 GitLab 项目/refs
+    4. 用于角色假设的 GitLab CI/CD 变量：
+       * `AWS_ROLE_TO_ASSUME`（角色 ARN）
+       * `AWS_REGION`（Amazon Bedrock 区域）
 
-    ### Setup instructions
+    ### 设置说明
 
-    Configure AWS to allow GitLab CI jobs to assume an IAM role via OIDC (no static keys).
+    配置 AWS 以允许 GitLab CI 作业通过 OIDC 假设 IAM 角色（无静态密钥）。
 
-    **Required setup:**
+    **必需的设置：**
 
-    1. Enable Amazon Bedrock and request access to your target Claude models
-    2. Create an IAM OIDC provider for GitLab if not already present
-    3. Create an IAM role trusted by the GitLab OIDC provider, restricted to your project and protected refs
-    4. Attach least-privilege permissions for Amazon Bedrock invoke APIs
+    1. 启用 Amazon Bedrock 并请求访问您的目标 Claude 模型
+    2. 如果尚未存在，为 GitLab 创建 IAM OIDC 提供商
+    3. 创建由 GitLab OIDC 提供商信任的 IAM 角色，限制为您的项目和受保护的 refs
+    4. 为 Amazon Bedrock 调用 API 附加最小权限
 
-    **Required values to store in CI/CD variables:**
+    **需要存储在 CI/CD 变量中的必需值：**
 
     * `AWS_ROLE_TO_ASSUME`
     * `AWS_REGION`
 
-    Add variables in Settings → CI/CD → Variables:
+    在 Settings → CI/CD → Variables 中添加变量：
 
     ```yaml theme={null}
-    # For Amazon Bedrock:
+    # 对于 Amazon Bedrock：
     - AWS_ROLE_TO_ASSUME
     - AWS_REGION
     ```
 
-    Use the Amazon Bedrock job example above to exchange the GitLab job token for temporary AWS credentials at runtime.
+    使用上面的 Amazon Bedrock 作业示例在运行时交换 GitLab 作业令牌以获取临时 AWS 凭证。
   </Tab>
 
   <Tab title="Google Cloud's Agent Platform">
-    ### Prerequisites
+    ### 前置条件
 
-    Before setting up Claude Code with Google Cloud's Agent Platform, you need:
+    在使用 Google Cloud's Agent Platform 设置 Claude Code 之前，您需要：
 
-    1. A Google Cloud project with:
-       * Google Cloud's Agent Platform API enabled
-       * Workload Identity Federation configured to trust GitLab OIDC
-    2. A dedicated service account with only the required Google Cloud's Agent Platform roles
-    3. GitLab CI/CD variables for WIF:
-       * `GCP_WORKLOAD_IDENTITY_PROVIDER` (full resource name)
-       * `GCP_SERVICE_ACCOUNT` (service account email)
+    1. 具有以下条件的 Google Cloud 项目：
+       * 启用了 Google Cloud's Agent Platform API
+       * 配置了 Workload Identity Federation 以信任 GitLab OIDC
+    2. 仅具有所需 Google Cloud's Agent Platform 角色的专用服务账户
+    3. 用于 WIF 的 GitLab CI/CD 变量：
+       * `GCP_WORKLOAD_IDENTITY_PROVIDER`（完整资源名称）
+       * `GCP_SERVICE_ACCOUNT`（服务账户电子邮件）
 
-    ### Setup instructions
+    ### 设置说明
 
-    Configure Google Cloud to allow GitLab CI jobs to impersonate a service account via Workload Identity Federation.
+    配置 Google Cloud 以允许 GitLab CI 作业通过 Workload Identity Federation 模拟服务账户。
 
-    **Required setup:**
+    **必需的设置：**
 
-    1. Enable IAM Credentials API, STS API, and Google Cloud's Agent Platform API
-    2. Create a Workload Identity Pool and provider for GitLab OIDC
-    3. Create a dedicated service account with Google Cloud's Agent Platform roles
-    4. Grant the WIF principal permission to impersonate the service account
+    1. 启用 IAM Credentials API、STS API 和 Google Cloud's Agent Platform API
+    2. 为 GitLab OIDC 创建 Workload Identity Pool 和提供商
+    3. 创建具有 Google Cloud's Agent Platform 角色的专用服务账户
+    4. 授予 WIF 主体权限以模拟服务账户
 
-    **Required values to store in CI/CD variables:**
+    **需要存储在 CI/CD 变量中的必需值：**
 
     * `GCP_WORKLOAD_IDENTITY_PROVIDER`
     * `GCP_SERVICE_ACCOUNT`
 
-    Add variables in Settings → CI/CD → Variables:
+    在 Settings → CI/CD → Variables 中添加变量：
 
     ```yaml theme={null}
-    # For Google Cloud's Agent Platform:
+    # 对于 Google Cloud's Agent Platform：
     - GCP_WORKLOAD_IDENTITY_PROVIDER
     - GCP_SERVICE_ACCOUNT
-    - CLOUD_ML_REGION (for example, us-east5)
+    - CLOUD_ML_REGION（例如，us-east5）
     ```
 
-    Use the job example above for Google Cloud's Agent Platform to authenticate without storing keys.
+    使用上面的 Google Cloud's Agent Platform 作业示例在不存储密钥的情况下进行身份验证。
   </Tab>
 </Tabs>
 
-## Configuration examples
+<h2 id="configuration-examples">
+  配置示例
+</h2>
 
-Below are ready-to-use snippets you can adapt to your pipeline.
+以下是您可以适配到管道的现成代码片段。
 
-### Basic .gitlab-ci.yml (Claude API)
+<h3 id="basic-gitlab-ci-yml-claude-api">
+  基本 .gitlab-ci.yml（Claude API）
+</h3>
 
 ```yaml theme={null}
 stages:
@@ -268,21 +294,23 @@ claude:
       --permission-mode acceptEdits
       --allowedTools "Bash Read Edit Write mcp__gitlab"
       --debug
-  # Claude Code will use ANTHROPIC_API_KEY from CI/CD variables
+  # Claude Code 将使用 CI/CD 变量中的 ANTHROPIC_API_KEY
 ```
 
-### Amazon Bedrock job example (OIDC)
+<h3 id="amazon-bedrock-job-example-oidc">
+  Amazon Bedrock 作业示例（OIDC）
+</h3>
 
-**Prerequisites:**
+**前置条件：**
 
-* Amazon Bedrock enabled with access to your chosen Claude model(s)
-* GitLab OIDC configured in AWS with a role that trusts your GitLab project and refs
-* IAM role with Amazon Bedrock permissions (least privilege recommended)
+* 启用了 Amazon Bedrock 并可访问您选择的 Claude 模型
+* 在 AWS 中配置了 GitLab OIDC，具有信任您的 GitLab 项目和 refs 的角色
+* 具有 Amazon Bedrock 权限的 IAM 角色（建议最小权限）
 
-**Required CI/CD variables:**
+**必需的 CI/CD 变量：**
 
-* `AWS_ROLE_TO_ASSUME`: ARN of the IAM role for Amazon Bedrock access
-* `AWS_REGION`: Amazon Bedrock region (for example, `us-west-2`)
+* `AWS_ROLE_TO_ASSUME`：用于 Amazon Bedrock 访问的 IAM 角色的 ARN
+* `AWS_REGION`：Amazon Bedrock 区域（例如，`us-west-2`）
 
 ```yaml theme={null}
 claude-bedrock:
@@ -294,7 +322,7 @@ claude-bedrock:
     - apk add --no-cache bash curl jq git python3 py3-pip
     - pip install --no-cache-dir awscli
     - curl -fsSL https://claude.ai/install.sh | bash
-    # Exchange GitLab OIDC token for AWS credentials
+    # 交换 GitLab OIDC 令牌以获取 AWS 凭证
     - export AWS_WEB_IDENTITY_TOKEN_FILE="${CI_JOB_JWT_FILE:-/tmp/oidc_token}"
     - if [ -n "${CI_JOB_JWT_V2}" ]; then printf "%s" "$CI_JOB_JWT_V2" > "$AWS_WEB_IDENTITY_TOKEN_FILE"; fi
     - >
@@ -319,22 +347,24 @@ claude-bedrock:
 ```
 
 <Note>
-  Model IDs for Amazon Bedrock include region-specific prefixes (for example, `us.anthropic.claude-sonnet-4-6`). Pass the desired model via your job configuration or prompt if your workflow supports it.
+  Amazon Bedrock 的模型 ID 包括特定于区域的前缀（例如，`us.anthropic.claude-sonnet-4-6`）。如果您的工作流支持，通过您的作业配置或提示传递所需的模型。
 </Note>
 
-### Agent Platform job example (Workload Identity Federation)
+<h3 id="agent-platform-job-example-workload-identity-federation">
+  Agent Platform 作业示例（Workload Identity Federation）
+</h3>
 
-**Prerequisites:**
+**前置条件：**
 
-* Google Cloud's Agent Platform API enabled in your GCP project
-* Workload Identity Federation configured to trust GitLab OIDC
-* A service account with Google Cloud's Agent Platform permissions
+* 在您的 GCP 项目中启用了 Google Cloud 的 Agent Platform API
+* 配置了 Workload Identity Federation 以信任 GitLab OIDC
+* 具有 Google Cloud 的 Agent Platform 权限的服务账户
 
-**Required CI/CD variables:**
+**必需的 CI/CD 变量：**
 
-* `GCP_WORKLOAD_IDENTITY_PROVIDER`: Full provider resource name
-* `GCP_SERVICE_ACCOUNT`: Service account email
-* `CLOUD_ML_REGION`: Google Cloud's Agent Platform region (for example, `us-east5`)
+* `GCP_WORKLOAD_IDENTITY_PROVIDER`：完整的提供商资源名称
+* `GCP_SERVICE_ACCOUNT`：服务账户电子邮件
+* `CLOUD_ML_REGION`：Google Cloud 的 Agent Platform 区域（例如，`us-east5`）
 
 ```yaml theme={null}
 claude-vertex:
@@ -345,7 +375,7 @@ claude-vertex:
   before_script:
     - apt-get update && apt-get install -y git && apt-get clean
     - curl -fsSL https://claude.ai/install.sh | bash
-    # Authenticate to Google Cloud via WIF (no downloaded keys)
+    # 通过 WIF 向 Google Cloud 进行身份验证（无下载的密钥）
     - >
       gcloud auth login --cred-file=<(cat <<EOF
       {
@@ -372,95 +402,121 @@ claude-vertex:
 ```
 
 <Note>
-  With Workload Identity Federation, you do not need to store service account keys. Use repository-specific trust conditions and least-privilege service accounts.
+  使用 Workload Identity Federation，您无需存储服务账户密钥。使用特定于存储库的信任条件和最小权限服务账户。
 </Note>
 
-## Best practices
+<h2 id="best-practices">
+  最佳实践
+</h2>
 
-### CLAUDE.md configuration
+<h3 id="claude-md-configuration">
+  CLAUDE.md 配置
+</h3>
 
-Create a `CLAUDE.md` file at the repository root to define coding standards, review criteria, and project-specific rules. Claude reads this file during runs and follows your conventions when proposing changes.
+在存储库根目录创建 `CLAUDE.md` 文件以定义编码标准、审查标准和项目特定规则。Claude 在运行期间读取此文件，并在提议更改时遵循您的约定。
 
-### Security considerations
+<h3 id="security-considerations">
+  安全考虑
+</h3>
 
-**Never commit API keys or cloud credentials to your repository**. Always use GitLab CI/CD variables:
+**永远不要将 API 密钥或云凭证提交到您的存储库**。始终使用 GitLab CI/CD 变量：
 
-* Add `ANTHROPIC_API_KEY` as a masked variable (and protect it if needed)
-* Use provider-specific OIDC where possible (no long-lived keys)
-* Limit job permissions and network egress
-* Review Claude's MRs like any other contributor
+* 将 `ANTHROPIC_API_KEY` 添加为掩码变量（如果需要，保护它）
+* 尽可能使用提供商特定的 OIDC（无长期密钥）
+* 限制作业权限和网络出口
+* 像审查任何其他贡献者一样审查 Claude 的 MR
 
-### Optimizing performance
+<h3 id="optimizing-performance">
+  优化性能
+</h3>
 
-* Keep `CLAUDE.md` focused and concise
-* Provide clear issue/MR descriptions to reduce iterations
-* Configure sensible job timeouts to avoid runaway runs
-* Cache npm and package installs in runners where possible
+* 保持 `CLAUDE.md` 专注和简洁
+* 提供清晰的问题/MR 描述以减少迭代
+* 配置合理的作业超时以避免失控运行
+* 在可能的情况下在 runners 中缓存 npm 和包安装
 
-### CI costs
+<h3 id="ci-costs">
+  CI 成本
+</h3>
 
-When using Claude Code with GitLab CI/CD, be aware of associated costs:
+在 GitLab CI/CD 中使用 Claude Code 时，请注意相关成本：
 
-* **GitLab Runner time**:
-  * Claude runs on your GitLab runners and consumes compute minutes
-  * See your GitLab plan's runner billing for details
+* **GitLab Runner 时间**：
+  * Claude 在您的 GitLab runners 上运行并消耗计算分钟数
+  * 有关详细信息，请参阅您的 GitLab 计划的 runner 计费
 
-* **API costs**:
-  * Each Claude interaction consumes tokens based on prompt and response size
-  * Token usage varies by task complexity and codebase size
-  * See [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing) for details
+* **API 成本**：
+  * 每次 Claude 交互根据提示和响应大小消耗令牌
+  * 令牌使用因任务复杂性和代码库大小而异
+  * 有关详细信息，请参阅 [Anthropic 定价](https://platform.claude.com/docs/zh-CN/about-claude/pricing)
 
-* **Cost optimization tips**:
-  * Use specific `@claude` commands to reduce unnecessary turns
-  * Set appropriate `max_turns` and job timeout values
-  * Limit concurrency to control parallel runs
+* **成本优化提示**：
+  * 使用特定的 `@claude` 命令以减少不必要的轮次
+  * 设置适当的 `max_turns` 和作业超时值
+  * 限制并发以控制并行运行
 
-## Security and governance
+<h2 id="security-and-governance">
+  安全和治理
+</h2>
 
-* Each job runs in an isolated container with restricted network access
-* Claude's changes flow through MRs so reviewers see every diff
-* Branch protection and approval rules apply to AI-generated code
-* Claude Code uses workspace-scoped permissions to constrain writes
-* Costs remain under your control because you bring your own provider credentials
+* 每个作业都在具有受限网络访问的隔离容器中运行
+* Claude 的更改通过 MR 流动，以便审查者可以看到每个差异
+* 分支保护和批准规则适用于 AI 生成的代码
+* Claude Code 使用工作区范围的权限来限制写入
+* 成本保持在您的控制下，因为您带来自己的提供商凭证
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Claude not responding to @claude commands
+<h3 id="claude-not-responding-to-claude-commands">
+  Claude 不响应 @claude 命令
+</h3>
 
-* Verify your pipeline is being triggered (manually, MR event, or via a note event listener/webhook)
-* Ensure CI/CD variables (`ANTHROPIC_API_KEY` or cloud provider settings) are present and unmasked
-* Check that the comment contains `@claude` (not `/claude`) and that your mention trigger is configured
+* 验证您的管道是否被触发（手动、MR 事件或通过注释事件监听器/webhook）
+* 确保 CI/CD 变量（`ANTHROPIC_API_KEY` 或云提供商设置）存在且未掩码
+* 检查评论是否包含 `@claude`（不是 `/claude`）以及您的提及触发器是否已配置
 
-### Job can't write comments or open MRs
+<h3 id="job-can’t-write-comments-or-open-mrs">
+  作业无法写入评论或打开 MR
+</h3>
 
-* Ensure `CI_JOB_TOKEN` has sufficient permissions for the project, or use a Project Access Token with `api` scope
-* Check the `mcp__gitlab` tool is enabled in `--allowedTools`
-* Confirm the job runs in the context of the MR or has enough context via `AI_FLOW_*` variables
+* 确保 `CI_JOB_TOKEN` 对项目具有足够的权限，或使用具有 `api` 范围的项目访问令牌
+* 检查 `mcp__gitlab` 工具是否在 `--allowedTools` 中启用
+* 确认作业在 MR 的上下文中运行或通过 `AI_FLOW_*` 变量有足够的上下文
 
-### Authentication errors
+<h3 id="authentication-errors">
+  身份验证错误
+</h3>
 
-* **For Claude API**: Confirm `ANTHROPIC_API_KEY` is valid and unexpired
-* **For Amazon Bedrock or Google Cloud's Agent Platform**: Verify OIDC/WIF configuration, role impersonation, and secret names; confirm region and model availability
+* **对于 Claude API**：确认 `ANTHROPIC_API_KEY` 有效且未过期
+* **对于 Amazon Bedrock 或 Google Cloud 的 Agent Platform**：验证 OIDC/WIF 配置、角色模拟和密钥名称；确认区域和模型可用性
 
-## Advanced configuration
+<h2 id="advanced-configuration">
+  高级配置
+</h2>
 
-### Common parameters and variables
+<h3 id="common-parameters-and-variables">
+  常见参数和变量
+</h3>
 
-Claude Code supports these commonly used inputs:
+Claude Code 支持这些常用输入：
 
-* `prompt` / `prompt_file`: Provide instructions inline (`-p`) or via a file
-* `max_turns`: Limit the number of back-and-forth iterations
-* `timeout_minutes`: Limit total execution time
-* `ANTHROPIC_API_KEY`: Required for the Claude API (not used for Amazon Bedrock or Google Cloud's Agent Platform)
-* Provider-specific environment: `AWS_REGION`, project/region vars for Google Cloud's Agent Platform
+* `prompt` / `prompt_file`：内联提供说明（`-p`）或通过文件
+* `max_turns`：限制来回迭代的次数
+* `timeout_minutes`：限制总执行时间
+* `ANTHROPIC_API_KEY`：Claude API 所需（不用于 Amazon Bedrock 或 Google Cloud 的 Agent Platform）
+* 提供商特定的环境：`AWS_REGION`、Google Cloud 的 Agent Platform 的项目/区域变量
 
 <Note>
-  Exact flags and parameters may vary by version of `@anthropic-ai/claude-code`. Run `claude --help` in your job to see supported options.
+  确切的标志和参数可能因 `@anthropic-ai/claude-code` 的版本而异。在您的作业中运行 `claude --help` 以查看支持的选项。
 </Note>
 
-### Customizing Claude's behavior
+<h3 id="customizing-claude’s-behavior">
+  自定义 Claude 的行为
+</h3>
 
-You can guide Claude in two primary ways:
+您可以通过两种主要方式指导 Claude：
 
-1. **CLAUDE.md**: Define coding standards, security requirements, and project conventions. Claude reads this during runs and follows your rules.
-2. **Custom prompts**: Pass task-specific instructions via `prompt`/`prompt_file` in the job. Use different prompts for different jobs (for example, review, implement, refactor).
+1. **CLAUDE.md**：定义编码标准、安全要求和项目约定。Claude 在运行期间读取此文件并遵循您的规则。
+2. **自定义提示**：通过作业中的 `prompt`/`prompt_file` 传递特定于任务的说明。为不同的作业使用不同的提示（例如，审查、实现、重构）。

@@ -4,103 +4,120 @@
 
 # Claude Code GitHub Actions
 
-> Learn about integrating Claude Code into your development workflow with Claude Code GitHub Actions
+> 了解如何将 Claude Code 集成到您的开发工作流中，使用 Claude Code GitHub Actions
 
-Claude Code GitHub Actions brings AI-powered automation to your GitHub workflow. With a simple `@claude` mention in any PR or issue, Claude can analyze your code, create pull requests, implement features, and fix bugs - all while following your project's standards. For automatic reviews posted on every PR without a trigger, see [GitHub Code Review](/docs/en/code-review).
-
-<Note>
-  Claude Code GitHub Actions is built on top of the [Claude Agent SDK](/docs/en/agent-sdk/overview), which enables programmatic integration of Claude Code into your applications. You can use the SDK to build custom automation workflows beyond GitHub Actions.
-</Note>
-
-## Why use Claude Code GitHub Actions?
-
-* **Instant PR creation**: Describe what you need, and Claude creates a complete PR with all necessary changes
-* **Automated code implementation**: Turn issues into working code with a single command
-* **Follows your standards**: Claude respects your `CLAUDE.md` guidelines and existing code patterns
-* **Simple setup**: Get started in minutes with our installer and API key
-* **Secure by default**: Your code stays on Github's runners
-
-## What can Claude do?
-
-Claude Code provides a powerful GitHub Action that transforms how you work with code:
-
-### Claude Code Action
-
-This GitHub Action allows you to run Claude Code within your GitHub Actions workflows. You can use this to build any custom workflow on top of Claude Code.
-
-[View repository →](https://github.com/anthropics/claude-code-action)
-
-## Setup
-
-## Quick setup
-
-Run `/install-github-app` in the Claude Code terminal to set up the integration interactively. The command installs the Claude GitHub App on your repository and then walks you through adding the GitHub Actions workflows and the API key secret.
-
-After the GitHub App is installed, the command asks whether to continue with GitHub Actions setup. In Claude Code v2.1.187 and later you can choose **Skip for now** to stop with only the App installed and return to the workflow and secret steps by running `/install-github-app` again. Earlier versions proceed straight to workflow selection.
+Claude Code GitHub Actions 为您的 GitHub 工作流带来了 AI 驱动的自动化。只需在任何 PR 或 issue 中简单地提及 `@claude`，Claude 就可以分析您的代码、创建拉取请求、实现功能和修复错误 - 所有这些都遵循您项目的标准。如需在每个 PR 上自动发布评论而无需触发器，请参阅 [GitHub Code Review](/docs/zh-CN/code-review)。
 
 <Note>
-  * You must be a repository admin to install the GitHub app and add secrets
-  * The GitHub app will request read & write permissions for Contents, Issues, and Pull requests
-  * This quickstart method is only available for direct Claude API users. If
-    you're using Amazon Bedrock or Google Cloud's Agent Platform, see the [Using
-    with Amazon Bedrock and Google Cloud](#using-with-amazon-bedrock-and-google-cloud)
-    section.
+  Claude Code GitHub Actions 建立在 [Claude Agent SDK](/docs/zh-CN/agent-sdk/overview) 之上，该 SDK 支持将 Claude Code 以编程方式集成到您的应用程序中。您可以使用该 SDK 构建超越 GitHub Actions 的自定义自动化工作流。
 </Note>
 
-## Manual setup
+<h2 id="why-use-claude-code-github-actions">
+  为什么使用 Claude Code GitHub Actions？
+</h2>
 
-If the `/install-github-app` command fails or you prefer manual setup, please follow these manual setup instructions:
+* **即时 PR 创建**：描述您需要什么，Claude 会创建一个包含所有必要更改的完整 PR
+* **自动化代码实现**：通过单个命令将 issue 转换为可工作的代码
+* **遵循您的标准**：Claude 尊重您的 `CLAUDE.md` 指南和现有代码模式
+* **简单设置**：通过我们的安装程序和 API 密钥在几分钟内开始使用
+* **默认安全**：您的代码保留在 Github 的运行器上
 
-1. **Install the Claude GitHub app** to your repository: [https://github.com/apps/claude](https://github.com/apps/claude)
+<h2 id="what-can-claude-do">
+  Claude 可以做什么？
+</h2>
 
-   The Claude GitHub app requires the following repository permissions:
+Claude Code 提供了一个强大的 GitHub Action，改变了您处理代码的方式：
 
-   * **Contents**: Read & write (to modify repository files)
-   * **Issues**: Read & write (to respond to issues)
-   * **Pull requests**: Read & write (to create PRs and push changes)
+<h3 id="claude-code-action">
+  Claude Code Action
+</h3>
 
-   For more details on security and permissions, see the [security documentation](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md).
-2. **Add ANTHROPIC\_API\_KEY** to your repository secrets ([Learn how to use secrets in GitHub Actions](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions))
-3. **Copy the workflow file** from [examples/claude.yml](https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml) into your repository's `.github/workflows/`
+这个 GitHub Action 允许您在 GitHub Actions 工作流中运行 Claude Code。您可以使用它在 Claude Code 之上构建任何自定义工作流。
+
+[查看仓库 →](https://github.com/anthropics/claude-code-action)
+
+<h2 id="setup">
+  设置
+</h2>
+
+<h2 id="quick-setup">
+  快速设置
+</h2>
+
+在 Claude Code 终端中运行 `/install-github-app` 以交互方式设置集成。该命令在您的仓库上安装 Claude GitHub App，然后引导您添加 GitHub Actions 工作流和 API 密钥密钥。
+
+安装 GitHub App 后，该命令会询问是否继续进行 GitHub Actions 设置。在 Claude Code v2.1.187 及更高版本中，您可以选择**暂时跳过**以仅安装 App，然后通过再次运行 `/install-github-app` 返回工作流和密钥步骤。早期版本直接进行工作流选择。
+
+<Note>
+  * 您必须是仓库管理员才能安装 GitHub 应用并添加密钥
+  * GitHub 应用将请求对内容、Issue 和拉取请求的读写权限
+  * 此快速启动方法仅适用于直接 Claude API 用户。如果您使用 Amazon Bedrock 或 Google Cloud 的 Agent Platform，请参阅 [使用 Amazon Bedrock 和 Google Cloud](#using-with-amazon-bedrock-and-google-cloud) 部分。
+</Note>
+
+<h2 id="manual-setup">
+  手动设置
+</h2>
+
+如果 `/install-github-app` 命令失败或您更喜欢手动设置，请按照以下手动设置说明进行操作：
+
+1. **安装 Claude GitHub 应用**到您的仓库：[https://github.com/apps/claude](https://github.com/apps/claude)
+
+   Claude GitHub 应用需要以下仓库权限：
+
+   * **Contents**：读写（用于修改仓库文件）
+   * **Issues**：读写（用于响应 issue）
+   * **Pull requests**：读写（用于创建 PR 和推送更改）
+
+   有关安全和权限的更多详情，请参阅 [安全文档](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md)。
+2. **添加 ANTHROPIC\_API\_KEY** 到您的仓库密钥（[了解如何在 GitHub Actions 中使用密钥](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)）
+3. **复制工作流文件**从 [examples/claude.yml](https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml) 到您的仓库的 `.github/workflows/`
 
 <Tip>
-  After completing either the quickstart or manual setup, test the action by tagging `@claude` in an issue or PR comment.
+  完成快速启动或手动设置后，通过在 issue 或 PR 评论中标记 `@claude` 来测试该 action。
 </Tip>
 
-## Upgrading from Beta
+<h2 id="upgrading-from-beta">
+  从 Beta 升级
+</h2>
 
 <Warning>
-  Claude Code GitHub Actions v1.0 introduces breaking changes that require updating your workflow files in order to upgrade to v1.0 from the beta version.
+  Claude Code GitHub Actions v1.0 引入了重大更改，需要更新您的工作流文件才能从 beta 版本升级到 v1.0。
 </Warning>
 
-If you're currently using the beta version of Claude Code GitHub Actions, we recommend that you update your workflows to use the GA version. The new version simplifies configuration while adding powerful new features like automatic mode detection.
+如果您当前使用 Claude Code GitHub Actions 的 beta 版本，我们建议您更新工作流以使用 GA 版本。新版本简化了配置，同时添加了强大的新功能，如自动模式检测。
 
-### Essential changes
+<h3 id="essential-changes">
+  基本更改
+</h3>
 
-All beta users must make these changes to their workflow files in order to upgrade:
+所有 beta 用户必须对其工作流文件进行这些更改才能升级：
 
-1. **Update the action version**: Change `@beta` to `@v1`
-2. **Remove mode configuration**: Delete `mode: "tag"` or `mode: "agent"` (now auto-detected)
-3. **Update prompt inputs**: Replace `direct_prompt` with `prompt`
-4. **Move CLI options**: Convert `max_turns`, `model`, `custom_instructions`, etc. to `claude_args`
+1. **更新 action 版本**：将 `@beta` 更改为 `@v1`
+2. **删除模式配置**：删除 `mode: "tag"` 或 `mode: "agent"`（现在自动检测）
+3. **更新提示输入**：将 `direct_prompt` 替换为 `prompt`
+4. **移动 CLI 选项**：将 `max_turns`、`model`、`custom_instructions` 等转换为 `claude_args`
 
-### Breaking Changes Reference
+<h3 id="breaking-changes-reference">
+  重大更改参考
+</h3>
 
-| Old Beta Input        | New v1.0 Input                        |
+| 旧 Beta 输入             | 新 v1.0 输入                             |
 | --------------------- | ------------------------------------- |
-| `mode`                | *(Removed - auto-detected)*           |
+| `mode`                | *（已删除 - 自动检测）*                        |
 | `direct_prompt`       | `prompt`                              |
-| `override_prompt`     | `prompt` with GitHub variables        |
+| `override_prompt`     | `prompt` 带 GitHub 变量                  |
 | `custom_instructions` | `claude_args: --append-system-prompt` |
 | `max_turns`           | `claude_args: --max-turns`            |
 | `model`               | `claude_args: --model`                |
 | `allowed_tools`       | `claude_args: --allowedTools`         |
 | `disallowed_tools`    | `claude_args: --disallowedTools`      |
-| `claude_env`          | `settings` JSON format                |
+| `claude_env`          | `settings` JSON 格式                    |
 
-### Before and After Example
+<h3 id="before-and-after-example">
+  前后示例
+</h3>
 
-**Beta version:**
+**Beta 版本：**
 
 ```yaml theme={null}
 - uses: anthropics/claude-code-action@beta
@@ -113,7 +130,7 @@ All beta users must make these changes to their workflow files in order to upgra
     model: "claude-sonnet-5"
 ```
 
-**GA version (v1.0):**
+**GA 版本 (v1.0)：**
 
 ```yaml theme={null}
 - uses: anthropics/claude-code-action@v1
@@ -127,14 +144,18 @@ All beta users must make these changes to their workflow files in order to upgra
 ```
 
 <Tip>
-  The action now automatically detects whether to run in interactive mode (responds to `@claude` mentions) or automation mode (runs immediately with a prompt) based on your configuration.
+  该 action 现在根据您的配置自动检测是在交互模式（响应 `@claude` 提及）还是自动化模式（立即使用提示运行）下运行。
 </Tip>
 
-## Example use cases
+<h2 id="example-use-cases">
+  示例用例
+</h2>
 
-Claude Code GitHub Actions can help you with a variety of tasks. The [examples directory](https://github.com/anthropics/claude-code-action/tree/main/examples) contains ready-to-use workflows for different scenarios.
+Claude Code GitHub Actions 可以帮助您完成各种任务。[examples 目录](https://github.com/anthropics/claude-code-action/tree/main/examples)包含针对不同场景的现成工作流。
 
-### Basic workflow
+<h3 id="basic-workflow">
+  基本工作流
+</h3>
 
 ```yaml theme={null}
 name: Claude Code
@@ -153,14 +174,16 @@ jobs:
           # Responds to @claude mentions in comments
 ```
 
-### Using skills
+<h3 id="using-skills">
+  使用 skills
+</h3>
 
-The `prompt` input accepts a [skill](/docs/en/skills) invocation as well as plain text:
+`prompt` 输入接受 [skill](/docs/zh-CN/skills) 调用以及纯文本：
 
-* For a skill in your repository's `.claude/skills/` directory, run `actions/checkout` before the action step and pass `/skill-name`.
-* For a skill packaged in a plugin, install the plugin with the `plugin_marketplaces` and `plugins` inputs and pass the namespaced `/plugin-name:skill-name`.
+* 对于存储库的 `.claude/skills/` 目录中的 skill，在操作步骤之前运行 `actions/checkout`，然后传递 `/skill-name`。
+* 对于打包在插件中的 skill，使用 `plugin_marketplaces` 和 `plugins` 输入安装插件，然后传递命名空间的 `/plugin-name:skill-name`。
 
-The following workflow installs the `code-review` plugin and runs its skill on each new or updated pull request:
+以下工作流安装 `code-review` 插件并在每个新的或更新的拉取请求上运行其 skill：
 
 ```yaml theme={null}
 name: Code Review
@@ -179,7 +202,9 @@ jobs:
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
 ```
 
-### Custom automation with prompts
+<h3 id="custom-automation-with-prompts">
+  使用提示的自定义自动化
+</h3>
 
 ```yaml theme={null}
 name: Daily Report
@@ -197,9 +222,11 @@ jobs:
           claude_args: "--model opus"
 ```
 
-### Common use cases
+<h3 id="common-use-cases">
+  常见用例
+</h3>
 
-In issue or PR comments:
+在 issue 或 PR 评论中：
 
 ```text wrap theme={null}
 @claude implement this feature based on the issue description
@@ -207,58 +234,70 @@ In issue or PR comments:
 @claude fix the TypeError in the user dashboard component
 ```
 
-Claude will automatically analyze the context and respond appropriately.
+Claude 将自动分析上下文并做出适当的响应。
 
-## Best practices
+<h2 id="best-practices">
+  最佳实践
+</h2>
 
-### CLAUDE.md configuration
+<h3 id="claude-md-configuration">
+  CLAUDE.md 配置
+</h3>
 
-Create a `CLAUDE.md` file in your repository root to define code style guidelines, review criteria, project-specific rules, and preferred patterns. This file guides Claude's understanding of your project standards.
+在您的仓库根目录创建一个 `CLAUDE.md` 文件来定义代码风格指南、审查标准、项目特定规则和首选模式。此文件指导 Claude 对您的项目标准的理解。
 
-### Security considerations
+<h3 id="security-considerations">
+  安全考虑
+</h3>
 
-<Warning>Never commit API keys directly to your repository.</Warning>
+<Warning>永远不要直接将 API 密钥提交到您的仓库。</Warning>
 
-For comprehensive security guidance including permissions, authentication, and best practices, see the [Claude Code Action security documentation](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md).
+有关全面的安全指导，包括权限、身份验证和最佳实践，请参阅 [Claude Code Action 安全文档](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md)。
 
-Always use GitHub Secrets for API keys:
+始终为 API 密钥使用 GitHub Secrets：
 
-* Add your API key as a repository secret named `ANTHROPIC_API_KEY`
-* Reference it in workflows: `anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}`
-* Limit action permissions to only what's necessary
-* Review Claude's suggestions before merging
+* 将您的 API 密钥添加为名为 `ANTHROPIC_API_KEY` 的仓库密钥
+* 在工作流中引用它：`anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}`
+* 将 action 权限限制为仅必要的权限
+* 在合并前审查 Claude 的建议
 
-Always use GitHub Secrets (for example, `${{ secrets.ANTHROPIC_API_KEY }}`) rather than hardcoding API keys directly in your workflow files.
+始终使用 GitHub Secrets（例如，`${{ secrets.ANTHROPIC_API_KEY }}`）而不是直接在工作流文件中硬编码 API 密钥。
 
-### Optimizing performance
+<h3 id="optimizing-performance">
+  优化性能
+</h3>
 
-Use issue templates to provide context, keep your `CLAUDE.md` concise and focused, and configure appropriate timeouts for your workflows.
+使用 issue 模板提供上下文，保持您的 `CLAUDE.md` 简洁和专注，并为您的工作流配置适当的超时。
 
-### CI costs
+<h3 id="ci-costs">
+  CI 成本
+</h3>
 
-When using Claude Code GitHub Actions, be aware of the associated costs:
+使用 Claude Code GitHub Actions 时，请注意相关成本：
 
-**GitHub Actions costs:**
+**GitHub Actions 成本：**
 
-* Claude Code runs on GitHub-hosted runners, which consume your GitHub Actions minutes
-* See [GitHub's billing documentation](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions) for detailed pricing and minute limits
+* Claude Code 在 GitHub 托管的运行器上运行，这会消耗您的 GitHub Actions 分钟数
+* 有关详细的定价和分钟限制，请参阅 [GitHub 的计费文档](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions)
 
-**API costs:**
+**API 成本：**
 
-* Each Claude interaction consumes API tokens based on the length of prompts and responses
-* Token usage varies by task complexity and codebase size
-* See [Claude's pricing page](https://claude.com/platform/api) for current token rates
+* 每次 Claude 交互都会根据提示和响应的长度消耗 API 令牌
+* 令牌使用量因任务复杂性和代码库大小而异
+* 有关当前令牌费率，请参阅 [Claude 的定价页面](https://claude.com/platform/api)
 
-**Cost optimization tips:**
+**成本优化提示：**
 
-* Use specific `@claude` commands to reduce unnecessary API calls
-* Configure appropriate `--max-turns` in `claude_args` to prevent excessive iterations
-* Set workflow-level timeouts to avoid runaway jobs
-* Consider using GitHub's concurrency controls to limit parallel runs
+* 使用特定的 `@claude` 命令来减少不必要的 API 调用
+* 在 `claude_args` 中配置适当的 `--max-turns` 以防止过度迭代
+* 设置工作流级别的超时以避免失控的作业
+* 考虑使用 GitHub 的并发控制来限制并行运行
 
-## Configuration examples
+<h2 id="configuration-examples">
+  配置示例
+</h2>
 
-The Claude Code Action v1 simplifies configuration with unified parameters:
+Claude Code Action v1 使用统一参数简化了配置：
 
 ```yaml theme={null}
 - uses: anthropics/claude-code-action@v1
@@ -268,212 +307,220 @@ The Claude Code Action v1 simplifies configuration with unified parameters:
     claude_args: "--max-turns 5" # Optional CLI arguments
 ```
 
-Key features:
+关键功能：
 
-* **Unified prompt interface** - Use `prompt` for all instructions
-* **Skills** - Invoke installed [skills](/docs/en/skills) directly from the prompt
-* **CLI passthrough** - Any Claude Code CLI argument via `claude_args`
-* **Flexible triggers** - Works with any GitHub event
+* **统一提示界面** - 对所有说明使用 `prompt`
+* **Skills** - 直接从提示调用已安装的 [skills](/docs/zh-CN/skills)
+* **CLI 传递** - 通过 `claude_args` 的任何 Claude Code CLI 参数
+* **灵活的触发器** - 适用于任何 GitHub 事件
 
-Visit the [examples directory](https://github.com/anthropics/claude-code-action/tree/main/examples) for complete workflow files.
+访问 [examples 目录](https://github.com/anthropics/claude-code-action/tree/main/examples)获取完整的工作流文件。
 
 <Tip>
-  When responding to issue or PR comments, Claude automatically responds to @claude mentions. For other events, use the `prompt` parameter to provide instructions.
+  当响应 issue 或 PR 评论时，Claude 会自动响应 @claude 提及。对于其他事件，使用 `prompt` 参数提供说明。
 </Tip>
 
-## Using with Amazon Bedrock and Google Cloud
+<h2 id="using-with-amazon-bedrock-and-google-cloud">
+  使用 Amazon Bedrock 和 Google Cloud
+</h2>
 
-For enterprise environments, you can use Claude Code GitHub Actions with your own cloud infrastructure. This approach gives you control over data residency and billing while maintaining the same functionality.
+对于企业环境，您可以将 Claude Code GitHub Actions 与您自己的云基础设施一起使用。这种方法让您可以控制数据驻留和计费，同时保持相同的功能。
 
-### Prerequisites
+<h3 id="prerequisites">
+  前置条件
+</h3>
 
-Before setting up Claude Code GitHub Actions with cloud providers, you need:
+在使用云提供商设置 Claude Code GitHub Actions 之前，您需要：
 
-#### For Google Cloud's Agent Platform:
+<h4 id="for-google-cloud’s-agent-platform">
+  对于 Google Cloud 的 Agent Platform：
+</h4>
 
-1. A Google Cloud Project with Google Cloud's Agent Platform enabled
-2. Workload Identity Federation configured for GitHub Actions
-3. A service account with the required permissions
-4. A GitHub App (recommended) or use the default GITHUB\_TOKEN
+1. 启用了 Google Cloud 的 Agent Platform 的 Google Cloud 项目
+2. 为 GitHub Actions 配置的工作负载身份联合
+3. 具有所需权限的服务账户
+4. GitHub 应用（推荐）或使用默认 GITHUB\_TOKEN
 
-#### For Amazon Bedrock:
+<h4 id="for-amazon-bedrock">
+  对于 Amazon Bedrock：
+</h4>
 
-1. An AWS account with Amazon Bedrock enabled
-2. GitHub OIDC Identity Provider configured in AWS
-3. An IAM role with Amazon Bedrock permissions
-4. A GitHub App (recommended) or use the default GITHUB\_TOKEN
+1. 启用了 Amazon Bedrock 的 AWS 账户
+2. 在 AWS 中配置的 GitHub OIDC 身份提供商
+3. 具有 Amazon Bedrock 权限的 IAM 角色
+4. GitHub 应用（推荐）或使用默认 GITHUB\_TOKEN
 
 <Steps>
-  <Step title="Create a custom GitHub App (Recommended for 3P Providers)">
-    For best control and security when using 3P providers like Google Cloud's Agent Platform or Amazon Bedrock, we recommend creating your own GitHub App:
+  <Step title="创建自定义 GitHub 应用（推荐用于第三方提供商）">
+    为了在使用 Google Cloud 的 Agent Platform 或 Amazon Bedrock 等第三方提供商时获得最佳控制和安全性，我们建议创建您自己的 GitHub 应用：
 
-    1. Go to [https://github.com/settings/apps/new](https://github.com/settings/apps/new)
-    2. Fill in the basic information:
-       * **GitHub App name**: Choose a unique name (e.g., "YourOrg Claude Assistant")
-       * **Homepage URL**: Your organization's website or the repository URL
-    3. Configure the app settings:
-       * **Webhooks**: Uncheck "Active" (not needed for this integration)
-    4. Set the required permissions:
-       * **Repository permissions**:
-         * Contents: Read & Write
-         * Issues: Read & Write
-         * Pull requests: Read & Write
-    5. Click "Create GitHub App"
-    6. After creation, click "Generate a private key" and save the downloaded `.pem` file
-    7. Note your App ID from the app settings page
-    8. Install the app to your repository:
-       * From your app's settings page, click "Install App" in the left sidebar
-       * Select your account or organization
-       * Choose "Only select repositories" and select the specific repository
-       * Click "Install"
-    9. Add the private key as a secret to your repository:
-       * Go to your repository's Settings → Secrets and variables → Actions
-       * Create a new secret named `APP_PRIVATE_KEY` with the contents of the `.pem` file
-    10. Add the App ID as a secret:
+    1. 转到 [https://github.com/settings/apps/new](https://github.com/settings/apps/new)
+    2. 填写基本信息：
+       * **GitHub App 名称**：选择唯一的名称（例如，"YourOrg Claude Assistant"）
+       * **主页 URL**：您的组织网站或仓库 URL
+    3. 配置应用设置：
+       * **Webhooks**：取消选中"Active"（此集成不需要）
+    4. 设置所需的权限：
+       * **仓库权限**：
+         * Contents：读写
+         * Issues：读写
+         * Pull requests：读写
+    5. 点击"Create GitHub App"
+    6. 创建后，点击"Generate a private key"并保存下载的 `.pem` 文件
+    7. 从应用设置页面记下您的应用 ID
+    8. 将应用安装到您的仓库：
+       * 从您的应用设置页面，点击左侧边栏中的"Install App"
+       * 选择您的账户或组织
+       * 选择"Only select repositories"并选择特定仓库
+       * 点击"Install"
+    9. 将私钥添加为仓库密钥：
+       * 转到您的仓库的 Settings → Secrets and variables → Actions
+       * 创建一个名为 `APP_PRIVATE_KEY` 的新密钥，内容为 `.pem` 文件的内容
+    10. 将应用 ID 添加为密钥：
 
-    * Create a new secret named `APP_ID` with your GitHub App's ID
+    * 创建一个名为 `APP_ID` 的新密钥，值为您的 GitHub 应用的 ID
 
     <Note>
-      This app will be used with the [actions/create-github-app-token](https://github.com/actions/create-github-app-token) action to generate authentication tokens in your workflows.
+      此应用将与 [actions/create-github-app-token](https://github.com/actions/create-github-app-token) action 一起使用，以在您的工作流中生成身份验证令牌。
     </Note>
 
-    **Alternative for Claude API or if you don't want to setup your own Github app**: Use the official Anthropic app:
+    **Claude API 的替代方案或如果您不想设置自己的 Github 应用**：使用官方 Anthropic 应用：
 
-    1. Install from: [https://github.com/apps/claude](https://github.com/apps/claude)
-    2. No additional configuration needed for authentication
+    1. 从以下位置安装：[https://github.com/apps/claude](https://github.com/apps/claude)
+    2. 无需额外的身份验证配置
   </Step>
 
-  <Step title="Configure cloud provider authentication">
-    Choose your cloud provider and set up secure authentication:
+  <Step title="配置云提供商身份验证">
+    选择您的云提供商并设置安全身份验证：
 
     <AccordionGroup>
       <Accordion title="Amazon Bedrock">
-        **Configure AWS to allow GitHub Actions to authenticate securely without storing credentials.**
+        **配置 AWS 以允许 GitHub Actions 安全地进行身份验证，而无需存储凭证。**
 
-        > **Security Note**: Use repository-specific configurations and grant only the minimum required permissions.
+        > **安全说明**：使用特定于仓库的配置并仅授予最少所需的权限。
 
-        **Required Setup**:
+        **所需设置**：
 
-        1. **Enable Amazon Bedrock**:
-           * Request access to Claude models in Amazon Bedrock
-           * For cross-region models, request access in all required regions
+        1. **启用 Amazon Bedrock**：
+           * 请求在 Amazon Bedrock 中访问 Claude 模型
+           * 对于跨区域模型，请在所有必需的区域中请求访问
 
-        2. **Set up GitHub OIDC Identity Provider**:
-           * Provider URL: `https://token.actions.githubusercontent.com`
-           * Audience: `sts.amazonaws.com`
+        2. **设置 GitHub OIDC 身份提供商**：
+           * 提供商 URL：`https://token.actions.githubusercontent.com`
+           * 受众：`sts.amazonaws.com`
 
-        3. **Create IAM Role for GitHub Actions**:
-           * Trusted entity type: Web identity
-           * Identity provider: `token.actions.githubusercontent.com`
-           * Permissions: `AmazonBedrockFullAccess` policy
-           * Configure trust policy for your specific repository
+        3. **为 GitHub Actions 创建 IAM 角色**：
+           * 受信任的实体类型：Web 身份
+           * 身份提供商：`token.actions.githubusercontent.com`
+           * 权限：`AmazonBedrockFullAccess` 策略
+           * 为您的特定仓库配置信任策略
 
-        **Required Values**:
+        **所需值**：
 
-        After setup, you'll need:
+        设置后，您需要：
 
-        * **AWS\_ROLE\_TO\_ASSUME**: The ARN of the IAM role you created
+        * **AWS\_ROLE\_TO\_ASSUME**：您创建的 IAM 角色的 ARN
 
         <Tip>
-          OIDC is more secure than using static AWS access keys because credentials are temporary and automatically rotated.
+          OIDC 比使用静态 AWS 访问密钥更安全，因为凭证是临时的并自动轮换。
         </Tip>
 
-        See [AWS documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html) for detailed OIDC setup instructions.
+        有关详细的 OIDC 设置说明，请参阅 [AWS 文档](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html)。
       </Accordion>
 
-      <Accordion title="Google Cloud's Agent Platform">
-        **Configure Google Cloud to allow GitHub Actions to authenticate securely without storing credentials.**
+      <Accordion title="Google Cloud 的 Agent Platform">
+        **配置 Google Cloud 以允许 GitHub Actions 安全地进行身份验证，而无需存储凭证。**
 
-        > **Security Note**: Use repository-specific configurations and grant only the minimum required permissions.
+        > **安全说明**：使用特定于仓库的配置并仅授予最少所需的权限。
 
-        **Required Setup**:
+        **所需设置**：
 
-        1. **Enable APIs** in your Google Cloud project:
+        1. **在您的 Google Cloud 项目中启用 API**：
            * IAM Credentials API
            * Security Token Service (STS) API
-           * Google Cloud's Agent Platform API
+           * Google Cloud 的 Agent Platform API
 
-        2. **Create Workload Identity Federation resources**:
-           * Create a Workload Identity Pool
-           * Add a GitHub OIDC provider with:
-             * Issuer: `https://token.actions.githubusercontent.com`
-             * Attribute mappings for repository and owner
-             * **Security recommendation**: Use repository-specific attribute conditions
+        2. **创建工作负载身份联合资源**：
+           * 创建工作负载身份池
+           * 添加 GitHub OIDC 提供商，具有：
+             * 发行者：`https://token.actions.githubusercontent.com`
+             * 仓库和所有者的属性映射
+             * **安全建议**：使用特定于仓库的属性条件
 
-        3. **Create a Service Account**:
-           * Grant only `Vertex AI User` role
-           * **Security recommendation**: Create a dedicated service account per repository
+        3. **创建服务账户**：
+           * 仅授予 `Vertex AI User` 角色
+           * **安全建议**：为每个仓库创建专用服务账户
 
-        4. **Configure IAM bindings**:
-           * Allow the Workload Identity Pool to impersonate the service account
-           * **Security recommendation**: Use repository-specific principal sets
+        4. **配置 IAM 绑定**：
+           * 允许工作负载身份池模拟服务账户
+           * **安全建议**：使用特定于仓库的主体集
 
-        **Required Values**:
+        **所需值**：
 
-        After setup, you'll need:
+        设置后，您需要：
 
-        * **GCP\_WORKLOAD\_IDENTITY\_PROVIDER**: The full provider resource name
-        * **GCP\_SERVICE\_ACCOUNT**: The service account email address
+        * **GCP\_WORKLOAD\_IDENTITY\_PROVIDER**：完整的提供商资源名称
+        * **GCP\_SERVICE\_ACCOUNT**：服务账户电子邮件地址
 
         <Tip>
-          Workload Identity Federation eliminates the need for downloadable service account keys, improving security.
+          工作负载身份联合消除了对可下载服务账户密钥的需求，提高了安全性。
         </Tip>
 
-        For detailed setup instructions, consult the [Google Cloud Workload Identity Federation documentation](https://cloud.google.com/iam/docs/workload-identity-federation).
+        有关详细的设置说明，请参阅 [Google Cloud 工作负载身份联合文档](https://cloud.google.com/iam/docs/workload-identity-federation)。
       </Accordion>
     </AccordionGroup>
   </Step>
 
-  <Step title="Add Required Secrets">
-    Add the following secrets to your repository (Settings → Secrets and variables → Actions):
+  <Step title="添加所需的密钥">
+    将以下密钥添加到您的仓库（Settings → Secrets and variables → Actions）：
 
-    #### For Claude API (Direct):
+    #### 对于 Claude API（直接）：
 
-    1. **For API Authentication**:
-       * `ANTHROPIC_API_KEY`: Your Claude API key from [console.anthropic.com](https://console.anthropic.com)
+    1. **对于 API 身份验证**：
+       * `ANTHROPIC_API_KEY`：您的 Claude API 密钥，来自 [console.anthropic.com](https://console.anthropic.com)
 
-    2. **For GitHub App (if using your own app)**:
-       * `APP_ID`: Your GitHub App's ID
-       * `APP_PRIVATE_KEY`: The private key (.pem) content
+    2. **对于 GitHub 应用（如果使用您自己的应用）**：
+       * `APP_ID`：您的 GitHub 应用的 ID
+       * `APP_PRIVATE_KEY`：私钥 (.pem) 内容
 
-    #### For Google Cloud's Agent Platform
+    #### 对于 Google Cloud 的 Agent Platform
 
-    1. **For GCP Authentication**:
+    1. **对于 GCP 身份验证**：
        * `GCP_WORKLOAD_IDENTITY_PROVIDER`
        * `GCP_SERVICE_ACCOUNT`
 
-    2. **For GitHub App (if using your own app)**:
-       * `APP_ID`: Your GitHub App's ID
-       * `APP_PRIVATE_KEY`: The private key (.pem) content
+    2. **对于 GitHub 应用（如果使用您自己的应用）**：
+       * `APP_ID`：您的 GitHub 应用的 ID
+       * `APP_PRIVATE_KEY`：私钥 (.pem) 内容
 
-    #### For Amazon Bedrock
+    #### 对于 Amazon Bedrock
 
-    1. **For AWS Authentication**:
+    1. **对于 AWS 身份验证**：
        * `AWS_ROLE_TO_ASSUME`
 
-    2. **For GitHub App (if using your own app)**:
-       * `APP_ID`: Your GitHub App's ID
-       * `APP_PRIVATE_KEY`: The private key (.pem) content
+    2. **对于 GitHub 应用（如果使用您自己的应用）**：
+       * `APP_ID`：您的 GitHub 应用的 ID
+       * `APP_PRIVATE_KEY`：私钥 (.pem) 内容
   </Step>
 
-  <Step title="Create workflow files">
-    Create GitHub Actions workflow files that integrate with your cloud provider. The examples below show complete configurations for both Amazon Bedrock and Google Cloud's Agent Platform:
+  <Step title="创建工作流文件">
+    创建与您的云提供商集成的 GitHub Actions 工作流文件。下面的示例显示了 Amazon Bedrock 和 Google Cloud 的 Agent Platform 的完整配置：
 
     <AccordionGroup>
-      <Accordion title="Amazon Bedrock workflow">
-        **Prerequisites:**
+      <Accordion title="Amazon Bedrock 工作流">
+        **前置条件：**
 
-        * Amazon Bedrock access enabled with Claude model permissions
-        * GitHub configured as an OIDC identity provider in AWS
-        * IAM role with Amazon Bedrock permissions that trusts GitHub Actions
+        * 启用了 Amazon Bedrock 访问权限，具有 Claude 模型权限
+        * GitHub 在 AWS 中配置为 OIDC 身份提供商
+        * 具有 Amazon Bedrock 权限的 IAM 角色，信任 GitHub Actions
 
-        **Required GitHub secrets:**
+        **所需的 GitHub 密钥：**
 
-        | Secret Name          | Description                                       |
-        | -------------------- | ------------------------------------------------- |
-        | `AWS_ROLE_TO_ASSUME` | ARN of the IAM role for Amazon Bedrock access     |
-        | `APP_ID`             | Your GitHub App ID (from app settings)            |
-        | `APP_PRIVATE_KEY`    | The private key you generated for your GitHub App |
+        | 密钥名称                 | 描述                             |
+        | -------------------- | ------------------------------ |
+        | `AWS_ROLE_TO_ASSUME` | Amazon Bedrock 访问的 IAM 角色的 ARN |
+        | `APP_ID`             | 您的 GitHub 应用 ID（来自应用设置）        |
+        | `APP_PRIVATE_KEY`    | 您为 GitHub 应用生成的私钥              |
 
         ```yaml theme={null}
         name: Claude PR Action
@@ -526,25 +573,25 @@ Before setting up Claude Code GitHub Actions with cloud providers, you need:
         ```
 
         <Tip>
-          The model ID format for Amazon Bedrock includes a region prefix (for example, `us.anthropic.claude-sonnet-4-6`).
+          Amazon Bedrock 的模型 ID 格式包括区域前缀（例如，`us.anthropic.claude-sonnet-4-6`）。
         </Tip>
       </Accordion>
 
-      <Accordion title="Google Cloud's Agent Platform workflow">
-        **Prerequisites:**
+      <Accordion title="Google Cloud 的 Agent Platform 工作流">
+        **前置条件：**
 
-        * Google Cloud's Agent Platform API enabled in your GCP project
-        * Workload Identity Federation configured for GitHub
-        * Service account with Google Cloud's Agent Platform permissions
+        * 在您的 GCP 项目中启用了 Google Cloud 的 Agent Platform API
+        * 为 GitHub 配置了工作负载身份联合
+        * 具有 Google Cloud 的 Agent Platform 权限的服务账户
 
-        **Required GitHub secrets:**
+        **所需的 GitHub 密钥：**
 
-        | Secret Name                      | Description                                                     |
-        | -------------------------------- | --------------------------------------------------------------- |
-        | `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload identity provider resource name                        |
-        | `GCP_SERVICE_ACCOUNT`            | Service account email with Google Cloud's Agent Platform access |
-        | `APP_ID`                         | Your GitHub App ID (from app settings)                          |
-        | `APP_PRIVATE_KEY`                | The private key you generated for your GitHub App               |
+        | 密钥名称                             | 描述                                             |
+        | -------------------------------- | ---------------------------------------------- |
+        | `GCP_WORKLOAD_IDENTITY_PROVIDER` | 工作负载身份提供商资源名称                                  |
+        | `GCP_SERVICE_ACCOUNT`            | 具有 Google Cloud 的 Agent Platform 访问权限的服务账户电子邮件 |
+        | `APP_ID`                         | 您的 GitHub 应用 ID（来自应用设置）                        |
+        | `APP_PRIVATE_KEY`                | 您为 GitHub 应用生成的私钥                              |
 
         ```yaml theme={null}
         name: Claude PR Action
@@ -601,79 +648,97 @@ Before setting up Claude Code GitHub Actions with cloud providers, you need:
         ```
 
         <Tip>
-          The project ID is automatically retrieved from the Google Cloud authentication step, so you don't need to hardcode it.
+          项目 ID 从 Google Cloud 身份验证步骤自动检索，因此您无需对其进行硬编码。
         </Tip>
       </Accordion>
     </AccordionGroup>
   </Step>
 </Steps>
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Claude not responding to @claude commands
+<h3 id="claude-not-responding-to-claude-commands">
+  Claude 不响应 @claude 命令
+</h3>
 
-Verify the GitHub App is installed correctly, check that workflows are enabled, ensure API key is set in repository secrets, and confirm the comment contains `@claude` (not `/claude`).
+验证 GitHub 应用是否正确安装，检查工作流是否已启用，确保 API 密钥在仓库密钥中设置，并确认评论包含 `@claude`（不是 `/claude`）。
 
-### CI not running on Claude's commits
+<h3 id="ci-not-running-on-claude’s-commits">
+  CI 不在 Claude 的提交上运行
+</h3>
 
-Ensure you're using the GitHub App or custom app (not Actions user), check workflow triggers include the necessary events, and verify app permissions include CI triggers.
+确保您使用的是 GitHub 应用或自定义应用（不是 Actions 用户），检查工作流触发器是否包含必要的事件，并验证应用权限是否包括 CI 触发器。
 
-### Authentication errors
+<h3 id="authentication-errors">
+  身份验证错误
+</h3>
 
-Confirm API key is valid and has sufficient permissions. For Amazon Bedrock or Google Cloud's Agent Platform, check credentials configuration and ensure secrets are named correctly in workflows.
+确认 API 密钥有效且具有足够的权限。对于 Amazon Bedrock 或 Google Cloud 的 Agent Platform，检查凭证配置并确保密钥在工作流中正确命名。
 
-## Advanced configuration
+<h2 id="advanced-configuration">
+  高级配置
+</h2>
 
-### Action parameters
+<h3 id="action-parameters">
+  Action 参数
+</h3>
 
-The Claude Code Action v1 uses a simplified configuration:
+Claude Code Action v1 使用简化的配置：
 
-| Parameter             | Description                                                        | Required |
-| --------------------- | ------------------------------------------------------------------ | -------- |
-| `prompt`              | Instructions for Claude (plain text or a [skill](/docs/en/skills) name) | No\*     |
-| `claude_args`         | CLI arguments passed to Claude Code                                | No       |
-| `plugin_marketplaces` | Newline-separated list of plugin marketplace Git URLs              | No       |
-| `plugins`             | Newline-separated list of plugin names to install before execution | No       |
-| `anthropic_api_key`   | Claude API key                                                     | Yes\*\*  |
-| `github_token`        | GitHub token for API access                                        | No       |
-| `trigger_phrase`      | Custom trigger phrase (default: "@claude")                         | No       |
-| `use_bedrock`         | Use Amazon Bedrock instead of Claude API                           | No       |
-| `use_vertex`          | Use Google Cloud's Agent Platform instead of Claude API            | No       |
+| 参数                    | 描述                                              | 必需    |
+| --------------------- | ----------------------------------------------- | ----- |
+| `prompt`              | Claude 的说明（纯文本或 [skill](/docs/zh-CN/skills) 名称）      | 否\*   |
+| `claude_args`         | 传递给 Claude Code 的 CLI 参数                        | 否     |
+| `plugin_marketplaces` | 插件市场 Git URL 的换行符分隔列表                           | 否     |
+| `plugins`             | 执行前要安装的插件名称的换行符分隔列表                             | 否     |
+| `anthropic_api_key`   | Claude API 密钥                                   | 是\*\* |
+| `github_token`        | 用于 API 访问的 GitHub 令牌                            | 否     |
+| `trigger_phrase`      | 自定义触发短语（默认："@claude"）                           | 否     |
+| `use_bedrock`         | 使用 Amazon Bedrock 而不是 Claude API                | 否     |
+| `use_vertex`          | 使用 Google Cloud 的 Agent Platform 而不是 Claude API | 否     |
 
-\*Prompt is optional - when omitted for issue/PR comments, Claude responds to trigger phrase\
-\*\*Required for direct Claude API, not for Amazon Bedrock or Google Cloud's Agent Platform
+\*提示是可选的 - 当对 issue/PR 评论省略时，Claude 响应触发短语\
+\*\*对于直接 Claude API 是必需的，对于 Amazon Bedrock 或 Google Cloud 的 Agent Platform 不是必需的
 
-#### Pass CLI arguments
+<h4 id="pass-cli-arguments">
+  传递 CLI 参数
+</h4>
 
-The `claude_args` parameter accepts any Claude Code CLI arguments:
+`claude_args` 参数接受任何 Claude Code CLI 参数：
 
 ```yaml theme={null}
 claude_args: "--max-turns 5 --model claude-sonnet-5 --mcp-config /path/to/config.json"
 ```
 
-Common arguments:
+常见参数：
 
-* `--max-turns`: Maximum conversation turns (default: 10)
-* `--model`: Model to use (for example, `claude-sonnet-5`)
-* `--mcp-config`: Path to MCP configuration
-* `--allowedTools`: Comma-separated list of allowed tools. The `--allowed-tools` alias also works.
-* `--debug`: Enable debug output
+* `--max-turns`：最大对话轮数（默认：10）
+* `--model`：要使用的模型（例如，`claude-sonnet-5`）
+* `--mcp-config`：MCP 配置的路径
+* `--allowedTools`：允许的工具的逗号分隔列表。`--allowed-tools` 别名也可以使用。
+* `--debug`：启用调试输出
 
-### Alternative integration methods
+<h3 id="alternative-integration-methods">
+  替代集成方法
+</h3>
 
-While the `/install-github-app` command is the recommended approach, you can also:
+虽然 `/install-github-app` 命令是推荐的方法，但您也可以：
 
-* **Custom GitHub App**: For organizations needing branded usernames or custom authentication flows. Create your own GitHub App with required permissions (contents, issues, pull requests) and use the actions/create-github-app-token action to generate tokens in your workflows.
-* **Manual GitHub Actions**: Direct workflow configuration for maximum flexibility
-* **MCP Configuration**: Dynamic loading of Model Context Protocol servers
+* **自定义 GitHub 应用**：对于需要品牌用户名或自定义身份验证流的组织。创建您自己的 GitHub 应用，具有所需的权限（contents、issues、pull requests），并使用 actions/create-github-app-token action 在您的工作流中生成令牌。
+* **手动 GitHub Actions**：直接工作流配置以获得最大灵活性
+* **MCP 配置**：Model Context Protocol 服务器的动态加载
 
-See the [Claude Code Action documentation](https://github.com/anthropics/claude-code-action/blob/main/docs) for detailed guides on authentication, security, and advanced configuration.
+有关身份验证、安全和高级配置的详细指南，请参阅 [Claude Code Action 文档](https://github.com/anthropics/claude-code-action/blob/main/docs)。
 
-### Customizing Claude's behavior
+<h3 id="customizing-claude’s-behavior">
+  自定义 Claude 的行为
+</h3>
 
-You can configure Claude's behavior in two ways:
+您可以通过两种方式配置 Claude 的行为：
 
-1. **CLAUDE.md**: Define coding standards, review criteria, and project-specific rules in a `CLAUDE.md` file at the root of your repository. Claude will follow these guidelines when creating PRs and responding to requests. Check out our [Memory documentation](/docs/en/memory) for more details.
-2. **Custom prompts**: Use the `prompt` parameter in the workflow file to provide workflow-specific instructions. This allows you to customize Claude's behavior for different workflows or tasks.
+1. **CLAUDE.md**：在您的仓库根目录的 `CLAUDE.md` 文件中定义编码标准、审查标准和项目特定规则。Claude 在创建 PR 和响应请求时将遵循这些指南。查看我们的 [Memory 文档](/docs/zh-CN/memory)了解更多详情。
+2. **自定义提示**：在工作流文件中使用 `prompt` 参数提供工作流特定的说明。这允许您为不同的工作流或任务自定义 Claude 的行为。
 
-Claude will follow these guidelines when creating PRs and responding to requests.
+Claude 在创建 PR 和响应请求时将遵循这些指南。

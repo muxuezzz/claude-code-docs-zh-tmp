@@ -2,205 +2,225 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# How Claude remembers your project
+# Claude 如何记住你的项目
 
-> Give Claude persistent instructions with CLAUDE.md files, and let Claude accumulate learnings automatically with auto memory.
+> 使用 CLAUDE.md 文件为 Claude 提供持久指令，并让 Claude 通过自动记忆功能自动积累学习内容。
 
-Each Claude Code session begins with a fresh context window. Two mechanisms carry knowledge across sessions:
+每个 Claude Code 会话都从一个全新的上下文窗口开始。两种机制可以跨会话传递知识：
 
-* **CLAUDE.md files**: instructions you write to give Claude persistent context
-* **Auto memory**: notes Claude writes itself based on your corrections and preferences
+* **CLAUDE.md 文件**：你编写的指令，为 Claude 提供持久上下文
+* **自动记忆**：Claude 根据你的更正和偏好自己编写的笔记
 
-This page covers how to:
+本页面涵盖以下内容：
 
-* [Write and organize CLAUDE.md files](#claude-md-files)
-* [Scope rules to specific file types](#organize-rules-with-claude/rules/) with `.claude/rules/`
-* [Configure auto memory](#auto-memory) so Claude takes notes automatically
-* [Troubleshoot](#troubleshoot-memory-issues) when instructions aren't being followed
+* [编写和组织 CLAUDE.md 文件](#claude-md-files)
+* [使用 `.claude/rules/` 将规则范围限定到特定文件类型](#organize-rules-with-claude/rules/)
+* [配置自动记忆](#auto-memory)，使 Claude 自动记笔记
+* [故障排除](#troubleshoot-memory-issues)，当指令未被遵循时
 
-## CLAUDE.md vs auto memory
+<h2 id="claude-md-vs-auto-memory">
+  CLAUDE.md 与自动记忆
+</h2>
 
-Claude Code has two complementary memory systems. Both are loaded at the start of every conversation. Claude treats them as context, not enforced configuration. To block an action regardless of what Claude decides, use a [PreToolUse hook](/docs/en/hooks-guide) instead. The more specific and concise your instructions, the more consistently Claude follows them.
+Claude Code 有两个互补的记忆系统。两者都在每次对话开始时加载。Claude 将它们视为上下文，而不是强制配置。要阻止某个操作，无论 Claude 决定什么，请改用 [PreToolUse hook](/docs/zh-CN/hooks-guide)。你的指令越具体和简洁，Claude 遵循它们的一致性就越高。
 
-|                      | CLAUDE.md files                                   | Auto memory                                                      |
-| :------------------- | :------------------------------------------------ | :--------------------------------------------------------------- |
-| **Who writes it**    | You                                               | Claude                                                           |
-| **What it contains** | Instructions and rules                            | Learnings and patterns                                           |
-| **Scope**            | Project, user, or org                             | Per repository, shared across worktrees                          |
-| **Loaded into**      | Every session                                     | Every session (first 200 lines or 25KB)                          |
-| **Use for**          | Coding standards, workflows, project architecture | Build commands, debugging insights, preferences Claude discovers |
+|          | CLAUDE.md 文件  | 自动记忆                   |
+| :------- | :------------ | :--------------------- |
+| **谁编写**  | 你             | Claude                 |
+| **包含内容** | 指令和规则         | 学习和模式                  |
+| **范围**   | 项目、用户或组织      | 每个工作树，跨 worktrees 共享   |
+| **加载到**  | 每个会话          | 每个会话（前 200 行或 25KB）    |
+| **用于**   | 编码标准、工作流、项目架构 | 构建命令、调试见解、Claude 发现的偏好 |
 
-Use CLAUDE.md files when you want to guide Claude's behavior. Auto memory lets Claude learn from your corrections without manual effort.
+当你想指导 Claude 的行为时，使用 CLAUDE.md 文件。自动记忆让 Claude 从你的更正中学习，无需手动操作。
 
-Subagents can also maintain their own auto memory. See [subagent configuration](/docs/en/sub-agents#enable-persistent-memory) for details.
+Subagents 也可以维护自己的自动记忆。有关详细信息，请参阅 [subagent 配置](/docs/zh-CN/sub-agents#enable-persistent-memory)。
 
-## CLAUDE.md files
+<h2 id="claude-md-files">
+  CLAUDE.md 文件
+</h2>
 
-CLAUDE.md files are markdown files that give Claude persistent instructions for a project, your personal workflow, or your entire organization. You write these files in plain text; Claude reads them at the start of every session.
+CLAUDE.md 文件是 markdown 文件，为项目、你的个人工作流或整个组织为 Claude 提供持久指令。你用纯文本编写这些文件；Claude 在每个会话开始时读取它们。
 
-### When to add to CLAUDE.md
+<h3 id="when-to-add-to-claude-md">
+  何时添加到 CLAUDE.md
+</h3>
 
-Treat CLAUDE.md as the place you write down what you'd otherwise re-explain. Add to it when:
+将 CLAUDE.md 视为你写下你本来会重新解释的内容的地方。在以下情况下添加到它：
 
-* Claude makes the same mistake a second time
-* A code review catches something Claude should have known about this codebase
-* You type the same correction or clarification into chat that you typed last session
-* A new teammate would need the same context to be productive
+* Claude 第二次犯同样的错误
+* 代码审查发现 Claude 应该了解这个代码库的内容
+* 你在聊天中输入的相同更正或澄清是你上个会话输入的
+* 新队友需要相同的上下文才能提高生产力
 
-Keep it to facts Claude should hold in every session: build commands, conventions, project layout, "always do X" rules. If an entry is a multi-step procedure or only matters for one part of the codebase, move it to a [skill](/docs/en/skills) or a [path-scoped rule](#organize-rules-with-claude/rules/) instead. The [extension overview](/docs/en/features-overview#build-your-setup-over-time) covers when to use each mechanism.
+将其保持为 Claude 应该在每个会话中保持的事实：构建命令、约定、项目布局、"总是做 X"规则。如果一个条目是多步骤过程或仅对代码库的一部分重要，将其移到 [skill](/docs/zh-CN/skills) 或 [路径范围规则](#organize-rules-with-claude/rules/) 中。[扩展概述](/docs/zh-CN/features-overview#build-your-setup-over-time)涵盖何时使用每种机制。
 
-### Choose where to put CLAUDE.md files
+<h3 id="choose-where-to-put-claude-md-files">
+  选择 CLAUDE.md 文件的位置
+</h3>
 
-CLAUDE.md files can live in several locations, each with a different scope. The table below lists them in load order, from broadest scope to most specific, so a project instruction appears in context after a user instruction.
+CLAUDE.md 文件可以位于多个位置，每个位置有不同的范围。下表按加载顺序列出它们，从最广泛的范围到最具体的范围，因此项目指令在用户指令之后出现在上下文中。
 
-| Scope                    | Location                                                                                                                                                                | Purpose                                                    | Use case examples                                                    | Shared with                     |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------- |
-| **Managed policy**       | • macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`<br />• Linux and WSL: `/etc/claude-code/CLAUDE.md`<br />• Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` | Organization-wide instructions managed by IT/DevOps        | Company coding standards, security policies, compliance requirements | All users in organization       |
-| **User instructions**    | `~/.claude/CLAUDE.md`                                                                                                                                                   | Personal preferences for all projects                      | Code styling preferences, personal tooling shortcuts                 | Just you (all projects)         |
-| **Project instructions** | `./CLAUDE.md` or `./.claude/CLAUDE.md`                                                                                                                                  | Team-shared instructions for the project                   | Project architecture, coding standards, common workflows             | Team members via source control |
-| **Local instructions**   | `./CLAUDE.local.md`                                                                                                                                                     | Personal project-specific preferences; add to `.gitignore` | Your sandbox URLs, preferred test data                               | Just you (current project)      |
+| 范围       | 位置                                                                                                                                                                    | 目的                        | 用例示例             | 共享对象         |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ---------------- | ------------ |
+| **托管策略** | • macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`<br />• Linux 和 WSL: `/etc/claude-code/CLAUDE.md`<br />• Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` | 由 IT/DevOps 管理的组织范围指令     | 公司编码标准、安全策略、合规要求 | 组织中的所有用户     |
+| **用户指令** | `~/.claude/CLAUDE.md`                                                                                                                                                 | 所有项目的个人偏好                 | 代码样式偏好、个人工具快捷方式  | 仅你（所有项目）     |
+| **项目指令** | `./CLAUDE.md` 或 `./.claude/CLAUDE.md`                                                                                                                                 | 项目的团队共享指令                 | 项目架构、编码标准、常见工作流  | 通过源代码控制的团队成员 |
+| **本地指令** | `./CLAUDE.local.md`                                                                                                                                                   | 个人项目特定偏好；添加到 `.gitignore` | 你的沙箱 URL、首选测试数据  | 仅你（当前项目）     |
 
-CLAUDE.md and CLAUDE.local.md files in the directory hierarchy above the working directory are loaded in full at launch. Files in subdirectories load on demand when Claude reads files in those directories. See [How CLAUDE.md files load](#how-claude-md-files-load) for the full resolution order.
+工作目录上方目录层次结构中的 CLAUDE.md 和 CLAUDE.local.md 文件在启动时完整加载。子目录中的文件在 Claude 读取这些目录中的文件时按需加载。有关完整的解析顺序，请参阅 [CLAUDE.md 文件如何加载](#how-claude-md-files-load)。
 
-For large projects, you can break instructions into topic-specific files using [project rules](#organize-rules-with-claude/rules/). Rules let you scope instructions to specific file types or subdirectories.
+对于大型项目，你可以使用 [项目规则](#organize-rules-with-claude/rules/) 将指令分解为特定主题的文件。规则让你将指令范围限定到特定文件类型或子目录。
 
-### Set up a project CLAUDE.md
+<h3 id="set-up-a-project-claude-md">
+  设置项目 CLAUDE.md
+</h3>
 
-A project CLAUDE.md can be stored in either `./CLAUDE.md` or `./.claude/CLAUDE.md`. Create this file and add instructions that apply to anyone working on the project: build and test commands, coding standards, architectural decisions, naming conventions, and common workflows. These instructions are shared with your team through version control, so focus on project-level standards rather than personal preferences. To confirm the file loaded, run `/context` in a session and check the list under **Memory files**.
+项目 CLAUDE.md 可以存储在 `./CLAUDE.md` 或 `./.claude/CLAUDE.md` 中。创建此文件并添加适用于在项目上工作的任何人的指令：构建和测试命令、编码标准、架构决策、命名约定和常见工作流。这些指令通过版本控制与你的团队共享，因此请关注项目级标准而不是个人偏好。
 
 <Tip>
-  Run `/init` to generate a starting CLAUDE.md automatically. Claude analyzes your codebase and creates a file with build commands, test instructions, and project conventions it discovers. If a CLAUDE.md already exists, `/init` suggests improvements rather than overwriting it. Refine from there with instructions Claude wouldn't discover on its own.
+  运行 `/init` 自动生成起始 CLAUDE.md。Claude 分析你的代码库并创建一个包含构建命令、测试指令和它发现的项目约定的文件。如果 CLAUDE.md 已存在，`/init` 会建议改进而不是覆盖它。从那里进行细化，添加 Claude 不会自己发现的指令。
 
-  Set `CLAUDE_CODE_NEW_INIT=1` to enable an interactive multi-phase flow. `/init` asks which artifacts to set up: CLAUDE.md files, skills, and hooks. It then explores your codebase with a subagent, fills in gaps via follow-up questions, and presents a reviewable proposal before writing any files.
+  设置 `CLAUDE_CODE_NEW_INIT=1` 以启用交互式多阶段流程。`/init` 询问要设置哪些工件：CLAUDE.md 文件、skills 和 hooks。然后它使用 subagent 探索你的代码库，通过后续问题填补空白，并在写入任何文件之前呈现可审查的提案。
 </Tip>
 
-### Write effective instructions
+<h3 id="write-effective-instructions">
+  编写有效的指令
+</h3>
 
-CLAUDE.md files are loaded into the context window at the start of every session, consuming tokens alongside your conversation. The [context window visualization](/docs/en/context-window) shows where CLAUDE.md loads relative to the rest of the startup context. Because they're context rather than enforced configuration, how you write instructions affects how reliably Claude follows them. Specific, concise, well-structured instructions work best.
+CLAUDE.md 文件在每个会话开始时加载到上下文窗口中，与你的对话一起消耗令牌。[上下文窗口可视化](/docs/zh-CN/context-window)显示 CLAUDE.md 相对于其余启动上下文的加载位置。因为它们是上下文而不是强制配置，你编写指令的方式会影响 Claude 遵循它们的可靠性。具体、简洁、结构良好的指令效果最好。
 
-**Size**: target under 200 lines per CLAUDE.md file. Longer files consume more context and reduce adherence. If your instructions are growing large, use [path-scoped rules](#path-specific-rules) so instructions load only when Claude works with matching files. You can also split content into [imports](#import-additional-files) for organization, though imported files still load and enter the context window at launch.
+**大小**：每个 CLAUDE.md 文件目标在 200 行以下。较长的文件消耗更多上下文并降低遵守度。如果你的指令变得很大，使用 [路径范围规则](#path-specific-rules) 以便指令仅在 Claude 处理匹配文件时加载。你也可以将内容分割成 [导入](#import-additional-files) 以便组织，尽管导入的文件仍然加载并在启动时进入上下文窗口。
 
-**Structure**: use markdown headers and bullets to group related instructions. Claude scans structure the same way readers do: organized sections are easier to follow than dense paragraphs.
+**结构**：使用 markdown 标题和项目符号来分组相关指令。Claude 扫描结构的方式与读者相同：有组织的部分比密集段落更容易遵循。
 
-**Specificity**: write instructions that are concrete enough to verify. For example:
+**具体性**：编写具体到足以验证的指令。例如：
 
-* "Use 2-space indentation" instead of "Format code properly"
-* "Run `npm test` before committing" instead of "Test your changes"
-* "API handlers live in `src/api/handlers/`" instead of "Keep files organized"
+* "使用 2 空格缩进"而不是"正确格式化代码"
+* "在提交前运行 `npm test`"而不是"测试你的更改"
+* "API 处理程序位于 `src/api/handlers/`"而不是"保持文件有组织"
 
-**Consistency**: if two rules contradict each other, Claude may pick one arbitrarily. Review your CLAUDE.md files, nested CLAUDE.md files in subdirectories, and [`.claude/rules/`](#organize-rules-with-claude/rules/) periodically to remove outdated or conflicting instructions. In monorepos, use [`claudeMdExcludes`](#exclude-specific-claude-md-files) to skip CLAUDE.md files from other teams that aren't relevant to your work.
+**一致性**：如果两条规则相互矛盾，Claude 可能会任意选择一条。定期审查你的 CLAUDE.md 文件、子目录中的嵌套 CLAUDE.md 文件和 [`.claude/rules/`](#organize-rules-with-claude/rules/) 以删除过时或冲突的指令。在 monorepos 中，使用 [`claudeMdExcludes`](#exclude-specific-claude-md-files) 跳过与你的工作无关的其他团队的 CLAUDE.md 文件。
 
-### Import additional files
+<h3 id="import-additional-files">
+  导入其他文件
+</h3>
 
-CLAUDE.md files can import additional files using `@path/to/import` syntax. Imported files are expanded and loaded into context at launch alongside the CLAUDE.md that references them.
+CLAUDE.md 文件可以使用 `@path/to/import` 语法导入其他文件。导入的文件在启动时展开并加载到上下文中，与引用它们的 CLAUDE.md 一起。
 
-Both relative and absolute paths are allowed. Relative paths resolve relative to the file containing the import, not the working directory. Imported files can recursively import other files, with a maximum depth of four hops.
+允许相对路径和绝对路径。相对路径相对于包含导入的文件解析，而不是工作目录。导入的文件可以递归导入其他文件，最大深度为四跳。
 
-Import parsing skips Markdown code spans and fenced code blocks. To mention a path in your CLAUDE.md without importing it, wrap it in backticks: writing `` `@README` `` keeps the text literal, while `@README` outside backticks imports the file.
+导入解析跳过 Markdown 代码跨度和围栏代码块。要在你的 CLAUDE.md 中提及路径而不导入它，将其包装在反引号中：写 `` `@README` `` 保持文本字面，而 `@README` 在反引号外导入文件。
 
-To pull in a README, package.json, and a workflow guide, reference them with `@` syntax anywhere in your CLAUDE.md:
+要引入 README、package.json 和工作流指南，在你的 CLAUDE.md 中的任何地方使用 `@` 语法引用它们：
 
 ```text theme={null}
-See @README for project overview and @package.json for available npm commands for this project.
+有关项目概述，请参阅 @README，有关此项目的可用 npm 命令，请参阅 @package.json。
 
-# Additional Instructions
-- git workflow @docs/git-instructions.md
+# 其他指令
+- git 工作流 @docs/git-instructions.md
 ```
 
-For private per-project preferences that shouldn't be checked into version control, create a `CLAUDE.local.md` at the project root. It loads alongside `CLAUDE.md` and is treated the same way. Add `CLAUDE.local.md` to your `.gitignore` so it isn't committed. With `CLAUDE_CODE_NEW_INIT=1` set, running `/init` and choosing the personal option does this for you.
+对于你不想签入版本控制的私人项目偏好，在项目根目录创建 `CLAUDE.local.md`。它与 `CLAUDE.md` 一起加载并以相同方式处理。将 `CLAUDE.local.md` 添加到你的 `.gitignore` 以便它不被提交；运行 `/init` 并选择个人选项会为你做这个。
 
-If you work across multiple git worktrees of the same repository, a gitignored `CLAUDE.local.md` only exists in the worktree where you created it. To share personal instructions across worktrees, import a file from your home directory instead:
+如果你在同一存储库的多个 git worktrees 中工作，一个被 gitignore 的 `CLAUDE.local.md` 仅存在于你创建它的 worktree 中。要在 worktrees 中共享个人指令，改为从你的主目录导入文件：
 
 ```text theme={null}
-# Individual Preferences
+# 个人偏好
 - @~/.claude/my-project-instructions.md
 ```
 
 <Warning>
-  An import in a project-level memory file is external when its path resolves outside your working directory, like the home directory import above. The first time Claude Code encounters external imports in a project, it shows an approval dialog listing the files. If you decline, the imports stay disabled and the dialog doesn't appear again.
-
-  The dialog protects you from files other people commit to a shared project. Imports in user-scope memory files, such as `~/.claude/CLAUDE.md` and `~/.claude/rules/`, are files you wrote yourself, so they load without the dialog and carry the same trust as the rest of your personal configuration.
+  Claude Code 第一次在项目中遇到外部导入时，它会显示一个批准对话框，列出这些文件。如果你拒绝，导入保持禁用状态，对话框不会再出现。
 </Warning>
 
-For a more structured approach to organizing instructions, see [`.claude/rules/`](#organize-rules-with-claude/rules/).
+有关组织指令的更结构化方法，请参阅 [`.claude/rules/`](#organize-rules-with-claude/rules/)。
 
-### AGENTS.md
+<h3 id="agents-md">
+  AGENTS.md
+</h3>
 
-Claude Code reads `CLAUDE.md`, not `AGENTS.md`. If your repository already uses `AGENTS.md` for other coding agents, create a `CLAUDE.md` that imports it so both tools read the same instructions without duplicating them. You can also add Claude-specific instructions below the import. Claude loads the imported file at session start, then appends the rest:
+Claude Code 读取 `CLAUDE.md`，而不是 `AGENTS.md`。如果你的存储库已经为其他编码代理使用 `AGENTS.md`，创建一个导入它的 `CLAUDE.md`，这样两个工具都可以读取相同的指令而无需重复。你也可以在导入下方添加 Claude 特定的指令。Claude 在会话开始时加载导入的文件，然后附加其余部分：
 
 ```markdown CLAUDE.md theme={null}
 @AGENTS.md
 
 ## Claude Code
 
-Use plan mode for changes under `src/billing/`.
+对 `src/billing/` 下的更改使用 Plan Mode。
 ```
 
-A symlink also works if you don't need to add Claude-specific content:
+一个符号链接也可以工作，如果你不需要添加 Claude 特定的内容：
 
 ```bash theme={null}
 ln -s AGENTS.md CLAUDE.md
 ```
 
-The command prints no output on success. In your next session, run `/context` and confirm `CLAUDE.md` appears under **Memory files**.
+在 Windows 上，创建符号链接需要管理员权限或开发者模式，所以改用 `@AGENTS.md` 导入。
 
-On Windows, creating a symlink requires Administrator privileges or Developer Mode, so use the `@AGENTS.md` import instead.
+在已经有 `AGENTS.md` 的存储库中运行 [`/init`](/docs/zh-CN/commands) 会读取它并将相关部分合并到生成的 `CLAUDE.md` 中。它也读取其他工具配置，如 `.cursorrules`、`.devin/rules/` 和 `.windsurfrules`。
 
-Running [`/init`](/docs/en/commands) reads Cursor rules, in `.cursor/rules/` or `.cursorrules`, and Copilot rules, in `.github/copilot-instructions.md`, and incorporates the relevant parts into the generated `CLAUDE.md`. With `CLAUDE_CODE_NEW_INIT=1` set, `/init` also reads `AGENTS.md`, `.devin/rules/`, `.windsurf/rules/` or `.windsurfrules`, and `.clinerules`.
+<h3 id="how-claude-md-files-load">
+  CLAUDE.md 文件如何加载
+</h3>
 
-### How CLAUDE.md files load
+Claude Code 通过从当前工作目录向上遍历目录树来读取 CLAUDE.md 文件，检查沿途的每个目录是否有 `CLAUDE.md` 和 `CLAUDE.local.md` 文件。这意味着如果你在 `foo/bar/` 中运行 Claude Code，它会从 `foo/bar/CLAUDE.md`、`foo/CLAUDE.md` 和沿途的任何 `CLAUDE.local.md` 文件加载指令。
 
-Claude Code reads CLAUDE.md files by walking up the directory tree from your current working directory, checking each directory along the way for `CLAUDE.md` and `CLAUDE.local.md` files. This means if you run Claude Code in `foo/bar/`, it loads instructions from `foo/bar/CLAUDE.md`, `foo/CLAUDE.md`, and any `CLAUDE.local.md` files alongside them.
+所有发现的文件被连接到上下文中，而不是相互覆盖。在目录树中，内容从文件系统根目录向下排序到你的工作目录。对于 `foo/bar/` 示例，`foo/CLAUDE.md` 在上下文中出现在 `foo/bar/CLAUDE.md` 之前，因此更接近你启动 Claude 的位置的指令最后被读取。在每个目录中，`CLAUDE.local.md` 在 `CLAUDE.md` 之后附加，因此你的个人笔记是 Claude 在该级别读取的最后内容。
 
-All discovered files are concatenated into context rather than overriding each other. Across the directory tree, content is ordered from the filesystem root down to your working directory. For the `foo/bar/` example, `foo/CLAUDE.md` appears in context before `foo/bar/CLAUDE.md`, so instructions closer to where you launched Claude are read last. Within each directory, `CLAUDE.local.md` is appended after `CLAUDE.md`, so your personal notes are the last thing Claude reads at that level.
+Claude 还在当前工作目录下的子目录中发现 `CLAUDE.md` 和 `CLAUDE.local.md` 文件。它们不是在启动时加载，而是在 Claude 读取这些子目录中的文件时包含。
 
-Claude also discovers `CLAUDE.md` and `CLAUDE.local.md` files in subdirectories under your current working directory. Instead of loading them at launch, they are included when Claude reads files in those subdirectories.
+如果你在一个大型 monorepo 中工作，其他团队的 CLAUDE.md 文件被拾取，使用 [`claudeMdExcludes`](#exclude-specific-claude-md-files) 跳过它们。对于根目录和每个目录的 CLAUDE.md 文件和规则的完整布局，请参阅 [Monorepos 和大型存储库](/docs/zh-CN/large-codebases)。
 
-If you work in a large monorepo where other teams' CLAUDE.md files get picked up, use [`claudeMdExcludes`](#exclude-specific-claude-md-files) to skip them. For the full layout of root and per-directory CLAUDE.md files and rules, see [Monorepos and large repos](/docs/en/large-codebases).
+块级 HTML 注释（`<!-- maintainer notes -->`）在 CLAUDE.md 文件中在内容注入到 Claude 的上下文之前被剥离。使用它们为人类维护者留下笔记，而不在它们上花费上下文令牌。代码块内的注释被保留。当你直接用 Read 工具打开 CLAUDE.md 文件时，注释保持可见。
 
-Block-level HTML comments (`<!-- maintainer notes -->`) in CLAUDE.md files are stripped before the content is injected into Claude's context. Use them to leave notes for human maintainers without spending context tokens on them. Comments inside code blocks are preserved. When you open a CLAUDE.md file directly with the Read tool, comments remain visible.
+<h4 id="load-from-additional-directories">
+  从其他目录加载
+</h4>
 
-#### Load from additional directories
+`--add-dir` 标志使 Claude 可以访问主工作目录外的其他目录。默认情况下，不加载这些目录中的 CLAUDE.md 文件。
 
-The `--add-dir` flag gives Claude access to additional directories outside your main working directory. By default, CLAUDE.md files from these directories are not loaded.
-
-To also load memory files from additional directories, set the `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` environment variable:
+要也从其他目录加载记忆文件，设置 `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` 环境变量：
 
 ```bash theme={null}
 CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../shared-config
 ```
 
-This loads `CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/rules/*.md`, and `CLAUDE.local.md` from the additional directory. `CLAUDE.local.md` is skipped if you exclude `local` from [`--setting-sources`](/docs/en/cli-reference).
+这会从其他目录加载 `CLAUDE.md`、`.claude/CLAUDE.md`、`.claude/rules/*.md` 和 `CLAUDE.local.md`。如果你从 [`--setting-sources`](/docs/zh-CN/cli-reference) 中排除 `local`，`CLAUDE.local.md` 会被跳过。
 
-### Organize rules with `.claude/rules/`
+<h3 id="organize-rules-with-claude/rules/">
+  使用 `.claude/rules/` 组织规则
+</h3>
 
-For larger projects, you can organize instructions into multiple files using the `.claude/rules/` directory. This keeps instructions modular and easier for teams to maintain. Rules can also be [scoped to specific file paths](#path-specific-rules), so they only load into context when Claude works with matching files, reducing noise and saving context space.
+对于较大的项目，你可以使用 `.claude/rules/` 目录将指令组织到多个文件中。这使指令保持模块化并更容易让团队维护。规则也可以 [范围限定到特定文件路径](#path-specific-rules)，因此它们仅在 Claude 处理匹配文件时加载到上下文中，减少噪音并节省上下文空间。
 
 <Note>
-  Rules load into context every session or when matching files are opened. For task-specific instructions that don't need to be in context all the time, use [skills](/docs/en/skills) instead, which only load when you invoke them or when Claude determines they're relevant to your prompt.
+  规则在每个会话或打开匹配文件时加载到上下文中。对于不需要始终在上下文中的特定任务指令，改用 [skills](/docs/zh-CN/skills)，它仅在你调用它们或 Claude 确定它们与你的提示相关时加载。
 </Note>
 
-#### Set up rules
+<h4 id="set-up-rules">
+  设置规则
+</h4>
 
-Place markdown files in your project's `.claude/rules/` directory. Each file should cover one topic, with a descriptive filename like `testing.md` or `api-design.md`. All `.md` files are discovered recursively, so you can organize rules into subdirectories like `frontend/` or `backend/`:
+在你的项目的 `.claude/rules/` 目录中放置 markdown 文件。每个文件应涵盖一个主题，具有描述性文件名，如 `testing.md` 或 `api-design.md`。所有 `.md` 文件都被递归发现，因此你可以将规则组织到子目录中，如 `frontend/` 或 `backend/`：
 
 ```text theme={null}
 your-project/
 ├── .claude/
-│   ├── CLAUDE.md           # Main project instructions
+│   ├── CLAUDE.md           # 主项目指令
 │   └── rules/
-│       ├── code-style.md   # Code style guidelines
-│       ├── testing.md      # Testing conventions
-│       └── security.md     # Security requirements
+│       ├── code-style.md   # 代码样式指南
+│       ├── testing.md      # 测试约定
+│       └── security.md     # 安全要求
 ```
 
-Rules without [`paths` frontmatter](#path-specific-rules) are loaded at launch with the same priority as `.claude/CLAUDE.md`.
+没有 [`paths` frontmatter](#path-specific-rules) 的规则在启动时加载，优先级与 `.claude/CLAUDE.md` 相同。
 
-Project rules are skipped if you exclude `project` from [`--setting-sources`](/docs/en/cli-reference). {/* min-version: 2.1.211 */}Before v2.1.211, rules that load on demand, including path-scoped rules and rules in nested `.claude/rules/` directories, loaded even when `project` was excluded.
+<h4 id="path-specific-rules">
+  特定路径的规则
+</h4>
 
-#### Path-specific rules
-
-Rules can be scoped to specific files using YAML frontmatter with the `paths` field. These conditional rules only apply when Claude is working with files matching the specified patterns.
+规则可以使用带有 `paths` 字段的 YAML frontmatter 范围限定到特定文件。这些条件规则仅在 Claude 处理与指定模式匹配的文件时适用。
 
 ```markdown theme={null}
 ---
@@ -208,25 +228,25 @@ paths:
   - "src/api/**/*.ts"
 ---
 
-# API Development Rules
+# API 开发规则
 
-- All API endpoints must include input validation
-- Use the standard error response format
-- Include OpenAPI documentation comments
+- 所有 API 端点必须包括输入验证
+- 使用标准错误响应格式
+- 包括 OpenAPI 文档注释
 ```
 
-Rules without a `paths` field are loaded unconditionally and apply to all files. Path-scoped rules trigger when Claude reads files matching the pattern, not on every tool use. {/* min-version: 2.1.198 */}As of v2.1.198, matching also works when Claude reaches a file through a symlinked path to the project directory, for example in a symlinked checkout.
+没有 `paths` 字段的规则无条件加载并适用于所有文件。路径范围规则在 Claude 读取与模式匹配的文件时触发，而不是在每次工具使用时。{/* min-version: 2.1.198 */}从 v2.1.198 起，匹配也适用于 Claude 通过项目目录的符号链接路径到达文件时，例如在符号链接的检出中。
 
-Use glob patterns in the `paths` field to match files by extension, directory, or any combination:
+在 `paths` 字段中使用 glob 模式按扩展名、目录或任何组合匹配文件：
 
-| Pattern                | Matches                                  |
-| ---------------------- | ---------------------------------------- |
-| `**/*.ts`              | All TypeScript files in any directory    |
-| `src/**/*`             | All files under `src/` directory         |
-| `*.md`                 | Markdown files in the project root       |
-| `src/components/*.tsx` | React components in a specific directory |
+| 模式                     | 匹配                     |
+| ---------------------- | ---------------------- |
+| `**/*.ts`              | 任何目录中的所有 TypeScript 文件 |
+| `src/**/*`             | `src/` 目录下的所有文件        |
+| `*.md`                 | 项目根目录中的 Markdown 文件    |
+| `src/components/*.tsx` | 特定目录中的 React 组件        |
 
-You can specify multiple patterns and use brace expansion to match multiple extensions in one pattern:
+你可以指定多个模式并使用大括号扩展在一个模式中匹配多个扩展名：
 
 ```markdown theme={null}
 ---
@@ -237,64 +257,68 @@ paths:
 ---
 ```
 
-Each brace group multiplies the number of expanded patterns: `src/*.{ts,tsx}` expands to two patterns, and `{a,b}/{c,d}/*.{ts,tsx}` to eight. To keep expansion bounded, a rule's whole `paths` list shares one budget of 1,000 expanded patterns and 4 MiB, and patterns without braces don't count against it.
+Glob 语法将 `[` 视为括号表达式的开始，例如 `[abc]`。一个包含 `[` 的模式无法读作括号表达式，例如 `photos [2024/**`，是无效的：它不匹配任何内容，规则的其他模式继续工作。要匹配文件名中的字面 `[`，将其转义为 `photos \[2024/**`。{/* min-version: 2.1.207 */}在 v2.1.207 之前，一个无效模式会导致 Read 工具对规则被评估的每个文件失败，而不是不匹配任何内容。
 
-Claude Code uses any pattern that would exceed the budget unexpanded, and its literal braces match no files. {/* min-version: 2.1.217 */}Before v2.1.217, a `paths` value with many brace groups stalled or crashed the CLI at startup.
+<h4 id="share-rules-across-projects-with-symlinks">
+  使用符号链接跨项目共享规则
+</h4>
 
-Glob syntax treats `[` as the start of a bracket expression such as `[abc]`. A pattern with a `[` that can't be read as a bracket expression, such as `photos [2024/**`, is invalid: it matches nothing, and the rule's other patterns keep working. To match a literal `[` in a file name, escape it as `photos \[2024/**`. {/* min-version: 2.1.207 */}Before v2.1.207, one invalid pattern made the Read tool fail for every file the rule was evaluated against, instead of matching nothing.
+`.claude/rules/` 目录支持符号链接，因此你可以维护一组共享规则并将它们链接到多个项目中。符号链接被解析并正常加载，循环符号链接被检测并优雅处理。
 
-#### Share rules across projects with symlinks
-
-The `.claude/rules/` directory supports symlinks, so you can maintain a shared set of rules and link them into multiple projects. Symlinks are resolved and loaded normally, and circular symlinks are detected and handled gracefully.
-
-This example links both a shared directory and an individual file:
+此示例链接共享目录和单个文件：
 
 ```bash theme={null}
 ln -s ~/shared-claude-rules .claude/rules/shared
 ln -s ~/company-standards/security.md .claude/rules/security.md
 ```
 
-#### User-level rules
+<h4 id="user-level-rules">
+  用户级规则
+</h4>
 
-Personal rules in `~/.claude/rules/` apply to every project on your machine. Use them for preferences that aren't project-specific:
+`~/.claude/rules/` 中的个人规则适用于你机器上的每个项目。使用它们来处理不是项目特定的偏好：
 
 ```text theme={null}
 ~/.claude/rules/
-├── preferences.md    # Your personal coding preferences
-└── workflows.md      # Your preferred workflows
+├── preferences.md    # 你的个人编码偏好
+└── workflows.md      # 你的首选工作流
 ```
 
-User-level rules are loaded before project rules, giving project rules higher priority.
+用户级规则在项目规则之前加载，给予项目规则更高的优先级。
 
-### Manage CLAUDE.md for large teams
+<h3 id="manage-claude-md-for-large-teams">
+  为大型团队管理 CLAUDE.md
+</h3>
 
-For organizations deploying Claude Code across teams, you can centralize instructions and control which CLAUDE.md files are loaded.
+对于在团队中部署 Claude Code 的组织，你可以集中指令并控制加载哪些 CLAUDE.md 文件。
 
-#### Deploy organization-wide CLAUDE.md
+<h4 id="deploy-organization-wide-claude-md">
+  部署组织范围的 CLAUDE.md
+</h4>
 
-Organizations can deploy a centrally managed CLAUDE.md that applies to all users on a machine. This file cannot be excluded by individual settings.
+组织可以部署一个集中管理的 CLAUDE.md，适用于机器上的所有用户。此文件不能被个人设置排除。
 
 <Steps>
-  <Step title="Create the file at the managed policy location">
+  <Step title="在托管策略位置创建文件">
     * macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`
-    * Linux and WSL: `/etc/claude-code/CLAUDE.md`
+    * Linux 和 WSL: `/etc/claude-code/CLAUDE.md`
     * Windows: `C:\Program Files\ClaudeCode\CLAUDE.md`
   </Step>
 
-  <Step title="Deploy with your configuration management system">
-    Use MDM, Group Policy, Ansible, or similar tools to distribute the file across developer machines. See [managed settings](/docs/en/permissions#managed-settings) for other organization-wide configuration options.
+  <Step title="使用你的配置管理系统部署">
+    使用 MDM、Group Policy、Ansible 或类似工具在开发者机器上分发文件。有关其他组织范围配置选项，请参阅 [托管设置](/docs/zh-CN/permissions#managed-settings)。
   </Step>
 </Steps>
 
-The `claudeMd` key lets you put managed CLAUDE.md content directly inside `managed-settings.json` instead of deploying a separate file.
+`claudeMd` 键让你将托管 CLAUDE.md 内容直接放入 `managed-settings.json` 中，而不是部署单独的文件。
 
-**Scope**: every Claude Code session on the machine, in every repository. For repository-specific guidance, commit a project CLAUDE.md instead.
+**范围**：机器上的每个 Claude Code 会话，在每个存储库中。对于存储库特定的指导，改为提交项目 CLAUDE.md。
 
-**Precedence**: same as a managed CLAUDE.md file. Loads before user and project CLAUDE.md.
+**优先级**：与托管 CLAUDE.md 文件相同。在用户和项目 CLAUDE.md 之前加载。
 
-**Where it's honored**: managed and policy settings only. Setting `claudeMd` in user, project, or local settings has no effect.
+**在哪里被遵守**：仅托管和策略设置。在用户、项目或本地设置中设置 `claudeMd` 无效。
 
-The example below adds behavioral instructions directly in a managed settings file:
+下面的示例直接在托管设置文件中添加行为指令：
 
 ```json theme={null}
 {
@@ -302,25 +326,27 @@ The example below adds behavioral instructions directly in a managed settings fi
 }
 ```
 
-A managed CLAUDE.md and [managed settings](/docs/en/settings#settings-files) serve different purposes. Use settings for technical enforcement and CLAUDE.md for behavioral guidance:
+托管 CLAUDE.md 和 [托管设置](/docs/zh-CN/settings#settings-files) 服务于不同的目的。使用设置进行技术强制，使用 CLAUDE.md 进行行为指导：
 
-| Concern                                        | Configure in                                              |
-| :--------------------------------------------- | :-------------------------------------------------------- |
-| Block specific tools, commands, or file paths  | Managed settings: `permissions.deny`                      |
-| Enforce sandbox isolation                      | Managed settings: `sandbox.enabled`                       |
-| Environment variables and API provider routing | Managed settings: `env`                                   |
-| Authentication method and organization lock    | Managed settings: `forceLoginMethod`, `forceLoginOrgUUID` |
-| Code style and quality guidelines              | Managed CLAUDE.md                                         |
-| Data handling and compliance reminders         | Managed CLAUDE.md                                         |
-| Behavioral instructions for Claude             | Managed CLAUDE.md                                         |
+| 关注点             | 配置在                                         |
+| :-------------- | :------------------------------------------ |
+| 阻止特定工具、命令或文件路径  | 托管设置：`permissions.deny`                     |
+| 强制沙箱隔离          | 托管设置：`sandbox.enabled`                      |
+| 环境变量和 API 提供商路由 | 托管设置：`env`                                  |
+| 身份验证方法和组织锁定     | 托管设置：`forceLoginMethod`、`forceLoginOrgUUID` |
+| 代码样式和质量指南       | 托管 CLAUDE.md                                |
+| 数据处理和合规提醒       | 托管 CLAUDE.md                                |
+| Claude 的行为指令    | 托管 CLAUDE.md                                |
 
-Settings rules are enforced by the client regardless of what Claude decides to do. CLAUDE.md instructions shape Claude's behavior but are not a hard enforcement layer.
+设置规则由客户端强制执行，无论 Claude 决定做什么。CLAUDE.md 指令塑造 Claude 的行为，但不是硬强制层。
 
-#### Exclude specific CLAUDE.md files
+<h4 id="exclude-specific-claude-md-files">
+  排除特定的 CLAUDE.md 文件
+</h4>
 
-In large monorepos, ancestor CLAUDE.md files may contain instructions that aren't relevant to your work. The `claudeMdExcludes` setting lets you skip specific files by path or glob pattern.
+在大型 monorepos 中，祖先 CLAUDE.md 文件可能包含与你的工作无关的指令。`claudeMdExcludes` 设置让你按路径或 glob 模式跳过特定文件。
 
-This example excludes a top-level CLAUDE.md and a rules directory from a parent folder. Add it to `.claude/settings.local.json` so the exclusion stays local to your machine:
+此示例排除顶级 CLAUDE.md 和来自父文件夹的规则目录。将其添加到 `.claude/settings.local.json` 以使排除保持本地到你的机器：
 
 ```json theme={null}
 {
@@ -331,17 +357,21 @@ This example excludes a top-level CLAUDE.md and a rules directory from a parent 
 }
 ```
 
-Patterns are matched against absolute file paths using glob syntax. You can configure `claudeMdExcludes` at any [settings layer](/docs/en/settings#settings-files): user, project, local, or managed policy. Arrays merge across layers.
+模式使用 glob 语法与绝对文件路径匹配。你可以在任何 [设置层](/docs/zh-CN/settings#settings-files)：用户、项目、本地或托管策略配置 `claudeMdExcludes`。数组跨层合并。
 
-Managed policy CLAUDE.md files cannot be excluded. This ensures organization-wide instructions always apply regardless of individual settings.
+托管策略 CLAUDE.md 文件不能被排除。这确保组织范围指令始终适用，无论个人设置如何。
 
-## Auto memory
+<h2 id="auto-memory">
+  自动记忆
+</h2>
 
-Auto memory lets Claude accumulate knowledge across sessions without you writing anything. Claude saves notes for itself as it works: build commands, debugging insights, architecture notes, code style preferences, and workflow habits. Claude doesn't save something every session. It decides what's worth remembering based on whether the information would be useful in a future conversation.
+自动记忆让 Claude 跨会话积累知识，无需你编写任何内容。Claude 在工作时为自己保存笔记：构建命令、调试见解、架构笔记、代码样式偏好和工作流习惯。Claude 不会每个会话都保存内容。它根据信息在未来对话中是否有用来决定什么值得记住。
 
-### Enable or disable auto memory
+<h3 id="enable-or-disable-auto-memory">
+  启用或禁用自动记忆
+</h3>
 
-Auto memory is on by default. To toggle it, open `/memory` in a session and use the auto memory toggle, which saves `autoMemoryEnabled` to your user settings at `~/.claude/settings.json`. To turn it off for a single project, set `autoMemoryEnabled` in that project's settings:
+自动记忆默认开启。要切换它，在会话中打开 `/memory` 并使用自动记忆切换，或在你的项目设置中设置 `autoMemoryEnabled`：
 
 ```json theme={null}
 {
@@ -349,13 +379,15 @@ Auto memory is on by default. To toggle it, open `/memory` in a session and use 
 }
 ```
 
-To disable auto memory via environment variable, set `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`.
+要通过环境变量禁用自动记忆，设置 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`。
 
-### Storage location
+<h3 id="storage-location">
+  存储位置
+</h3>
 
-Each project gets its own memory directory at `~/.claude/projects/<project>/memory/`. The `<project>` path is derived from the git repository, so all worktrees and subdirectories within the same repo share one auto memory directory. Outside a git repo, the project root is used instead.
+每个项目在 `~/.claude/projects/<project>/memory/` 获得自己的记忆目录。`<project>` 路径来自 git 存储库，因此同一存储库中的所有 worktrees 和子目录共享一个自动记忆目录。在 git 存储库外，改用项目根目录。
 
-To store auto memory in a different location, set `autoMemoryDirectory` in your `settings.json`. It is read from any [settings scope](/docs/en/settings#settings-precedence): user, project, local, policy, or `--settings`.
+要将自动记忆存储在不同位置，在你的 `settings.json` 中设置 `autoMemoryDirectory`。它从任何[设置范围](/docs/zh-CN/settings#settings-precedence)读取：用户、项目、本地、策略或 `--settings`。
 
 ```json theme={null}
 {
@@ -363,96 +395,104 @@ To store auto memory in a different location, set `autoMemoryDirectory` in your 
 }
 ```
 
-The value must be an absolute path or start with `~/`. When set in a project's `.claude/settings.json` or `.claude/settings.local.json`, the value is honored only after you accept the workspace trust dialog for that folder, the same gate that governs hooks.
+该值必须是绝对路径或以 `~/` 开头。当在项目的 `.claude/settings.json` 或 `.claude/settings.local.json` 中设置时，该值仅在你接受该文件夹的工作区信任对话后才被采用，这与管理 hooks 的门相同。
 
-The directory contains a `MEMORY.md` entrypoint and optional topic files:
+目录包含一个 `MEMORY.md` 入口点和可选的主题文件：
 
 ```text theme={null}
 ~/.claude/projects/<project>/memory/
-├── MEMORY.md          # Concise index, loaded into every session
-├── debugging.md       # Detailed notes on debugging patterns
-├── api-conventions.md # API design decisions
-└── ...                # Any other topic files Claude creates
+├── MEMORY.md          # 简洁索引，加载到每个会话
+├── debugging.md       # 关于调试模式的详细笔记
+├── api-conventions.md # API 设计决策
+└── ...                # Claude 创建的任何其他主题文件
 ```
 
-`MEMORY.md` acts as an index of the memory directory. Claude reads and writes files in this directory throughout your session, using `MEMORY.md` to keep track of what's stored where.
+`MEMORY.md` 充当记忆目录的索引。Claude 在你的会话中读取和写入此目录中的文件，使用 `MEMORY.md` 跟踪存储的内容。
 
-Auto memory is machine-local. All worktrees and subdirectories within the same git repository share one auto memory directory. Files are not shared across machines or cloud environments.
+自动记忆是机器本地的。同一 git 存储库中的所有 worktrees 和子目录共享一个自动记忆目录。文件不在机器或云环境之间共享。
 
-### How it works
+<h3 id="how-it-works">
+  它如何工作
+</h3>
 
-The first 200 lines of `MEMORY.md`, or the first 25KB, whichever comes first, are loaded at the start of every conversation. Content beyond that threshold is not loaded at session start. Claude keeps `MEMORY.md` concise by moving detailed notes into separate topic files.
+`MEMORY.md` 的前 200 行或前 25KB（以先到者为准）在每次对话开始时加载。超过该阈值的内容在会话开始时不加载。Claude 通过将详细笔记移到单独的主题文件中来保持 `MEMORY.md` 简洁。
 
-{/* min-version: 2.1.210 */}After Claude writes to `MEMORY.md`, Claude Code measures the file against the 200-line and 25KB read limits. If the file is near a limit, Claude Code reminds Claude to shorten it: keep one line per entry, move detail into topic files, and merge or drop stale entries. If the file is over a limit, the write still succeeds, but Claude Code returns an [error telling Claude to rewrite the index](/docs/en/errors#memory-index-is-over-its-read-limit), because everything past the limit is dropped on the next load.
+此限制仅适用于 `MEMORY.md`。CLAUDE.md 文件无论长度如何都完整加载，尽管较短的文件产生更好的遵守度。
 
-{/* min-version: 2.1.211 */}The check measures only the content that loads: YAML frontmatter and block-level HTML comments are stripped before the index is loaded, so they don't count toward the limits. Before v2.1.211, Claude Code measured the raw file, and frontmatter or comments could trigger the error even when the loaded content fit.
+主题文件如 `debugging.md` 或 `patterns.md` 在启动时不加载。Claude 在需要信息时使用其标准文件工具按需读取它们。
 
-This limit applies only to `MEMORY.md`. CLAUDE.md files are loaded in full regardless of length, though shorter files produce better adherence.
+Claude 在你的会话中读取和写入记忆文件。当你在 Claude Code 界面中看到"Writing memory"或"Recalled memory"时，Claude 正在主动更新或读取 `~/.claude/projects/<project>/memory/`。
 
-Topic files like `debugging.md` or `patterns.md` are not loaded at startup. Claude reads them on demand using its standard file tools when it needs the information.
+<h3 id="audit-and-edit-your-memory">
+  审计和编辑你的记忆
+</h3>
 
-The main conversation's auto memory isn't loaded into [subagents](/docs/en/sub-agents#what-loads-at-startup); the exception is a [fork](/docs/en/sub-agents#fork-the-current-conversation), which inherits the parent conversation and system prompt. A subagent's own auto memory, enabled with the subagent `memory` field, is a separate directory.
+自动记忆文件是纯 markdown，你可以随时编辑或删除。运行 [`/memory`](#view-and-edit-with-%2Fmemory) 从会话中浏览和打开记忆文件。
 
-Claude reads and writes memory files during your session. When you see messages like "Saved 2 memories" or "Recalled 2 memories" in the Claude Code interface, Claude is actively updating or reading from `~/.claude/projects/<project>/memory/`.
+<h2 id="view-and-edit-with-/memory">
+  使用 `/memory` 查看和编辑
+</h2>
 
-{/* min-version: 2.1.214 */}When Claude writes a memory file that begins with YAML frontmatter, Claude Code records the write time in a `modified` frontmatter field as an ISO 8601 timestamp. The timestamp shows how current the fact is, both to you and to Claude when it reads the memory back. Any file that has frontmatter gets the field the next time Claude writes it, including files created on earlier versions; Claude Code never adds frontmatter to a file that has none. The `modified` field requires Claude Code v2.1.214 or later.
+`/memory` 命令列出在你当前会话中加载的所有 CLAUDE.md、CLAUDE.local.md 和规则文件，让你切换自动记忆开或关，并提供打开自动记忆文件夹的链接。选择任何文件在你的编辑器中打开它。
 
-### Audit and edit your memory
+当你要求 Claude 记住某些内容时，如"总是使用 pnpm，而不是 npm"或"记住 API 测试需要本地 Redis 实例"，Claude 将其保存到自动记忆。要改为添加指令到 CLAUDE.md，直接要求 Claude，如"将其添加到 CLAUDE.md"，或通过 `/memory` 自己编辑文件。
 
-Auto memory files are plain markdown you can edit or delete at any time. Run [`/memory`](#view-and-edit-with-%2Fmemory) to browse and open memory files from within a session.
+<h2 id="troubleshoot-memory-issues">
+  故障排除记忆问题
+</h2>
 
-## View and edit with `/memory`
+这些是 CLAUDE.md 和自动记忆最常见的问题，以及调试步骤。
 
-The `/memory` command lists your CLAUDE.md, CLAUDE.local.md, and other memory file locations across user and project scopes, including user and project CLAUDE.md entries for files that don't exist yet. It also lets you toggle auto memory on or off and provides an option to open the auto memory folder. Select any file to open it in your editor; selecting one that doesn't exist yet creates it first. To check which files actually loaded into the current session, run `/context`.
+<h3 id="claude-isn’t-following-my-claude-md">
+  Claude 不遵循我的 CLAUDE.md
+</h3>
 
-{/* min-version: 2.1.216 */}GUI editors such as VS Code open the file in a separate window, and you can keep using the session while it's open. Before v2.1.216, `/memory` waited for you to close the file before responding. Terminal editors such as Vim take over the terminal until you exit.
+CLAUDE.md 内容作为用户消息在系统提示之后传递，而不是系统提示本身的一部分。Claude 读取它并尝试遵循它，但没有严格遵守的保证，特别是对于模糊或冲突的指令。
 
-When you ask Claude to remember something, like "always use pnpm, not npm" or "remember that the API tests require a local Redis instance," Claude saves it to auto memory. To add instructions to CLAUDE.md instead, ask Claude directly, like "add this to CLAUDE.md," or edit the file yourself via `/memory`.
+要调试：
 
-## Troubleshoot memory issues
+* 运行 `/memory` 验证你的 CLAUDE.md 和 CLAUDE.local.md 文件被加载。如果文件未列出，Claude 看不到它。
+* 检查相关 CLAUDE.md 是否在为你的会话加载的位置（参见 [选择 CLAUDE.md 文件的位置](#choose-where-to-put-claude-md-files)）。
+* 使指令更具体。"使用 2 空格缩进"比"格式化代码很好"效果更好。
+* 查找跨 CLAUDE.md 文件的冲突指令。如果两个文件为相同行为提供不同的指导，Claude 可能会任意选择一个。
 
-These are the most common issues with CLAUDE.md and auto memory, along with steps to debug them.
+如果指令是必须在特定点运行的内容，例如在每次提交之前或每次文件编辑之后，请将其写成 [hook](/docs/zh-CN/hooks-guide) 代替。Hooks 在固定的生命周期事件处作为 shell 命令执行，并且无论 Claude 决定做什么都适用。
 
-### Claude isn't following my CLAUDE.md
-
-CLAUDE.md content is delivered as a user message after the system prompt, not as part of the system prompt itself. Claude reads it and tries to follow it, but there's no guarantee of strict compliance, especially for vague or conflicting instructions.
-
-To debug:
-
-* Run `/context` and check the list under **Memory files** to verify your CLAUDE.md and CLAUDE.local.md files loaded. If a file is missing there, Claude can't see it. Use `/memory` to open and edit the files.
-* Check that the relevant CLAUDE.md is in a location that gets loaded for your session (see [Choose where to put CLAUDE.md files](#choose-where-to-put-claude-md-files)).
-* Make instructions more specific. "Use 2-space indentation" works better than "format code nicely."
-* Look for conflicting instructions across CLAUDE.md files. If two files give different guidance for the same behavior, Claude may pick one arbitrarily.
-
-If the instruction is something that must run at a specific point, such as before every commit or after each file edit, write it as a [hook](/docs/en/hooks-guide) instead. Hooks execute as shell commands at fixed lifecycle events and apply regardless of what Claude decides to do.
-
-For instructions you want at the system prompt level, use [`--append-system-prompt`](/docs/en/cli-reference#system-prompt-flags). This must be passed every invocation, so it's better suited to scripts and automation than interactive use.
+对于你想要在系统提示级别的指令，使用 [`--append-system-prompt`](/docs/zh-CN/cli-reference#system-prompt-flags)。这必须在每次调用时传递，因此它更适合脚本和自动化而不是交互式使用。
 
 <Tip>
-  Use the [`InstructionsLoaded` hook](/docs/en/hooks#instructionsloaded) to log exactly which instruction files are loaded, when they load, and why. This is useful for debugging path-specific rules or lazy-loaded files in subdirectories.
+  使用 [`InstructionsLoaded` hook](/docs/zh-CN/hooks#instructionsloaded) 记录确切加载了哪些指令文件、何时加载以及为什么。这对于调试特定路径规则或子目录中的延迟加载文件很有用。
 </Tip>
 
-### I don't know what auto memory saved
+<h3 id="i-don’t-know-what-auto-memory-saved">
+  我不知道自动记忆保存了什么
+</h3>
 
-Run `/memory` and select the auto memory folder to browse what Claude has saved. Everything is plain markdown you can read, edit, or delete.
+运行 `/memory` 并选择自动记忆文件夹来浏览 Claude 保存的内容。一切都是纯 markdown，你可以读取、编辑或删除。
 
-### My CLAUDE.md is too large
+<h3 id="my-claude-md-is-too-large">
+  我的 CLAUDE.md 太大了
+</h3>
 
-Files over 200 lines consume more context and may reduce adherence. Use [path-scoped rules](#path-specific-rules) to load instructions only when Claude works with matching files, or trim content that isn't needed in every session. Splitting into [`@path` imports](#import-additional-files) helps organization but doesn't reduce context, since imported files load at launch.
+超过 200 行的文件消耗更多上下文并可能降低遵守度。使用 [路径范围规则](#path-specific-rules) 仅在 Claude 处理匹配文件时加载指令，或修剪不是每个会话都需要的内容。分割到 [`@path` 导入](#import-additional-files) 有助于组织，但不会减少上下文，因为导入的文件在启动时加载。
 
-{/* min-version: 2.1.206 */}The [`/doctor`](/docs/en/commands#all-commands) checkup proposes trims for a checked-in CLAUDE.md: it cuts content Claude can derive from the codebase, such as directory layouts, dependency lists, and architecture overviews, and keeps pitfalls, rationale, and conventions that differ from tool defaults. The trim check requires Claude Code v2.1.206 or later.
+[`/doctor`](/docs/zh-CN/commands#all-commands) 检查为已检入的 CLAUDE.md 提议修剪：它删除 Claude 可以从代码库派生的内容，例如目录布局、依赖项列表和架构概览，并保留与工具默认值不同的陷阱、基本原理和约定。修剪检查需要 Claude Code v2.1.206 或更高版本。
 
-### Instructions seem lost after `/compact`
+<h3 id="instructions-seem-lost-after-/compact">
+  在 `/compact` 后指令似乎丢失了
+</h3>
 
-Project-root CLAUDE.md survives compaction: after `/compact`, Claude re-reads it from disk and re-injects it into the session. Nested CLAUDE.md files in subdirectories are not re-injected automatically; they reload the next time Claude reads a file in that subdirectory.
+项目根 CLAUDE.md 在压缩中存活：在 `/compact` 之后，Claude 从磁盘重新读取它并将其重新注入到会话中。子目录中的嵌套 CLAUDE.md 文件不会自动重新注入；它们在 Claude 下次读取该子目录中的文件时重新加载。
 
-If an instruction disappeared after compaction, it was either given only in conversation or lives in a nested CLAUDE.md that hasn't reloaded yet. Add conversation-only instructions to CLAUDE.md to make them persist. See [What survives compaction](/docs/en/context-window#what-survives-compaction) for the full breakdown.
+如果指令在压缩后消失，它要么仅在对话中给出，要么位于尚未重新加载的嵌套 CLAUDE.md 中。将仅对话的指令添加到 CLAUDE.md 以使其持久化。有关完整的细分，请参阅 [什么在压缩中存活](/docs/zh-CN/context-window#what-survives-compaction)。
 
-See [Write effective instructions](#write-effective-instructions) for guidance on size, structure, and specificity.
+有关大小、结构和具体性的指导，请参阅 [编写有效的指令](#write-effective-instructions)。
 
-## Related resources
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-* [Debug your configuration](/docs/en/debug-your-config): diagnose why CLAUDE.md or settings aren't taking effect
-* [Skills](/docs/en/skills): package repeatable workflows that load on demand
-* [Settings](/docs/en/settings): configure Claude Code behavior with settings files
-* [Subagent memory](/docs/en/sub-agents#enable-persistent-memory): let subagents maintain their own auto memory
+* [调试你的配置](/docs/zh-CN/debug-your-config)：诊断为什么 CLAUDE.md 或设置未生效
+* [Skills](/docs/zh-CN/skills)：打包按需加载的可重复工作流
+* [Settings](/docs/zh-CN/settings)：使用设置文件配置 Claude Code 行为
+* [Subagent 记忆](/docs/zh-CN/sub-agents#enable-persistent-memory)：让 subagents 维护自己的自动记忆

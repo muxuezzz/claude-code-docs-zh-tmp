@@ -2,35 +2,39 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Output styles
+# 输出样式
 
-> Adapt Claude Code for uses beyond software engineering
+> 将 Claude Code 适配用于软件工程之外的用途
 
-Output styles change how Claude responds, not what Claude knows. They modify the system prompt to set role, tone, and output format. Use one when you keep re-prompting for the same voice or format every turn, or when you want Claude to act as something other than a software engineer.
+输出样式改变 Claude 的响应方式，而不是 Claude 知道什么。它们修改系统提示以设置角色、语气和输出格式。当你在每个回合中不断重新提示相同的语音或格式时，或者当你希望 Claude 充当软件工程师以外的角色时，请使用一个。
 
-A custom output style adds your instructions to the system prompt and lets you choose whether to keep Claude Code's built-in software engineering instructions. Keep them when you're changing how Claude communicates but still coding, like always answering with a diagram. Leave them out when Claude isn't doing software engineering at all, like a writing assistant or data analyst.
+自定义输出样式将你的说明添加到系统提示中，并让你选择是否保留 Claude Code 的内置软件工程说明。当你改变 Claude 的通信方式但仍在编码时（例如总是用图表回答），请保留它们。当 Claude 根本不进行软件工程时（例如写作助手或数据分析师），请省略它们。
 
-For instructions about your project, conventions, or codebase, use [CLAUDE.md](/docs/en/memory) instead.
+有关你的项目、约定或代码库的说明，请改用 [CLAUDE.md](/docs/zh-CN/memory)。
 
-## Built-in output styles
+<h2 id="built-in-output-styles">
+  内置输出样式
+</h2>
 
-Claude Code's **Default** output style is the existing system prompt, designed to help you complete software engineering tasks efficiently.
+Claude Code 的**默认**输出样式是现有的系统提示，旨在帮助你高效地完成软件工程任务。
 
-There are three additional built-in output styles:
+还有三种额外的内置输出样式：
 
-* **Proactive**: Claude executes immediately, makes reasonable assumptions instead of pausing for routine decisions, and prefers action over planning. This is stronger autonomous-execution guidance than [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) applies, and it works without changing your permission mode, so you still see permission prompts before tools run.
+* **Proactive**：Claude 立即执行，做出合理的假设而不是暂停进行常规决策，并倾向于行动而非规划。这提供了比[自动模式](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode)更强的自主执行指导，并且无需更改你的权限模式即可工作，因此你仍然会在工具运行前看到权限提示。
 
-* **Explanatory**: Provides educational "Insights" in between helping you complete software engineering tasks. Helps you understand implementation choices and codebase patterns.
+* **Explanatory**：在帮助你完成软件工程任务的同时提供教育性的"Insights"。帮助你理解实现选择和代码库模式。
 
-* **Learning**: Collaborative, learn-by-doing mode where Claude will not only share "Insights" while coding, but also ask you to contribute small, strategic pieces of code yourself. Claude Code will add `TODO(human)` markers in your code for you to implement.
+* **Learning**：协作式的边学边做模式，Claude 不仅会在编码时分享"Insights"，还会要求你自己贡献小的、战略性的代码片段。Claude Code 将在你的代码中添加 `TODO(human)` 标记供你实现。
 
-## Change your output style
+<h2 id="change-your-output-style">
+  更改你的输出样式
+</h2>
 
-Run `/config` and select **Output style** to pick a style from a menu. Your selection is saved to `.claude/settings.local.json` at the [local project level](/docs/en/settings).
+运行 `/config` 并选择**输出样式**从菜单中选择一种样式。你的选择会保存到[本地项目级别](/docs/zh-CN/settings)的 `.claude/settings.local.json`。
 
-<Note>{/* max-version: 2.1.90 */}The standalone `/output-style` command was deprecated in v2.1.73 and removed in v2.1.91. Use `/config` or edit the `outputStyle` setting directly.</Note>
+<Note>{/* max-version: 2.1.90 */}独立的 `/output-style` 命令在 v2.1.73 中已弃用，在 v2.1.91 中被移除。使用 `/config` 或直接编辑 `outputStyle` 设置。</Note>
 
-To set a style without the menu, edit the `outputStyle` field directly in a settings file:
+要在不使用菜单的情况下设置样式，直接编辑设置文件中的 `outputStyle` 字段：
 
 ```json theme={null}
 {
@@ -38,27 +42,29 @@ To set a style without the menu, edit the `outputStyle` field directly in a sett
 }
 ```
 
-Output style is part of the system prompt, which Claude Code reads once at session start. Changes take effect after `/clear` or a new session. See [How Claude Code uses prompt caching](/docs/en/prompt-caching#changing-output-style) for what an output style change does to the cache.
+输出样式是系统提示的一部分，Claude Code 在会话开始时读取一次。更改将在 `/clear` 或新会话后生效。请参阅[Claude Code 如何使用 prompt caching](/docs/zh-CN/prompt-caching#changing-output-style)了解输出样式更改对缓存的影响。
 
-## Create a custom output style
+<h2 id="create-a-custom-output-style">
+  创建自定义输出样式
+</h2>
 
-A custom output style is a Markdown file: frontmatter for metadata, then the instructions to add to the system prompt.
+自定义输出样式是一个 Markdown 文件：frontmatter 用于元数据，然后是要添加到系统提示的说明。
 
 <Steps>
-  <Step title="Create a Markdown file">
-    Save it at one of three levels. The file name becomes the style name unless you set `name` in the frontmatter.
+  <Step title="创建一个 Markdown 文件">
+    在三个级别之一保存它。文件名成为样式名称，除非你在 frontmatter 中设置 `name`。
 
-    * User: `~/.claude/output-styles`
-    * Project: `.claude/output-styles`
-    * Managed policy: `.claude/output-styles` inside the [managed settings directory](/docs/en/settings#settings-files)
+    * 用户：`~/.claude/output-styles`
+    * 项目：`.claude/output-styles`
+    * 托管策略：[托管设置目录](/docs/zh-CN/settings#settings-files)内的 `.claude/output-styles`
 
-    Project output styles load from every `.claude/output-styles/` between the working directory and the repository root. {/* min-version: 2.1.178 */}As of v2.1.178, when more than one of these nested directories defines a style with the same name, Claude Code uses the one closest to the working directory.
+    项目输出样式从工作目录和仓库根目录之间的每个 `.claude/output-styles/` 加载。{/* min-version: 2.1.178 */}从 v2.1.178 开始，当多个这样的嵌套目录定义了同名样式时，Claude Code 使用最接近工作目录的那个。
   </Step>
 
-  <Step title="Add frontmatter and instructions">
-    Decide whether to keep Claude Code's software engineering instructions. Set `keep-coding-instructions: true` if you're changing how Claude communicates but still want it coding the same way. Leave it out if Claude won't be doing software engineering.
+  <Step title="添加 frontmatter 和说明">
+    决定是否保留 Claude Code 的软件工程说明。如果你改变 Claude 的通信方式但仍希望它以相同的方式编码，请设置 `keep-coding-instructions: true`。如果 Claude 不会进行软件工程，请省略它。
 
-    This example leads every explanation with a diagram while keeping Claude's coding behavior:
+    此示例在保留 Claude 编码行为的同时，在每个解释前面加上一个图表：
 
     ```markdown theme={null}
     ---
@@ -75,51 +81,57 @@ A custom output style is a Markdown file: frontmatter for metadata, then the ins
     ```
   </Step>
 
-  <Step title="Switch to your style">
-    Run `/config` and select your style under **Output style**. It takes effect after `/clear` or the next time you start a session.
+  <Step title="切换到你的样式">
+    运行 `/config` 并在**输出样式**下选择你的样式。它将在 `/clear` 后或下次启动会话时生效。
   </Step>
 </Steps>
 
-[Plugins](/docs/en/plugins-reference) can also ship output styles in an `output-styles/` directory.
+[Plugins](/docs/zh-CN/plugins-reference) 也可以在 `output-styles/` 目录中提供输出样式。
 
-### Frontmatter
+<h3 id="frontmatter">
+  Frontmatter
+</h3>
 
-Output style files support these frontmatter fields:
+输出样式文件支持这些 frontmatter 字段：
 
-| Frontmatter                | Purpose                                                                                                                                                                                                                                                  | Default                 |
-| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------- |
-| `name`                     | Name of the output style, if not the file name                                                                                                                                                                                                           | Inherits from file name |
-| `description`              | Description of the output style, shown in the `/config` picker                                                                                                                                                                                           | None                    |
-| `keep-coding-instructions` | Keep Claude Code's built-in software engineering instructions                                                                                                                                                                                            | `false`                 |
-| `force-for-plugin`         | Plugin output styles only: apply this style automatically whenever the plugin is enabled, without requiring users to select it. Overrides the user's `outputStyle` setting. If multiple enabled plugins set this, Claude Code uses the first one loaded. | `false`                 |
+| Frontmatter                | 目的                                                                                                             | 默认值     |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------- | :------ |
+| `name`                     | 输出样式的名称，如果不是文件名                                                                                                | 从文件名继承  |
+| `description`              | 输出样式的描述，在 `/config` 选择器中显示                                                                                     | 无       |
+| `keep-coding-instructions` | 保留 Claude Code 的内置软件工程说明                                                                                       | `false` |
+| `force-for-plugin`         | 仅限 Plugin 输出样式：在启用 plugin 时自动应用此样式，无需要求用户选择它。覆盖用户的 `outputStyle` 设置。如果多个启用的 plugin 设置了此项，Claude Code 使用第一个加载的。 | `false` |
 
-## How output styles work
+<h2 id="how-output-styles-work">
+  输出样式如何工作
+</h2>
 
-Output styles directly modify Claude Code's system prompt.
+输出样式直接修改 Claude Code 的系统提示。
 
-* Claude Code adds each output style's custom instructions to the end of the system prompt.
-* All output styles trigger reminders for Claude to adhere to the output style instructions during the conversation.
-* Custom output styles leave out Claude Code's built-in software engineering instructions, such as how to scope changes, write comments, and verify work, unless `keep-coding-instructions` is set to `true`.
+* 所有输出样式都在系统提示的末尾添加了自己的自定义说明。
+* 所有输出样式都会在对话期间触发提醒，让 Claude 遵守输出样式说明。
+* 自定义输出样式排除了 Claude Code 的内置软件工程说明，例如如何限定更改范围、编写注释和验证工作，除非 `keep-coding-instructions` 设置为 `true`。
 
-Output styles apply to the main conversation only: a [subagent runs its own system prompt](/docs/en/sub-agents#what-loads-at-startup), so styles don't change how subagents respond. A [fork](/docs/en/sub-agents#fork-the-current-conversation) is the exception, because it inherits the parent's full system prompt.
+令牌使用情况取决于样式。向系统提示添加说明会增加输入令牌，尽管 prompt caching 在会话中的第一个请求之后会降低这个成本。内置的 Explanatory 和 Learning 样式在设计上比 Default 产生更长的响应，这会增加输出令牌。对于自定义样式，输出令牌使用情况取决于你的说明告诉 Claude 生成什么。
 
-Token usage depends on the style. Adding instructions to the system prompt increases input tokens, though prompt caching reduces this cost after the first request in a session. The built-in Explanatory and Learning styles produce longer responses than Default by design, which increases output tokens. For custom styles, output token usage depends on what your instructions tell Claude to produce.
+<h2 id="comparisons-to-related-features">
+  与相关功能的比较
+</h2>
 
-## Comparisons to related features
+多个功能自定义 Claude Code 的行为方式。输出样式直接修改系统提示并应用于每个响应。其他功能添加说明而不改变默认系统提示，或将其范围限定为特定任务。
 
-Several features customize how Claude Code behaves. Output styles modify the system prompt directly and apply to every response. The others add instructions without changing the default system prompt, or scope them to a specific task.
+| 功能                          | 工作原理                 | 何时使用                       |
+| :-------------------------- | :------------------- | :------------------------- |
+| 输出样式                        | 修改系统提示               | 你想要每个回合都有不同的角色、语气或默认响应格式   |
+| [CLAUDE.md](/docs/zh-CN/memory)  | 在系统提示之后添加用户消息        | Claude 应该始终了解你的项目约定和代码库上下文 |
+| `--append-system-prompt`    | 附加到系统提示而不删除任何内容      | 你想要一次性添加单个调用               |
+| [Agents](/docs/zh-CN/sub-agents) | 使用自己的系统提示、模型和工具运行子代理 | 你想要一个单独作用域的辅助工具来完成专注的任务    |
+| [Skills](/docs/zh-CN/skills)     | 在调用时或相关时加载特定于任务的说明   | 你有一个可重用的工作流                |
 
-| Feature                  | How it works                                                 | Use it when                                                             |
-| :----------------------- | :----------------------------------------------------------- | :---------------------------------------------------------------------- |
-| Output styles            | Modifies the system prompt                                   | You want a different role, tone, or default response format every turn  |
-| [CLAUDE.md](/docs/en/memory)  | Adds a user message after the system prompt                  | Claude should always know your project conventions and codebase context |
-| `--append-system-prompt` | Appends to the system prompt without removing anything       | You want a one-off addition for a single invocation                     |
-| [Agents](/docs/en/sub-agents) | Runs a subagent with its own system prompt, model, and tools | You want a separately scoped helper for a focused task                  |
-| [Skills](/docs/en/skills)     | Loads task-specific instructions when invoked or relevant    | You have a reusable workflow                                            |
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-## Related resources
-
-* [Settings](/docs/en/settings): where the `outputStyle` field lives and how settings precedence works
-* [Permission modes](/docs/en/permission-modes): how the Proactive style compares to auto mode
-* [Plugins](/docs/en/plugins): package and distribute output styles alongside skills, hooks, and agents
-* [Debug your configuration](/docs/en/debug-your-config): diagnose why an output style isn't taking effect
+* [Settings](/docs/zh-CN/settings)：`outputStyle` 字段所在的位置以及设置优先级的工作原理
+* [Permission modes](/docs/zh-CN/permission-modes)：Proactive 样式与自动模式的比较方式
+* [Plugins](/docs/zh-CN/plugins)：打包和分发输出样式以及 skills、hooks 和 agents
+* [Debug your configuration](/docs/zh-CN/debug-your-config)：诊断为什么输出样式没有生效

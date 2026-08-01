@@ -2,30 +2,32 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Customize keyboard shortcuts
+# 自定义快捷键
 
-> Customize keyboard shortcuts in Claude Code with a keybindings configuration file.
+> 使用快捷键配置文件在 Claude Code 中自定义快捷键。
 
-Claude Code supports customizable keyboard shortcuts. Run `/keybindings` to create or open your configuration file at `~/.claude/keybindings.json`.
+Claude Code 支持可自定义的快捷键。运行 `/keybindings` 来创建或打开位于 `~/.claude/keybindings.json` 的配置文件。
 
-## Configuration file
+<h2 id="configuration-file">
+  配置文件
+</h2>
 
-The keybindings configuration file is an object with a `bindings` array. Each block specifies a context and a map of keystrokes to actions.
+快捷键配置文件是一个包含 `bindings` 数组的对象。每个块指定一个上下文和一个按键映射到操作的映射。
 
-<Note>Changes to the keybindings file are automatically detected and applied without restarting Claude Code.</Note>
+<Note>快捷键文件的更改会自动检测并应用，无需重启 Claude Code。</Note>
 
-| Field      | Description                                        |
-| :--------- | :------------------------------------------------- |
-| `$schema`  | Optional JSON Schema URL for editor autocompletion |
-| `$docs`    | Optional documentation URL                         |
-| `bindings` | Array of binding blocks by context                 |
+| 字段         | 描述                            |
+| :--------- | :---------------------------- |
+| `$schema`  | 可选的 JSON Schema URL，用于编辑器自动完成 |
+| `$docs`    | 可选的文档 URL                     |
+| `bindings` | 按上下文分组的绑定块数组                  |
 
-This example binds `Ctrl+E` to open an external editor in the chat context, and unbinds `Ctrl+U`:
+此示例将 `Ctrl+E` 绑定到在聊天上下文中打开外部编辑器，并取消绑定 `Ctrl+U`：
 
 ```json theme={null}
 {
   "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
-  "$docs": "https://code.claude.com/docs/en/keybindings",
+  "$docs": "https://code.claude.com/docs/zh-CN/keybindings",
   "bindings": [
     {
       "context": "Chat",
@@ -38,361 +40,416 @@ This example binds `Ctrl+E` to open an external editor in the chat context, and 
 }
 ```
 
-## Contexts
-
-Each binding block specifies a **context** where the bindings apply:
-
-| Context           | Description                                                  |
-| :---------------- | :----------------------------------------------------------- |
-| `Global`          | Applies everywhere in the app                                |
-| `Chat`            | Main chat input area                                         |
-| `Autocomplete`    | Autocomplete menu is open                                    |
-| `Settings`        | Settings menu                                                |
-| `Confirmation`    | Permission and confirmation dialogs                          |
-| `Tabs`            | Tab navigation components                                    |
-| `Help`            | Help menu is visible                                         |
-| `Transcript`      | Transcript viewer                                            |
-| `HistorySearch`   | History search mode (Ctrl+R)                                 |
-| `Task`            | Background task is running                                   |
-| `ThemePicker`     | Theme picker dialog                                          |
-| `Attachments`     | Image attachment navigation in select dialogs                |
-| `Footer`          | Footer indicator navigation (tasks, teams, diff, artifacts)  |
-| `MessageSelector` | Rewind and summarize dialog message selection                |
-| `DiffDialog`      | Diff viewer navigation                                       |
-| `ModelPicker`     | Model picker effort level                                    |
-| `Select`          | Generic select/list components                               |
-| `Plugin`          | Plugin dialog (browse, discover, manage)                     |
-| `Scroll`          | Conversation scrolling and text selection in fullscreen mode |
-
-{/* max-version: 2.1.204 */}Before v2.1.205, a `Doctor` context and a `doctor:fix` action existed for the `/doctor` diagnostics screen.
-
-## Available actions
-
-Actions follow a `namespace:action` format, such as `chat:submit` to send a message or `app:toggleTodos` to show the task list. Each context has specific actions available.
-
-### App actions
-
-Actions available in the `Global` context:
-
-| Action                 | Default   | Description                                                                                                  |
-| :--------------------- | :-------- | :----------------------------------------------------------------------------------------------------------- |
-| `app:interrupt`        | Ctrl+C    | Cancel current operation                                                                                     |
-| `app:exit`             | Ctrl+D    | Exit Claude Code. Press twice within 800ms to confirm                                                        |
-| `app:redraw`           | (unbound) | Force terminal redraw                                                                                        |
-| `app:toggleTodos`      | Ctrl+T    | Toggle visibility of Claude's to-do checklist. This is not the [`/tasks`](/docs/en/commands) background-task view |
-| `app:toggleTranscript` | Ctrl+O    | Toggle verbose transcript                                                                                    |
-
-### History actions
-
-Actions for navigating command history:
+<h2 id="contexts">
+  上下文
+</h2>
+
+每个绑定块指定一个**上下文**，其中绑定适用：
+
+| 上下文               | 描述                |
+| :---------------- | :---------------- |
+| `Global`          | 在应用程序的任何地方应用      |
+| `Chat`            | 主聊天输入区域           |
+| `Autocomplete`    | 自动完成菜单已打开         |
+| `Settings`        | 设置菜单              |
+| `Confirmation`    | 权限和确认对话框          |
+| `Tabs`            | 选项卡导航组件           |
+| `Help`            | 帮助菜单可见            |
+| `Transcript`      | 记录查看器             |
+| `HistorySearch`   | 历史搜索模式（Ctrl+R）    |
+| `Task`            | 后台任务正在运行          |
+| `ThemePicker`     | 主题选择器对话框          |
+| `Attachments`     | 图像附件在选择对话框中的导航    |
+| `Footer`          | 页脚指示器导航（任务、团队、差异） |
+| `MessageSelector` | 回溯和总结对话框消息选择      |
+| `DiffDialog`      | 差异查看器导航           |
+| `ModelPicker`     | 模型选择器工作量级别        |
+| `Select`          | 通用选择/列表组件         |
+| `Plugin`          | 插件对话框（浏览、发现、管理）   |
+| `Scroll`          | 对话滚动和全屏模式下的文本选择   |
+
+{/* max-version: 2.1.204 */}在 v2.1.205 之前，`/doctor` 诊断屏幕存在 `Doctor` 上下文和 `doctor:fix` 操作。
+
+<h2 id="available-actions">
+  可用操作
+</h2>
+
+操作遵循 `namespace:action` 格式，例如 `chat:submit` 发送消息或 `app:toggleTodos` 显示任务列表。每个上下文都有特定的可用操作。
+
+<h3 id="app-actions">
+  应用程序操作
+</h3>
+
+在 `Global` 上下文中可用的操作：
+
+| 操作                     | 默认     | 描述                                                          |
+| :--------------------- | :----- | :---------------------------------------------------------- |
+| `app:interrupt`        | Ctrl+C | 取消当前操作                                                      |
+| `app:exit`             | Ctrl+D | 退出 Claude Code                                              |
+| `app:redraw`           | （未绑定）  | 强制终端重绘                                                      |
+| `app:toggleTodos`      | Ctrl+T | 切换 Claude 待办事项清单的可见性。这不是 [`/tasks`](/docs/zh-CN/commands) 后台任务视图 |
+| `app:toggleTranscript` | Ctrl+O | 切换详细记录                                                      |
+
+<h3 id="history-actions">
+  历史操作
+</h3>
+
+用于导航命令历史的操作：
+
+| 操作                 | 默认     | 描述     |
+| :----------------- | :----- | :----- |
+| `history:search`   | Ctrl+R | 打开历史搜索 |
+| `history:previous` | Up     | 上一个历史项 |
+| `history:next`     | Down   | 下一个历史项 |
+
+<h3 id="chat-actions">
+  聊天操作
+</h3>
+
+在 `Chat` 上下文中可用的操作：
+
+| 操作                    | 默认                             | 描述                                                                                 |
+| :-------------------- | :----------------------------- | :--------------------------------------------------------------------------------- |
+| `chat:cancel`         | Escape                         | 取消当前输入                                                                             |
+| `chat:clearInput`     | Ctrl+L                         | 强制全屏重绘，保留输入。在[全屏渲染](/docs/zh-CN/fullscreen#clear-the-conversation)中，在两秒内按两次以运行 `/clear` |
+| `chat:clearScreen`    | Cmd+K                          | 在[全屏渲染](/docs/zh-CN/fullscreen#clear-the-conversation)中，在两秒内按两次以运行 `/clear`             |
+| `chat:killAgents`     | Ctrl+X Ctrl+K                  | 终止所有运行中的[后台子代理](/docs/zh-CN/sub-agents#run-subagents-in-foreground-or-background)在此会话中  |
+| `chat:cycleMode`      | Shift+Tab\*                    | 循环权限模式                                                                             |
+| `chat:modelPicker`    | Meta+P                         | 打开模型选择器                                                                            |
+| `chat:fastMode`       | Meta+O                         | 切换快速模式                                                                             |
+| `chat:thinkingToggle` | Meta+T                         | 切换扩展思考                                                                             |
+| `chat:submit`         | Enter                          | 提交消息                                                                               |
+| `chat:newline`        | Ctrl+J                         | 插入换行符而不提交                                                                          |
+| `chat:undo`           | Ctrl+\_, Ctrl+Shift+-          | 撤销上一个操作                                                                            |
+| `chat:externalEditor` | Ctrl+G, Ctrl+X Ctrl+E          | 在外部编辑器中打开                                                                          |
+| `chat:stash`          | Ctrl+S                         | 隐藏当前提示                                                                             |
+| `chat:imagePaste`     | Ctrl+V（Windows 和 WSL 上为 Alt+V） | 从剪贴板粘贴图像。在 WSL 上，默认情况下两个快捷键都已绑定                                                    |
+
+\*在没有 VT 模式的 Windows 上（Node \<24.2.0/\<22.17.0，Bun \<1.2.23），默认为 Meta+M。
+
+<h3 id="autocomplete-actions">
+  自动完成操作
+</h3>
+
+在 `Autocomplete` 上下文中可用的操作：
+
+| 操作                      | 默认     | 描述    |
+| :---------------------- | :----- | :---- |
+| `autocomplete:accept`   | Tab    | 接受建议  |
+| `autocomplete:dismiss`  | Escape | 关闭菜单  |
+| `autocomplete:previous` | Up     | 上一个建议 |
+| `autocomplete:next`     | Down   | 下一个建议 |
+
+<h3 id="confirmation-actions">
+  确认操作
+</h3>
 
-| Action             | Default | Description           |
-| :----------------- | :------ | :-------------------- |
-| `history:search`   | Ctrl+R  | Open history search   |
-| `history:previous` | Up      | Previous history item |
-| `history:next`     | Down    | Next history item     |
-
-### Chat actions
-
-Actions available in the `Chat` context:
-
-| Action                | Default                           | Description                                                                                                                                                    |
-| :-------------------- | :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `chat:cancel`         | Escape                            | Cancel current input                                                                                                                                           |
-| `chat:clearInput`     | Ctrl+L                            | Force a full screen redraw, preserving input. In [fullscreen rendering](/docs/en/fullscreen#clear-the-conversation), press twice within two seconds to run `/clear` |
-| `chat:clearScreen`    | Cmd+K                             | In [fullscreen rendering](/docs/en/fullscreen#clear-the-conversation), press twice within two seconds to run `/clear`                                               |
-| `chat:killAgents`     | Ctrl+X Ctrl+K                     | Stop all running [background subagents](/docs/en/sub-agents#run-subagents-in-foreground-or-background) in this session                                              |
-| `chat:cycleMode`      | Shift+Tab\*                       | Cycle permission modes                                                                                                                                         |
-| `chat:modelPicker`    | Meta+P                            | Open model picker                                                                                                                                              |
-| `chat:fastMode`       | Meta+O                            | Toggle fast mode                                                                                                                                               |
-| `chat:thinkingToggle` | Meta+T                            | Toggle extended thinking                                                                                                                                       |
-| `chat:submit`         | Enter                             | Submit message                                                                                                                                                 |
-| `chat:newline`        | Ctrl+J                            | Insert a newline without submitting                                                                                                                            |
-| `chat:undo`           | Ctrl+\_, Ctrl+Shift+-             | Undo last action                                                                                                                                               |
-| `chat:externalEditor` | Ctrl+G, Ctrl+X Ctrl+E             | Open in external editor                                                                                                                                        |
-| `chat:stash`          | Ctrl+S                            | Stash current prompt                                                                                                                                           |
-| `chat:imagePaste`     | Ctrl+V (Alt+V on Windows and WSL) | Paste image from clipboard. On WSL, both shortcuts are bound by default                                                                                        |
-
-\*On Windows without VT mode (Node \<24.2.0/\<22.17.0, Bun \<1.2.23), defaults to Meta+M.
-
-### Autocomplete actions
-
-Actions available in the `Autocomplete` context:
-
-| Action                  | Default | Description         |
-| :---------------------- | :------ | :------------------ |
-| `autocomplete:accept`   | Tab     | Accept suggestion   |
-| `autocomplete:dismiss`  | Escape  | Dismiss menu        |
-| `autocomplete:previous` | Up      | Previous suggestion |
-| `autocomplete:next`     | Down    | Next suggestion     |
-
-### Confirmation actions
-
-Actions available in the `Confirmation` context:
-
-| Action                      | Default   | Description                                                                                                                        |
-| :-------------------------- | :-------- | :--------------------------------------------------------------------------------------------------------------------------------- |
-| `confirm:yes`               | Y, Enter  | Confirm action                                                                                                                     |
-| `confirm:no`                | N, Escape | Decline action                                                                                                                     |
-| `confirm:previous`          | Up        | Previous option                                                                                                                    |
-| `confirm:next`              | Down      | Next option                                                                                                                        |
-| `confirm:nextField`         | Tab       | Next field                                                                                                                         |
-| `confirm:previousField`     | (unbound) | Previous field                                                                                                                     |
-| `confirm:toggle`            | Space     | Toggle selection                                                                                                                   |
-| `confirm:cycleMode`         | Shift+Tab | Cycle permission modes                                                                                                             |
-| `confirm:toggleExplanation` | Ctrl+E    | Toggle a model-generated [explanation of the command](/docs/en/permissions#permission-system) on Bash and PowerShell permission prompts |
-
-### Permission actions
-
-Actions available in the `Confirmation` context for permission dialogs:
-
-| Action                   | Default   | Description                                                                                                         |
-| :----------------------- | :-------- | :------------------------------------------------------------------------------------------------------------------ |
-| `permission:toggleDebug` | (unbound) | Toggle permission debug info. The previous default of Ctrl+D was removed in v2.1.146 because it shadowed `app:exit` |
-
-### Transcript actions
-
-Actions available in the `Transcript` context:
-
-| Action                     | Default           | Description             |
-| :------------------------- | :---------------- | :---------------------- |
-| `transcript:toggleShowAll` | Ctrl+E            | Toggle show all content |
-| `transcript:exit`          | q, Ctrl+C, Escape | Exit transcript view    |
-
-`transcript:toggleShowAll` applies in the default renderer only; in [fullscreen rendering](/docs/en/fullscreen), the transcript viewer doesn't offer a show-all toggle.
-
-### History search actions
-
-Actions available in the `HistorySearch` context:
-
-| Action                     | Default     | Description                               |
-| :------------------------- | :---------- | :---------------------------------------- |
-| `historySearch:next`       | Ctrl+R      | Next match                                |
-| `historySearch:accept`     | Escape, Tab | Accept selection                          |
-| `historySearch:cancel`     | Ctrl+C      | Cancel search                             |
-| `historySearch:execute`    | Enter       | Execute selected command                  |
-| `historySearch:cycleScope` | Ctrl+S      | Cycle scope: session, project, everywhere |
-
-The `historySearch:next`, `historySearch:accept`, `historySearch:cancel`, and `historySearch:execute` defaults apply to the inline history search in the default renderer, which always searches prompts from all projects. `historySearch:cycleScope` takes effect only in [fullscreen rendering](/docs/en/fullscreen), where `Ctrl+R` opens a search dialog instead and `Ctrl+S` cycles its scope. The dialog's other keys are fixed and can't be rebound: `Enter` or `Tab` places the highlighted match in the prompt input and `Esc` cancels.
-
-### Task actions
-
-Actions available in the `Task` context:
-
-| Action            | Default               | Description                                                                                                                                 |
-| :---------------- | :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `task:background` | Ctrl+B, Ctrl+X Ctrl+B | Background current task. {/* min-version: 2.1.169 */}The Ctrl+X Ctrl+B chord requires v2.1.169 or later and avoids the tmux prefix conflict |
-
-### Theme actions
-
-Actions available in the `ThemePicker` context:
-
-| Action                           | Default | Description                |
-| :------------------------------- | :------ | :------------------------- |
-| `theme:toggleSyntaxHighlighting` | Ctrl+T  | Toggle syntax highlighting |
-
-### Help actions
-
-Actions available in the `Help` context:
-
-| Action         | Default | Description     |
-| :------------- | :------ | :-------------- |
-| `help:dismiss` | Escape  | Close help menu |
-
-### Tabs actions
-
-Actions available in the `Tabs` context:
-
-| Action          | Default         | Description  |
-| :-------------- | :-------------- | :----------- |
-| `tabs:next`     | Tab, Right      | Next tab     |
-| `tabs:previous` | Shift+Tab, Left | Previous tab |
-
-### Attachments actions
-
-Actions available in the `Attachments` context:
-
-| Action                 | Default           | Description                |
-| :--------------------- | :---------------- | :------------------------- |
-| `attachments:next`     | Right             | Next attachment            |
-| `attachments:previous` | Left              | Previous attachment        |
-| `attachments:remove`   | Backspace, Delete | Remove selected attachment |
-| `attachments:exit`     | Down, Escape      | Exit attachment navigation |
-
-### Footer actions
-
-Actions available in the `Footer` context:
-
-| Action                  | Default           | Description                                                                                                                                                                                                               |
-| :---------------------- | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `footer:next`           | Right             | Next footer item                                                                                                                                                                                                          |
-| `footer:previous`       | Left              | Previous footer item                                                                                                                                                                                                      |
-| `footer:up`             | Up                | Navigate up in footer (deselects at top)                                                                                                                                                                                  |
-| `footer:down`           | Down              | Navigate down in footer                                                                                                                                                                                                   |
-| `footer:openSelected`   | Enter             | Open selected footer item                                                                                                                                                                                                 |
-| `footer:clearSelection` | Escape            | Clear footer selection                                                                                                                                                                                                    |
-| `footer:dismiss`        | Backspace, Delete | Dismiss the selected [artifact](/docs/en/artifacts) link from the footer; the published artifact itself is unaffected. On other footer rows, these keys have no effect. {/* min-version: 2.1.217 */}Requires v2.1.217 or later |
-
-### Message selector actions
-
-Actions available in the `MessageSelector` context:
-
-| Action                   | Default                                   | Description       |
-| :----------------------- | :---------------------------------------- | :---------------- |
-| `messageSelector:up`     | Up, K, Ctrl+P                             | Move up in list   |
-| `messageSelector:down`   | Down, J, Ctrl+N                           | Move down in list |
-| `messageSelector:top`    | Ctrl+Up, Shift+Up, Meta+Up, Shift+K       | Jump to top       |
-| `messageSelector:bottom` | Ctrl+Down, Shift+Down, Meta+Down, Shift+J | Jump to bottom    |
-| `messageSelector:select` | Enter                                     | Select message    |
-
-### Diff actions
-
-Actions available in the `DiffDialog` context:
-
-| Action                | Default   | Description                                                                                                                                         |
-| :-------------------- | :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `diff:dismiss`        | Escape    | Close diff viewer; from the detail view, returns to the file list instead                                                                           |
-| `diff:previousSource` | Left      | Previous diff source                                                                                                                                |
-| `diff:nextSource`     | Right     | Next diff source                                                                                                                                    |
-| `diff:previousFile`   | Up, K     | Previous file in the file list; scroll up one line in the detail view                                                                               |
-| `diff:nextFile`       | Down, J   | Next file in the file list; scroll down one line in the detail view                                                                                 |
-| `diff:viewDetails`    | Enter     | View diff details                                                                                                                                   |
-| `diff:back`           | (unbound) | Go back in diff viewer. Escape performs the back action via `diff:dismiss`. The previous default of Left in the detail view was removed in v2.1.203 |
-
-The diff detail view also binds pager-style keys to the standard [scroll actions](#scroll-actions). These bindings are part of the `DiffDialog` context and apply only in the detail view; the `Scroll` context defaults listed under [Scroll actions](#scroll-actions) are unchanged.
-
-| Action                | Default        | Description                 |
-| :-------------------- | :------------- | :-------------------------- |
-| `scroll:pageUp`       | PageUp         | Scroll up half a viewport   |
-| `scroll:pageDown`     | PageDown       | Scroll down half a viewport |
-| `scroll:fullPageUp`   | Shift+Space, B | Scroll up a full viewport   |
-| `scroll:fullPageDown` | Space          | Scroll down a full viewport |
-| `scroll:top`          | G, Home        | Jump to the top             |
-| `scroll:bottom`       | Shift+G, End   | Jump to the bottom          |
-
-### Model picker actions
-
-Actions available in the `ModelPicker` context:
-
-| Action                        | Default | Description                                  |
-| :---------------------------- | :------ | :------------------------------------------- |
-| `modelPicker:decreaseEffort`  | Left    | Decrease effort level                        |
-| `modelPicker:increaseEffort`  | Right   | Increase effort level                        |
-| `modelPicker:thisSessionOnly` | s       | Apply highlighted model to this session only |
-
-### Select actions
-
-Actions available in the `Select` context:
-
-| Action            | Default         | Description      |
-| :---------------- | :-------------- | :--------------- |
-| `select:next`     | Down, J, Ctrl+N | Next option      |
-| `select:previous` | Up, K, Ctrl+P   | Previous option  |
-| `select:accept`   | Enter           | Accept selection |
-| `select:cancel`   | Escape          | Cancel selection |
-
-### Plugin actions
-
-Actions available in the `Plugin` context:
-
-| Action            | Default | Description                                                                |
-| :---------------- | :------ | :------------------------------------------------------------------------- |
-| `plugin:toggle`   | Space   | Toggle plugin selection                                                    |
-| `plugin:install`  | I       | Install selected plugins                                                   |
-| `plugin:favorite` | F       | Favorite the selected plugin so it sorts near the top of the Installed tab |
-
-### Settings actions
-
-Actions available in the `Settings` context. The `select:accept` and `confirm:no` actions are reused from the [Select](#select-actions) and [Confirmation](#confirmation-actions) contexts with Settings-specific behavior: changes apply to each setting as soon as you change it, so Escape closes the panel with your changes saved rather than declining.
-
-| Action            | Default      | Description                                     |
-| :---------------- | :----------- | :---------------------------------------------- |
-| `settings:search` | /            | Enter search mode                               |
-| `settings:retry`  | R            | Retry loading usage data on error               |
-| `select:accept`   | Enter, Space | Change the selected setting or open its submenu |
-| `confirm:no`      | Escape       | Close the panel. Changes are already saved      |
-
-### Voice actions
-
-Actions available in the `Chat` context when [voice dictation](/docs/en/voice-dictation) is enabled:
-
-| Action             | Default | Description                                              |
-| :----------------- | :------ | :------------------------------------------------------- |
-| `voice:pushToTalk` | Space   | Dictate a prompt. Hold or tap depending on `/voice` mode |
-
-### Scroll actions
-
-Actions available in the `Scroll` context when [fullscreen rendering](/docs/en/fullscreen) is enabled:
-
-| Action                      | Default              | Description                                                                                               |
-| :-------------------------- | :------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `scroll:lineUp`             | (unbound)            | Scroll up one line. Mouse wheel scrolling triggers this action                                            |
-| `scroll:lineDown`           | (unbound)            | Scroll down one line. Mouse wheel scrolling triggers this action                                          |
-| `scroll:pageUp`             | PageUp               | Scroll up half the viewport height                                                                        |
-| `scroll:pageDown`           | PageDown             | Scroll down half the viewport height                                                                      |
-| `scroll:top`                | Ctrl+Home            | Jump to the start of the conversation                                                                     |
-| `scroll:bottom`             | Ctrl+End             | Jump to the latest message and re-enable auto-follow                                                      |
-| `scroll:halfPageUp`         | (unbound)            | Scroll up half the viewport height. Same behavior as `scroll:pageUp`, provided for vi-style rebinds       |
-| `scroll:halfPageDown`       | (unbound)            | Scroll down half the viewport height. Same behavior as `scroll:pageDown`, provided for vi-style rebinds   |
-| `scroll:fullPageUp`         | (unbound)            | Scroll up the full viewport height                                                                        |
-| `scroll:fullPageDown`       | (unbound)            | Scroll down the full viewport height                                                                      |
-| `selection:copy`            | Ctrl+Shift+C / Cmd+C | Copy the selected text to the clipboard                                                                   |
-| `selection:clear`           | (unbound)            | Clear the active text selection                                                                           |
-| `selection:extendLeft`      | Shift+Left           | Extend the active selection one column left                                                               |
-| `selection:extendRight`     | Shift+Right          | Extend the active selection one column right                                                              |
-| `selection:extendUp`        | Shift+Up             | Extend the active selection one row up. Scrolls the viewport when the selection reaches the top edge      |
-| `selection:extendDown`      | Shift+Down           | Extend the active selection one row down. Scrolls the viewport when the selection reaches the bottom edge |
-| `selection:extendLineStart` | Shift+Home           | Extend the active selection to the start of the line                                                      |
-| `selection:extendLineEnd`   | Shift+End            | Extend the active selection to the end of the line                                                        |
-
-## Keystroke syntax
-
-### Modifiers
-
-Use modifier keys with the `+` separator:
-
-* `ctrl` or `control` - Control key
-* `shift` - Shift key
-* `alt`, `opt`, `option`, or `meta` - Alt key on Windows and Linux, Option key on macOS
-* `cmd`, `command`, `super`, or `win` - Command key on macOS, Windows key on Windows, Super key on Linux
-
-The `cmd` group is only detected in terminals that report the Super modifier, such as those supporting the Kitty keyboard protocol or xterm's `modifyOtherKeys` mode. Most terminals do not send it, so use `ctrl` or `meta` for bindings you want to work everywhere.
-
-For example:
+在 `Confirmation` 上下文中可用的操作：
+
+| 操作                          | 默认        | 描述                                                                           |
+| :-------------------------- | :-------- | :--------------------------------------------------------------------------- |
+| `confirm:yes`               | Y, Enter  | 确认操作                                                                         |
+| `confirm:no`                | N, Escape | 拒绝操作                                                                         |
+| `confirm:previous`          | Up        | 上一个选项                                                                        |
+| `confirm:next`              | Down      | 下一个选项                                                                        |
+| `confirm:nextField`         | Tab       | 下一个字段                                                                        |
+| `confirm:previousField`     | （未绑定）     | 上一个字段                                                                        |
+| `confirm:toggle`            | Space     | 切换选择                                                                         |
+| `confirm:cycleMode`         | Shift+Tab | 循环权限模式                                                                       |
+| `confirm:toggleExplanation` | Ctrl+E    | 在 Bash 和 PowerShell 权限提示上切换模型生成的[命令说明](/docs/zh-CN/permissions#permission-system) |
+
+<h3 id="permission-actions">
+  权限操作
+</h3>
+
+在 `Confirmation` 上下文中可用的权限对话框操作：
+
+| 操作                       | 默认    | 描述                                                        |
+| :----------------------- | :---- | :-------------------------------------------------------- |
+| `permission:toggleDebug` | （未绑定） | 切换权限调试信息。之前的 Ctrl+D 默认值在 v2.1.146 中被移除，因为它与 `app:exit` 冲突 |
+
+<h3 id="transcript-actions">
+  记录操作
+</h3>
+
+在 `Transcript` 上下文中可用的操作：
+
+| 操作                         | 默认                | 描述       |
+| :------------------------- | :---------------- | :------- |
+| `transcript:toggleShowAll` | Ctrl+E            | 切换显示所有内容 |
+| `transcript:exit`          | q, Ctrl+C, Escape | 退出记录查看   |
+
+<h3 id="history-search-actions">
+  历史搜索操作
+</h3>
+
+在 `HistorySearch` 上下文中可用的操作：
+
+| 操作                         | 默认          | 描述              |
+| :------------------------- | :---------- | :-------------- |
+| `historySearch:next`       | Ctrl+R      | 下一个匹配项          |
+| `historySearch:accept`     | Escape, Tab | 接受选择            |
+| `historySearch:cancel`     | Ctrl+C      | 取消搜索            |
+| `historySearch:execute`    | Enter       | 执行选定的命令         |
+| `historySearch:cycleScope` | Ctrl+S      | 循环范围：会话、项目、任何地方 |
+
+<h3 id="task-actions">
+  任务操作
+</h3>
+
+在 `Task` 上下文中可用的操作：
+
+| 操作                | 默认                    | 描述                                                                                 |
+| :---------------- | :-------------------- | :--------------------------------------------------------------------------------- |
+| `task:background` | Ctrl+B, Ctrl+X Ctrl+B | 后台当前任务。{/* min-version: 2.1.169 */}Ctrl+X Ctrl+B 组合键需要 v2.1.169 或更高版本，避免 tmux 前缀冲突 |
+
+<h3 id="theme-actions">
+  主题操作
+</h3>
+
+在 `ThemePicker` 上下文中可用的操作：
+
+| 操作                               | 默认     | 描述     |
+| :------------------------------- | :----- | :----- |
+| `theme:toggleSyntaxHighlighting` | Ctrl+T | 切换语法高亮 |
+
+<h3 id="help-actions">
+  帮助操作
+</h3>
+
+在 `Help` 上下文中可用的操作：
+
+| 操作             | 默认     | 描述     |
+| :------------- | :----- | :----- |
+| `help:dismiss` | Escape | 关闭帮助菜单 |
+
+<h3 id="tabs-actions">
+  Tabs 操作
+</h3>
+
+在 `Tabs` 上下文中可用的操作：
+
+| 操作              | 默认              | 描述     |
+| :-------------- | :-------------- | :----- |
+| `tabs:next`     | Tab, Right      | 下一个选项卡 |
+| `tabs:previous` | Shift+Tab, Left | 上一个选项卡 |
+
+<h3 id="attachments-actions">
+  附件操作
+</h3>
+
+在 `Attachments` 上下文中可用的操作：
+
+| 操作                     | 默认                | 描述      |
+| :--------------------- | :---------------- | :------ |
+| `attachments:next`     | Right             | 下一个附件   |
+| `attachments:previous` | Left              | 上一个附件   |
+| `attachments:remove`   | Backspace, Delete | 删除选定的附件 |
+| `attachments:exit`     | Down, Escape      | 退出附件导航  |
+
+<h3 id="footer-actions">
+  页脚操作
+</h3>
+
+在 `Footer` 上下文中可用的操作：
+
+| 操作                      | 默认     | 描述                |
+| :---------------------- | :----- | :---------------- |
+| `footer:next`           | Right  | 下一个页脚项            |
+| `footer:previous`       | Left   | 上一个页脚项            |
+| `footer:up`             | Up     | 在页脚中向上导航（在顶部取消选择） |
+| `footer:down`           | Down   | 在页脚中向下导航          |
+| `footer:openSelected`   | Enter  | 打开选定的页脚项          |
+| `footer:clearSelection` | Escape | 清除页脚选择            |
+
+<h3 id="message-selector-actions">
+  消息选择器操作
+</h3>
+
+在 `MessageSelector` 上下文中可用的操作：
+
+| 操作                       | 默认                                        | 描述       |
+| :----------------------- | :---------------------------------------- | :------- |
+| `messageSelector:up`     | Up, K, Ctrl+P                             | 在列表中向上移动 |
+| `messageSelector:down`   | Down, J, Ctrl+N                           | 在列表中向下移动 |
+| `messageSelector:top`    | Ctrl+Up, Shift+Up, Meta+Up, Shift+K       | 跳到顶部     |
+| `messageSelector:bottom` | Ctrl+Down, Shift+Down, Meta+Down, Shift+J | 跳到底部     |
+| `messageSelector:select` | Enter                                     | 选择消息     |
+
+<h3 id="diff-actions">
+  Diff 操作
+</h3>
+
+在 `DiffDialog` 上下文中可用的操作：
+
+| 操作                    | 默认      | 描述                                                                         |
+| :-------------------- | :------ | :------------------------------------------------------------------------- |
+| `diff:dismiss`        | Escape  | 关闭差异查看器；从详情视图返回到文件列表                                                       |
+| `diff:previousSource` | Left    | 上一个差异源                                                                     |
+| `diff:nextSource`     | Right   | 下一个差异源                                                                     |
+| `diff:previousFile`   | Up, K   | 文件列表中的上一个文件；在详情视图中向上滚动一行                                                   |
+| `diff:nextFile`       | Down, J | 文件列表中的下一个文件；在详情视图中向下滚动一行                                                   |
+| `diff:viewDetails`    | Enter   | 查看差异详情                                                                     |
+| `diff:back`           | （未绑定）   | 在差异查看器中返回。Escape 通过 `diff:dismiss` 执行返回操作。详情视图中之前的 Left 默认值在 v2.1.203 中被移除 |
+
+差异详情视图还将寻呼机风格的快捷键绑定到标准[滚动操作](#scroll-actions)。这些绑定是 `DiffDialog` 上下文的一部分，仅在详情视图中应用；[滚动操作](#scroll-actions)下列出的 `Scroll` 上下文默认值保持不变。
+
+| 操作                    | 默认             | 描述        |
+| :-------------------- | :------------- | :-------- |
+| `scroll:pageUp`       | PageUp         | 向上滚动视口的一半 |
+| `scroll:pageDown`     | PageDown       | 向下滚动视口的一半 |
+| `scroll:fullPageUp`   | Shift+Space, B | 向上滚动整个视口  |
+| `scroll:fullPageDown` | Space          | 向下滚动整个视口  |
+| `scroll:top`          | G, Home        | 跳到顶部      |
+| `scroll:bottom`       | Shift+G, End   | 跳到底部      |
+
+<h3 id="model-picker-actions">
+  模型选择器操作
+</h3>
+
+在 `ModelPicker` 上下文中可用的操作：
+
+| 操作                            | 默认    | 描述              |
+| :---------------------------- | :---- | :-------------- |
+| `modelPicker:decreaseEffort`  | Left  | 降低工作量级别         |
+| `modelPicker:increaseEffort`  | Right | 提高工作量级别         |
+| `modelPicker:thisSessionOnly` | s     | 仅将突出显示的模型应用于此会话 |
+
+<h3 id="select-actions">
+  选择操作
+</h3>
+
+在 `Select` 上下文中可用的操作：
+
+| 操作                | 默认              | 描述    |
+| :---------------- | :-------------- | :---- |
+| `select:next`     | Down, J, Ctrl+N | 下一个选项 |
+| `select:previous` | Up, K, Ctrl+P   | 上一个选项 |
+| `select:accept`   | Enter           | 接受选择  |
+| `select:cancel`   | Escape          | 取消选择  |
+
+<h3 id="plugin-actions">
+  Plugin 操作
+</h3>
+
+在 `Plugin` 上下文中可用的操作：
+
+| 操作                | 默认    | 描述                            |
+| :---------------- | :---- | :---------------------------- |
+| `plugin:toggle`   | Space | 切换插件选择                        |
+| `plugin:install`  | I     | 安装选定的插件                       |
+| `plugin:favorite` | F     | 将选定的插件标记为收藏，使其在"已安装"选项卡顶部附近排序 |
+
+<h3 id="settings-actions">
+  设置操作
+</h3>
+
+在 `Settings` 上下文中可用的操作。`select:accept` 和 `confirm:no` 操作从[选择](#select-actions)和[确认](#confirmation-actions)上下文中重用，具有特定于设置的行为：更改会在您更改时立即应用于每个设置，因此 Escape 关闭面板并保存您的更改，而不是拒绝。
+
+| 操作                | 默认           | 描述             |
+| :---------------- | :----------- | :------------- |
+| `settings:search` | /            | 进入搜索模式         |
+| `settings:retry`  | R            | 重试加载使用数据（出错时）  |
+| `select:accept`   | Enter, Space | 更改选定的设置或打开其子菜单 |
+| `confirm:no`      | Escape       | 关闭面板。更改已保存     |
+
+<h3 id="voice-actions">
+  语音操作
+</h3>
+
+在启用[语音听写](/docs/zh-CN/voice-dictation)时，在 `Chat` 上下文中可用的操作：
+
+| 操作                 | 默认    | 描述                       |
+| :----------------- | :---- | :----------------------- |
+| `voice:pushToTalk` | Space | 听写提示。根据 `/voice` 模式按住或点击 |
+
+<h3 id="scroll-actions">
+  滚动操作
+</h3>
+
+在启用[全屏渲染](/docs/zh-CN/fullscreen)时，在 `Scroll` 上下文中可用的操作：
+
+| 操作                          | 默认                   | 描述                                                   |
+| :-------------------------- | :------------------- | :--------------------------------------------------- |
+| `scroll:lineUp`             | （未绑定）                | 向上滚动一行。鼠标滚轮滚动触发此操作                                   |
+| `scroll:lineDown`           | （未绑定）                | 向下滚动一行。鼠标滚轮滚动触发此操作                                   |
+| `scroll:pageUp`             | PageUp               | 向上滚动视口高度的一半                                          |
+| `scroll:pageDown`           | PageDown             | 向下滚动视口高度的一半                                          |
+| `scroll:top`                | Ctrl+Home            | 跳到对话的开始                                              |
+| `scroll:bottom`             | Ctrl+End             | 跳到最新消息并重新启用自动跟随                                      |
+| `scroll:halfPageUp`         | （未绑定）                | 向上滚动视口高度的一半。与 `scroll:pageUp` 相同的行为，为 vi 风格的重新绑定提供   |
+| `scroll:halfPageDown`       | （未绑定）                | 向下滚动视口高度的一半。与 `scroll:pageDown` 相同的行为，为 vi 风格的重新绑定提供 |
+| `scroll:fullPageUp`         | （未绑定）                | 向上滚动整个视口高度                                           |
+| `scroll:fullPageDown`       | （未绑定）                | 向下滚动整个视口高度                                           |
+| `selection:copy`            | Ctrl+Shift+C / Cmd+C | 将选定的文本复制到剪贴板                                         |
+| `selection:clear`           | （未绑定）                | 清除活动的文本选择                                            |
+| `selection:extendLeft`      | Shift+Left           | 将活动选择向左扩展一列                                          |
+| `selection:extendRight`     | Shift+Right          | 将活动选择向右扩展一列                                          |
+| `selection:extendUp`        | Shift+Up             | 将活动选择向上扩展一行。当选择到达顶部边缘时滚动视口                           |
+| `selection:extendDown`      | Shift+Down           | 将活动选择向下扩展一行。当选择到达底部边缘时滚动视口                           |
+| `selection:extendLineStart` | Shift+Home           | 将活动选择扩展到行的开始                                         |
+| `selection:extendLineEnd`   | Shift+End            | 将活动选择扩展到行的结束                                         |
+
+<h2 id="keystroke-syntax">
+  按键语法
+</h2>
+
+<h3 id="modifiers">
+  修饰符
+</h3>
+
+使用修饰符键和 `+` 分隔符：
+
+* `ctrl` 或 `control` - Control 键
+* `shift` - Shift 键
+* `alt`、`opt`、`option` 或 `meta` - Windows 和 Linux 上的 Alt 键，macOS 上的 Option 键
+* `cmd`、`command`、`super` 或 `win` - macOS 上的 Command 键，Windows 上的 Windows 键，Linux 上的 Super 键
+
+`cmd` 组仅在报告 Super 修饰符的终端中被检测到，例如支持 Kitty 键盘协议或 xterm 的 `modifyOtherKeys` 模式的终端。大多数终端不会发送它，因此对于希望在任何地方都能工作的绑定，请使用 `ctrl` 或 `meta`。
+
+例如：
 
 ```text theme={null}
 ctrl+k          Ctrl + K
 shift+tab       Shift + Tab
-meta+p          Option + P on macOS, Alt + P elsewhere
-ctrl+shift+c    Multiple modifiers
+meta+p          macOS 上的 Option + P，其他地方的 Alt + P
+ctrl+shift+c    多个修饰符
 ```
 
-### Uppercase letters
+<h3 id="uppercase-letters">
+  大写字母
+</h3>
 
-A standalone uppercase letter implies Shift. For example, `K` is equivalent to `shift+k`. This is useful for vim-style bindings where uppercase and lowercase keys have different meanings.
+独立的大写字母意味着 Shift。例如，`K` 等同于 `shift+k`。这对于 vim 风格的绑定很有用，其中大写和小写键有不同的含义。
 
-Uppercase letters with modifiers (e.g., `ctrl+K`) are treated as stylistic and do **not** imply Shift: `ctrl+K` is the same as `ctrl+k`.
+带有修饰符的大写字母（例如 `ctrl+K`）被视为风格上的，**不**意味着 Shift：`ctrl+K` 与 `ctrl+k` 相同。
 
-### Chords
+<h3 id="chords">
+  和弦
+</h3>
 
-Chords are sequences of keystrokes separated by spaces:
+和弦是由空格分隔的按键序列：
 
 ```text theme={null}
-ctrl+k ctrl+s   Press Ctrl+K, release, then Ctrl+S
+ctrl+k ctrl+s   按 Ctrl+K，释放，然后按 Ctrl+S
 ```
 
-### Special keys
+<h3 id="special-keys">
+  特殊键
+</h3>
 
-* `escape` or `esc` - Escape key
-* `enter` or `return` - Enter key
-* `tab` - Tab key
-* `space` - Space bar
-* `up`, `down`, `left`, `right` - Arrow keys
-* `backspace`, `delete` - Delete keys
+* `escape` 或 `esc` - Escape 键
+* `enter` 或 `return` - Enter 键
+* `tab` - Tab 键
+* `space` - 空格键
+* `up`、`down`、`left`、`right` - 箭头键
+* `backspace`、`delete` - 删除键
 
-## Unbind default shortcuts
+<h2 id="unbind-default-shortcuts">
+  取消绑定默认快捷键
+</h2>
 
-Set an action to `null` to unbind a default shortcut:
+将操作设置为 `null` 以取消绑定默认快捷键：
 
 ```json theme={null}
 {
@@ -407,9 +464,9 @@ Set an action to `null` to unbind a default shortcut:
 }
 ```
 
-This also works for chord bindings. Unbinding every chord that shares a prefix frees that prefix for use as a single-key binding. A chord in any active context keeps its prefix reserved, so you must unbind each chord in the context that defines it.
+这也适用于和弦绑定。取消绑定共享前缀的每个和弦会释放该前缀以用作单键绑定。任何活跃上下文中的和弦都会保留其前缀，因此您必须在定义该和弦的上下文中取消绑定每个和弦。
 
-The default `Ctrl+X` family spans two contexts: `ctrl+x ctrl+k` and `ctrl+x ctrl+e` in `Chat`, and `ctrl+x ctrl+b` in `Task`. To reclaim `ctrl+x` itself as a single-key binding, unbind all of them:
+默认的 `Ctrl+X` 系列跨越两个上下文：`Chat` 中的 `ctrl+x ctrl+k` 和 `ctrl+x ctrl+e`，以及 `Task` 中的 `ctrl+x ctrl+b`。要将 `ctrl+x` 本身回收为单键绑定，请取消绑定所有这些：
 
 ```json theme={null}
 {
@@ -432,49 +489,57 @@ The default `Ctrl+X` family spans two contexts: `ctrl+x ctrl+k` and `ctrl+x ctrl
 }
 ```
 
-If you unbind some but not all chords on a prefix, pressing the prefix still enters chord-wait mode for the remaining bindings.
+如果您取消绑定前缀上的某些但不是全部和弦，按下前缀仍会进入和弦等待模式以处理剩余的绑定。
 
-## Reserved shortcuts
+<h2 id="reserved-shortcuts">
+  保留的快捷键
+</h2>
 
-These shortcuts cannot be rebound:
+这些快捷键无法重新绑定：
 
-| Shortcut  | Reason                                         |
-| :-------- | :--------------------------------------------- |
-| Ctrl+C    | Hardcoded interrupt/cancel                     |
-| Ctrl+D    | Hardcoded exit                                 |
-| Ctrl+M    | Identical to Enter in terminals (both send CR) |
-| Caps Lock | Not delivered to terminal applications         |
+| 快捷键       | 原因                     |
+| :-------- | :--------------------- |
+| Ctrl+C    | 硬编码的中断/取消              |
+| Ctrl+D    | 硬编码的退出                 |
+| Ctrl+M    | 与终端中的 Enter 相同（都发送 CR） |
+| Caps Lock | 不传递到终端应用程序             |
 
-## Terminal conflicts
+<h2 id="terminal-conflicts">
+  终端冲突
+</h2>
 
-Some shortcuts may conflict with terminal multiplexers:
+某些快捷键可能与终端多路复用器冲突：
 
-| Shortcut | Conflict                          |
-| :------- | :-------------------------------- |
-| Ctrl+B   | tmux prefix (press twice to send) |
-| Ctrl+A   | GNU screen prefix                 |
-| Ctrl+Z   | Unix process suspend (SIGTSTP)    |
+| 快捷键    | 冲突                 |
+| :----- | :----------------- |
+| Ctrl+B | tmux 前缀（按两次发送）     |
+| Ctrl+A | GNU screen 前缀      |
+| Ctrl+Z | Unix 进程暂停（SIGTSTP） |
 
-## Vim mode interaction
+<h2 id="vim-mode-interaction">
+  Vim 模式交互
+</h2>
 
-When vim mode is enabled via `/config` → Editor mode, keybindings and vim mode operate independently:
+启用 vim 模式（通过 `/config` → 编辑器模式）时，快捷键和 vim 模式独立运行：
 
-* **Vim mode** handles input at the text input level (cursor movement, modes, motions)
-* **Keybindings** handle actions at the component level (toggle todos, submit, etc.)
-* The Escape key in vim mode switches INSERT to NORMAL mode; it does not trigger `chat:cancel`
-* Most Ctrl+key shortcuts pass through vim mode to the keybinding system
-* Vim keys aren't remappable through the keybindings file. To map a two-key INSERT-mode sequence such as `jj` to Escape, use the [`vimInsertModeRemaps`](/docs/en/interactive-mode#remap-insert-mode-key-sequences) setting
-* In vim NORMAL mode, `?` shows the help menu (vim behavior)
-* In vim NORMAL mode, `/` opens history search, the same as Ctrl+R in standard mode
+* **Vim 模式**在文本输入级别处理输入（光标移动、模式、动作）
+* **快捷键**在组件级别处理操作（切换待办事项、提交等）
+* vim 模式中的 Escape 键从 INSERT 切换到 NORMAL 模式；它不触发 `chat:cancel`
+* 大多数 Ctrl+key 快捷键通过 vim 模式传递到快捷键系统
+* Vim 键不能通过快捷键文件重新映射。要映射两键 INSERT 模式序列（如 `jj`）到 Escape，请使用 [`vimInsertModeRemaps`](/docs/zh-CN/interactive-mode#remap-insert-mode-key-sequences) 设置
+* 在 vim NORMAL 模式中，`?` 显示帮助菜单（vim 行为）
+* 在 vim NORMAL 模式中，`/` 打开历史搜索，与标准模式中的 Ctrl+R 相同
 
-## Validation
+<h2 id="validation">
+  验证
+</h2>
 
-Claude Code validates your keybindings and shows warnings for:
+Claude Code 验证您的快捷键并显示以下警告：
 
-* Parse errors (invalid JSON or structure)
-* Invalid context names
-* Reserved shortcut conflicts
-* Terminal multiplexer conflicts
-* Duplicate bindings in the same context
+* 解析错误（无效的 JSON 或结构）
+* 无效的上下文名称
+* 保留快捷键冲突
+* 终端多路复用器冲突
+* 同一上下文中的重复绑定
 
-Claude Code reports warnings when the file loads and writes each one to the debug log. Start Claude Code with [`--debug`](/docs/en/cli-reference#cli-flags) to see the details.
+Claude Code 在文件加载时报告警告，并将每个警告写入调试日志。使用 [`--debug`](/docs/zh-CN/cli-reference#cli-flags) 启动 Claude Code 以查看详细信息。

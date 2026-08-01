@@ -2,141 +2,157 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Claude apps gateway configuration
+# Claude 应用网关配置
 
-> Reference for every gateway.yaml option: listener and TLS, OIDC, session, Postgres store, Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, and Microsoft Foundry upstreams, model routing, managed policies, and telemetry.
+> 每个 gateway.yaml 选项的参考：监听器和 TLS、OIDC、会话、Postgres 存储、Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上游、模型路由、托管策略和遥测。
 
-A Claude apps gateway deployment is configured by one YAML file, conventionally `gateway.yaml`. The file defines everything the gateway does: where it listens, how developers sign in, where inference goes, and which policies and telemetry apply. This page is the reference for every option in that file.
+Claude 应用网关部署由一个 YAML 文件配置，按惯例命名为 `gateway.yaml`。该文件定义网关所做的一切：它在哪里监听、开发者如何登录、推理去往何处，以及应用哪些策略和遥测。本页是该文件中每个选项的参考。
 
-To write your first one, start from the [quickstart](/docs/en/claude-apps-gateway#quickstart), which builds a minimal working config and runs it. Once you have a config you're happy with, the [deployment guide](/docs/en/claude-apps-gateway-deploy) covers containerizing and hosting it on Kubernetes, Cloud Run, or your own platform.
+要编写你的第一个配置，请从[快速入门](/docs/zh-CN/claude-apps-gateway#quickstart)开始，它构建一个最小的工作配置并运行它。一旦你有了满意的配置，[部署指南](/docs/zh-CN/claude-apps-gateway-deploy)涵盖了在 Kubernetes、Cloud Run 或你自己的平台上容器化和托管它。
 
-The gateway reads the file once, at startup, with `claude gateway --config /path/to/gateway.yaml`. Every option is validated against a schema at boot, so a malformed config fails at start with a field-level error rather than at first use.
+网关在启动时使用 `claude gateway --config /path/to/gateway.yaml` 读取该文件一次。每个选项都在启动时根据模式进行验证，因此格式错误的配置在启动时失败并显示字段级错误，而不是在首次使用时失败。
 
-The [complete example](#complete-example) at the end of this page exercises every section.
+本页末尾的[完整示例](#complete-example)演示了每个部分。
 
-## File structure
+<h2 id="file-structure">
+  文件结构
+</h2>
 
-Five sections are [required](#required-sections). Every other section is [optional](#optional-sections), and an omitted section takes its defaults. Unknown keys fail boot, so a typo surfaces as a named error rather than a silently ignored setting.
+五个部分是[必需的](#required-sections)。所有其他部分都是[可选的](#optional-sections)，省略的部分采用其默认值。未知的键会导致启动失败，因此拼写错误会显示为命名错误，而不是被静默忽略的设置。
 
-**Required sections:**
+**必需部分：**
 
-* [`listen`](#listen): bind address, public URL, TLS termination
-* [`oidc`](#oidc): your identity provider (IdP), including issuer, client, claim mapping, and who may sign in
-* [`session`](#session): the bearer tokens the gateway mints, with secret and lifetime
-* [`store`](#store): PostgreSQL, for device grants and rate-limit counters
-* [`upstreams`](#upstreams): where inference goes, whether Anthropic, Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, or Microsoft Foundry
+* [`listen`](#listen)：绑定地址、公共 URL、TLS 终止
+* [`oidc`](#oidc)：你的身份提供者 (IdP)，包括发行者、客户端、声明映射和谁可以登录
+* [`session`](#session)：网关铸造的持有者令牌，包括密钥和生命周期
+* [`store`](#store)：PostgreSQL，用于设备授权和速率限制计数器
+* [`upstreams`](#upstreams)：推理去往何处，无论是 Anthropic、Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 还是 Microsoft Foundry
 
-**Optional sections:**
+**可选部分：**
 
-* [`admin`](#admin): Admin API auth and retention for spend limits
-* [`enforcement`](#enforcement): spend-limit fail-open or fail-closed behavior
-* [`models`](#models) and `auto_include_builtin_models`: admin-curated model list and per-upstream IDs
-* [`managed`](#managed): managed settings policies by IdP group
-* [`telemetry`](#telemetry): OTLP forwarding to your observability stack
-* [`access_control`, `limits`, `timeouts`, `rate_limits`](#http-tuning): IP allow/deny, request size caps, upstream time-to-first-byte, and per-IP sign-in limits
+* [`admin`](#admin)：Admin API 身份验证和支出限制的保留
+* [`enforcement`](#enforcement)：支出限制故障开放或故障关闭行为
+* [`models`](#models) 和 `auto_include_builtin_models`：管理员策划的模型列表和每个上游的 ID
+* [`managed`](#managed)：按 IdP 组的托管设置策略
+* [`telemetry`](#telemetry)：OTLP 转发到你的可观测性堆栈
+* [`access_control`、`limits`、`timeouts`、`rate_limits`](#http-tuning)：IP 允许/拒绝、请求大小上限、上游首字节时间和每 IP 登录限制
 
-## Secret expansion
+<h2 id="secret-expansion">
+  密钥扩展
+</h2>
 
-Don't write secrets such as `client_secret`, `jwt_secret`, or `postgres_url` directly in `gateway.yaml`. Reference them with one of the forms below, and the gateway resolves the value at boot from an environment variable or a file:
+不要直接在 `gateway.yaml` 中写入密钥，如 `client_secret`、`jwt_secret` 或 `postgres_url`。使用下面的一种形式引用它们，网关在启动时从环境变量或文件解析该值：
 
-| Form            | Resolves to                                              | Use for                                                                |
-| --------------- | -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `${VAR}`        | The environment variable `VAR`. Boot fails if undefined. | Container environment variables, AWS Secrets Manager via env injection |
-| `${file:/path}` | File contents, trimmed                                   | Kubernetes Secret volume mounts, Vault Agent, SOPS                     |
+| 形式              | 解析为                    | 用于                                     |
+| --------------- | ---------------------- | -------------------------------------- |
+| `${VAR}`        | 环境变量 `VAR`。如果未定义，启动失败。 | 容器环境变量、通过环境注入的 AWS Secrets Manager     |
+| `${file:/path}` | 文件内容，已修剪               | Kubernetes Secret 卷挂载、Vault Agent、SOPS |
 
-## Required sections
+<h2 id="required-sections">
+  必需部分
+</h2>
 
-### `listen`
+<h3 id="listen">
+  `listen`
+</h3>
 
-The `listen` block controls where the gateway serves: the bind address and port, the externally visible origin, and optional TLS termination.
+`listen` 块控制网关服务的位置：绑定地址和端口、外部可见的源和可选的 TLS 终止。
 
-| Field                  | Required       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ---------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `host`                 | No             | Bind address. Default `0.0.0.0`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `port`                 | No             | Bind port. Default `8080`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `public_url`           | Behind a proxy | The externally visible `https://` origin, used to build the IdP `redirect_uri` and discovery metadata. Required behind any TLS-terminating proxy such as an ALB, Ingress, or Cloud Run, because the gateway doesn't trust `X-Forwarded-*` headers when constructing its own origin; they are client-spoofable. `trusted_proxies` below governs client-IP resolution only. Also required to enable [telemetry](#telemetry), because the gateway builds the OTLP endpoint it pushes to clients from this URL. |
-| `tls.cert` / `tls.key` | No             | PEM paths if the gateway terminates TLS itself                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `trusted_proxies`      | No             | CIDRs or IPs of load balancers in front of the gateway. When set, the gateway trusts `X-Forwarded-For` only from these peers and records the real client IP for per-IP rate limiting and audit. Equivalent to nginx `set_real_ip_from`.                                                                                                                                                                                                                                                                     |
+| 字段                     | 必需    | 描述                                                                                                                                                                                                                                     |
+| ---------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `host`                 | 否     | 绑定地址。默认 `0.0.0.0`。                                                                                                                                                                                                                     |
+| `port`                 | 否     | 绑定端口。默认 `8080`。                                                                                                                                                                                                                        |
+| `public_url`           | 在代理后面 | 外部可见的 `https://` 源，用于构建 IdP `redirect_uri` 和发现元数据。在任何 TLS 终止代理（如 ALB、Ingress 或 Cloud Run）后面是必需的，因为网关在构建自己的源时不信任 `X-Forwarded-*` 头；它们是客户端可欺骗的。下面的 `trusted_proxies` 仅控制客户端 IP 解析。启用[遥测](#telemetry)也是必需的，因为网关从此 URL 构建它推送给客户端的 OTLP 端点。 |
+| `tls.cert` / `tls.key` | 否     | 如果网关自己终止 TLS，则为 PEM 路径                                                                                                                                                                                                                 |
+| `trusted_proxies`      | 否     | 网关前面的负载均衡器的 CIDR 或 IP。设置时，网关仅从这些对等体信任 `X-Forwarded-For`，并记录真实客户端 IP 用于每 IP 速率限制和审计。等同于 nginx `set_real_ip_from`。                                                                                                                       |
 
-### `oidc`
+<h3 id="oidc">
+  `oidc`
+</h3>
 
-The `oidc` block connects the gateway to your identity provider and decides who can sign in. It names the issuer and OAuth client, maps the claims that carry email and groups, and restricts sign-in by email domain or group.
+`oidc` 块将网关连接到你的身份提供者，并决定谁可以登录。它命名发行者和 OAuth 客户端，映射携带电子邮件和组的声明，并按电子邮件域或组限制登录。
 
-OpenID Connect (OIDC) is the SSO protocol the gateway uses with your identity provider; see [Identity provider setup](/docs/en/claude-apps-gateway-deploy#identity-provider-setup) for what to register on the IdP side.
+OpenID Connect (OIDC) 是网关与你的身份提供者一起使用的 SSO 协议；有关在 IdP 端注册的内容，请参阅[身份提供者设置](/docs/zh-CN/claude-apps-gateway-deploy#identity-provider-setup)。
 
-| Field                           | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `issuer`                        | Yes      | OIDC discovery base. Must serve discovery at `/.well-known/openid-configuration`. Use HTTPS in production; the gateway accepts an `http://` issuer. A loopback issuer such as `http://localhost:8081` is rejected by the [SSRF guard](/docs/en/claude-apps-gateway-deploy#threat-model-summary) unless `CLAUDE_GATEWAY_ALLOW_LOOPBACK=1` is set in the gateway's environment.                                                                                                                                                                                                                             |
-| `client_id` / `client_secret`   | Yes      | From your OAuth client registration                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `allowed_email_domains`         | No       | Reject id\_tokens whose `email` claim isn't in one of these domains, case-insensitive. Defense-in-depth against multi-tenant IdP misconfiguration. Independent of this setting, an id\_token whose `email_verified` claim is explicitly `false` is always rejected.                                                                                                                                                                                                                                                                                                                                  |
-| `allowed_groups`                | No       | Restrict sign-in to members of these IdP groups, matched against `groups_claim`. A user in an allowed email domain but in none of these groups is rejected. Requires the IdP to emit the groups claim.                                                                                                                                                                                                                                                                                                                                                                                               |
-| `groups_claim`                  | No       | Which id\_token claim carries group membership. Default `groups`. Microsoft Entra emits app roles under `roles`. Accepts a flat key or an RFC 6901 JSON Pointer such as `/resource_access/gateway/roles` for nested claims.                                                                                                                                                                                                                                                                                                                                                                          |
-| `google_groups`                 | No       | Look up the signed-in user's groups through the Google Workspace Admin SDK Directory API, because Google's id\_token carries no groups claim. Set `service_account_json_path` to a service-account key file with domain-wide delegation on the `https://www.googleapis.com/auth/admin.directory.group.readonly` scope, and `admin_email` to a Workspace administrator the service account impersonates; the Directory API requires a real admin subject. Each user's group email addresses become their groups claim, so `allowed_groups` and `managed.policies.match.groups` match on group emails. |
-| `email_claim`                   | No       | Which id\_token claim carries the user's email. Default `email`. Some IdPs, such as ADFS and Entra B2C, emit `upn` or `preferred_username` instead. Accepts a flat key, a JSON Pointer, or a list of fallback keys where the first present key is used.                                                                                                                                                                                                                                                                                                                                              |
-| `scopes`                        | No       | Full override of the OIDC scopes the gateway requests. Default `[openid, profile, email, offline_access]`. Set when your IdP rejects scopes it doesn't recognize, or requires a custom scope to emit groups or email. Must include `openid`. Dropping `offline_access` disables refresh tokens, so developers re-run the browser login every `session.ttl_hours`. See [Identity provider setup](/docs/en/claude-apps-gateway-deploy#identity-provider-setup) for per-IdP scope recipes such as Google's refresh-token flow.                                                                               |
-| `extra_auth_params`             | No       | Extra query parameters appended to the IdP authorization request, verbatim. This is the override mechanism for IdP-specific behavior, such as `access_type: offline` for Google refresh tokens, `domain_hint` for some Entra tenants, or `acr_values` for step-up flows. Cannot override the gateway-managed protocol params: `state`, `nonce`, `redirect_uri`, PKCE, `scope`, `response_type`, `response_mode`, and `client_id`.                                                                                                                                                                    |
-| `userinfo_fallback`             | No       | When the id\_token omits email or groups, fetch them from `/userinfo`. Needed for Keycloak lightweight access tokens, the Okta org server, and ADFS minimal tokens. The id\_token stays authoritative; userinfo only fills gaps. Default `false`.                                                                                                                                                                                                                                                                                                                                                    |
-| `use_pkce`                      | No       | Send a PKCE (S256) challenge on the authorization request. Default `true`. Set `false` only if your IdP rejects PKCE for this confidential client.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `clock_skew_seconds`            | No       | Tolerate clock drift when validating id\_token time claims. Default `0`, which is strict. Raise if you see "token expired / not yet valid" errors right after sign-in due to host/IdP clock skew.                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `token_endpoint_auth_method`    | No       | Override the token-endpoint auth method. Accepts `client_secret_basic` or `client_secret_post`. Auto-negotiated by default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `id_token_signed_response_alg`  | No       | Expected id\_token signing algorithm. Default `RS256`. Set for IdPs that sign with ES256, PS256, or EdDSA.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `additional_authorized_parties` | No       | Extra `azp` values to accept beyond `client_id`, for Keycloak broker and token-exchange flows                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `discovery_url`                 | No       | Fetch the discovery document from this URL instead of deriving it from `issuer`, for IdPs behind a proxy that rewrites the issuer host. The path must contain `/.well-known/`.                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `form_action_origins`           | No       | Additional origins for the `/device` page's `Content-Security-Policy: form-action` directive. The gateway already allows `'self'` and the discovered `authorization_endpoint` origin, but Chrome enforces `form-action` against the entire redirect chain. If your IdP redirects through a second host, such as Azure AD federated to ADFS, hub-spoke Okta, or a corporate SSO interceptor, list every origin the authorization request may redirect through.                                                                                                                                        |
-| `ca_cert_pem`                   | No       | PEM CA cert that replaces the system trust store for IdP requests only. Use for Keycloak or Dex behind corporate PKI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 字段                              | 必需 | 描述                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------- | -- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `issuer`                        | 是  | OIDC 发现基础。必须在 `/.well-known/openid-configuration` 提供发现。在生产中使用 HTTPS；网关接受 `http://` 发行者。环回发行者（如 `http://localhost:8081`）被[SSRF 防护](/docs/zh-CN/claude-apps-gateway-deploy#threat-model-summary)拒绝，除非在网关的环境中设置了 `CLAUDE_GATEWAY_ALLOW_LOOPBACK=1`。                                                                                                                      |
+| `client_id` / `client_secret`   | 是  | 来自你的 OAuth 客户端注册                                                                                                                                                                                                                                                                                                                                                 |
+| `allowed_email_domains`         | 否  | 拒绝其 `email` 声明不在这些域之一中的 id\_token，不区分大小写。针对多租户 IdP 配置错误的纵深防御。独立于此设置，其 `email_verified` 声明明确为 `false` 的 id\_token 总是被拒绝。                                                                                                                                                                                                                                          |
+| `allowed_groups`                | 否  | 限制登录到这些 IdP 组的成员，与 `groups_claim` 匹配。允许的电子邮件域中但不在这些组中的用户被拒绝。需要 IdP 发出组声明。                                                                                                                                                                                                                                                                                        |
+| `groups_claim`                  | 否  | 哪个 id\_token 声明携带组成员身份。默认 `groups`。Microsoft Entra 在 `roles` 下发出应用角色。接受平面键或 RFC 6901 JSON 指针，如 `/resource_access/gateway/roles` 用于嵌套声明。                                                                                                                                                                                                                          |
+| `google_groups`                 | 否  | 通过 Google Workspace Admin SDK Directory API 查找已登录用户的组，因为 Google 的 id\_token 不携带组声明。将 `service_account_json_path` 设置为具有 `https://www.googleapis.com/auth/admin.directory.group.readonly` 范围的域范围委派的服务帐户密钥文件，并将 `admin_email` 设置为服务帐户模拟的 Workspace 管理员；Directory API 需要真实的管理员主体。每个用户的组电子邮件地址成为他们的组声明，因此 `allowed_groups` 和 `managed.policies.match.groups` 匹配组电子邮件。 |
+| `email_claim`                   | 否  | 哪个 id\_token 声明携带用户的电子邮件。默认 `email`。某些 IdP（如 ADFS 和 Entra B2C）改为发出 `upn` 或 `preferred_username`。接受平面键、JSON 指针或回退键列表，其中使用第一个存在的键。                                                                                                                                                                                                                                 |
+| `scopes`                        | 否  | 网关请求的 OIDC 范围的完全覆盖。默认 `[openid, profile, email, offline_access]`。当你的 IdP 拒绝它不识别的范围或需要自定义范围来发出组或电子邮件时设置。必须包括 `openid`。删除 `offline_access` 会禁用刷新令牌，因此开发者每 `session.ttl_hours` 重新运行浏览器登录。有关每个 IdP 范围配方（如 Google 的刷新令牌流），请参阅[身份提供者设置](/docs/zh-CN/claude-apps-gateway-deploy#identity-provider-setup)。                                                                    |
+| `extra_auth_params`             | 否  | 附加到 IdP 授权请求的额外查询参数，逐字。这是 IdP 特定行为的覆盖机制，如 Google 刷新令牌的 `access_type: offline`、某些 Entra 租户的 `domain_hint` 或分步流的 `acr_values`。不能覆盖网关管理的协议参数：`state`、`nonce`、`redirect_uri`、PKCE、`scope`、`response_type`、`response_mode` 和 `client_id`。                                                                                                                             |
+| `userinfo_fallback`             | 否  | 当 id\_token 省略电子邮件或组时，从 `/userinfo` 获取它们。Keycloak 轻量级访问令牌、Okta 组织服务器和 ADFS 最小令牌需要。id\_token 保持权威；userinfo 仅填补空白。默认 `false`。                                                                                                                                                                                                                                      |
+| `use_pkce`                      | 否  | 在授权请求上发送 PKCE (S256) 质询。默认 `true`。仅当你的 IdP 为此机密客户端拒绝 PKCE 时设置 `false`。                                                                                                                                                                                                                                                                                           |
+| `clock_skew_seconds`            | 否  | 验证 id\_token 时间声明时容忍时钟漂移。默认 `0`，这是严格的。如果由于主机/IdP 时钟偏差在登录后立即看到"令牌过期/尚未有效"错误，请提高。                                                                                                                                                                                                                                                                                  |
+| `token_endpoint_auth_method`    | 否  | 覆盖令牌端点身份验证方法。接受 `client_secret_basic` 或 `client_secret_post`。默认自动协商。                                                                                                                                                                                                                                                                                             |
+| `id_token_signed_response_alg`  | 否  | 预期的 id\_token 签名算法。默认 `RS256`。为使用 ES256、PS256 或 EdDSA 签名的 IdP 设置。                                                                                                                                                                                                                                                                                                |
+| `additional_authorized_parties` | 否  | 除 `client_id` 外要接受的额外 `azp` 值，用于 Keycloak 代理和令牌交换流                                                                                                                                                                                                                                                                                                               |
+| `discovery_url`                 | 否  | 从此 URL 而不是从 `issuer` 派生发现文档，用于代理后面重写发行者主机的 IdP。路径必须包含 `/.well-known/`。                                                                                                                                                                                                                                                                                           |
+| `form_action_origins`           | 否  | `/device` 页面的 `Content-Security-Policy: form-action` 指令的其他源。网关已允许 `'self'` 和发现的 `authorization_endpoint` 源，但 Chrome 对整个重定向链强制执行 `form-action`。如果你的 IdP 通过第二个主机重定向，如 Azure AD 联合到 ADFS、中心辐射 Okta 或公司 SSO 拦截器，列出授权请求可能重定向通过的每个源。                                                                                                                                   |
+| `ca_cert_pem`                   | 否  | PEM CA 证书，替换 IdP 请求的系统信任存储。用于公司 PKI 后面的 Keycloak 或 Dex。                                                                                                                                                                                                                                                                                                          |
 
-### `session`
+<h3 id="session">
+  `session`
+</h3>
 
-The `session` block shapes the bearer tokens the gateway mints after sign-in: the secret that signs them and how long they live.
+`session` 块塑造网关在登录后铸造的持有者令牌：签署它们的密钥和它们的生命周期。
 
-| Field        | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jwt_secret` | Yes      | At least 32 bytes of entropy, for example from `openssl rand -base64 32`. Signs the gateway's HS256 bearer tokens. Accepts a single string or an array for rotation: index 0 signs and all entries verify. To rotate, prepend a new secret, wait `ttl_hours`, then drop the old one.                                                                                                                                  |
-| `ttl_hours`  | No       | Gateway bearer token lifetime. Default `1`. The CLI silently refreshes before expiry when the IdP issues refresh tokens. A shorter lifetime deprovisions faster; a longer one makes fewer IdP round-trips. If your IdP can't issue refresh tokens because `offline_access` is unavailable, there is no silent refresh, so raise this to `8` or `12` to avoid sending developers back to the browser login every hour. |
+| 字段           | 必需 | 描述                                                                                                                                                                   |
+| ------------ | -- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jwt_secret` | 是  | 至少 32 字节的熵，例如来自 `openssl rand -base64 32`。签署网关的 HS256 持有者令牌。接受单个字符串或用于轮换的数组：索引 0 签署，所有条目验证。要轮换，前置新密钥，等待 `ttl_hours`，然后删除旧密钥。                                         |
+| `ttl_hours`  | 否  | 网关持有者令牌生命周期。默认 `1`。当 IdP 发出刷新令牌时，CLI 在过期前静默刷新。较短的生命周期更快地取消配置；较长的生命周期减少 IdP 往返。如果你的 IdP 因为 `offline_access` 不可用而无法发出刷新令牌，则没有静默刷新，因此提高到 `8` 或 `12` 以避免每小时将开发者发送回浏览器登录。 |
 
-### `store`
+<h3 id="store">
+  `store`
+</h3>
 
-The `store` block points the gateway at its PostgreSQL database, which holds device grants and rate-limit counters.
+`store` 块指向网关的 PostgreSQL 数据库，该数据库保存设备授权和速率限制计数器。
 
-| Field             | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `postgres_url`    | Yes      | `postgres://` or `postgresql://` URL. Required: the device-grant rendezvous, where the browser callback writes and the polling CLI reads, needs cross-replica state. The gateway runs its own schema migrations at boot, so the role needs `CREATE TABLE` on the target schema. If your security policy prohibits DDL from the application role, run the migrations with an admin role, initially and again whenever a new release ships migrations, and grant the app role `SELECT, INSERT, UPDATE, DELETE` on the gateway's tables. See [Upgrades](/docs/en/claude-apps-gateway-deploy#upgrades) and [Postgres](/docs/en/claude-apps-gateway-deploy#postgres). |
-| `username`        | No       | Overrides the user in `postgres_url`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `password`        | No       | Database credential. Set it here rather than in `postgres_url` so the credential stays out of the URL. Accepts any characters and takes precedence over URL credentials.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `max_connections` | No       | Postgres connection-pool size per replica. Default `5`, which is conservative and friendly to shared databases. With [spend limits](#admin) enabled, the hot path does a few operations per inference request, so raise it for a dedicated database under load, and keep replicas × this below the database's `max_connections`.                                                                                                                                                                                                                                                                                                                       |
+| 字段                | 必需 | 描述                                                                                                                                                                                                                                                                                                                                    |
+| ----------------- | -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `postgres_url`    | 是  | `postgres://` 或 `postgresql://` URL。必需：设备授权会合点，浏览器回调写入，轮询 CLI 读取，需要跨副本状态。网关在启动时运行自己的模式迁移，因此角色需要在目标模式上具有 `CREATE TABLE` 权限。如果你的安全策略禁止应用角色的 DDL，使用管理员角色运行迁移，最初和每当新版本发布迁移时，并授予应用角色对网关表的 `SELECT, INSERT, UPDATE, DELETE` 权限。请参阅[升级](/docs/zh-CN/claude-apps-gateway-deploy#upgrades)和 [Postgres](/docs/zh-CN/claude-apps-gateway-deploy#postgres)。 |
+| `username`        | 否  | 覆盖 `postgres_url` 中的用户                                                                                                                                                                                                                                                                                                                |
+| `password`        | 否  | 数据库凭证。在此处设置而不是在 `postgres_url` 中，以便凭证保持在 URL 之外。接受任何字符并优先于 URL 凭证。                                                                                                                                                                                                                                                                    |
+| `max_connections` | 否  | 每个副本的 Postgres 连接池大小。默认 `5`，这是保守的，对共享数据库友好。启用[支出限制](#admin)后，热路径在每个推理请求中执行几个操作，因此在负载下为专用数据库提高它，并保持副本 × 这个值低于数据库的 `max_connections`。                                                                                                                                                                                                   |
 
-For local development, point `postgres_url` at a throwaway Postgres container, for example `docker run --rm -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust postgres`.
+对于本地开发，将 `postgres_url` 指向一个一次性 Postgres 容器，例如 `docker run --rm -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust postgres`。
 
-### `upstreams`
+<h3 id="upstreams">
+  `upstreams`
+</h3>
 
-`upstreams` is an ordered list. The gateway forwards inference to the first upstream that resolves the requested model. On `5xx`, `429`, `401`, `403`, `404`, or timeout it fails over to the next; other `4xx` doesn't, because those errors are attributable to the request rather than the upstream. A `401` or `403` means the gateway's own credential failed against that upstream, and a `404` means that upstream doesn't serve the requested model, so a later upstream in the list still can.
+`upstreams` 是一个有序列表。网关将推理转发到解析请求的模型的第一个上游。在 `5xx`、`429`、`401`、`403`、`404` 或超时时，它故障转移到下一个；其他 `4xx` 不会，因为这些错误归因于请求而不是上游。`401` 或 `403` 意味着网关自己的凭证对该上游失败，`404` 意味着该上游不服务请求的模型，因此列表中的后续上游仍然可以。
 
-Failover on `404` requires gateway v2.1.198 or later. Earlier releases returned the first `404` to the client even when a later upstream in the list served the model.
+在 `404` 上故障转移需要网关 v2.1.198 或更高版本。早期版本即使列表中的后续上游服务该模型，也会将第一个 `404` 返回给客户端。
 
-Multiple upstreams of the same provider must set a distinct `name:`.
+Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 客户端在启动时构建一次，它们的 SDK 在内部刷新凭证，因此轮换云凭证不需要重启。静态 Anthropic API 密钥和持有者在启动时读取；请参阅 [Anthropic API](#anthropic-api)。
 
-Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, and Microsoft Foundry clients are built once at startup, and their SDKs refresh credentials internally, so rotating cloud credentials doesn't require a restart. Static Anthropic API keys and bearers are read at startup; see [Anthropic API](#anthropic-api).
+<h4 id="anthropic-api">
+  Anthropic API
+</h4>
 
-#### Anthropic API
-
-The minimal Anthropic upstream is an API key from the [Claude Console](https://platform.claude.com):
+最小的 Anthropic 上游是来自 [Claude 控制台](https://platform.claude.com) 的 API 密钥：
 
 ```yaml theme={null}
 upstreams:
   - provider: anthropic
     auth:
       api_key: ${ANTHROPIC_API_KEY}
-    # OR an OAuth bearer (e.g. a Workload-Identity-Federation-exchanged token):
+    # 或 OAuth 持有者（例如工作负载身份联合交换的令牌）：
     #   oauth_token: ${file:/var/run/secrets/anthropic-oauth-token}
-    # base_url: https://api.anthropic.com   # default; override for a forward proxy
+    # base_url: https://api.anthropic.com   # 默认；为转发代理覆盖
 ```
 
-The two credential forms differ in the header they send:
+两种凭证形式在它们发送的头中有所不同：
 
-* **`api_key`**: sends `x-api-key`. Rotate it in the Claude Console and update the env var.
-* **`oauth_token`**: sends `Authorization: Bearer`. Use the bearer form when your org issues short-lived tokens instead of long-lived API keys. The bearer is read once at startup, so refresh by remounting the secret and restarting.
+* **`api_key`**：发送 `x-api-key`。在 Claude 控制台中轮换它并更新环境变量。
+* **`oauth_token`**：发送 `Authorization: Bearer`。当你的组织发出短期令牌而不是长期 API 密钥时使用持有者形式。持有者在启动时读取一次，因此通过重新挂载密钥和重启来刷新。
 
-Instead of a static key or bearer, you can use Workload Identity Federation. Create a federation rule by following the [Workload Identity Federation guide](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation), then mount your workload's OIDC JWT as a file, such as a Kubernetes projected service-account token or a CI platform's id-token. The gateway exchanges the JWT for a short-lived bearer and refreshes it automatically. The token file is re-read on every exchange, so rotated projected tokens are picked up without a restart.
+代替静态密钥或持有者，你可以使用工作负载身份联合。按照[工作负载身份联合指南](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation)创建联合规则，然后将你的工作负载的 OIDC JWT 挂载为文件，如 Kubernetes 投影服务帐户令牌或 CI 平台的 id-token。网关将 JWT 交换为短期持有者并自动刷新它。令牌文件在每次交换时重新读取，因此轮换的投影令牌被拾取而无需重启。
 
 ```yaml theme={null}
 upstreams:
@@ -145,49 +161,53 @@ upstreams:
       federation_rule_id: ${ANTHROPIC_FEDERATION_RULE_ID}
       organization_id: ${ANTHROPIC_ORGANIZATION_ID}
       identity_token_file: /var/run/secrets/anthropic/id-token
-      # workspace_id: wrkspc_...       # required if the rule covers >1 workspace
-      # service_account_id: svac_...   # optional expected-target check
+      # workspace_id: wrkspc_...       # 如果规则覆盖 >1 个工作区，则必需
+      # service_account_id: svac_...   # 可选的预期目标检查
 ```
 
-#### Amazon Bedrock
+<h4 id="amazon-bedrock">
+  Amazon Bedrock
+</h4>
 
-For the client-side Amazon Bedrock deployment that the gateway replaces or fronts, see [Claude Code on Amazon Bedrock](/docs/en/amazon-bedrock). The gateway-side upstream:
+对于网关替换或前置的客户端 Bedrock 部署，请参阅 [Amazon Bedrock 上的 Claude Code](/docs/zh-CN/amazon-bedrock)。网关端上游：
 
 ```yaml theme={null}
 upstreams:
   - provider: bedrock
     region: us-east-1
-    auth: {}                           # preferred: AWS default credential chain
-    # OR explicit credentials:
+    auth: {}                           # 首选：AWS 默认凭证链
+    # 或显式凭证：
     # auth:
     #   aws_access_key_id: ${AWS_AKID}
     #   aws_secret_access_key: ${AWS_SK}
     #   aws_session_token: ${AWS_ST}
-    # OR a Bedrock API bearer token:
+    # 或 Bedrock API 持有者令牌：
     # auth:
     #   aws_bearer_token: ${AWS_BEARER_TOKEN}
-    # Override the bedrock-runtime endpoint for FIPS or VPC-endpoint deployments:
+    # 为 FIPS 或 VPC 端点部署覆盖 bedrock-runtime 端点：
     # base_url: https://bedrock-runtime-fips.us-east-1.amazonaws.com
 ```
 
-An empty `auth` block uses the AWS SDK's default credential chain: env vars, `~/.aws/credentials`, ECS task role, EC2 instance metadata, or IRSA on EKS. In production, give the gateway pod an IAM role instead of embedding static keys in a container image.
+空的 `auth` 块使用 AWS SDK 的默认凭证链：环境变量、`~/.aws/credentials`、ECS 任务角色、EC2 实例元数据或 EKS 上的 IRSA。在生产中，给网关 pod 一个 IAM 角色，而不是在容器镜像中嵌入静态密钥。
 
-Explicit credentials must be complete: the gateway fails at boot when `aws_access_key_id` and `aws_secret_access_key` aren't set together, or when `aws_session_token` is set without them. Before v2.1.207, a partial `auth:` block passed validation.
+显式凭证必须完整：当 `aws_access_key_id` 和 `aws_secret_access_key` 未一起设置时，或当 `aws_session_token` 在没有它们的情况下设置时，网关在启动时失败。在 v2.1.207 之前，部分 `auth:` 块通过验证。
 
-| Setup           | How                                                                                                                                                                                                                                                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| IAM permissions | Grant the gateway's principal `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` on both the inference-profile ARNs and the underlying foundation-model ARNs. For the built-in catalog in US regions: `arn:aws:bedrock:<region>:<account>:inference-profile/us.anthropic.*` and `arn:aws:bedrock:*::foundation-model/anthropic.*`. |
-| Model access    | In the Amazon Bedrock console, per region, request and enable model access for the Claude models you want. Cross-region inference profiles (`us.anthropic.*`) require model access in each region the profile spans.                                                                                                                              |
-| EKS (IRSA)      | Create an IAM role with the policy above and a trust policy for your cluster's OIDC provider scoped to the gateway's service account. Annotate the service account with `eks.amazonaws.com/role-arn: arn:aws:iam::<acct>:role/claude-gateway`. `auth: {}` picks it up.                                                                            |
-| ECS / EC2       | Attach the IAM role to the task definition or instance profile. `auth: {}` picks it up.                                                                                                                                                                                                                                                           |
-| Anywhere else   | Pass credentials via the `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` env vars, or set them explicitly in `auth:` with `${VAR}` expansion                                                                                                                                                                                |
-| Region          | `region:` is the API endpoint region. Cross-region inference profiles route across the geo (US, EU, APAC) regardless of which one you pick. For non-US regions or provisioned-throughput ARNs, add a [`models:`](#models) block with the right per-upstream IDs.                                                                                  |
+| 设置         | 如何                                                                                                                                                                                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IAM 权限     | 授予网关的主体 `bedrock:InvokeModel` 和 `bedrock:InvokeModelWithResponseStream` 在推理配置文件 ARN 和底层基础模型 ARN 上。对于美国地区的内置目录：`arn:aws:bedrock:<region>:<account>:inference-profile/us.anthropic.*` 和 `arn:aws:bedrock:*::foundation-model/anthropic.*`。 |
+| 模型访问       | 在 Bedrock 控制台中，按地区，请求并启用你想要的 Claude 模型的模型访问。跨地区推理配置文件（`us.anthropic.*`）需要在配置文件跨越的每个地区中进行模型访问。                                                                                                                                            |
+| EKS (IRSA) | 创建一个具有上述策略的 IAM 角色和针对你的集群的 OIDC 提供者的信任策略，范围限定为网关的服务帐户。使用 `eks.amazonaws.com/role-arn: arn:aws:iam::<acct>:role/claude-gateway` 注释服务帐户。`auth: {}` 拾取它。                                                                                    |
+| ECS / EC2  | 将 IAM 角色附加到任务定义或实例配置文件。`auth: {}` 拾取它。                                                                                                                                                                                                   |
+| 其他任何地方     | 通过 `AWS_ACCESS_KEY_ID`、`AWS_SECRET_ACCESS_KEY` 和 `AWS_SESSION_TOKEN` 环境变量传递凭证，或在 `auth:` 中使用 `${VAR}` 扩展显式设置它们                                                                                                                           |
+| 地区         | `region:` 是 API 端点地区。跨地区推理配置文件跨地理位置（美国、欧盟、亚太）路由，无论你选择哪一个。对于非美国地区或预配吞吐量 ARN，添加一个[`models:`](#models)块，其中包含正确的每上游 ID。                                                                                                                      |
 
-#### Claude Platform on AWS
+<h4 id="claude-platform-on-aws">
+  Claude Platform on AWS
+</h4>
 
-Claude Platform on AWS serves the first-party Anthropic API on AWS infrastructure at `aws-external-anthropic.<region>.api.aws`. It uses first-party model IDs, honors `anthropic-beta` headers as sent, and serves `count_tokens`, so none of the Bedrock-specific translation applies. The `anthropicAws` provider requires Claude Code v2.1.198 or later; earlier gateway releases reject it at boot.
+Claude Platform on AWS 在 `aws-external-anthropic.<region>.api.aws` 上的 AWS 基础设施上服务第一方 Anthropic API。它使用第一方模型 ID，按发送方式尊重 `anthropic-beta` 头，并服务 `count_tokens`，因此 Bedrock 特定的翻译都不适用。`anthropicAws` 提供者需要 Claude Code v2.1.198 或更高版本；早期网关版本在启动时拒绝它。
 
-For the client-side deployment of the same platform, see [Claude Code on Claude Platform on AWS](/docs/en/claude-platform-on-aws). The gateway-side upstream:
+对于同一平台的客户端部署，请参阅 [Claude Platform on AWS 上的 Claude Code](/docs/zh-CN/claude-platform-on-aws)。网关端上游：
 
 ```yaml theme={null}
 upstreams:
@@ -195,120 +215,123 @@ upstreams:
     region: us-east-1
     workspace_id: wrkspc_...
     auth:
-      api_key: ${ANTHROPIC_AWS_API_KEY}   # sent as x-api-key
-    # OR SigV4 via the AWS default credential chain:
+      api_key: ${ANTHROPIC_AWS_API_KEY}   # 作为 x-api-key 发送
+    # 或通过 AWS 默认凭证链的 SigV4：
     # auth: {}
-    # OR explicit SigV4 credentials:
+    # 或显式 SigV4 凭证：
     # auth:
     #   aws_access_key_id: ${AWS_ACCESS_KEY_ID}
     #   aws_secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-    # Override the derived endpoint:
+    # 覆盖派生的端点：
     # base_url: https://aws-external-anthropic.us-east-1.api.aws
 ```
 
-The platform runs in a separate AWS account from Amazon Bedrock and signs SigV4 requests for its own service name, `aws-external-anthropic`, so a Bedrock-scoped IAM role doesn't authorize it. An API key in `auth.api_key` takes precedence when SigV4 credentials are also set. An empty `auth` block uses the AWS SDK's default credential chain, the same chain the [Amazon Bedrock](#amazon-bedrock) upstream uses.
+该平台在与 Amazon Bedrock 不同的 AWS 账户中运行，并为其自己的服务名称 `aws-external-anthropic` 签署 SigV4 请求，因此 Bedrock 范围的 IAM 角色不授权它。`auth.api_key` 中的 API 密钥在同时设置 SigV4 凭证时优先。空的 `auth` 块使用 AWS SDK 的默认凭证链，与 [Amazon Bedrock](#amazon-bedrock) 上游使用的链相同。
 
-| Field                                                   | Required | Description                                                                                                                                        |
-| ------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `region`                                                | Yes      | AWS region, lowercase letters, digits, and hyphens. The gateway derives the endpoint from it as `https://aws-external-anthropic.<region>.api.aws`. |
-| `workspace_id`                                          | Yes      | Sent as a header on every request; the platform requires it                                                                                        |
-| `auth.api_key`                                          | No       | API key for the platform, sent as `x-api-key`. Not a bearer token: the two auth modes are an API key or SigV4.                                     |
-| `auth.aws_access_key_id` / `auth.aws_secret_access_key` | No       | Explicit SigV4 credentials. Setting one without the other fails at boot. `auth.aws_session_token` is accepted alongside them.                      |
-| `base_url`                                              | No       | Override the derived endpoint                                                                                                                      |
+| 字段                                                      | 必需 | 描述                                                                              |
+| ------------------------------------------------------- | -- | ------------------------------------------------------------------------------- |
+| `region`                                                | 是  | AWS 地区，小写字母、数字和连字符。网关从它派生端点为 `https://aws-external-anthropic.<region>.api.aws`。 |
+| `workspace_id`                                          | 是  | 在每个请求上作为头发送；平台需要它                                                               |
+| `auth.api_key`                                          | 否  | 平台的 API 密钥，作为 `x-api-key` 发送。不是持有者令牌：两种身份验证模式是 API 密钥或 SigV4。                   |
+| `auth.aws_access_key_id` / `auth.aws_secret_access_key` | 否  | 显式 SigV4 凭证。设置其中一个而不设置另一个在启动时失败。`auth.aws_session_token` 与它们一起被接受。              |
+| `base_url`                                              | 否  | 覆盖派生的端点                                                                         |
 
-Because the platform resolves first-party model IDs, the built-in catalog routes to it with no [`models:`](#models) block. When you curate a `models:` list, key the entry `anthropicAws:` with the first-party ID.
+因为平台解析第一方模型 ID，内置目录路由到它，无需 [`models:`](#models) 块。当你策划 `models:` 列表时，使用第一方 ID 键入 `anthropicAws:` 条目。
 
-#### Google Cloud Agent Platform
+<h4 id="google-cloud-agent-platform">
+  Google Cloud Agent Platform
+</h4>
 
-For the equivalent client-side setup, see [Claude Code on Google Cloud](/docs/en/google-vertex-ai). The gateway-side upstream:
+对于等效的客户端设置，请参阅 [Google Cloud 上的 Claude Code](/docs/zh-CN/google-vertex-ai)。网关端上游：
 
 ```yaml theme={null}
 upstreams:
   - provider: vertex
     region: us-east5
     project_id: example-prod
-    auth: {}                           # preferred: Application Default Credentials
-    # OR a service account key file:
+    auth: {}                           # 首选：应用默认凭证
+    # 或服务帐户密钥文件：
     # auth: { service_account_json: /secrets/sa.json }
-    # Override the aiplatform endpoint for Private Service Connect:
+    # 为私有服务连接覆盖 aiplatform 端点：
     # base_url: https://us-east5-aiplatform.p.googleapis.com
 ```
 
-An empty `auth` block uses Application Default Credentials: `GOOGLE_APPLICATION_CREDENTIALS`, GCE metadata, or GKE Workload Identity. Service-account JSON key files are supported but discouraged; use Workload Identity or attach a service account to the GCE or Cloud Run instance.
+空的 `auth` 块使用应用默认凭证：`GOOGLE_APPLICATION_CREDENTIALS`、GCE 元数据或 GKE 工作负载身份。支持服务帐户 JSON 密钥文件但不推荐；使用工作负载身份或将服务帐户附加到 GCE 或 Cloud Run 实例。
 
-Set `region: global` to use the [global endpoint for Google Cloud's Agent Platform](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations) instead of a regional one. Google then routes each request to an available region, so you don't track per-region model availability. Setting a specific region pins every request to it.
+设置 `region: global` 以使用 [Agent Platform 的全局端点](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations)而不是区域端点。Google 然后将每个请求路由到可用地区，因此你不跟踪每地区模型可用性。设置特定地区会将每个请求固定到它。
 
-| Setup                   | How                                                                                                                                                                                                       |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| IAM permissions         | Grant the gateway's service account `roles/aiplatform.user` on the project, or a custom role with `aiplatform.endpoints.predict`. Enable Google Cloud's Agent Platform API (`aiplatform.googleapis.com`). |
-| Model access            | In Model Garden, enable the Claude models for your project. They publish to specific regions; check the model card for supported regions.                                                                 |
-| GKE (Workload Identity) | Bind a GCP service account to the gateway's Kubernetes service account and annotate the KSA with `iam.gke.io/gcp-service-account: claude-gateway@<proj>.iam.gserviceaccount.com`. `auth: {}` picks it up. |
-| Cloud Run / GCE         | Set the service's service account to one with `roles/aiplatform.user`. `auth: {}` picks it up.                                                                                                            |
-| Anywhere else           | `auth: { service_account_json: /secrets/sa.json }`, the path to a JSON key file mounted as a secret. The field takes a file path, not the key contents, so no `${file:…}` expansion is involved.          |
+| 设置              | 如何                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| IAM 权限          | 授予网关的服务帐户项目上的 `roles/aiplatform.user`，或具有 `aiplatform.endpoints.predict` 的自定义角色。启用 Agent Platform API (`aiplatform.googleapis.com`)。        |
+| 模型访问            | 在 Model Garden 中，为你的项目启用 Claude 模型。它们发布到特定地区；检查模型卡以了解支持的地区。                                                                                 |
+| GKE (工作负载身份)    | 将 GCP 服务帐户绑定到网关的 Kubernetes 服务帐户，并使用 `iam.gke.io/gcp-service-account: claude-gateway@<proj>.iam.gserviceaccount.com` 注释 KSA。`auth: {}` 拾取它。 |
+| Cloud Run / GCE | 将服务的服务帐户设置为具有 `roles/aiplatform.user` 的服务帐户。`auth: {}` 拾取它。                                                                                 |
+| 其他任何地方          | `auth: { service_account_json: /secrets/sa.json }`，JSON 密钥文件的路径，挂载为密钥。该字段采用文件路径，而不是密钥内容，因此不涉及 `${file:…}` 扩展。                               |
 
-#### Microsoft Foundry
+<h4 id="microsoft-foundry">
+  Microsoft Foundry
+</h4>
 
-For the client-side Microsoft Foundry deployment, see [Claude Code on Microsoft Foundry](/docs/en/microsoft-foundry). The gateway-side upstream:
+对于客户端 Foundry 部署，请参阅 [Microsoft Foundry 上的 Claude Code](/docs/zh-CN/microsoft-foundry)。网关端上游：
 
 ```yaml theme={null}
 upstreams:
   - provider: foundry
     resource: example-foundry              # https://example-foundry.services.ai.azure.com
-    auth: { use_azure_ad: true }        # preferred: DefaultAzureCredential / Managed Identity
-    # OR an API key:
+    auth: { use_azure_ad: true }        # 首选：DefaultAzureCredential / 托管身份
+    # 或 API 密钥：
     # auth:
     #   api_key: ${FOUNDRY_API_KEY}
 ```
 
-`use_azure_ad: true` resolves through `DefaultAzureCredential`: Managed Identity on AKS, ACI, or App Service; the Azure CLI; or environment credentials. API keys work but are project-wide and don't rotate automatically. Microsoft Foundry's endpoint is derived from `resource:`; set the optional `base_url` to override it for sovereign clouds such as Azure Government.
+`use_azure_ad: true` 通过 `DefaultAzureCredential` 解析：AKS、ACI 或 App Service 上的托管身份；Azure CLI；或环境凭证。API 密钥有效但是项目范围的，不会自动轮换。Foundry 的端点从 `resource:` 派生；设置可选的 `base_url` 以为主权云（如 Azure Government）覆盖它。
 
-| Setup                   | How                                                                                                                                                                                       |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RBAC                    | Grant the gateway's identity `Azure AI User` or `Cognitive Services User` on the Microsoft Foundry resource                                                                               |
-| Deployments             | Microsoft Foundry uses admin-chosen deployment names, not canonical model IDs. Add a [`models:`](#models) block mapping each canonical ID to your deployment name.                        |
-| AKS (workload identity) | Federate a User-Assigned Managed Identity with the cluster's OIDC issuer and bind it to the gateway's service account. `use_azure_ad: true` picks it up via `WorkloadIdentityCredential`. |
-| ACI / App Service       | Enable system-assigned or user-assigned managed identity on the resource. `use_azure_ad: true` picks it up.                                                                               |
-| Anywhere else           | `auth: { api_key: "${FOUNDRY_API_KEY}" }`. Quote `${…}` inside `{ }`.                                                                                                                     |
+| 设置                | 如何                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| RBAC              | 授予网关的身份 Foundry 资源上的 `Azure AI User` 或 `Cognitive Services User`                                  |
+| 部署                | Foundry 使用管理员选择的部署名称，而不是规范模型 ID。添加一个[`models:`](#models)块，将每个规范 ID 映射到你的部署名称。                     |
+| AKS (工作负载身份)      | 将用户分配的托管身份与集群的 OIDC 发行者联合，并将其绑定到网关的服务帐户。`use_azure_ad: true` 通过 `WorkloadIdentityCredential` 拾取它。 |
+| ACI / App Service | 在资源上启用系统分配或用户分配的托管身份。`use_azure_ad: true` 拾取它。                                                    |
+| 其他任何地方            | `auth: { api_key: "${FOUNDRY_API_KEY}" }`。在 `{ }` 内引用 `${…}`。                                     |
 
-#### Multiple upstreams
+<h4 id="multiple-upstreams">
+  多个上游
+</h4>
 
-The same provider can appear more than once with a distinct `name:`. This covers different regions, different accounts via different credential chains, provisioned throughput versus on-demand, and cross-provider fallback.
+同一提供者可以出现多次，具有不同的 `name:`。这涵盖不同的地区、通过不同凭证链的不同帐户、预配吞吐量与按需以及跨提供者故障转移。
 
-The gateway tries upstreams in order. `5xx`, `429`, `401`, `403`, `404`, timeouts, and missing-endpoint (`501`) fail over; other `4xx` doesn't.
+网关按顺序尝试上游。`5xx`、`429`、`401`、`403`、`404`、超时和缺失端点（`501`）故障转移；其他 `4xx` 不会。
 
-`429` is per-upstream capacity, so provisioned-throughput (PT) exhaustion fails over to on-demand. `404` is per-upstream model availability, so an upstream that hasn't enabled a model doesn't block a later upstream that serves it. An upstream that can't resolve the requested model is skipped without a network round-trip.
+`429` 是每上游容量，因此预配吞吐量 (PT) 耗尽故障转移到按需。`404` 是每上游模型可用性，因此未启用模型的上游不会阻止服务它的后续上游。无法解析请求的模型的上游被跳过，无需网络往返。
 
-This example routes a provisioned-throughput Amazon Bedrock allotment first, overflows to on-demand and a second account, and falls back to the Anthropic API last:
+此示例首先路由预配吞吐量 Bedrock 分配，溢出到按需和第二个帐户，最后回退到 Anthropic API：
 
 ```yaml theme={null}
 upstreams:
-  # Primary: provisioned throughput in your home region.
+  # 主要：你的主地区的预配吞吐量。
   - name: bedrock-pt
     provider: bedrock
     region: us-east-1
     auth: {}
-  # Overflow: on-demand cross-region.
+  # 溢出：按需跨地区。
   - name: bedrock-od
     provider: bedrock
     region: us-west-2
     auth: {}
-  # Different account: a separate Bedrock allotment via assumed-role creds.
+  # 不同帐户：通过假定角色凭证的单独 Bedrock 分配。
   - name: bedrock-acct2
     provider: bedrock
     region: us-east-1
     auth:
       aws_access_key_id: ${ACCT2_AKID}
       aws_secret_access_key: ${ACCT2_SK}
-  # Last resort: direct Anthropic API.
+  # 最后的手段：直接 Anthropic API。
   - name: anthropic-fallback
     provider: anthropic
     auth:
       api_key: ${ANTHROPIC_API_KEY}
 
-# Per-upstream model IDs are keyed on the upstream's `name:`; an upstream
-# without a `name:` defaults to its provider string (e.g. `bedrock`). Any
-# upstream not listed for a model is skipped, which is how you route a model
-# to provisioned throughput while everything else stays on-demand.
+# 每上游模型 ID 由上游的 `name:` 键入；没有 `name:` 的上游默认为其提供者字符串（例如 `bedrock`）。任何未为模型列出的上游都被跳过，这是你如何将模型路由到预配吞吐量，同时其他所有内容保持按需的方式。
 models:
   - id: claude-opus-4-8
     label: Claude Opus 4.8
@@ -319,156 +342,168 @@ models:
       anthropic-fallback: claude-opus-4-8
 ```
 
-| Lever                  | How                                                                                                                                                                                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Different regions      | One Amazon Bedrock upstream per region, each with its own `region:`. With [`auto_include_builtin_models: true`](#models) the cross-region inference profiles route automatically; for region-pinned deployments use a `models:` block. |
-| Different accounts     | One Amazon Bedrock upstream per account, each with its own credentials in `auth:`. The default chain (`auth: {}`) uses the pod's identity; for a second account, set explicit credentials or a bearer token.                           |
-| Provisioned throughput | Map the model to the provisioned-throughput ARN in `models:` for that upstream's name. Other upstreams keep the on-demand ID, so PT capacity is exhausted before failing over.                                                         |
-| VPC / FIPS endpoints   | Set `base_url:` on the upstream to your VPC endpoint or FIPS endpoint URL                                                                                                                                                              |
-| Model-scoped routing   | Omit an upstream from a model's `upstream_model:` map and that upstream is skipped for that model. For example, route Opus to provisioned throughput and Sonnet and Haiku to on-demand.                                                |
+| 杠杆            | 如何                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 不同地区          | 每个地区一个 Bedrock 上游，每个都有自己的 `region:`。使用 [`auto_include_builtin_models: true`](#models)，跨地区推理配置文件自动路由；对于地区固定部署，使用 `models:` 块。 |
+| 不同帐户          | 每个帐户一个 Bedrock 上游，每个在 `auth:` 中都有自己的凭证。默认链 (`auth: {}`) 使用 pod 的身份；对于第二个帐户，设置显式凭证或持有者令牌。                                     |
+| 预配吞吐量         | 在该上游名称的 `models:` 中将模型映射到预配吞吐量 ARN。其他上游保持按需 ID，因此 PT 容量在故障转移前耗尽。                                                             |
+| VPC / FIPS 端点 | 在上游上设置 `base_url:` 到你的 VPC 端点或 FIPS 端点 URL                                                                                   |
+| 模型范围路由        | 从模型的 `upstream_model:` 映射中省略上游，该上游对该模型被跳过。例如，将 Opus 路由到预配吞吐量，将 Sonnet 和 Haiku 路由到按需。                                         |
 
-Failing over between cloud providers, or to the direct Anthropic API, changes which agreement, geography, and other terms govern the request.
+在云提供者之间或直接 Anthropic API 之间故障转移会改变哪个协议、地理位置和其他条款管理请求。
 
-The CLI applies the same feature gating to gateways regardless of which upstream serves a given request, so failover doesn't send a body field an upstream would reject.
+CLI 对网关应用相同的功能门控，无论哪个上游服务给定请求，因此故障转移不会发送上游会拒绝的正文字段。
 
-## Optional sections
+<h2 id="optional-sections">
+  可选部分
+</h2>
 
-### `admin`
+<h3 id="admin">
+  `admin`
+</h3>
 
-Optional. Enables `/v1/organizations/spend_limits`, which mirrors Anthropic's public Admin API, and per-developer spend enforcement on `/v1/messages`. See [Spend limits](/docs/en/claude-apps-gateway-spend-limits) for how caps are set and enforced; this section covers the `gateway.yaml` keys that turn the feature on and tune it.
+可选。启用 `/v1/organizations/spend_limits`，它镜像 Anthropic 的公共 Admin API，以及 `/v1/messages` 上的每开发者支出强制。有关如何设置和强制执行上限的信息，请参阅[支出限制](/docs/zh-CN/claude-apps-gateway-spend-limits)；本部分涵盖打开该功能和调整它的 `gateway.yaml` 键。
 
 ```yaml theme={null}
 admin:
-  # Named static API keys for the admin endpoints, sent as x-api-key.
-  # The id appears in the audit log as admin-key:<id> so each key is
-  # attributable. Array for rotation: add the new key, roll clients,
-  # remove the old.
+  # 管理员端点的命名静态 API 密钥，作为 x-api-key 发送。
+  # id 在审计日志中显示为 admin-key:<id>，因此每个密钥都是
+  # 可归因的。用于轮换的数组：添加新密钥，滚动客户端，
+  # 删除旧密钥。
   write_keys:
     - { id: terraform, key: "${GATEWAY_ADMIN_WRITE_KEY_TF}" }
     - { id: ci,        key: "${GATEWAY_ADMIN_WRITE_KEY_CI}" }
   read_keys:
     - { id: reporting, key: "${GATEWAY_ADMIN_READ_KEY}" }
-  # IdP groups granted full admin via the normal gateway JWT (no API key).
+  # 通过普通网关 JWT（无 API 密钥）授予完全管理员的 IdP 组。
   admin_groups: [platform-finops]
   blocked_message: request an increase at https://go.example.com/claude-limits
 ```
 
-| Field                     | Required | Description                                                                                                                                                                                                                                           |
-| ------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `write_keys`              | No       | Array of `{id, key}`. An `x-api-key` matching one of these can list, set, and delete spend limits. Key values must be at least 32 characters; `id`s must be unique across `read_keys` and `write_keys`.                                               |
-| `read_keys`               | No       | Array of `{id, key}`. Read-only: every `GET` endpoint, including listing caps, fetching one by ID, and reading [`/effective`](/docs/en/claude-apps-gateway-spend-limits#%2Feffective) and [`/audit`](/docs/en/claude-apps-gateway-spend-limits#%2Faudit).       |
-| `admin_groups`            | No       | IdP group names. A gateway JWT whose `groups` claim includes one of these has full admin access, read and write, and audits as `oidc:<sub>`. Use this for human admins; use API keys for machines.                                                    |
-| `blocked_message`         | No       | Appended verbatim to the `429 billing_error` a blocked developer sees. Write the whole instruction, such as a URL or a Slack channel. Unset, the error is `spend limit reached`.                                                                      |
-| `audit_retention_days`    | No       | Default `365`. Older `admin_audit` rows are swept.                                                                                                                                                                                                    |
-| `spend_retention_months`  | No       | Default `13`. `spend` counter rows older than this are swept. The default keeps a full year plus the current partial month for year-over-year reporting.                                                                                              |
-| `identity_retention_days` | No       | Default `90`. Last-seen TTL for `principal_emails` rows, which hold each developer's email, display name, and groups (PII). Deliberately shorter than spend retention so a deprovisioned identity ages out while its anonymous spend counters remain. |
-| `group_limit_mode`        | No       | `min` (default) or `max`. When a developer is in several groups with caps, `min` enforces the most restrictive and `max` the least. Used by both enforcement and `/effective`.                                                                        |
+| 字段                        | 必需 | 描述                                                                                                                                                                                        |
+| ------------------------- | -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `write_keys`              | 否  | `{id, key}` 的数组。与这些之一匹配的 `x-api-key` 可以列出、设置和删除支出限制。密钥值必须至少 32 个字符；`id` 必须在 `read_keys` 和 `write_keys` 中唯一。                                                                               |
+| `read_keys`               | 否  | `{id, key}` 的数组。只读：每个 `GET` 端点，包括列出上限、按 ID 获取一个，以及读取 [`/effective`](/docs/zh-CN/claude-apps-gateway-spend-limits#%2Feffective) 和 [`/audit`](/docs/zh-CN/claude-apps-gateway-spend-limits#%2Faudit)。 |
+| `admin_groups`            | 否  | IdP 组名称。其 `groups` 声明包括其中之一的网关 JWT 具有完全管理员访问权限，读和写，并审计为 `oidc:<sub>`。用于人类管理员；为机器使用 API 密钥。                                                                                                |
+| `blocked_message`         | 否  | 逐字附加到被阻止的开发者看到的 `429 billing_error`。写出整个指令，如 URL 或 Slack 频道。未设置，错误是 `spend limit reached`。                                                                                                |
+| `audit_retention_days`    | 否  | 默认 `365`。较旧的 `admin_audit` 行被清除。                                                                                                                                                          |
+| `spend_retention_months`  | 否  | 默认 `13`。`spend` 计数器行早于此被清除。默认值保留完整年份加当前部分月份用于年度比较报告。                                                                                                                                      |
+| `identity_retention_days` | 否  | 默认 `90`。`principal_emails` 行的最后看到 TTL，其中保存每个开发者的电子邮件、显示名称和组 (PII)。故意比支出保留更短，因此取消配置的身份在其匿名支出计数器保留时老化。                                                                                      |
+| `group_limit_mode`        | 否  | `min`（默认）或 `max`。当开发者在具有上限的多个组中时，`min` 强制执行最严格的，`max` 强制执行最宽松的。由强制执行和 `/effective` 使用。                                                                                                    |
 
-### `enforcement`
+<h3 id="enforcement">
+  `enforcement`
+</h3>
 
-The `enforcement` block controls how spend-limit checks behave when the store is unavailable.
+`enforcement` 块控制当存储不可用时支出限制检查的行为。
 
-| Field                  | Required | Description                                                                                                                                                                                                                                                    |
-| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fail_closed_on_error` | No       | Default `false`. Spend enforcement fails open on a Postgres outage, so inference stays up. Set `true` to fail closed: over-cap developers are blocked, but so is everyone else if the store is unreachable. Has no effect without an [`admin:`](#admin) block. |
+| 字段                     | 必需 | 描述                                                                                                               |
+| ---------------------- | -- | ---------------------------------------------------------------------------------------------------------------- |
+| `fail_closed_on_error` | 否  | 默认 `false`。支出强制在 Postgres 中断时故障开放，因此推理保持运行。设置 `true` 以故障关闭：超额开发者被阻止，但如果存储无法访问，每个人都被阻止。没有 [`admin:`](#admin) 块无效。 |
 
-### `models`
+<h3 id="models">
+  `models`
+</h3>
 
-The `models` block is an optional admin-curated model list, served at `/v1/models` and used to translate model IDs per upstream. It is required for non-US Amazon Bedrock regions, Amazon Bedrock provisioned-throughput ARNs, and Microsoft Foundry deployment names.
+`models` 块是可选的管理员策划的模型列表，在 `/v1/models` 提供，用于按上游翻译模型 ID。对于非美国 Amazon Bedrock 地区、Amazon Bedrock 预配吞吐量 ARN 和 Microsoft Foundry 部署名称是必需的。
 
 ```yaml theme={null}
-auto_include_builtin_models: true   # false: expose only the list below
+auto_include_builtin_models: true   # false：仅公开下面的列表
 models:
   - id: claude-opus-4-8
     label: Claude Opus 4.8
-    # description: optional text shown in clients that surface it
+    # description: 可选文本显示在表面它的客户端中
     upstream_model:
       anthropic: claude-opus-4-8
-      bedrock: us.anthropic.claude-opus-4-8   # or an inference-profile ARN
+      bedrock: us.anthropic.claude-opus-4-8   # 或推理配置文件 ARN
       foundry: your-opus-deployment-name
 ```
 
-### `managed`
+<h3 id="managed">
+  `managed`
+</h3>
 
-The `managed` block defines role-based access policies keyed on IdP groups or email domain. Policies are evaluated in order; the first match is selected, then merged onto the `match: {}` catch-all base described below. They are served per-user at `GET /managed/settings` with ETag/304 caching.
+`managed` 块定义基于 IdP 组或电子邮件域键入的基于角色的访问策略。策略按顺序评估；第一个匹配被选择，然后合并到下面描述的 `match: {}` 捕获所有基础。它们按用户在 `GET /managed/settings` 提供，具有 ETag/304 缓存。
 
 ```yaml theme={null}
 managed:
   policies:
-    # Specific groups first.
+    # 特定组首先。
     - match: { groups: [eng-contractors] }
       cli:
         availableModels: [claude-sonnet-4-6]
         permissions: { deny: ["WebFetch", "WebSearch"] }
-    # Default catch-all last: matches everyone who authenticated.
+    # 默认捕获所有最后：匹配每个已认证的用户。
     - match: {}
       cli:
         availableModels: [claude-opus-4-8, claude-sonnet-4-6, claude-haiku-4-5]
 ```
 
-A `match: {}` catch-all, conventionally listed last, is treated as a base layer. Every other policy inherits any key it doesn't set from the catch-all, so per-role entries only need to list what differs from the org default. The merge rules depend on the key type:
+`match: {}` 捕获所有，按惯例列在最后，被视为基础层。每个其他策略从捕获所有继承它不设置的任何键，因此每角色条目只需列出与组织默认不同的内容。合并规则取决于键类型：
 
-* **Allow-lists**: `availableModels` and `permissions.allow`. A specific policy's list fully replaces the base's.
-* **Deny-lists and hook arrays**: `permissions.deny`, `permissions.ask`, `disabledMcpjsonServers`, `deniedMcpServers`, `blockedMarketplaces`, and every `hooks` event-type array. These take the union of base and policy, so an org-wide deny or audit hook can't be accidentally dropped by a per-role override.
-* **Record-typed keys**: `env`, `modelOverrides`, and `skillOverrides`. These shallow-merge, so a per-role `env` block overrides keys it sets and inherits the rest from the base.
+* **允许列表**：`availableModels` 和 `permissions.allow`。特定策略的列表完全替换基础的。
+* **拒绝列表和钩子数组**：`permissions.deny`、`permissions.ask`、`disabledMcpjsonServers`、`deniedMcpServers`、`blockedMarketplaces` 和每个 `hooks` 事件类型数组。这些取基础和策略的并集，因此组织范围的拒绝或审计钩子不能被每角色覆盖意外删除。
+* **记录类型的键**：`env`、`modelOverrides` 和 `skillOverrides`。这些浅合并，因此每角色 `env` 块覆盖它设置的键并从基础继承其余的。
 
-`availableModels` is also enforced server-side at `/v1/messages`, so a denied model returns `400` regardless of what the client sends.
+`availableModels` 也在 `/v1/messages` 服务器端强制执行，因此被拒绝的模型返回 `400`，无论客户端发送什么。
 
-| Matcher                                             | Behavior                                                                                                                         |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `match: {}`                                         | Matches every authenticated user. Start with one of these and add group-scoped policies above it later.                          |
-| `match: { groups: [a, b] }`                         | Matches if the JWT's `groups` claim contains any of the listed groups. Case-sensitive: groups must match the IdP's exact casing. |
-| `match: { email_domain: example.com }`              | Matches the part after the last `@` in the JWT's `email` claim, case-insensitive. Accepts one domain per policy.                 |
-| `match: { groups: [a], email_domain: example.com }` | Both conditions must match                                                                                                       |
+| 匹配器                                                 | 行为                                                        |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| `match: {}`                                         | 匹配每个已认证的用户。从其中一个开始，稍后添加组范围的策略。                            |
+| `match: { groups: [a, b] }`                         | 如果 JWT 的 `groups` 声明包含任何列出的组，则匹配。区分大小写：组必须与 IdP 的确切大小写匹配。 |
+| `match: { email_domain: example.com }`              | 匹配 JWT 的 `email` 声明中最后 `@` 后的部分，不区分大小写。每个策略接受一个域。         |
+| `match: { groups: [a], email_domain: example.com }` | 两个条件都必须匹配                                                 |
 
-An authenticated user who matches no policy gets the gateway's defaults, which means every model in the catalog and no managed settings. Add a `match: {}` catch-all last if you want a guaranteed default policy.
+与任何策略不匹配的已认证用户获得网关的默认值，这意味着目录中的每个模型和没有托管设置。如果你想要保证的默认策略，最后添加 `match: {}` 捕获所有。
 
 <Note>
-  The gateway keeps no user directory of its own. It authorizes each request from the user's IdP token, reading group membership from the token's `groups` claim and evaluating policies against it. There is no roster to enumerate and no accounts to pre-create, and therefore no SCIM endpoint, because there is nothing for SCIM to sync into.
+  网关保持自己的用户目录。它从用户的 IdP 令牌授权每个请求，从令牌的 `groups` 声明读取组成员身份，并根据它评估策略。没有要枚举的名册，没有要预创建的帐户，因此没有 SCIM 端点，因为没有东西可供 SCIM 同步到。
 
-  Run user and group lifecycle management at the source of truth, which is your IdP's native SCIM provisioning or a dedicated identity-governance platform. Membership and deprovisioning governed there flow into the gateway automatically through the token. If you want SCIM provisioning of Claude accounts themselves, that is a [Claude for Enterprise](/docs/en/admin-setup) capability.
+  在真实来源处运行用户和组生命周期管理，这是你的 IdP 的本地 SCIM 配置或专用身份治理平台。那里管理的成员身份和取消配置通过令牌自动流入网关。如果你想要 Claude 帐户本身的 SCIM 配置，这是一个 [Claude for Enterprise](/docs/zh-CN/admin-setup) 功能。
 
-  Two propagation clocks apply:
+  两个传播时钟适用：
 
-  * **Policy contents**: editing a policy and redeploying reaches connected clients on their next managed-settings poll, within an hour
-  * **Group membership**: changing a user's group membership changes which policy matches them. This takes effect on the next session re-mint, meaning the next silent refresh, bounded by `session.ttl_hours`.
+  * **策略内容**：编辑策略并重新部署到连接的客户端在其下一个托管设置轮询，在一小时内
+  * **组成员身份**：更改用户的组成员身份改变哪个策略匹配他们。这在下一个会话重新铸造时生效，意味着下一个静默刷新，由 `session.ttl_hours` 限制。
 </Note>
 
-#### What goes in `cli`
+<h4 id="what-goes-in-cli">
+  `cli` 中的内容
+</h4>
 
-Each `cli` value is a complete Claude Code `managed-settings.json` document, the same schema you would deploy via MDM or `/etc/claude-code/managed-settings.json`, expressed here as YAML. The CLI applies the delivered document at the managed tier, above user and project settings.
+每个 `cli` 值是完整的 Claude Code `managed-settings.json` 文档，与你通过 MDM 或 `/etc/claude-code/managed-settings.json` 部署的相同模式，在此表示为 YAML。CLI 在托管层应用交付的文档，在用户和项目设置之上。
 
-The gateway validates each document against the CLI's settings schema at boot, so an unrecognized top-level key or a recognized key with a malformed value fails boot with an error naming every offending key. Deliberately open parts of the schema still accept arbitrary values, because newer clients may recognize entries the gateway's schema doesn't. These open keys are `env`, `pluginConfigs`, and keys nested under `permissions`.
+网关在启动时根据 CLI 的设置模式验证每个文档，因此无法识别的顶级键或具有格式错误值的识别键在启动时失败，并显示命名每个违规键的错误。模式的故意开放部分仍然接受任意值，因为较新的客户端可能识别网关的模式不识别的条目。这些开放键是 `env`、`pluginConfigs` 和 `permissions` 下嵌套的键。
 
-Because validation uses the schema bundled with the gateway's installed version, putting a top-level settings key introduced by a newer Claude Code release into managed config requires upgrading the gateway first. Smoke-test a new policy on one client before rolling it out.
+因为验证使用与网关的已安装版本捆绑的模式，将较新 Claude Code 版本引入的顶级设置键放入托管配置需要首先升级网关。在一个客户端上烟雾测试新策略，然后再推出。
 
-The full key reference is in [Claude Code settings](/docs/en/settings#available-settings). The keys most operators reach for first:
+完整的键参考在 [Claude Code 设置](/docs/zh-CN/settings#available-settings) 中。操作员首先到达的最常见的键：
 
 ```yaml theme={null}
 managed:
   policies:
     - match: {}
       cli:
-        # Model access (also enforced server-side at /v1/messages)
+        # 模型访问（也在 /v1/messages 服务器端强制执行）
         availableModels: [claude-opus-4-8, claude-sonnet-4-6, claude-haiku-4-5]
 
-        # Permission policy
+        # 权限策略
         permissions:
           deny:
             - "WebFetch"
             - "Read(./.env)"
             - "Read(./secrets/**)"
-          disableBypassPermissionsMode: disable   # blocks --dangerously-skip-permissions
-        allowManagedPermissionRulesOnly: true     # ignore user/project permission rules
+          disableBypassPermissionsMode: disable   # 阻止 --dangerously-skip-permissions
+        allowManagedPermissionRulesOnly: true     # 忽略用户/项目权限规则
 
-        # Environment pushed into the CLI process. DISABLE_UPDATES blocks
-        # background and manual updates; DISABLE_AUTOUPDATER stops only
-        # background updates.
+        # 推送到 CLI 进程的环境。DISABLE_UPDATES 阻止
+        # 后台和手动更新；DISABLE_AUTOUPDATER 仅停止
+        # 后台更新。
         env:
-          DISABLE_UPDATES: "1"                    # pin versions via your own distribution
+          DISABLE_UPDATES: "1"                    # 通过你自己的分发固定版本
 
-        # Org-wide hooks. Hook commands run on developer machines, not the
-        # gateway, so the path must exist on every client OS in the policy.
+        # 组织范围的钩子。钩子命令在开发者机器上运行，而不是
+        # 网关，因此路径必须存在于策略中每个客户端 OS 上。
         hooks:
           PostToolUse:
             - matcher: "Edit|Write"
@@ -476,117 +511,71 @@ managed:
                 - { type: command, command: /usr/local/bin/audit-edit.sh }
 ```
 
-| Key                                        | Enforced by   | Effect                                                                                                                                                                                                   |
-| ------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `availableModels`                          | Gateway + CLI | Model allowlist. Also checked at `/v1/messages`, so a patched client can't bypass it.                                                                                                                    |
-| `permissions.allow` / `.deny`              | CLI           | Tool and command rules. See [Permissions](/docs/en/permissions).                                                                                                                                              |
-| `permissions.disableBypassPermissionsMode` | CLI           | Set to `disable` to block [`bypassPermissions`](/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode), the mode that skips permission prompts, and the `--dangerously-skip-permissions` flag |
-| `allowManagedPermissionRulesOnly`          | CLI           | When `true`, user and project permission rules are ignored; only rules from this document apply                                                                                                          |
-| `env`                                      | CLI           | Environment variables merged into the CLI process. Use for telemetry, auto-update, and model-name overrides.                                                                                             |
-| `hooks`                                    | CLI           | Org-wide [hooks](/docs/en/hooks)                                                                                                                                                                              |
+| 键                                          | 由以下强制执行  | 效果                                                                                                                                                                |
+| ------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `availableModels`                          | 网关 + CLI | 模型允许列表。也在 `/v1/messages` 检查，因此修补的客户端无法绕过它。                                                                                                                        |
+| `permissions.allow` / `.deny`              | CLI      | 工具和命令规则。请参阅[权限](/docs/zh-CN/permissions)。                                                                                                                              |
+| `permissions.disableBypassPermissionsMode` | CLI      | 设置为 `disable` 以阻止 [`bypassPermissions`](/docs/zh-CN/permission-modes#skip-all-checks-with-bypasspermissions-mode)，自动批准每个工具调用的模式，以及 `--dangerously-skip-permissions` 标志 |
+| `allowManagedPermissionRulesOnly`          | CLI      | 当 `true` 时，用户和项目权限规则被忽略；仅此文档中的规则适用                                                                                                                                |
+| `env`                                      | CLI      | 合并到 CLI 进程的环境变量。用于遥测、自动更新和模型名称覆盖。                                                                                                                                 |
+| `hooks`                                    | CLI      | 组织范围的[钩子](/docs/zh-CN/hooks)                                                                                                                                           |
 
-Because these settings arrive over the network, the CLI shows each developer a one-time security approval dialog before applying the settings listed below:
+因为这些设置通过网络到达，CLI 在应用任何可以运行 shell 命令或改变流量去往何处的内容之前向每个开发者显示一次性安全批准对话。对话涵盖：
 
 * `hooks`
-* `env` variables that require the developer's approval, such as proxy and base-URL variables
-* shell-execution settings such as `apiKeyHelper` and `statusLine`
-* managed CLAUDE.md content
+* `env` 变量不在 CLI 的内置安全列表上
+* shell 执行设置，如 `apiKeyHelper` 和 `statusLine`
+* 托管 CLAUDE.md 内容
 
-Claude Code applies some delivered `env` variables without showing the developer the approval dialog, such as model selection settings and numeric limits. Other delivered variables can require the developer's approval before they take effect; a non-empty proxy, base-URL, or `OTEL_EXPORTER_OTLP_ENDPOINT` value always does. When a delivered variable needs approval, the dialog names it.
+安全列表确定哪些 `env` 变量在没有批准的情况下应用：
 
-[Environment variables and the approval dialog](/docs/en/server-managed-settings#environment-variables-and-the-approval-dialog) has the details, including four privacy toggles whose delivered value decides whether they need approval. {/* min-version: 2.1.218 */}Before v2.1.218, Claude Code applied fewer variables without asking the developer, so more delivered variables triggered the dialog.
+* **在安全列表上**：自动更新和模型名称变量
+* **不在安全列表上**：代理变量、基础 URL 变量和 `OTEL_EXPORTER_OTLP_ENDPOINT`
 
-The gateway's [telemetry](#telemetry) configuration pushes `OTEL_EXPORTER_OTLP_ENDPOINT`, so setting `telemetry.forward_to` triggers the dialog on each interactive client. The dialog protects the developer's machine from a compromised or hostile gateway, not the organization from the developer.
+网关的[遥测](#telemetry)配置推送 `OTEL_EXPORTER_OTLP_ENDPOINT`，因此设置 `telemetry.forward_to` 在每个交互式客户端上触发对话。对话保护开发者的机器免受受损或敌对网关，而不是组织免受开发者。
 
-A non-interactive run with the `-p` flag can't show the dialog. It applies the pushed settings for that run only and doesn't record them as approved, so the developer's next interactive session still shows the dialog. Before v2.1.207, a non-interactive run saved the settings as approved and no later interactive session showed the dialog for them.
+使用 `-p` 标志的非交互式运行无法显示对话。它仅为该运行应用推送的设置，不将其记录为已批准，因此开发者的下一个交互式会话仍然显示对话。在 v2.1.207 之前，非交互式运行将设置保存为已批准，之后没有交互式会话为它们显示对话。
 
-If a developer declines, Claude Code exits rather than applying the policy. Pushing a new hook, or any env var that triggers the dialog, to a broad policy therefore means an approval prompt on every matching developer's next startup.
+如果开发者拒绝，Claude Code 退出而不是应用策略。将新钩子或非安全环境变量推送到广泛策略因此意味着每个匹配开发者下一次启动时的批准提示。
 
-The `cli` key was named `settings` in earlier releases. That spelling is still accepted as an alias, but new deployments should use `cli`.
+`cli` 键在早期版本中被命名为 `settings`。该拼写仍然被接受为别名，但新部署应使用 `cli`。
 
-#### Claude Desktop overlay
+<h4 id="precedence-with-other-managed-sources">
+  与其他托管来源的优先级
+</h4>
 
-If your organization also deploys [Claude Desktop](/docs/en/desktop), the same gateway serves both clients. Point `bootstrapUrl`, in Claude Desktop's [managed configuration](https://claude.com/docs/third-party/claude-desktop/configuration), at `<listen.public_url>/user/bootstrap`. Claude Desktop derives the OAuth issuer from that URL, runs the same device-code sign-in against this gateway, and fetches its configuration from the response.
+如果设备也有本地 `managed-settings.json` 或 MDM 交付的策略，托管来源不合并。最高优先级来源提供所有策略设置，按此顺序排列，最高优先级优先：
 
-<Note>
-  Requires Claude Code v2.1.203 or later on the gateway server, and an explicit opt-in: `/user/bootstrap` returns 404 unless the policy matching the user carries a `desktop` key. An empty `desktop: {}` opts a policy in, and a `desktop` key on the `match: {}` base layer opts in every policy that inherits it. The audit log records each request as `desktop_bootstrap.serve` or `desktop_bootstrap.denied`.
-</Note>
+1. [策略助手](/docs/zh-CN/settings#compute-managed-settings-with-a-policy-helper)
+2. 网关交付的设置
+3. MDM，通过 Windows 上的 HKLM 注册表或 macOS 上的 plist
+4. `managed-settings.json` 文件
+5. HKCU 注册表，仅在 Windows 上
 
-The gateway derives much of the response from the matched policy's `cli` block and from top-level gateway config:
+嵌入主机可以通过 SDK `managedSettings` 选项提供策略。默认情况下它被忽略，仅当托管来源使用 [`parentSettingsBehavior: "merge"`](/docs/zh-CN/settings#available-settings) 选择加入时应用，过滤以便它可以收紧策略但不能放松它。
 
-* The model list, from `availableModels`
-* Disabled tools, from bare tool-name `permissions.deny` entries
-* The egress allowlist, from `sandbox.network.allowedDomains`
-* An OTLP endpoint that points at the gateway itself, which fans out to your destinations, included when [`telemetry`](#telemetry) forwarding is configured
+例外是一小组跨来源键，当任何管理来源设置它们时被尊重；用户可写的 HKCU 层被排除：
 
-The gateway omits keys with no Claude Desktop equivalent, such as `hooks` and scoped permission rules like `Bash(npm *)`, from the bootstrap response.
+* `sandbox.network.allowManagedDomainsOnly` 和 `sandbox.filesystem.allowManagedReadPathsOnly`：当锁定时，对应的允许列表跨来源联合
+* [`allowAllClaudeAiMcps`](/docs/zh-CN/settings#available-settings)：claude.ai MCP 服务器允许列表的仅允许覆盖
+* `sandbox.bwrapPath` 和 `sandbox.socatPath`：[沙箱](/docs/zh-CN/sandboxing)助手二进制文件的文件系统路径
+* [`forceRemoteSettingsRefresh`](/docs/zh-CN/server-managed-settings)：阻止启动直到远程托管设置被新鲜获取，因此 MDM 或文件策略设置它被尊重，即使缺少该键的缓存远程有效负载是最高优先级来源
 
-The optional `desktop` block alongside `cli` holds the Claude Desktop feature gates that have no CLI equivalent:
+每个其他键，包括 `allowManagedPermissionRulesOnly` 和 `disableBypassPermissionsMode`，来自最高优先级来源。请参阅[设置优先级](/docs/zh-CN/settings#settings-precedence)了解设置页面上的相同规则。
 
-```yaml theme={null}
-managed:
-  policies:
-    - match: { groups: [eng-contractors] }
-      cli:
-        availableModels: [claude-sonnet-4-6]
-      desktop:
-        isLocalDevMcpEnabled: false
-        disableAutoUpdates: true
-        banner: { text: "Contractor build: internal use only" }
-```
-
-| Key                                                                | Effect                                                                                                             |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `modelDiscoveryEnabled`                                            | Whether Claude Desktop fetches `/v1/models` for its picker. Set `false` to rely solely on the policy's model list. |
-| `coworkTabEnabled`, `isClaudeCodeForDesktopEnabled`                | Show or hide individual tabs                                                                                       |
-| `isDesktopExtensionEnabled`, `isDesktopExtensionSignatureRequired` | Desktop extension loading and signature checks                                                                     |
-| `isLocalDevMcpEnabled`                                             | Allow locally defined MCP servers                                                                                  |
-| `disableAutoUpdates`, `autoUpdaterEnforcementHours`                | Auto-update policy                                                                                                 |
-| `banner`                                                           | Persistent banner at the top of the app: `enabled`, `text`, `backgroundColor`, `textColor`, `linkUrl`              |
-
-Every key is optional; Claude Desktop applies its own default for any key you omit. The gateway rejects unknown keys at boot. If you don't deploy Claude Desktop, leave `desktop` out of your policies entirely; `/user/bootstrap` then returns 404 for every user.
-
-#### Precedence with other managed sources
-
-If a device also has a local `managed-settings.json` or MDM-delivered policy, the managed sources don't merge. The highest-priority source provides all policy settings, ranked in this order with highest priority first:
-
-1. The [policy helper](/docs/en/settings#compute-managed-settings-with-a-policy-helper)
-2. Gateway-delivered settings
-3. MDM, via the HKLM registry on Windows or a plist on macOS
-4. The `managed-settings.json` file
-5. The HKCU registry, on Windows only
-
-Embedding hosts such as [Claude Desktop](/docs/en/desktop) can supply policy through the SDK `managedSettings` option. Whether it applies depends on the machine's managed configuration:
-
-* On machines with an admin-deployed managed source, it is ignored unless the highest-priority source opts in with [`parentSettingsBehavior: "merge"`](/docs/en/settings#available-settings).
-* It is never merged while a [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper) is configured.
-* When merged, it passes through a restrictive-only allowlist. [Restrict parent settings](/docs/en/claude-apps-gateway#restrict-parent-settings) lists which allow-direction settings still apply without the `allowManaged*Only` locks.
-
-The following keys are honored when any admin source above the user-writable HKCU tier sets them, regardless of which source provides the rest of the policy. When a [`policyHelper`](/docs/en/settings#compute-managed-settings-with-a-policy-helper) is configured, its output is the only source these checks read:
-
-* `sandbox.network.allowManagedDomainsOnly` and `sandbox.filesystem.allowManagedReadPathsOnly`: when locked, the corresponding allowlists are unioned across sources
-* [`allowAllClaudeAiMcps`](/docs/en/settings#available-settings): allow-only override for the claude.ai MCP server allowlist
-* `sandbox.bwrapPath` and `sandbox.socatPath`: filesystem paths to the [sandbox](/docs/en/sandboxing) helper binaries
-* [`forceRemoteSettingsRefresh`](/docs/en/server-managed-settings): blocks startup until remote managed settings are freshly fetched, so an MDM or file policy that sets it is honored even when a cached remote payload that lacks the key is the highest-priority source
-
-Every other key, including `disableBypassPermissionsMode`, comes from the highest-priority source only. Two [parent-settings](/docs/en/claude-apps-gateway#restrict-parent-settings) checks read every admin source:
-
-* When any admin source sets `allowManagedPermissionRulesOnly`, Claude Code drops parent-supplied permission allow rules and `additionalDirectories`. The key's effect on the developer's own rules still follows the highest-priority source.
-* A `forceLoginOrgUUID` or `allowedMcpServers` value in any admin source blocks a parent-supplied one. The value that applies still comes from the highest-priority source.
-
-See [Settings precedence](/docs/en/settings#settings-precedence) for the same rules on the settings page.
-
-Gateway policies apply to every Claude Code invocation on the machine, including non-interactive `claude -p` runs and sessions spawned by the Agent SDK. If the gateway is unreachable at startup, signed-in sessions exit with an error rather than running without their policy.
+网关策略适用于机器上的每个 Claude Code 调用，包括非交互式 `claude -p` 运行和由 Agent SDK 生成的会话。如果网关在启动时无法访问，已登录的会话以错误退出，而不是在没有其策略的情况下运行。
 
 <Warning>
-  `mcpServers` inside a policy's `cli` block is rejected at gateway boot. Per-group MCP distribution is not available; deploy MCP servers via the file-based `managed-mcp.json` on each device or let developers add them locally.
+  策略的 `cli` 块内的 `mcpServers` 在网关启动时被拒绝。不提供每组 MCP 分发；通过文件基础 `managed-mcp.json` 在每个设备上部署 MCP 服务器或让开发者在本地添加它们。
 </Warning>
 
-### `telemetry`
+<h3 id="telemetry">
+  `telemetry`
+</h3>
 
-The CLI sends OpenTelemetry Protocol (OTLP) over HTTP metrics, logs, and, when enabled, traces to the gateway, which relays them verbatim to each configured destination. See [Monitoring usage](/docs/en/monitoring-usage) for the metrics and events the CLI emits.
+CLI 通过 HTTP 指标、日志和（启用时）跟踪将 OpenTelemetry Protocol (OTLP) 发送到网关，网关逐字中继到每个配置的目标。有关 CLI 发出的指标和事件，请参阅[监控使用](/docs/zh-CN/monitoring-usage)。
 
-The CLI stamps each export with the authenticated user's identity, read from the gateway-issued JWT: the `user.id`, `user.email`, and `user.groups` attributes. Per-developer cost and usage attribution therefore works with no developer-side configuration.
+CLI 使用从网关发出的 JWT 读取的已认证用户的身份戳记每个导出：`user.id`、`user.email` 和 `user.groups` 属性。每开发者成本和使用归因因此在没有开发者端配置的情况下工作。
 
 ```yaml theme={null}
 telemetry:
@@ -594,7 +583,7 @@ telemetry:
     - url: https://otel-collector.internal.example.com
       headers:
         Authorization: ${OTLP_TOKEN}
-      # Per-signal opt-in. Default: metrics only.
+      # 每信号选择加入。默认：仅指标。
       metrics: true
       logs: false
       traces: false
@@ -604,60 +593,63 @@ telemetry:
 ```
 
 <Warning>
-  Each destination opts into `metrics`, `logs`, and `traces` independently, and the default is metrics only. The signals differ in sensitivity:
+  每个目标独立选择加入 `metrics`、`logs` 和 `traces`，默认值仅为指标。信号在敏感性上有所不同：
 
-  * **Metrics**: aggregate counters such as token counts, request counts, and latency
-  * **Logs and traces**: can carry full bash commands, tool inputs, and file paths, covering anything Claude Code does on a developer's machine
+  * **指标**：聚合计数器，如令牌计数、请求计数和延迟
+  * **日志和跟踪**：可以携带完整的 bash 命令、工具输入和文件路径，涵盖 Claude Code 在开发者机器上所做的任何事情
 
-  Enable logs and traces only on destinations with the access controls and retention policy that data warrants.
+  仅在具有该数据保证的访问控制和保留策略的目标上启用日志和跟踪。
 </Warning>
 
-Telemetry is off in the CLI by default. Configuring `telemetry.forward_to` together with `listen.public_url` turns it on. The gateway pushes six env vars to every connected client through `/managed/settings`:
+遥测在 CLI 中默认关闭。将 `telemetry.forward_to` 与 `listen.public_url` 一起配置会打开它。网关通过 `/managed/settings` 推送五个环境变量到每个连接的客户端：
 
 * `CLAUDE_CODE_ENABLE_TELEMETRY=1`
 * `OTEL_METRICS_EXPORTER=otlp`
 * `OTEL_LOGS_EXPORTER=otlp`
 * `OTEL_TRACES_EXPORTER=otlp`
 * `OTEL_EXPORTER_OTLP_ENDPOINT=<public_url>`
-* `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`
 
-The pushed endpoint is built from the public URL, so metrics and logs need no OTEL configuration from developers or policies. The pushed configuration is applied at the managed tier, overriding `OTEL_*` variables a developer sets locally.
+推送的端点从公共 URL 构建，因此指标和日志不需要来自开发者或策略的 OTEL 配置。推送的配置在托管层应用，覆盖开发者在本地设置的 `OTEL_*` 变量。
 
-[Traces](/docs/en/monitoring-usage#traces-beta) additionally require `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` on each client. The gateway doesn't push that variable, so set it through a managed policy's `env` block. It isn't among the variables Claude Code applies without the developer's approval, so delivering it through a policy is covered by the same [security approval dialog](#managed) that the pushed OTLP endpoint already triggers.
+[跟踪](/docs/zh-CN/monitoring-usage#traces-beta)另外需要每个客户端上的 `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1`。网关不推送该变量，因此通过托管策略的 `env` 块设置它。它不在 CLI 的安全列表上，因此通过策略交付它由推送的 OTLP 端点已经触发的相同[安全批准对话](#managed)覆盖。
 
-Both protobuf and JSON OTLP encodings are relayed, and any OpenTelemetry-compatible backend works as a destination.
+protobuf 和 JSON OTLP 编码都被中继，任何 OpenTelemetry 兼容的后端都可以作为目标。
 
-### HTTP tuning
+<h3 id="http-tuning">
+  HTTP 调整
+</h3>
 
-Four optional top-level blocks, `access_control`, `limits`, `timeouts`, and `rate_limits`, tune the HTTP surface. The defaults suit most deployments.
+四个可选的顶级块，`access_control`、`limits`、`timeouts` 和 `rate_limits`，调整 HTTP 表面。默认值适合大多数部署。
 
-| Block            | Key                                            | Default  | Description                                                                                                                                                                                                                                                                                                                         |
-| ---------------- | ---------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `access_control` | `allow_cidrs` / `deny_cidrs`                   | empty    | Inbound IP allow/deny by client address, after `trusted_proxies` resolution. `deny_cidrs` is checked first; a client it matches is rejected even if `allow_cidrs` also matches. If `allow_cidrs` is non-empty the gateway is default-deny. `/healthz` and `/readyz` are exempt from `allow_cidrs`.                                  |
-| `limits`         | `max_request_bytes`                            | 32 MiB   | Max inbound request body; oversize requests get `413` before the body is buffered. Raise for large file or image requests.                                                                                                                                                                                                          |
-| `limits`         | `max_request_header_bytes`                     | unset    | When set, oversize headers return `431`                                                                                                                                                                                                                                                                                             |
-| `limits`         | `max_url_length`                               | unset    | When set, an over-long URL returns `414`                                                                                                                                                                                                                                                                                            |
-| `timeouts`       | `upstream_ttfb_ms`                             | 120000   | Max wait for the upstream's response headers (time to first byte). The response body then streams with no wall-clock cap. Applies to the direct Anthropic upstream path; every other provider is bounded by its provider SDK's own timeout.                                                                                         |
-| `rate_limits`    | `device_authorization.max` / `.window_seconds` | 30 / 600 | Per-IP rate limit on the unauthenticated device-authorization endpoint. Raise for a large org behind a shared egress IP or NAT. These limits apply only to the device-grant sign-in flow, not to `/v1/messages` inference. See [User-code brute-force resistance](/docs/en/claude-apps-gateway-deploy#user-code-brute-force-resistance). |
-| `rate_limits`    | `device_verify.max` / `.window_seconds`        | 10 / 600 | Per-IP rate limit on `user_code` submissions at `/device`                                                                                                                                                                                                                                                                           |
+| 块                | 键                                              | 默认       | 描述                                                                                                                                                                        |
+| ---------------- | ---------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `access_control` | `allow_cidrs` / `deny_cidrs`                   | 空        | 按客户端地址的入站 IP 允许/拒绝，在 `trusted_proxies` 解析后。`deny_cidrs` 首先检查；与它匹配的客户端被拒绝，即使 `allow_cidrs` 也匹配。如果 `allow_cidrs` 非空，网关是默认拒绝。`/healthz` 和 `/readyz` 免除 `allow_cidrs`。        |
+| `limits`         | `max_request_bytes`                            | 32 MiB   | 最大入站请求正文；超大请求在缓冲正文前获得 `413`。为大文件或图像请求提高。                                                                                                                                  |
+| `limits`         | `max_request_header_bytes`                     | 未设置      | 设置时，超大头返回 `431`                                                                                                                                                           |
+| `limits`         | `max_url_length`                               | 未设置      | 设置时，过长 URL 返回 `414`                                                                                                                                                       |
+| `timeouts`       | `upstream_ttfb_ms`                             | 120000   | 等待上游响应头的最大时间（首字节时间）。响应正文然后流式传输，没有墙钟上限。适用于直接 Anthropic 上游路径；每个其他提供者由其提供者 SDK 自己的超时限制。                                                                                      |
+| `rate_limits`    | `device_authorization.max` / `.window_seconds` | 30 / 600 | 未认证设备授权端点上的每 IP 速率限制。为共享出口 IP 或 NAT 后面的大型组织提高。这些限制仅适用于设备授权登录流，不适用于 `/v1/messages` 推理。请参阅[用户代码暴力破解抵抗](/docs/zh-CN/claude-apps-gateway-deploy#user-code-brute-force-resistance)。 |
+| `rate_limits`    | `device_verify.max` / `.window_seconds`        | 10 / 600 | `/device` 上 `user_code` 提交的每 IP 速率限制                                                                                                                                      |
 
-## Complete example
+<h2 id="complete-example">
+  完整示例
+</h2>
 
-This full reference config exercises every core section; the [HTTP tuning blocks](#http-tuning) keep their defaults. Copy it, delete what you don't need, and fill in your values. The config in the [Quickstart](/docs/en/claude-apps-gateway#quickstart) is a minimal version of this.
+此完整参考配置演示了每个核心部分；[HTTP 调整块](#http-tuning)保持其默认值。复制它，删除你不需要的，并填入你的值。[快速入门](/docs/zh-CN/claude-apps-gateway#quickstart)中的配置是此的最小版本。
 
 ```yaml gateway.yaml theme={null}
-# Run with:
+# 运行方式：
 #   claude gateway --config gateway.yaml
 #
-# Operational log verbosity is controlled by the CLAUDE_GATEWAY_LOG_LEVEL
-# environment variable (info | warn | error; default info). It does not
-# affect audit events, which are always emitted.
+# 操作日志详细程度由 CLAUDE_GATEWAY_LOG_LEVEL
+# 环境变量控制（info | warn | error；默认 info）。它不
+# 影响审计事件，总是发出。
 
 listen:
   host: 0.0.0.0
   port: 8080
   public_url: https://claude-gateway.internal.example.com
-  # Omit the tls block when running behind a TLS-terminating ingress.
+  # 在 TLS 终止入口后面运行时省略 tls 块。
   # tls:
   #   cert: /certs/gateway.crt
   #   key: /certs/gateway.key
@@ -670,16 +662,16 @@ oidc:
   client_secret: ${OIDC_CLIENT_SECRET}
   allowed_email_domains:
     - example.com
-  # Required when the issuer is the Okta org server, whose id_tokens
-  # can omit email and groups; the gateway fills them from /userinfo.
+  # 当发行者是 Okta 组织服务器时需要，其 id_token
+  # 可以省略电子邮件和组；网关从 /userinfo 填充它们。
   userinfo_fallback: true
   # allowed_groups: [claude-code-users]
-  # Okta emits groups only when the `groups` scope is requested and the
-  # app's groups claim filter allows them. The contractors policy below
-  # matches on groups, so the scope is requested here.
+  # Okta 仅在请求 `groups` 范围且
+  # 应用的组声明过滤允许它们时发出组。下面的承包商策略
+  # 匹配组，因此范围在此处请求。
   scopes: [openid, profile, email, offline_access, groups]
   # extra_auth_params: { access_type: offline, prompt: consent }  # Google
-  # groups_claim: groups          # Entra app roles: use `roles`
+  # groups_claim: groups          # Entra 应用角色：使用 `roles`
   # email_claim: email
 
 session:
@@ -690,9 +682,9 @@ store:
   postgres_url: ${GATEWAY_POSTGRES_URL}
   # max_connections: 5
 
-# Enables /v1/organizations/spend_limits (mirrors the Anthropic Admin API)
-# and per-developer spend enforcement on /v1/messages. Omit to disable.
-# Caps themselves are set via the admin API, not here.
+# 启用 /v1/organizations/spend_limits（镜像 Anthropic Admin API）
+# 和 /v1/messages 上的每开发者支出强制。省略以禁用。
+# 上限本身通过 admin API 设置，而不是此处。
 # admin:
 #   write_keys:
 #     - { id: terraform, key: "${GATEWAY_ADMIN_WRITE_KEY_TF}" }
@@ -756,11 +748,11 @@ managed:
     - match: { groups: [contractors] }
       cli:
         availableModels: [claude-haiku-4-5]
-        # Constrain the Default picker option to availableModels instead of
-        # the tier default, so contractors don't get a 400 on the default.
+        # 将默认选择器选项限制为 availableModels 而不是
+        # 层默认，因此承包商不会在默认上获得 400。
         enforceAvailableModels: true
-        # allow auto-approves these tools; it does not block the rest.
-        # Add deny rules to restrict tools.
+        # allow 自动批准这些工具；它不阻止其余的。
+        # 添加拒绝规则以限制工具。
         permissions: { allow: [Read, Grep] }
     - match: {}
       cli:
@@ -777,38 +769,35 @@ telemetry:
         Authorization: Bearer ${OTEL_TOKEN}
 ```
 
-## Client-side managed settings
+<h2 id="client-side-managed-settings">
+  客户端托管设置
+</h2>
 
-Everything above configures the gateway server. You point developer machines at the gateway separately, on each device, through Claude Code's [managed settings](/docs/en/settings#settings-files). The gateway can't push the login keys itself, because they're what tell the client where the gateway is.
+上面的所有内容配置网关服务器。将开发者机器指向它是在每个设备上单独配置的，通过 Claude Code 的[托管设置](/docs/zh-CN/settings#settings-files)。网关无法自己推送这些键，因为它们是告诉客户端网关在哪里的内容。
 
-For the CLI, set these keys in the per-OS `managed-settings.json`. The two login keys route each developer's `/login` to your gateway:
+对于 CLI，在每个 OS `managed-settings.json` 中设置两个键：
 
 ```json theme={null}
 {
   "forceLoginMethod": "gateway",
-  "forceLoginGatewayUrl": "https://claude-gateway.internal.example.com",
-  "parentSettingsBehavior": "merge"
+  "forceLoginGatewayUrl": "https://claude-gateway.internal.example.com"
 }
 ```
 
-`parentSettingsBehavior: "merge"` keeps Claude Desktop's policy delivery to its embedded Claude Code sessions working; [Deliver policy to Claude Desktop sessions](/docs/en/claude-apps-gateway#deliver-policy-to-claude-desktop-sessions) explains the mechanism and where the opt-in must sit.
+将该文件部署到每个设备，通常通过你的 MDM 平台。文件路径因平台而异：
 
-Deploy the `managed-settings.json` file to each device, typically via your MDM platform. The file path differs by platform:
+| 平台          | 路径                                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| macOS       | `/Library/Application Support/ClaudeCode/managed-settings.json`，或 `com.anthropic.claudecode` 托管首选项域 |
+| Linux 和 WSL | `/etc/claude-code/managed-settings.json`                                                            |
+| Windows     | `C:\Program Files\ClaudeCode\managed-settings.json`，或通过 HKLM 注册表的组策略                                |
 
-| Platform      | Path                                                                                                                          |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| macOS         | `/Library/Application Support/ClaudeCode/managed-settings.json`, or the `com.anthropic.claudecode` managed preferences domain |
-| Linux and WSL | `/etc/claude-code/managed-settings.json`                                                                                      |
-| Windows       | `C:\Program Files\ClaudeCode\managed-settings.json`, or Group Policy via the HKLM registry                                    |
+`forceLoginGatewayUrl` 和 `forceLoginMethod` 的 `"gateway"` 值仅从管理员控制的托管层被尊重。开发者在自己的 `~/.claude/settings.json` 中设置它们无效。
 
-A registry policy on Windows or a managed-preferences plist on macOS replaces the `managed-settings.json` file rather than merging with it, apart from the [exception keys and cross-source checks above](#precedence-with-other-managed-sources). All three keys in this snippet follow the highest-priority-source rule, so fleets that deliver policy through Group Policy or configuration profiles must put all three in that mechanism instead.
+<h2 id="related">
+  相关
+</h2>
 
-For Claude Desktop, set the `bootstrapUrl` key in Claude Desktop's own [managed configuration](https://claude.com/docs/third-party/claude-desktop/configuration) to `<listen.public_url>/user/bootstrap`. The sign-in flow and per-group policy then match the CLI's once a policy opts in server-side with a `desktop` key; without the opt-in, `/user/bootstrap` returns 404. See [Claude Desktop overlay](#claude-desktop-overlay) for the server-side half.
-
-`forceLoginGatewayUrl`, and the `"gateway"` value of `forceLoginMethod`, are honored only from the admin-controlled managed tier. A developer setting them in their own `~/.claude/settings.json` has no effect.
-
-## Related
-
-* [Claude apps gateway overview](/docs/en/claude-apps-gateway): quickstart and developer connection
-* [Deployment guide](/docs/en/claude-apps-gateway-deploy): IdP setup, container image, Kubernetes and Cloud Run, and operations
-* [Spend limits](/docs/en/claude-apps-gateway-spend-limits): per-developer caps and the Admin API
+* [Claude 应用网关概述](/docs/zh-CN/claude-apps-gateway)：快速入门和开发者连接
+* [部署指南](/docs/zh-CN/claude-apps-gateway-deploy)：IdP 设置、容器镜像、Kubernetes 和 Cloud Run，以及操作
+* [支出限制](/docs/zh-CN/claude-apps-gateway-spend-limits)：每开发者上限和 Admin API

@@ -2,29 +2,33 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Constrain plugin dependency versions
+# 约束插件依赖版本
 
-> Declare version constraints on plugin dependencies, and bundle a curated plugin set behind one install.
+> 在插件依赖上声明版本约束，并将精选插件集合捆绑在一个安装后面。
 
-A plugin can depend on other plugins by listing them in `plugin.json` or in its marketplace entry. By default, a dependency tracks the latest available version, so an upstream release can change the dependency under your plugin without warning. Version constraints let you hold a dependency at a tested version range until you choose to move.
+插件可以通过在 `plugin.json` 或其 marketplace 条目中列出其他插件来依赖它们。默认情况下，依赖会跟踪最新可用版本，因此上游发布可能会在没有警告的情况下更改你的插件下的依赖。版本约束让你可以将依赖保持在经过测试的版本范围内，直到你选择升级。
 
-When you install a plugin that declares dependencies, Claude Code resolves and installs them automatically and lists which dependencies were added at the end of the install output. If a dependency later goes missing, `/reload-plugins` and the background plugin auto-update reinstall it, provided its marketplace is already in your configured marketplaces. Re-running `claude plugin install` on the dependent plugin, or adding a marketplace with `claude plugin marketplace add`, also resolves any outstanding missing dependencies. Dependencies from a marketplace you have not added are left unresolved.
+当你安装声明了依赖的插件时，Claude Code 会自动解析并安装它们，并在安装输出的末尾列出添加了哪些依赖。如果依赖后来丢失，`/reload-plugins` 和后台插件自动更新会重新安装它，前提是其 marketplace 已在你配置的 marketplace 中。重新运行 `claude plugin install` 在依赖插件上，或使用 `claude plugin marketplace add` 添加 marketplace，也会解析任何未解决的缺失依赖。来自你尚未添加的 marketplace 的依赖将保持未解析状态。
 
-This guide is for plugin authors who declare dependencies in `plugin.json` and for marketplace maintainers who tag releases. To install plugins that have dependencies, see [Discover and install plugins](/docs/en/discover-plugins). For the full manifest schema, see the [Plugins reference](/docs/en/plugins-reference).
+本指南适用于在 `plugin.json` 中声明依赖的插件作者和标记发布的 marketplace 维护者。要安装具有依赖的插件，请参阅[发现和安装插件](/docs/zh-CN/discover-plugins)。有关完整的 manifest 架构，请参阅[插件参考](/docs/zh-CN/plugins-reference)。
 
-## Why constrain dependency versions
+<h2 id="why-constrain-dependency-versions">
+  为什么要约束依赖版本
+</h2>
 
-Consider an internal marketplace where two teams publish plugins. The platform team maintains `secrets-vault`, an MCP server that wraps a secrets backend. The deploy team maintains `deploy-kit`, which calls `secrets-vault` to fetch credentials during deploys.
+考虑一个内部 marketplace，其中两个团队发布插件。平台团队维护 `secrets-vault`，这是一个包装 secrets 后端的 MCP 服务器。部署团队维护 `deploy-kit`，它在部署期间调用 `secrets-vault` 来获取凭证。
 
-`deploy-kit` is tested against `secrets-vault` v2.1.0. Without a version constraint, the next time the platform team tags a release that renames an MCP tool, auto-update moves every engineer's `secrets-vault` to the new version and `deploy-kit` breaks.
+`deploy-kit` 针对 `secrets-vault` v2.1.0 进行了测试。没有版本约束的情况下，下次平台团队标记一个重命名 MCP 工具的发布时，自动更新会将每个工程师的 `secrets-vault` 移动到新版本，`deploy-kit` 就会中断。
 
-With a version constraint, `deploy-kit` declares that it needs `secrets-vault` in the `~2.1.0` range. Engineers with `deploy-kit` installed stay on the highest matching `2.1.x` patch. The deploy team upgrades on their own schedule by publishing a new `deploy-kit` version with a wider constraint.
+有了版本约束，`deploy-kit` 声明它需要 `secrets-vault` 在 `~2.1.0` 范围内。安装了 `deploy-kit` 的工程师会停留在最高匹配的 `2.1.x` 补丁版本上。部署团队通过发布具有更宽松约束的新 `deploy-kit` 版本，按照自己的时间表进行升级。
 
-## Declare a dependency with a version constraint
+<h2 id="declare-a-dependency-with-a-version-constraint">
+  声明具有版本约束的依赖
+</h2>
 
-List dependencies in the `dependencies` array of your plugin's `.claude-plugin/plugin.json`. Each entry is either a plugin name or an object with a version constraint.
+在插件的 `.claude-plugin/plugin.json` 的 `dependencies` 数组中列出依赖。每个条目要么是插件名称，要么是具有版本约束的对象。
 
-The following manifest declares one unversioned dependency and one constrained dependency:
+以下 manifest 声明了一个无版本依赖和一个受约束的依赖：
 
 ```json .claude-plugin/plugin.json theme={null}
 {
@@ -37,21 +41,23 @@ The following manifest declares one unversioned dependency and one constrained d
 }
 ```
 
-An entry can be a bare string with only the plugin name, like `"audit-logger"` in the example above, which depends on whatever version that plugin's marketplace provides. For more control, use an object with these fields:
+条目可以是仅包含插件名称的裸字符串，如上例中的 `"audit-logger"`，它依赖于该插件的 marketplace 提供的任何版本。为了获得更多控制，请使用具有以下字段的对象：
 
-| Field         | Type   | Description                                                                                                                                                                                                                                                             |
-| :------------ | :----- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | string | Plugin name. Resolves within the same marketplace as the declaring plugin. Required.                                                                                                                                                                                    |
-| `version`     | string | A [semver range](https://github.com/npm/node-semver#ranges) such as `~2.1.0`, `^2.0`, `>=1.4`, or `=2.1.0`. The dependency is fetched at the highest tagged version that satisfies this range.                                                                          |
-| `marketplace` | string | A different marketplace to resolve `name` in. Cross-marketplace dependencies are blocked unless the target marketplace is listed in [`allowCrossMarketplaceDependenciesOn`](#depend-on-a-plugin-from-another-marketplace) in the root marketplace's `marketplace.json`. |
+| 字段            | 类型     | 描述                                                                                                                                                                                                     |
+| :------------ | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | string | 插件名称。在与声明插件相同的 marketplace 中解析。必需。                                                                                                                                                                     |
+| `version`     | string | 一个 [semver 范围](https://github.com/npm/node-semver#ranges)，例如 `~2.1.0`、`^2.0`、`>=1.4` 或 `=2.1.0`。依赖会在满足此范围的最高标记版本处获取。                                                                                   |
+| `marketplace` | string | 一个不同的 marketplace 来在其中解析 `name`。跨 marketplace 依赖被阻止，除非目标 marketplace 在根 marketplace 的 `marketplace.json` 中的 [`allowCrossMarketplaceDependenciesOn`](#depend-on-a-plugin-from-another-marketplace) 中列出。 |
 
-The `version` field accepts any expression supported by Node's `semver` package, including caret, tilde, hyphen, and comparator ranges. Pre-release versions such as `2.0.0-beta.1` are excluded unless your range opts in with a pre-release suffix like `^2.0.0-0`.
+`version` 字段接受 Node 的 `semver` 包支持的任何表达式，包括 caret、tilde、hyphen 和 comparator 范围。预发布版本（如 `2.0.0-beta.1`）被排除，除非你的范围使用预发布后缀（如 `^2.0.0-0`）选择加入。
 
-## Bundle plugins for a team
+<h2 id="bundle-plugins-for-a-team">
+  为团队捆绑 plugins
+</h2>
 
-Besides the required `name`, a plugin manifest can consist of only a `dependencies` array. Installing it pulls in every dependency, which makes it a way to package a curated plugin set behind one install.
+除了必需的 `name` 之外，plugin manifest 可以仅包含一个 `dependencies` 数组。安装它会拉取每个依赖项，这使其成为在一个安装后面打包精选 plugin 集的一种方式。
 
-For example, a platform team can publish role-specific bundles in an internal marketplace so engineers run one `claude plugin install` instead of installing each tool separately:
+例如，平台团队可以在内部 marketplace 中发布特定角色的捆绑包，这样工程师只需运行一次 `claude plugin install`，而不是分别安装每个工具：
 
 ```json .claude-plugin/plugin.json theme={null}
 {
@@ -67,22 +73,24 @@ For example, a platform team can publish role-specific bundles in an internal ma
 }
 ```
 
-Installing `backend-standard` resolves and installs all four dependencies.
+安装 `backend-standard` 会解析并安装所有四个依赖项。
 
-To add a tool to the standard set later, publish a new `backend-standard` version with the extra dependency. Auto-update is off by default for non-Anthropic marketplaces, so engineers pick up the new version in one of two ways:
+要稍后向标准集添加工具，请发布新的 `backend-standard` 版本并添加额外的依赖项。对于非 Anthropic marketplace，自动更新默认处于关闭状态，因此工程师可以通过以下两种方式之一获取新版本：
 
-* Enable auto-update for the marketplace in `/plugin`. The next auto-update moves the bundle to the new version and installs any dependencies it adds.
-* Run `claude plugin update backend-standard`, then `/reload-plugins` to install the newly added dependencies.
+* 在 `/plugin` 中为 marketplace 启用自动更新。下一次自动更新会将捆绑包移至新版本并安装它添加的任何依赖项。
+* 运行 `claude plugin update backend-standard`，然后运行 `/reload-plugins` 以安装新添加的依赖项。
 
-To roll bundles out across an organization, add the bundle plugin to `enabledPlugins` in [managed settings](/docs/en/settings#enabledplugins).
+要在整个组织中推出捆绑包，请将捆绑 plugin 添加到[托管设置](/docs/zh-CN/settings#enabledplugins)中的 `enabledPlugins`。
 
-## Depend on a plugin from another marketplace
+<h2 id="depend-on-a-plugin-from-another-marketplace">
+  依赖来自另一个 marketplace 的插件
+</h2>
 
-By default, Claude Code refuses to auto-install a dependency that lives in a different marketplace than the plugin declaring it. This prevents one marketplace from silently pulling in plugins from a source you have not reviewed.
+默认情况下，Claude Code 拒绝自动安装位于与声明它的插件不同的 marketplace 中的依赖。这可以防止一个 marketplace 无声地从你未审查的来源拉入插件。
 
-To allow it, the maintainer of the root marketplace adds the target marketplace name to `allowCrossMarketplaceDependenciesOn` in `marketplace.json`. The root marketplace is the one that hosts the plugin the user is installing; only its allowlist is consulted, so trust does not chain through intermediate marketplaces.
+要允许这样做，根 marketplace 的维护者将目标 marketplace 名称添加到 `marketplace.json` 中的 `allowCrossMarketplaceDependenciesOn`。根 marketplace 是托管用户正在安装的插件的那个；只有其允许列表被查询，因此信任不会通过中间 marketplace 链接。
 
-The following `marketplace.json` allows `deploy-kit` to depend on a plugin from `acme-shared`:
+以下 `marketplace.json` 允许 `deploy-kit` 依赖来自 `acme-shared` 的插件：
 
 ```json .claude-plugin/marketplace.json theme={null}
 {
@@ -101,124 +109,121 @@ The following `marketplace.json` allows `deploy-kit` to depend on a plugin from 
 }
 ```
 
-If the field is missing or does not include the target marketplace, install fails with a `cross-marketplace` error naming the field to set. Users can still install the dependency manually first, which satisfies the constraint without changing the allowlist.
+如果字段缺失或不包含目标 marketplace，安装会失败并显示 `cross-marketplace` 错误，命名要设置的字段。用户仍然可以手动先安装依赖，这会满足约束而无需更改允许列表。
 
-## Tag plugin releases for version resolution
+<h2 id="tag-plugin-releases-for-version-resolution">
+  标记插件发布以进行版本解析
+</h2>
 
-Version constraints resolve against git tags on the marketplace repository. For Claude Code to find a dependency's available versions, the upstream plugin's releases must be tagged using a specific naming convention.
+版本约束针对 marketplace 存储库上的 git 标签进行解析。为了让 Claude Code 找到依赖的可用版本，上游插件的发布必须使用特定的命名约定进行标记。
 
-Tag each release as `{plugin-name}--v{version}`, where `{version}` matches the `version` field in that commit's `plugin.json`. From the plugin directory, run:
+将每个发布标记为 `{plugin-name}--v{version}`，其中 `{version}` 与该提交的 `plugin.json` 中的 `version` 字段匹配。从插件目录中，运行：
 
 ```bash theme={null}
 claude plugin tag --push
 ```
 
-The `claude plugin tag` command derives the tag name from the plugin's manifest and the enclosing marketplace entry. Before creating the tag, it validates the plugin contents, checks that `plugin.json` and the marketplace entry agree on the version, requires a clean working tree under the plugin directory, and refuses if the tag already exists.
+`claude plugin tag` 命令从插件的清单和封闭的 marketplace 条目派生标签名称。在创建标签之前，它验证插件内容，检查 `plugin.json` 和 marketplace 条目是否在版本上一致，要求插件目录下的工作树干净，如果标签已存在则拒绝。添加 `--dry-run` 以查看将被标记的内容而不创建它。如果你自己保持 `plugin.json` 和 marketplace 条目同步，直接运行 `git tag secrets-vault--v2.1.0` 是等效的。
 
-* `--push` pushes the tag to the `origin` remote, so the repository needs a configured `origin` remote. Pass `--remote` to push to a different one.
-* If the push fails, the tag is still created locally and the command exits with an error.
-* With `--push`, a successful run ends with `Created tag secrets-vault--v2.1.0` and `Pushed to origin`, where the last line names the remote it pushed to. Without `--push`, the command prints the `git push` command to run instead.
-* `--dry-run` prints what would be tagged without creating it.
+插件名称前缀让一个 marketplace 存储库可以托管多个具有独立版本线的插件。`--v` 分隔符被解析为完整插件名称上的前缀匹配，因此包含连字符的插件名称会被正确处理。
 
-Running `git tag secrets-vault--v2.1.0` directly is equivalent if you keep `plugin.json` and the marketplace entry in sync yourself.
+当你安装声明了 `{ "name": "secrets-vault", "version": "~2.1.0" }` 的插件时，Claude Code 会列出 marketplace 的标签，过滤到以 `secrets-vault--v` 开头的标签，并获取满足 `~2.1.0` 的最高版本。如果不存在匹配的标签，依赖插件会被禁用并显示错误，列出可用的版本。
 
-The plugin name prefix lets one marketplace repository host multiple plugins with independent version lines. The `--v` separator is parsed as a prefix match on the full plugin name, so plugin names that contain hyphens are handled correctly.
+作为本地文件夹路径添加的 marketplace 在该文件夹是 git 存储库时以相同的方式解析标签。这需要 Claude Code v2.1.196 或更高版本。在两种情况下，Claude Code 从文件夹的当前内容安装依赖：
 
-When you install a plugin that declares `{ "name": "secrets-vault", "version": "~2.1.0" }`, Claude Code lists the marketplace's tags, filters to those starting with `secrets-vault--v`, and fetches the highest version satisfying `~2.1.0`. If no matching tag exists, the dependent plugin is disabled with an error listing the available versions.
+* 早期版本不从本地文件夹 marketplace 读取标签，因此受约束的依赖仅在该副本满足范围时才加载。
+* 不是 git 存储库的本地文件夹没有标签，无论版本如何。
 
-A marketplace added as a local folder path resolves tags the same way when the folder is a git repository. This requires Claude Code v2.1.196 or later. In two cases Claude Code installs the dependency from the folder's current contents instead:
-
-* Earlier versions don't read tags from a local-folder marketplace, so a constrained dependency loads only if that copy satisfies the range.
-* A local folder that isn't a git repository has no tags, regardless of version.
-
-The resolved tag's semver is recorded separately from `plugin.json`'s `version`, so constraint checks use the tag that was actually fetched even if `plugin.json` at that commit has a stale value. The cache directory name for a tag-resolved install includes a 12-character commit-SHA suffix, so if a maintainer force-moves a tag to a different commit, the next install gets a fresh cache directory instead of reusing stale content.
+已解析标签的 semver 与 `plugin.json` 的 `version` 分开记录，因此约束检查使用实际获取的标签，即使该提交处的 `plugin.json` 有过时的值。标签解析安装的缓存目录名称包含 12 字符的 commit-SHA 后缀，因此如果维护者强制将标签移动到不同的提交，下次安装会获得一个新的缓存目录，而不是重用过时的内容。
 
 <Note>
-  For `npm` marketplace sources, the constraint does not control which version is fetched, since tag-based resolution applies only to git-backed sources. The constraint is still checked at load time, and the dependent plugin is disabled with `dependency-version-unsatisfied` if the installed version does not satisfy it.
+  对于 `npm` marketplace 源，约束不控制获取哪个版本，因为基于标签的解析仅适用于 git 支持的源。约束仍在加载时被检查，如果安装的版本不满足它，依赖插件会被禁用并显示 `dependency-version-unsatisfied`。
 </Note>
 
-## How constraints interact
+<h2 id="how-constraints-interact">
+  约束如何相互作用
+</h2>
 
-When several installed plugins constrain the same dependency, Claude Code intersects their ranges and resolves the dependency to the highest version that satisfies all of them. The table below shows how common combinations resolve.
+当多个已安装的插件约束同一依赖时，Claude Code 会交集它们的范围，并将依赖解析为满足所有范围的最高版本。下表显示了常见组合如何解析。
 
-| Plugin A requires | Plugin B requires | Result                                                                                          |
-| :---------------- | :---------------- | :---------------------------------------------------------------------------------------------- |
-| `^2.0`            | `>=2.1`           | One install at the highest `2.x` tag at or above `2.1.0`. Both plugins load.                    |
-| `~2.1`            | `~3.0`            | Install of plugin B fails with `range-conflict`. Plugin A and the dependency stay as they were. |
-| `=2.1.0`          | none              | The dependency stays at `2.1.0`. Auto-update skips newer versions while plugin A is installed.  |
+| 插件 A 需要  | 插件 B 需要 | 结果                                              |
+| :------- | :------ | :---------------------------------------------- |
+| `^2.0`   | `>=2.1` | 在最高 `2.x` 标签处进行一次安装，该标签在 `2.1.0` 或更高版本。两个插件都加载。 |
+| `~2.1`   | `~3.0`  | 插件 B 的安装失败，显示 `range-conflict`。插件 A 和依赖保持原样。    |
+| `=2.1.0` | 无       | 依赖保持在 `2.1.0`。在安装了插件 A 时，自动更新会跳过较新版本。           |
 
-Auto-update fetches a constrained dependency at the highest git tag that satisfies every installed plugin's range, rather than at the marketplace's latest version, so the dependency continues to receive updates within its allowed range. If no tag satisfies all ranges, auto-update skips that dependency and lists the skip in the `/plugin` Errors tab, naming the constraining plugin.
+自动更新在满足每个已安装插件范围的最高 git 标签处获取受约束的依赖，而不是在 marketplace 的最新版本处，因此依赖继续在其允许的范围内接收更新。如果没有标签满足所有范围，自动更新会跳过该依赖，并在 `/plugin` 错误选项卡中列出跳过情况，命名约束插件。
 
-When you uninstall the last plugin that constrains a dependency, the dependency is no longer held and resumes tracking its marketplace entry on the next update.
+当你卸载最后一个约束依赖的插件时，该依赖不再被保持，并在下次更新时恢复跟踪其 marketplace 条目。
 
-## Enable or disable a plugin with dependencies
+<h2 id="enable-or-disable-a-plugin-with-dependencies">
+  启用或禁用具有依赖的插件
+</h2>
 
-Enabling a plugin also enables the plugins it depends on, and disabling a plugin is blocked if another enabled plugin still needs it. Both behaviors require Claude Code v2.1.143 or later. Earlier versions enable or disable only the named plugin and surface a `dependency-unsatisfied` error on the next load.
+启用插件也会启用它依赖的插件，禁用插件会被阻止，如果另一个已启用的插件仍然需要它。这两种行为都需要 Claude Code v2.1.143 或更高版本。早期版本仅启用或禁用命名的插件，并在下次加载时显示 `dependency-unsatisfied` 错误。
 
-When you enable a plugin, Claude Code also enables its dependencies at the same scope. If a dependency has its own dependencies, Claude Code enables those too. The success message lists what else was enabled along with the plugin you named. If a dependency can't be enabled, the command refuses and tells you what's blocking and how to fix it:
+当你启用插件时，Claude Code 也会在同一范围内启用其依赖。如果依赖有自己的依赖，Claude Code 也会启用那些。成功消息会列出与你命名的插件一起启用的其他内容。如果依赖无法启用，命令会拒绝并告诉你什么在阻止以及如何修复：
 
-| Condition                                                                              | Result                                                                                                                 |
-| :------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| A dependency is not installed                                                          | Enable fails and prints the `claude plugin install` command for each missing dependency.                               |
-| A dependency is blocked by your organization's plugin policy                           | Enable fails and names the blocked dependency.                                                                         |
-| A dependency is set to `false` at a scope with higher precedence than the target scope | Enable fails. Enable the dependency at that scope, or pass `--scope` to write there.                                   |
-| All dependencies are installed and allowed                                             | Enable succeeds and writes `true` for the plugin and each dependency that was not already enabled at the target scope. |
+| 条件                          | 结果                                          |
+| :-------------------------- | :------------------------------------------ |
+| 依赖未安装                       | 启用失败并为每个缺失的依赖打印 `claude plugin install` 命令。 |
+| 依赖被你的组织的插件策略阻止              | 启用失败并命名被阻止的依赖。                              |
+| 依赖在优先级高于目标范围的范围内设置为 `false` | 启用失败。在该范围内启用依赖，或传递 `--scope` 来在那里写入。        |
+| 所有依赖都已安装且被允许                | 启用成功并为插件和每个在目标范围内尚未启用的依赖写入 `true`。          |
 
-This holds even when a dependency sets [`defaultEnabled: false`](/docs/en/plugins-reference#default-enablement) in its manifest, because Claude Code writes an explicit `true` for it. The same applies at install: a dependency pulled in to satisfy an active plugin installs with `true` regardless of its own default.
+即使依赖在其清单中设置了 [`defaultEnabled: false`](/docs/zh-CN/plugins-reference#default-enablement)，这也成立，因为 Claude Code 为其写入显式 `true`。同样适用于安装：为满足活跃插件而引入的依赖会以 `true` 安装，无论其自身默认值如何。
 
-When you disable a plugin, Claude Code refuses if another enabled plugin still depends on it. The error names the plugins that depend on it and gives you a chained command that disables them in the right order, ending with the one you asked for.
+当你禁用插件时，Claude Code 会拒绝，如果另一个已启用的插件仍然依赖它。错误会命名依赖它的插件，并给你一个链式命令，以正确的顺序禁用它们，以你要求的那个结尾。
 
-For example, if `deploy-kit` depends on `secrets-vault`, disabling `secrets-vault` alone fails with output similar to the following:
+例如，如果 `deploy-kit` 依赖 `secrets-vault`，单独禁用 `secrets-vault` 会失败，输出类似于以下内容：
 
 ```text theme={null}
 secrets-vault is still required by deploy-kit. Disable that plugin first, or
 disable everything together: claude plugin disable deploy-kit@acme-tools && claude plugin disable secrets-vault@acme-tools
 ```
 
-Copy the chained command from the error to disable the full set in one step.
+从错误中复制链式命令以一步禁用完整集合。
 
-## Remove orphaned auto-installed dependencies
+<h2 id="remove-orphaned-auto-installed-dependencies">
+  删除孤立的自动安装依赖
+</h2>
 
-Auto-installed dependencies stay on disk after the plugins that installed them are uninstalled, in case you reinstall a dependent plugin or want to keep using the dependency directly. To clean them up, run `claude plugin prune` to list the auto-installed dependencies that no longer have any installed plugin requiring them and remove them after a confirmation prompt. This requires Claude Code v2.1.121 or later.
+自动安装的依赖在安装它们的插件被卸载后仍会保留在磁盘上，以防你重新安装依赖插件或想继续直接使用该依赖。要清理它们，运行 `claude plugin prune` 来列出不再有任何已安装插件需要的自动安装依赖，并在确认提示后删除它们。这需要 Claude Code v2.1.121 或更高版本。
 
 ```bash theme={null}
 claude plugin prune
 ```
 
-If nothing qualifies for removal, the command prints `Nothing to prune` with the reason and exits. This is the expected output on a fresh install, not an error.
+默认情况下，prune 在用户范围内运行。使用 `--scope project` 或 `--scope local` 来针对不同的范围。传递 `--dry-run` 来列出将被删除的内容而不进行任何更改。传递 `-y` 来跳过确认提示。当 stdin 或 stdout 不是终端时，prune 会列出孤立项并退出，除非传递了 `-y`。
 
-By default, prune operates at user scope and asks for confirmation before removing anything:
+要在卸载过程中进行 prune，请将 `--prune` 传递给 `claude plugin uninstall`。删除命名的插件后，Claude Code 会扫描并删除现在孤立的任何自动安装依赖。你自己安装的插件永远不会被 prune，只有通过另一个插件的 `dependencies` 数组自动安装的插件才会被 prune。
 
-* `--scope project` or `--scope local` targets a different scope.
-* `--dry-run` lists what would be removed without changing anything.
-* `-y` skips the confirmation prompt. When stdin or stdout isn't a terminal, prune lists the orphans and exits without removing them unless you pass `-y`.
-
-To prune as part of an uninstall, pass `--prune` to `claude plugin uninstall`. After removing the named plugin, Claude Code scans for and removes any auto-installed dependencies that are now orphaned. Plugins you installed yourself are never pruned, only those installed automatically through another plugin's `dependencies` array.
-
-The same confirmation behavior applies: pass `-y` to skip the prompt. When stdin or stdout isn't a terminal, the uninstall still completes, but the prune step lists the orphans and removes nothing unless you pass `-y`.
-
-For example, to uninstall `deploy-kit` and clean up the dependencies it leaves behind:
+例如，要卸载 `deploy-kit` 并清理它留下的依赖：
 
 ```bash theme={null}
 claude plugin uninstall deploy-kit --prune
 ```
 
-## Resolve dependency errors
+<h2 id="resolve-dependency-errors">
+  解决依赖错误
+</h2>
 
-Dependency problems appear in `claude plugin list` and in the `/plugin` interface, as descriptive error messages rather than the literal codes in this table. Claude Code disables the affected plugin until you resolve the error. The table below lists the most common errors and how to resolve them.
+依赖问题会在 `claude plugin list` 和 `/plugin` 界面中显示。Claude Code 会禁用受影响的插件，直到你解决错误。下表列出了最常见的错误及其解决方法。
 
-| Error                            | Meaning                                                                                                                                                                                                                           | How to resolve                                                                                                                                                                                                                                                          |
-| :------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dependency-unsatisfied`         | A declared dependency is not installed, or it is installed but disabled.                                                                                                                                                          | Run the `claude plugin install` command shown in the error message. If the dependency's marketplace is not yet configured, add it with `claude plugin marketplace add` and Claude Code resolves the dependency automatically. If the dependency is disabled, enable it. |
-| `range-conflict`                 | The version requirements for a dependency cannot be combined. The error message names the cause: no version satisfies all of the ranges, a range is not valid semver syntax, or the combined ranges are too complex to intersect. | Uninstall or update one of the conflicting plugins, fix any invalid `version` string, simplify long `\|\|` chains, or ask the upstream author to widen its constraint.                                                                                                  |
-| `dependency-version-unsatisfied` | The installed dependency's version is outside this plugin's declared range.                                                                                                                                                       | Run `claude plugin install <dependency>@<marketplace>` to re-resolve the dependency against all current constraints.                                                                                                                                                    |
-| `no-matching-tag`                | The dependency's repository has no `{name}--v*` tag satisfying the range.                                                                                                                                                         | Check that the upstream has tagged releases using the convention above, or relax your range.                                                                                                                                                                            |
+| 错误                               | 含义                                                               | 如何解决                                                                                                                                  |
+| :------------------------------- | :--------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `dependency-unsatisfied`         | 声明的依赖未安装，或已安装但被禁用。                                               | 运行错误消息中显示的 `claude plugin install` 命令。如果依赖的 marketplace 尚未配置，使用 `claude plugin marketplace add` 添加它，Claude Code 会自动解析依赖。如果依赖被禁用，请启用它。 |
+| `range-conflict`                 | 依赖的版本要求无法组合。错误消息命名原因：没有版本满足所有范围，范围不是有效的 semver 语法，或组合范围太复杂而无法交集。 | 卸载或更新其中一个冲突的插件，修复任何无效的 `version` 字符串，简化长 `\|\|` 链，或要求上游作者扩大其约束。                                                                       |
+| `dependency-version-unsatisfied` | 已安装的依赖版本在此插件的声明范围之外。                                             | 运行 `claude plugin install <dependency>@<marketplace>` 以根据所有当前约束重新解析依赖。                                                                |
+| `no-matching-tag`                | 依赖的存储库没有满足范围的 `{name}--v*` 标签。                                   | 检查上游是否使用上述约定标记了发布，或放宽你的范围。                                                                                                            |
 
-To check for these errors programmatically, run `claude plugin list --json`. Plugins with problems include an `errors` field listing them. Plugins that loaded cleanly omit the field.
+要以编程方式检查这些错误，请运行 `claude plugin list --json` 并读取每个插件上的 `errors` 字段。
 
-## See also
+<h2 id="see-also">
+  另请参阅
+</h2>
 
-* [Create plugins](/docs/en/plugins): build plugins with skills, agents, and hooks
-* [Create and distribute a plugin marketplace](/docs/en/plugin-marketplaces): host plugins for your team
-* [Plugins reference](/docs/en/plugins-reference#plugin-manifest-schema): the full `plugin.json` schema
-* [Version management](/docs/en/plugins-reference#version-management): how a plugin's own version is resolved and used as the cache key
+* [创建插件](/docs/zh-CN/plugins)：使用 skills、agents 和 hooks 构建插件
+* [创建和分发插件 marketplace](/docs/zh-CN/plugin-marketplaces)：为你的团队托管插件
+* [插件参考](/docs/zh-CN/plugins-reference#plugin-manifest-schema)：完整的 `plugin.json` 架构
+* [版本管理](/docs/zh-CN/plugins-reference#version-management)：插件自身版本如何被解析并用作缓存键

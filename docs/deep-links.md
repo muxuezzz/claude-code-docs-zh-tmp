@@ -2,103 +2,113 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Launch sessions from links
+# 从链接启动会话
 
-> Open a Claude Code terminal session from a URL. Embed `claude-cli://` links in runbooks, alerts, and dashboards so a click opens Claude Code in the right repo with the right prompt.
+> 从 URL 打开 Claude Code 终端会话。在运行手册、警报和仪表板中嵌入 `claude-cli://` 链接，这样点击即可在正确的仓库中打开 Claude Code，并使用正确的提示。
 
-A deep link is a `claude-cli://` URL that opens Claude Code in a new terminal window. The URL can carry a working directory and a prompt to pre-fill.
+深链接是一个 `claude-cli://` URL，它在新的终端窗口中打开 Claude Code。该 URL 可以携带工作目录和预填充的提示。
 
-This lets you share a one-click starting point for a task: anyone with Claude Code installed who clicks the link sees a session open with the prompt already typed. The prompt is populated but not sent until you press Enter.
+这让你可以为任务共享一个一键式的起点：任何安装了 Claude Code 的人点击该链接都会看到一个会话打开，提示已经输入。提示已填充但在你按 Enter 之前不会发送。
 
-Because a deep link is a URL, you can put one anywhere a link can go:
+因为深链接是一个 URL，你可以在任何可以放置链接的地方放置它：
 
-* An incident runbook step that opens the affected service's repo with a diagnostic prompt
-* A monitoring alert or dashboard that links to an investigation prompt for a specific metric
-* A README or wiki page that opens the project with an onboarding prompt
-* A CI failure notification that pre-fills the failing job's name
+* 一个事件运行手册步骤，打开受影响服务的仓库并带有诊断提示
+* 一个监控警报或仪表板，链接到特定指标的调查提示
+* 一个 README 或 wiki 页面，打开项目并带有入职提示
+* 一个 CI 失败通知，预填充失败作业的名称
 
-This page covers how to [build a link](#build-a-link), [embed one in a runbook or trigger it from the shell](#examples), and [manage or disable handler registration](#registration-and-supported-platforms) on each platform.
+本页面涵盖如何[构建链接](#build-a-link)、[在运行手册中嵌入链接或从 shell 触发](#examples)，以及[在每个平台上管理或禁用处理程序注册](#registration-and-supported-platforms)。
 
-## How it works
+<h2 id="how-it-works">
+  工作原理
+</h2>
 
-The `claude-cli://` prefix is a custom URL scheme that Claude Code registers with your operating system, similar to how `mailto:` links open your email client. The link can live on a web page, in a wiki, in a Slack message, or in any app that renders links. When you click one:
+`claude-cli://` 前缀是一个自定义 URL 方案，Claude Code 向你的操作系统注册，类似于 `mailto:` 链接打开你的电子邮件客户端的方式。该链接可以存在于网页、wiki、Slack 消息或任何呈现链接的应用中。当你点击一个时：
 
-1. The browser or app hands the URL to your operating system.
-2. The operating system recognizes the `claude-cli://` prefix and starts Claude Code on your machine.
-3. A new terminal window opens with Claude Code running in the directory the link specified, and the link's prompt text already in the input box.
-4. You read the prompt, edit it if you want, and press Enter to send it.
+1. 浏览器或应用将 URL 传递给你的操作系统。
+2. 操作系统识别 `claude-cli://` 前缀并在你的机器上启动 Claude Code。
+3. 一个新的终端窗口打开，Claude Code 在链接指定的目录中运行，链接的提示文本已经在输入框中。
+4. 你阅读提示，如果需要可以编辑它，然后按 Enter 发送它。
 
-The link itself can be hosted anywhere, but the session always opens locally on the computer where you clicked. See [Registration and supported platforms](#registration-and-supported-platforms) for which terminal emulator opens on each operating system.
+链接本身可以托管在任何地方，但会话总是在你点击的计算机上本地打开。请参阅[注册和支持的平台](#registration-and-supported-platforms)了解在每个操作系统上打开哪个终端模拟器。
 
 <Note>
-  The platform that displays the link must allow custom URL schemes. GitHub-rendered Markdown allows `http` and `https` but strips schemes like `claude-cli://` in READMEs, issues, pull requests, and wikis. Only the link text shows, with no link behind it and the URL hidden. See [Troubleshooting](#the-link-renders-as-plain-text-instead-of-being-clickable) for a workaround.
+  显示链接的平台必须允许自定义 URL 方案。GitHub 呈现的 Markdown 允许 `http` 和 `https`，但在 README、问题、拉取请求和 wiki 中删除 `claude-cli://` 等方案。只显示链接文本，没有链接，URL 被隐藏。请参阅[故障排除](#the-link-renders-as-plain-text-instead-of-being-clickable)了解解决方法。
 </Note>
 
-### What a launched session shows
+<h3 id="what-a-launched-session-shows">
+  启动的会话显示什么
+</h3>
 
-A deep link never executes anything on its own. The link only chooses a directory and fills the prompt box. If you click a link from a page you do not trust, the prompt is still inert: nothing reaches the model until you read what was filled in and press Enter.
+深链接本身永远不会执行任何操作。链接只选择一个目录并填充提示框。如果你从你不信任的页面点击链接，提示仍然是惯性的：在你阅读填充的内容并按 Enter 之前，没有任何东西到达模型。
 
-When the session opens, a warning line below the input box reads `Prompt from an external link` and stays visible until you send or clear the prompt. For prompts over 1,000 characters, the warning includes the character count and tells you to scroll and review the full text before pressing Enter, since long prompts can push instructions off screen. Permission rules, `CLAUDE.md`, and trust prompts for the selected directory apply the same way as for any other session.
+当会话打开时，输入框下方的警告行显示 `来自外部链接的提示`，并在你发送或清除提示之前保持可见。对于超过 1,000 个字符的提示，警告包括字符计数，并告诉你在按 Enter 之前滚动并查看完整文本，因为长提示可能会将指令推出屏幕。权限规则、`CLAUDE.md` 和所选目录的信任提示的应用方式与任何其他会话相同。
 
-## Build a link
+<h2 id="build-a-link">
+  构建链接
+</h2>
 
-Every deep link starts with `claude-cli://open`, which is the only path the handler accepts, followed by optional query parameters. The minimal form opens Claude Code in your home directory with an empty prompt:
+每个深链接都以 `claude-cli://open` 开头，这是处理程序接受的唯一路径，后跟可选的查询参数。最小形式在你的主目录中打开 Claude Code，带有空提示：
 
 ```text theme={null}
 claude-cli://open
 ```
 
-To try a link without putting it on a page, paste it into your browser's address bar or [open it from the shell](#open-a-link-from-the-shell).
+添加参数以控制会话开始的位置和提示框包含的内容：
 
-Add parameters to control where the session starts and what the prompt box contains:
+| 参数     | 描述                                                                                                                                                             |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `q`    | 在提示框中预填充的文本。[URL 编码](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)该值。在多行提示中使用 `%0A` 表示换行符。最多 5,000 个字符。 |
+| `cwd`  | 用作工作目录的绝对路径。网络和 UNC 路径被拒绝，包含不可见或双向控制字符的路径也被拒绝。                                                                                                                 |
+| `repo` | 一个 GitHub `owner/name` slug。Claude Code 将其解析为它之前看到的本地克隆并从那里开始。如果你没有匹配的克隆，会话将在你的主目录中打开。                                                                         |
 
-| Parameter | Description                                                                                                                                                                                                                                 |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `q`       | Text to pre-fill in the prompt box. [URL-encode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent) the value. Use `%0A` for line breaks in multi-line prompts. Maximum 5,000 characters. |
-| `cwd`     | Absolute path to use as the working directory. Network and UNC paths are rejected, and so are paths that contain invisible or bidirectional control characters.                                                                             |
-| `repo`    | A GitHub `owner/name` slug. Claude Code resolves it to a local clone it has seen before and starts there. If you have no matching clone, the session opens in your home directory instead.                                                  |
+`cwd` 和 `repo` 是[设置工作目录的两种方式](#choose-between-cwd-and-repo)。如果你同时传递两者，`cwd` 优先，`repo` 被忽略，即使 `cwd` 路径不存在。
 
-`cwd` and `repo` are [two ways to set the working directory](#choose-between-cwd-and-repo). If you pass both, `cwd` takes precedence and `repo` is ignored, even if the `cwd` path does not exist.
-
-The following link points at a repository called `acme/payments` with a two-line diagnostic prompt. Replace `acme/payments` with your repository's `owner/name` slug when you build your own:
+以下链接指向一个名为 `acme/payments` 的仓库，带有两行诊断提示。在构建你自己的链接时，将 `acme/payments` 替换为你的仓库的 `owner/name` slug：
 
 ```text theme={null}
 claude-cli://open?repo=acme/payments&q=Investigate%20the%20failed%20deploy%20of%20payments-api.%0ACheck%20recent%20commits%20to%20main%20and%20the%20last%20successful%20build.
 ```
 
-Clicking it opens a new terminal window, starts Claude Code in your local clone of `acme/payments`, and fills the prompt box with the decoded text:
+点击它会打开一个新的终端窗口，在你的 `acme/payments` 本地克隆中启动 Claude Code，并用解码的文本填充提示框：
 
 ```text theme={null}
 Investigate the failed deploy of payments-api.
 Check recent commits to main and the last successful build.
 ```
 
-You can edit the prompt before pressing Enter to send it. If you have no local clone of the repository, the session opens in your home directory instead. See [Choose between `cwd` and `repo`](#choose-between-cwd-and-repo) for how the local path is selected when you have multiple clones or worktrees.
+你可以在按 Enter 发送之前编辑提示。如果你没有该仓库的本地克隆，会话将在你的主目录中打开。请参阅[在 `cwd` 和 `repo` 之间选择](#choose-between-cwd-and-repo)了解当你有多个克隆或 worktrees 时如何选择本地路径。
 
-### Choose between `cwd` and `repo`
+<h3 id="choose-between-cwd-and-repo">
+  在 `cwd` 和 `repo` 之间选择
+</h3>
 
-Use `cwd` when everyone who clicks the link has the project at the same absolute path, such as a standardized devcontainer or VM image.
+当点击链接的每个人都在相同的绝对路径上有项目时，使用 `cwd`，例如标准化的 devcontainer 或 VM 镜像。
 
-Use `repo` when the link is shared and each person clones to a different location. Claude Code resolves the slug to a local path as follows:
+当链接被共享且每个人克隆到不同位置时，使用 `repo`。Claude Code 按如下方式将 slug 解析为本地路径：
 
-* Each time you run `claude` in a Git repository, Claude Code records that directory's path against the repository's GitHub `owner/name` slug.
-* When a deep link arrives, `repo` opens whichever matching path you used most recently. Claude Code tracks multiple clones and worktrees separately, so it picks the one you worked in last.
-* The lookup only finds paths where you have already run Claude Code at least once.
-* The link does not change which branch is checked out. The session opens in whatever state that directory is currently in.
+* 每次你在 Git 仓库中运行 `claude` 时，该目录的文件系统路径都会针对仓库的 GitHub `owner/name` slug 被记录。
+* 当深链接到达时，`repo` 打开你最近使用的任何匹配路径。多个克隆和 worktrees 被单独跟踪，所以它选择你最后工作的那个。
+* 查找只找到你已经至少运行过一次 Claude Code 的路径。
+* 链接不改变检出的分支。会话在该目录当前所处的任何状态下打开。
 
-The welcome header shows which path it picked so you can confirm the right clone opened.
+启动的会话显示它选择了哪个路径，所以你可以确认正确的克隆已打开。
 
-## Examples
+<h2 id="examples">
+  示例
+</h2>
 
-The sections below show two common ways to use a deep link: as a Markdown link in a document and as a command in a script or shell alias.
+下面的部分展示了两种常见的使用深链接的方式：作为文档中的 Markdown 链接和作为脚本或 shell 别名中的命令。
 
-### Embed a link in a runbook
+<h3 id="embed-a-link-in-a-runbook">
+  在运行手册中嵌入链接
+</h3>
 
-A deep link in a runbook gives whoever is triaging a one-click way to start investigating in the right repository with a prepared prompt. The platform that renders the runbook must allow custom URL schemes. GitHub-rendered Markdown does not allow `claude-cli://`, so a deep link in a GitHub README, issue, or wiki shows only its label with no clickable link. See [the troubleshooting note](#the-link-renders-as-plain-text-instead-of-being-clickable) for a workaround.
+运行手册中的深链接为进行分类的人提供了一种一键式的方式，可以在正确的仓库中开始调查，并带有准备好的提示。呈现运行手册的平台必须允许自定义 URL 方案。GitHub 呈现的 Markdown 不允许 `claude-cli://`，所以 GitHub README、问题或 wiki 中的深链接只显示其标签，没有可点击的链接。请参阅[故障排除说明](#the-link-renders-as-plain-text-instead-of-being-clickable)了解解决方法。
 
-The prompt is part of the URL and must be URL-encoded. To produce the encoded value, pass your prompt text through `encodeURIComponent` in a browser console or any URL encoder.
+提示是 URL 的一部分，必须进行 URL 编码。要生成编码值，请在浏览器控制台或任何 URL 编码器中通过 `encodeURIComponent` 传递你的提示文本。
 
-The example below adds an investigation entry point to an incident runbook for a service called `web-gateway`:
+下面的示例为名为 `web-gateway` 的服务的事件运行手册添加了一个调查入口点：
 
 ```markdown theme={null}
 ## High 5xx rate on web-gateway
@@ -108,15 +118,17 @@ The example below adds an investigation entry point to an incident runbook for a
 3. Post initial findings in #incident.
 ```
 
-To use this in your own runbook, replace `acme/web-gateway` with your service's repository slug. This allows engineers with Claude Code installed and a local clone of that repository to click step 2 and start investigating with the prompt ready to send.
+要在你自己的运行手册中使用这个，将 `acme/web-gateway` 替换为你的服务的仓库 slug。这允许安装了 Claude Code 并拥有该仓库本地克隆的工程师点击第 2 步并开始调查，提示已准备好发送。
 
-### Open a link from the shell
+<h3 id="open-a-link-from-the-shell">
+  从 shell 打开链接
+</h3>
 
-You can also open a deep link from a shell script, alias, or automation rather than by clicking it. Call your operating system's URL-opening command with the link as the argument. These commands rely on the handler that Claude Code [registers when you send your first prompt of an interactive session](#registration-and-supported-platforms) on the machine.
+你也可以从 shell 脚本、别名或自动化中打开深链接，而不是通过点击它。使用链接作为参数调用你的操作系统的 URL 打开命令。
 
 <Tabs>
   <Tab title="macOS">
-    The built-in `open` command passes the URL to the registered `claude-cli://` handler:
+    内置的 `open` 命令将 URL 传递给注册的 `claude-cli://` 处理程序：
 
     ```bash theme={null}
     open "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
@@ -124,23 +136,21 @@ You can also open a deep link from a shell script, alias, or automation rather t
   </Tab>
 
   <Tab title="Linux">
-    Most desktop environments provide `xdg-open`, which passes the URL to the registered handler:
+    大多数桌面环境提供 `xdg-open`，它将 URL 传递给注册的处理程序：
 
     ```bash theme={null}
     xdg-open "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
     ```
-
-    On success, a new terminal window opens with Claude Code running and the prompt pre-filled. If the shell reports that `xdg-open` isn't found, see [Troubleshooting](#xdg-open-is-not-found-on-linux).
   </Tab>
 
   <Tab title="Windows">
-    In PowerShell, `Start-Process` passes the URL to the registered handler:
+    在 PowerShell 中，`Start-Process` 将 URL 传递给注册的处理程序：
 
     ```powershell theme={null}
     Start-Process "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
     ```
 
-    In `cmd.exe`, `start` treats its first quoted argument as a window title, so pass an empty title before the URL:
+    在 `cmd.exe` 中，`start` 将其第一个带引号的参数视为窗口标题，所以在 URL 之前传递一个空标题：
 
     ```cmd theme={null}
     start "" "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
@@ -148,49 +158,61 @@ You can also open a deep link from a shell script, alias, or automation rather t
   </Tab>
 </Tabs>
 
-## Registration and supported platforms
+<h2 id="registration-and-supported-platforms">
+  注册和支持的平台
+</h2>
 
-Claude Code registers the `claude-cli://` handler with your operating system on macOS, Linux, and Windows when you send your first prompt of an interactive session. Starting `claude` and exiting without sending a prompt doesn't register the handler. You don't run a separate install command. Registration writes to user-level locations only:
+Claude Code 在你第一次在 macOS、Linux 和 Windows 上启动交互式会话时向你的操作系统注册 `claude-cli://` 处理程序。你不需要运行单独的安装命令。注册仅写入用户级位置：
 
-| Platform | Handler location                                                                                                   |
-| -------- | ------------------------------------------------------------------------------------------------------------------ |
-| macOS    | `~/Applications/Claude Code URL Handler.app`                                                                       |
-| Linux    | `claude-code-url-handler.desktop` under `$XDG_DATA_HOME/applications`, defaulting to `~/.local/share/applications` |
-| Windows  | `HKEY_CURRENT_USER\Software\Classes\claude-cli`                                                                    |
+| 平台      | 处理程序位置                                                                                                |
+| ------- | ----------------------------------------------------------------------------------------------------- |
+| macOS   | `~/Applications/Claude Code URL Handler.app`                                                          |
+| Linux   | `claude-code-url-handler.desktop` 在 `$XDG_DATA_HOME/applications` 下，默认为 `~/.local/share/applications` |
+| Windows | `HKEY_CURRENT_USER\Software\Classes\claude-cli`                                                       |
 
-The handler launches Claude Code in a detected terminal emulator. On macOS, Claude Code remembers the terminal from your most recent interactive session and reuses it, supporting iTerm2, Ghostty, kitty, Alacritty, WezTerm, and Terminal.app. On Linux it honors the `$TERMINAL` environment variable, then `x-terminal-emulator`, then a list of common emulators. On Windows it prefers Windows Terminal, then PowerShell, then `cmd.exe`.
+处理程序在检测到的终端模拟器中启动 Claude Code。在 macOS 上，Claude Code 记住你最近交互式会话中的终端并重复使用它，支持 iTerm2、Ghostty、kitty、Alacritty、WezTerm 和 Terminal.app。在 Linux 上，它遵守 `$TERMINAL` 环境变量，然后是 `x-terminal-emulator`，然后是常见模拟器的列表。在 Windows 上，它优先选择 Windows Terminal，然后是 PowerShell，然后是 `cmd.exe`。
 
-To prevent registration entirely, set [`disableDeepLinkRegistration`](/docs/en/settings) to `"disable"` in `settings.json`. To enforce this across an organization so users cannot re-enable it, set it in [managed settings](/docs/en/server-managed-settings) instead.
+要完全防止注册，在 `settings.json` 中将 [`disableDeepLinkRegistration`](/docs/zh-CN/settings) 设置为 `"disable"`。要在整个组织中强制执行此操作，使用户无法重新启用它，请改为在[托管设置](/docs/zh-CN/server-managed-settings)中设置它。
 
-## Open a VS Code tab instead of a terminal
+<h2 id="open-a-vs-code-tab-instead-of-a-terminal">
+  打开 VS Code 标签页而不是终端
+</h2>
 
-The VS Code extension registers its own handler at `vscode://anthropic.claude-code/open`, which opens a Claude Code editor tab rather than a terminal window. See [Launch a VS Code tab from other tools](/docs/en/vs-code#launch-a-vs-code-tab-from-other-tools) for that URL's parameters.
+VS Code 扩展在 `vscode://anthropic.claude-code/open` 注册自己的处理程序，它打开一个 Claude Code 编辑器标签页而不是终端窗口。请参阅[从其他工具启动 VS Code 标签页](/docs/zh-CN/vs-code#launch-a-vs-code-tab-from-other-tools)了解该 URL 的参数。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-### Clicking the link does nothing
+<h3 id="clicking-the-link-does-nothing">
+  点击链接没有反应
+</h3>
 
-The handler likely isn't registered yet. Registration happens when you send your first prompt of an interactive session, not when the session starts. Start an interactive `claude` session on that machine, send any prompt, exit, and try the link again. If you are on Linux without a desktop environment, `xdg-open` may have nothing to dispatch to.
+处理程序可能还没有注册。在该机器上启动一次交互式 `claude` 会话，退出，然后再试一次链接。如果你在没有桌面环境的 Linux 上，`xdg-open` 可能没有东西可以分派。
 
-### xdg-open is not found on Linux
+<h3 id="the-link-renders-as-plain-text-instead-of-being-clickable">
+  链接呈现为纯文本而不是可点击的
+</h3>
 
-The `xdg-open` command is part of the `xdg-utils` package, which minimal server images, containers, and WSL distributions often leave out. Install `xdg-utils` with your distribution's package manager, for example `sudo apt install xdg-utils`, then run the command again. If the command then runs but nothing opens, `xdg-open` may have no desktop environment to dispatch to; see [Clicking the link does nothing](#clicking-the-link-does-nothing).
+某些 Markdown 渲染器只允许 `http` 和 `https` 链接，并删除其他 URL 方案。GitHub 在 README、问题、拉取请求和 wiki 中这样做：`[label](claude-cli://...)` 呈现为仅 `label`，没有链接，URL 被删除。在这些平台上，将深链接放在代码块中，以便读者可以看到 URL 并将其粘贴到浏览器的地址栏中。
 
-### The link renders as plain text instead of being clickable
+<h3 id="the-session-opens-in-my-home-directory-instead-of-the-repo">
+  会话在我的主目录中打开而不是仓库
+</h3>
 
-Some Markdown renderers only allow `http` and `https` links and strip other URL schemes. GitHub does this in READMEs, issues, pull requests, and wikis: `[label](claude-cli://...)` renders as just `label`, with no link and the URL removed. On these platforms, put the deep link in a code block so readers can see the URL and paste it into their browser's address bar.
+`repo` 参数只解析 Claude Code 已经看到的克隆。在克隆中运行一次 `claude` 以记录其路径，或将链接切换为使用带有绝对路径的 `cwd`。
 
-### The session opens in my home directory instead of the repo
+<h3 id="the-link-opens-the-wrong-terminal">
+  链接打开了错误的终端
+</h3>
 
-The `repo` parameter only resolves to clones Claude Code has already seen. Run `claude` inside the clone once so Claude Code records its path, or switch the link to use `cwd` with an absolute path.
+在 macOS 上，在你首选的终端中启动一次 `claude`，下一个深链接将使用它。在 Linux 上，将 `$TERMINAL` 环境变量设置为你首选的模拟器的命令名称。在 Windows 上，顺序是固定的：如果你想链接在那里打开而不是在 PowerShell 或 `cmd.exe` 窗口中打开，请安装 Windows Terminal。
 
-### The link opens the wrong terminal
+<h2 id="learn-more">
+  了解更多
+</h2>
 
-On macOS, start `claude` in your preferred terminal once and the next deep link will use it. On Linux, set the `$TERMINAL` environment variable to your preferred emulator's command name. On Windows, the order is fixed: install Windows Terminal if you want links to open there instead of a PowerShell or `cmd.exe` window.
+这些页面涵盖了启动或扩展 Claude Code 会话的相关方式：
 
-## Learn more
-
-These pages cover related ways to launch or extend Claude Code sessions:
-
-* [Skills](/docs/en/skills): store a long runbook prompt as a `/skill` in the repo so the deep link's `q` parameter only has to name it
-* [Non-interactive mode](/docs/en/headless): run Claude from a script and capture the output without opening a terminal
+* [Skills](/docs/zh-CN/skills)：将长运行手册提示存储为仓库中的 `/skill`，以便深链接的 `q` 参数只需命名它
+* [Non-interactive mode](/docs/zh-CN/headless)：从脚本运行 Claude 并捕获输出而不打开终端

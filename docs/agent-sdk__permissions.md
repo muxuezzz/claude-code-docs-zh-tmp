@@ -2,92 +2,94 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Configure permissions
+# 配置权限
 
-> Control how your agent uses tools with permission modes, hooks, and declarative allow/deny rules.
+> 使用权限模式、hooks 和声明式允许/拒绝规则来控制您的代理如何使用工具。
 
-The Claude Agent SDK provides permission controls to manage how Claude uses tools. Use permission modes and rules to define what's allowed automatically, and the [`canUseTool` callback](/docs/en/agent-sdk/user-input) to handle everything else at runtime.
+Claude Agent SDK 提供权限控制来管理 Claude 如何使用工具。使用权限模式和规则来定义自动允许的内容，以及使用 [`canUseTool` 回调](/docs/zh-CN/agent-sdk/user-input) 在运行时处理其他所有情况。
 
 <Note>
-  This page covers permission modes and rules. To build interactive approval flows where users approve or deny tool requests at runtime, see [Handle approvals and user input](/docs/en/agent-sdk/user-input).
+  本页面涵盖权限模式和规则。要构建交互式批准流程，其中用户在运行时批准或拒绝工具请求，请参阅 [处理批准和用户输入](/docs/zh-CN/agent-sdk/user-input)。
 </Note>
 
-## How permissions are evaluated
+<h2 id="how-permissions-are-evaluated">
+  权限如何被评估
+</h2>
 
-When Claude requests a tool, the SDK checks permissions in this order:
+当 Claude 请求一个工具时，SDK 按以下顺序检查权限：
 
 <Steps>
   <Step title="Hooks">
-    Run [hooks](/docs/en/agent-sdk/hooks) first. A hook can deny the call outright or pass it on. A hook that returns `allow` does not skip the deny and ask rules below; those are evaluated regardless of the hook result.
+    首先运行 [hooks](/docs/zh-CN/agent-sdk/hooks)。一个 hook 可以直接拒绝调用或将其传递下去。返回 `allow` 的 hook 不会跳过下面的拒绝和询问规则；无论 hook 结果如何，这些规则都会被评估。
   </Step>
 
-  <Step title="Deny rules">
-    Check `deny` rules (from `disallowed_tools` and [settings.json](/docs/en/settings#permission-settings)). If a deny rule matches, the tool is blocked, even in `bypassPermissions` mode. Bare-name deny rules like `Bash` remove the tool from Claude's context before this evaluation begins, so only scoped rules like `Bash(rm *)` are checked at this step.
+  <Step title="拒绝规则">
+    检查 `deny` 规则（来自 `disallowed_tools` 和 [settings.json](/docs/zh-CN/settings#permission-settings)）。如果拒绝规则匹配，工具被阻止，即使在 `bypassPermissions` 模式下也是如此。裸名称拒绝规则（如 `Bash`）在此评估开始之前将工具从 Claude 的上下文中移除，因此只有作用域规则（如 `Bash(rm *)`）在此步骤中被检查。
   </Step>
 
-  <Step title="Ask rules">
-    Check `ask` rules from [settings.json](/docs/en/settings#permission-settings). If an ask rule matches, the call falls through to your [`canUseTool` callback](/docs/en/agent-sdk/user-input) for confirmation, even in `bypassPermissions` mode.
+  <Step title="询问规则">
+    检查来自 [settings.json](/docs/zh-CN/settings#permission-settings) 的 `ask` 规则。如果询问规则匹配，调用会传递到您的 [`canUseTool` 回调](/docs/zh-CN/agent-sdk/user-input) 以获得确认，即使在 `bypassPermissions` 模式下也是如此。
 
-    Tools that require user interaction behave the same way: `AskUserQuestion` and MCP tools whose server sets [`_meta["anthropic/requiresUserInteraction"]`](/docs/en/mcp#require-approval-for-a-specific-tool) always fall through to the callback, even when an allow rule matches. In `dontAsk` mode both cases are denied instead, because that mode never prompts. {/* min-version: 2.1.199 */}The MCP annotation requires Claude Code v2.1.199 or later.
+    需要用户交互的工具行为相同：`AskUserQuestion` 和 MCP 工具，其服务器设置 [`_meta["anthropic/requiresUserInteraction"]`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 总是传递到回调，即使当允许规则匹配时。在 `dontAsk` 模式下，两种情况都被拒绝，因为该模式从不提示。{/* min-version: 2.1.199 */}MCP 注解需要 Claude Code v2.1.199 或更高版本。
 
-    [claude.ai connector](/docs/en/mcp#organization-controls-on-connector-tools) tools your organization has set to `ask` also leave the flow at this step. Every call falls through to the callback, even in `bypassPermissions` mode and even when an allow rule matches. The callback receives the reason `Your organization requires approval for this tool`. In `dontAsk` mode the call is denied instead, because that mode never prompts.
+    [claude.ai connector](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 工具，您的组织已设置为 `ask` 也会在此步骤离开流程。每个调用都会传递到回调，即使在 `bypassPermissions` 模式下，即使当允许规则匹配时。回调接收原因 `Your organization requires approval for this tool`。在 `dontAsk` 模式下，调用被拒绝，因为该模式从不提示。
   </Step>
 
-  <Step title="Permission mode">
-    Apply the active [permission mode](#permission-modes). `bypassPermissions` approves everything that reaches this step. `acceptEdits` approves file operations. `plan` routes file-edit and shell-write tools to your `canUseTool` callback regardless of allow rules, so write operations cannot be auto-approved while planning. Other modes fall through.
+  <Step title="权限模式">
+    应用活跃的 [权限模式](#permission-modes)。`bypassPermissions` 批准到达此步骤的所有内容。`acceptEdits` 批准文件操作。`plan` 将文件编辑和 shell 写入工具路由到您的 `canUseTool` 回调，无论允许规则如何，因此在规划时写入操作无法自动批准。其他模式会继续进行。
   </Step>
 
-  <Step title="Allow rules">
-    Check `allow` rules (from `allowed_tools` and settings.json). If a rule matches, the tool is approved.
+  <Step title="允许规则">
+    检查 `allow` 规则（来自 `allowed_tools` 和 settings.json）。如果规则匹配，工具被批准。
   </Step>
 
-  <Step title="canUseTool callback">
-    If not resolved by any of the above, call your [`canUseTool` callback](/docs/en/agent-sdk/user-input) for a decision. In `dontAsk` mode, this step is skipped and the tool is denied.
+  <Step title="canUseTool 回调">
+    如果上述任何步骤都未解决，调用您的 [`canUseTool` 回调](/docs/zh-CN/agent-sdk/user-input) 以获得决定。在 `dontAsk` 模式下，此步骤被跳过，工具被拒绝。
   </Step>
 </Steps>
 
-<img src="https://mintcdn.com/claude-code/jYgs7qigNjO1Badj/images/agent-sdk/permissions-flow.svg?fit=max&auto=format&n=jYgs7qigNjO1Badj&q=85&s=c771ad9085b1277d3708027a49c744bc" className="dark:hidden" alt="Diagram of the six-step permission evaluation flow matching the steps above: a tool request passes through hooks, deny rules, ask rules, permission mode, allow rules, and canUseTool. Hooks, deny rules, and canUseTool can route down to Blocked; permission mode bypass, allow rules, and canUseTool can route up to Execute; ask rules route to canUseTool." width="1180" height="260" data-path="images/agent-sdk/permissions-flow.svg" />
+<img src="https://mintcdn.com/claude-code/jYgs7qigNjO1Badj/images/agent-sdk/permissions-flow.svg?fit=max&auto=format&n=jYgs7qigNjO1Badj&q=85&s=c771ad9085b1277d3708027a49c744bc" alt="六步权限评估流程图，与上述步骤相匹配：工具请求通过 hooks、拒绝规则、询问规则、权限模式、允许规则和 canUseTool。Hooks、拒绝规则和 canUseTool 可以路由到阻止；权限模式绕过、允许规则和 canUseTool 可以路由到执行；询问规则路由到 canUseTool。" width="1180" height="260" data-path="images/agent-sdk/permissions-flow.svg" />
 
-<img src="https://mintcdn.com/claude-code/_xqph1dUOslCOwsj/images/agent-sdk/permissions-flow-dark.svg?fit=max&auto=format&n=_xqph1dUOslCOwsj&q=85&s=e53a91e9059cbf51852b7cedb4dd4251" className="hidden dark:block" alt="Diagram of the six-step permission evaluation flow matching the steps above: a tool request passes through hooks, deny rules, ask rules, permission mode, allow rules, and canUseTool. Hooks, deny rules, and canUseTool can route down to Blocked; permission mode bypass, allow rules, and canUseTool can route up to Execute; ask rules route to canUseTool." width="1180" height="260" data-path="images/agent-sdk/permissions-flow-dark.svg" />
+从 v2.1.198 开始，如果您传递一个 `canUseTool` 回调，该评估顺序永远无法到达，TypeScript SDK 在构造查询时会发出一次 Node.js 进程警告。警告的代码是 `CLAUDE_SDK_CAN_USE_TOOL_SHADOWED`。两种配置会触发它：
 
-As of v2.1.198, if you pass a `canUseTool` callback that this evaluation order can never reach, the TypeScript SDK emits a Node.js process warning once when the query is constructed. The warning's code is `CLAUDE_SDK_CAN_USE_TOOL_SHADOWED`. Two configurations trigger it:
+* `permissionMode: 'bypassPermissions'`，它自动批准到达权限模式步骤的每个调用
+* 每个裸 `allowedTools` 条目，如 `"Read"`，它在咨询回调之前自动批准整个工具
 
-* `permissionMode: 'bypassPermissions'`, which auto-approves every call that reaches the permission mode step
-* Each bare `allowedTools` entry such as `"Read"`, which auto-approves that whole tool before the callback is consulted
+带有说明符的条目（如 `Bash(ls *)`）和 `acceptEdits` 模式不会触发它，来自设置文件的允许规则对检查不可见。
 
-Entries with a specifier such as `Bash(ls *)` and the `acceptEdits` mode don't trigger it, and allow rules coming from settings files aren't visible to the check.
+使用 `process.on('warning', ...)` 监听并匹配代码以记录或抑制它。要无论模式和规则如何都控制每个工具调用，请改用 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)。
 
-Listen with `process.on('warning', ...)` and match the code to log or suppress it. To gate every tool call regardless of mode and rules, use a [`PreToolUse` hook](/docs/en/agent-sdk/hooks) instead.
+本页面重点关注 **允许和拒绝规则** 以及 **权限模式**。对于其他步骤：
 
-This page focuses on **allow and deny rules** and **permission modes**. For the other steps:
+* **Hooks：** 运行自定义代码以允许、拒绝或修改工具请求。请参阅 [使用 hooks 控制执行](/docs/zh-CN/agent-sdk/hooks)。
+* **canUseTool 回调：** 在运行时提示用户批准，当没有更早的步骤解决调用时。请参阅 [处理批准和用户输入](/docs/zh-CN/agent-sdk/user-input)。
 
-* **Hooks:** run custom code to allow, deny, or modify tool requests. See [Control execution with hooks](/docs/en/agent-sdk/hooks).
-* **canUseTool callback:** prompt users for approval at runtime, when no earlier step resolves the call. See [Handle approvals and user input](/docs/en/agent-sdk/user-input).
+<h2 id="allow-and-deny-rules">
+  允许和拒绝规则
+</h2>
 
-## Allow and deny rules
+`allowed_tools` 和 `disallowed_tools`（TypeScript：`allowedTools` / `disallowedTools`）向上面评估流程中的允许和拒绝规则列表添加条目。允许规则仅影响批准：未在 `allowed_tools` 中列出的工具仍然可供 Claude 使用，并继续进行权限模式。拒绝规则的行为取决于它们是命名工具还是在工具内范围化模式。
 
-`allowed_tools` and `disallowed_tools` (TypeScript: `allowedTools` / `disallowedTools`) add entries to the allow and deny rule lists in the evaluation flow above. Allow rules only affect approval: a tool not listed in `allowed_tools` is still available to Claude and falls through to the permission mode. Deny rules behave differently depending on whether they name a tool or scope a pattern within one.
+| 选项                                | 效果                                                                                  |
+| :-------------------------------- | :---------------------------------------------------------------------------------- |
+| `allowed_tools=["Read", "Grep"]`  | `Read` 和 `Grep` 被自动批准。此处未列出的工具仍然存在并继续进行权限模式和 `canUseTool`。                          |
+| `disallowed_tools=["Bash"]`       | `Bash` 工具定义从请求中移除。Claude 看不到该工具，无法尝试它。                                              |
+| `disallowed_tools=["Bash(rm *)"]` | `Bash` 保持可用。与 `rm *` 匹配的调用在每个权限模式中都被拒绝，包括 `bypassPermissions`。其他 `Bash` 调用继续进行权限模式。 |
+| `disallowed_tools=["*"]`          | 每个工具定义都从请求中移除。工具名称通配符在拒绝规则中受支持：`"*"` 匹配每个工具，`"mcp__*"` 匹配所有服务器中的每个 MCP 工具。          |
 
-| Option                            | Effect                                                                                                                                                                             |
-| :-------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allowed_tools=["Read", "Grep"]`  | `Read` and `Grep` are auto-approved. Tools not listed here still exist and fall through to the permission mode and `canUseTool`.                                                   |
-| `disallowed_tools=["Bash"]`       | The `Bash` tool definition is removed from the request. Claude does not see the tool and cannot attempt it.                                                                        |
-| `disallowed_tools=["Bash(rm *)"]` | `Bash` stays available. Calls matching `rm *` are denied in every permission mode, including `bypassPermissions`. Other `Bash` calls fall through to the permission mode.          |
-| `disallowed_tools=["*"]`          | Every tool definition is removed from the request. Tool-name globs are supported in deny rules: `"*"` matches every tool and `"mcp__*"` matches every MCP tool across all servers. |
+允许规则仅在字面 `mcp__<server>__` 前缀之后接受工具名称通配符。服务器段必须无通配符，以便规则命名您配置的特定服务器：`mcp__puppeteer__*` 匹配来自 `puppeteer` 服务器的每个工具，`mcp__github__get_*` 匹配其 `get_` 工具。未锚定的条目如 `allowed_tools=["*"]` 或 `allowed_tools=["mcp__*"]` 被忽略并显示启动警告，不会自动批准任何内容。
 
-Allow rules accept tool-name globs only after a literal `mcp__<server>__` prefix. The server segment must be glob-free so the rule names a specific server you configured: `mcp__puppeteer__*` matches every tool from the `puppeteer` server, and `mcp__github__get_*` matches its `get_` tools. An unanchored entry like `allowed_tools=["*"]` or `allowed_tools=["mcp__*"]` is ignored with a startup warning and does not auto-approve anything.
+范围化规则用于 `Read` 和 `Edit` 采用路径模式。`Edit(path)` 规则管理所有写入文件的内置工具，包括 `Write` 和 `NotebookEdit`；`Write(path)` 规则永远不会被文件权限检查匹配。
 
-Scoped rules for `Read` and `Edit` take a path pattern. `Edit(path)` rules govern all built-in tools that write files, including `Write` and `NotebookEdit`; a `Write(path)` rule is never matched by the file permission checks.
-
-Use `//path` for an absolute filesystem path: a deny rule of `Edit(//secrets/**)` blocks writes anywhere under `/secrets` on disk. With a single leading slash, `Edit(/secrets/**)` anchors at the rule's source instead. For rules passed through `allowed_tools` or `disallowed_tools`, that means the session's working directory, so the rule doesn't block `/secrets` on disk. See [Read and Edit rules](/docs/en/permissions#read-and-edit) for the four anchor forms and how rules from settings files resolve.
+使用 `//path` 表示绝对文件系统路径：`Edit(//secrets/**)` 的拒绝规则阻止在磁盘上 `/secrets` 下任何位置的写入。使用单个前导斜杠，`Edit(/secrets/**)` 在规则的源处锚定。对于通过 `allowed_tools` 或 `disallowed_tools` 传递的规则，这意味着会话的工作目录，因此规则不会阻止磁盘上的 `/secrets`。请参阅 [Read 和 Edit 规则](/docs/zh-CN/permissions#read-and-edit) 了解四种锚定形式以及来自设置文件的规则如何解析。
 
 <Warning>
-  **Auto-approved tools never reach `canUseTool`.** A tool call approved at any earlier step, by `acceptEdits` or `bypassPermissions`, or by an allow rule, skips your `canUseTool` callback, so permission checks you put there are silently bypassed for that tool. `AskUserQuestion`, MCP tools marked [`_meta["anthropic/requiresUserInteraction"]`](/docs/en/mcp#require-approval-for-a-specific-tool), and connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools) still reach the callback, even when an allow rule matches.
+  **自动批准的工具永远不会到达 `canUseTool`。** 在任何早期步骤中批准的工具调用，通过 `acceptEdits` 或 `bypassPermissions`，或通过允许规则，会跳过您的 `canUseTool` 回调，因此您在那里放置的权限检查对该工具被静默绕过。`AskUserQuestion`、标记有 [`_meta["anthropic/requiresUserInteraction"]`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具，以及连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 仍然到达回调，即使允许规则匹配。
 
-  Coverage depends on the entry's form: a bare name like `Read` or `mcp__github__get_issue` auto-approves every call to that tool, while a scoped rule like `Bash(ls *)` auto-approves only matching calls and other `Bash` calls still fall through to the callback. For checks that must run on every tool call, use a [`PreToolUse` hook](/docs/en/agent-sdk/hooks): hooks run before every other step, and a hook deny applies even in `bypassPermissions` mode.
+  覆盖范围取决于条目的形式：像 `Read` 或 `mcp__github__get_issue` 这样的裸名称自动批准对该工具的每个调用，而像 `Bash(ls *)` 这样的范围化规则仅自动批准匹配的调用，其他 `Bash` 调用仍然继续进行回调。对于必须在每个工具调用上运行的检查，请使用 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)：hooks 在每个其他步骤之前运行，hook 拒绝甚至在 `bypassPermissions` 模式中也适用。
 </Warning>
 
-For a locked-down agent, pair `allowedTools` with `permissionMode: "dontAsk"`. Listed tools are approved, apart from the always-prompt tools in the Warning above; anything else is denied outright instead of prompting:
+对于锁定的代理，将 `allowedTools` 与 `permissionMode: "dontAsk"` 配对。列出的工具被批准，除了上面警告中的始终提示工具；其他任何内容都被直接拒绝，而不是提示：
 
 ```typescript theme={null}
 const options = {
@@ -97,41 +99,45 @@ const options = {
 ```
 
 <Warning>
-  **`allowed_tools` does not constrain `bypassPermissions`.** `allowed_tools` only pre-approves the tools you list. Unlisted tools are not matched by any allow rule and fall through to the permission mode, where `bypassPermissions` approves them. Setting `allowed_tools=["Read"]` alongside `permission_mode="bypassPermissions"` still approves every tool, including `Bash`, `Write`, and `Edit`. If you need `bypassPermissions` but want specific tools blocked, use `disallowed_tools`.
+  **`allowed_tools` 不约束 `bypassPermissions`。** `allowed_tools` 仅预批准您列出的工具。未列出的工具不与任何允许规则匹配，并继续进行权限模式，其中 `bypassPermissions` 批准它们。设置 `allowed_tools=["Read"]` 与 `permission_mode="bypassPermissions"` 一起仍然批准每个工具，包括 `Bash`、`Write` 和 `Edit`。如果您需要 `bypassPermissions` 但想要阻止特定工具，请使用 `disallowed_tools`。
 </Warning>
 
-You can also configure allow, deny, and ask rules declaratively in `.claude/settings.json`. These rules are read when the `project` setting source is enabled, which it is for default `query()` options. If you set `setting_sources` (TypeScript: `settingSources`) explicitly, include `"project"` for them to apply. See [Permission settings](/docs/en/settings#permission-settings) for the rule syntax.
+您也可以在 `.claude/settings.json` 中声明式地配置允许、拒绝和询问规则。当启用 `project` 设置源时，这些规则被读取，默认 `query()` 选项就是这样。如果您显式设置 `setting_sources`（TypeScript：`settingSources`），请包含 `"project"` 以使其应用。请参阅 [权限设置](/docs/zh-CN/settings#permission-settings) 了解规则语法。
 
-## Permission modes
+<h2 id="permission-modes">
+  权限模式
+</h2>
 
-Permission modes provide global control over how Claude uses tools. You can set the permission mode when calling `query()` or change it dynamically during streaming sessions.
+权限模式提供对 Claude 如何使用工具的全局控制。您可以在调用 `query()` 时设置权限模式，或在流式会话期间动态更改它。
 
-### Available modes
+<h3 id="available-modes">
+  可用模式
+</h3>
 
-The SDK supports these permission modes:
+SDK 支持这些权限模式：
 
-| Mode                | Description                  | Tool behavior                                                                                                                                                                                                                                                                          |
-| :------------------ | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `default`           | Standard permission behavior | No auto-approvals; unmatched tools trigger your `canUseTool` callback                                                                                                                                                                                                                  |
-| `dontAsk`           | Deny instead of prompting    | Anything not pre-approved by `allowed_tools` or rules is denied; connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools) and tools that require user interaction are denied even if you've pre-approved them. `canUseTool` is never called  |
-| `acceptEdits`       | Auto-accept file edits       | File edits and [filesystem operations](#accept-edits-mode-acceptedits) (`mkdir`, `rm`, `mv`, etc.) are automatically approved                                                                                                                                                          |
-| `bypassPermissions` | Bypass permission checks     | Tools run without permission prompts, except tools matched by an explicit [`ask` rule](#how-permissions-are-evaluated), connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and tools that require user interaction (use with caution) |
-| `plan`              | Planning mode                | Claude explores and plans without editing your source files; file edits are never auto-approved and prompt through your `canUseTool` callback                                                                                                                                          |
-| `auto`              | Model-classified approvals   | A model classifier approves or denies permission prompts. See [Auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) for availability                                                                                                                                      |
+| 模式                  | 描述       | 工具行为                                                                                                                                                       |
+| :------------------ | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default`           | 标准权限行为   | 无自动批准；不匹配的工具触发您的 `canUseTool` 回调                                                                                                                           |
+| `dontAsk`           | 拒绝而不是提示  | 任何未被 `allowed_tools` 或规则预批准的内容都被拒绝；连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和需要用户交互的工具即使您已预批准它们也被拒绝。`canUseTool` 永远不会被调用   |
+| `acceptEdits`       | 自动接受文件编辑 | 文件编辑和 [文件系统操作](#accept-edits-mode-acceptedits)（`mkdir`、`rm`、`mv` 等）被自动批准                                                                                   |
+| `bypassPermissions` | 绕过权限检查   | 工具运行而无需权限提示，除了显式 [`ask` 规则](#how-permissions-are-evaluated)匹配的工具、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和需要用户交互的工具（谨慎使用） |
+| `plan`              | 规划模式     | Claude 在不编辑源文件的情况下探索和规划；文件编辑永远不会自动批准，并通过您的 `canUseTool` 回调提示                                                                                               |
+| `auto`              | 模型分类批准   | 模型分类器批准或拒绝每个工具调用。请参阅 [Auto 模式](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) 了解可用性                                                             |
 
 <Warning>
-  **Subagent inheritance:** Subagents inherit the parent session's permission mode. An [`AgentDefinition`'s `permissionMode`](/docs/en/agent-sdk/typescript#agentdefinition) can override it, except when the parent uses `bypassPermissions`, `acceptEdits`, or `auto`: those modes apply to every subagent and can't be overridden per subagent.
-
-  Subagents may have different system prompts and less constrained behavior than your main agent, so inheriting `bypassPermissions` grants them full, autonomous system access. Explicit [`ask` rules](#how-permissions-are-evaluated), connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools), and tools that require user interaction still force a prompt.
+  **子代理继承：** 当父代理使用 `bypassPermissions`、`acceptEdits` 或 `auto` 时，所有子代理继承该模式，并且不能按子代理覆盖。子代理可能有不同的系统提示和行为约束较少，比您的主代理，所以继承 `bypassPermissions` 授予它们完整的、自主的系统访问权限。显式 [`ask` 规则](#how-permissions-are-evaluated)、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和需要用户交互的工具仍然会强制提示。
 </Warning>
 
-### Set permission mode
+<h3 id="set-permission-mode">
+  设置权限模式
+</h3>
 
-You can set the permission mode once when starting a query, or change it dynamically while the session is active.
+您可以在启动查询时设置权限模式一次，或在会话活跃时动态更改它。
 
 <Tabs>
-  <Tab title="At query time">
-    Pass `permission_mode` (Python) or `permissionMode` (TypeScript) when creating a query. This mode applies for the entire session unless changed dynamically.
+  <Tab title="在查询时">
+    在创建查询时传递 `permission_mode`（Python）或 `permissionMode`（TypeScript）。此模式应用于整个会话，除非动态更改。
 
     <CodeGroup>
       ```python Python theme={null}
@@ -143,7 +149,7 @@ You can set the permission mode once when starting a query, or change it dynamic
           async for message in query(
               prompt="Help me refactor this code",
               options=ClaudeAgentOptions(
-                  permission_mode="default",  # Set the mode here
+                  permission_mode="default",  # 在此处设置模式
               ),
           ):
               if hasattr(message, "result"):
@@ -160,7 +166,7 @@ You can set the permission mode once when starting a query, or change it dynamic
         for await (const message of query({
           prompt: "Help me refactor this code",
           options: {
-            permissionMode: "default" // Set the mode here
+            permissionMode: "default" // 在此处设置模式
           }
         })) {
           if ("result" in message) {
@@ -174,8 +180,8 @@ You can set the permission mode once when starting a query, or change it dynamic
     </CodeGroup>
   </Tab>
 
-  <Tab title="During streaming">
-    Call `set_permission_mode()` (Python) or `setPermissionMode()` (TypeScript) to change the mode mid-session. The new mode takes effect immediately for all subsequent tool requests. This lets you start restrictive and loosen permissions as trust builds, for example switching to `acceptEdits` after reviewing Claude's initial approach.
+  <Tab title="在流式传输期间">
+    调用 `set_permission_mode()`（Python）或 `setPermissionMode()`（TypeScript）以在会话中期更改模式。新模式立即对所有后续工具请求生效。这让您可以从限制性开始，随着信任建立而放松权限，例如在审查 Claude 的初始方法后切换到 `acceptEdits`。
 
     <CodeGroup>
       ```python Python theme={null}
@@ -186,15 +192,15 @@ You can set the permission mode once when starting a query, or change it dynamic
       async def main():
           async with ClaudeSDKClient(
               options=ClaudeAgentOptions(
-                  permission_mode="default",  # Start in default mode
+                  permission_mode="default",  # 以默认模式开始
               )
           ) as client:
               await client.query("Help me refactor this code")
 
-              # Change mode dynamically mid-session
+              # 在会话中期动态更改模式
               await client.set_permission_mode("acceptEdits")
 
-              # Process messages with the new permission mode
+              # 使用新权限模式处理消息
               async for message in client.receive_response():
                   if hasattr(message, "result"):
                       print(message.result)
@@ -210,14 +216,14 @@ You can set the permission mode once when starting a query, or change it dynamic
         const q = query({
           prompt: "Help me refactor this code",
           options: {
-            permissionMode: "default" // Start in default mode
+            permissionMode: "default" // 以默认模式开始
           }
         });
 
-        // Change mode dynamically mid-session
+        // 在会话中期动态更改模式
         await q.setPermissionMode("acceptEdits");
 
-        // Process messages with the new permission mode
+        // 使用新权限模式处理消息
         for await (const message of q) {
           if ("result" in message) {
             console.log(message.result);
@@ -231,51 +237,59 @@ You can set the permission mode once when starting a query, or change it dynamic
   </Tab>
 </Tabs>
 
-### Mode details
+<h3 id="mode-details">
+  模式详情
+</h3>
 
-#### Accept edits mode (`acceptEdits`)
+<h4 id="accept-edits-mode-acceptedits">
+  接受编辑模式（`acceptEdits`）
+</h4>
 
-Auto-approves file operations so Claude can edit code without prompting. Other tools (like Bash commands that aren't filesystem operations) still require normal permissions.
+自动批准文件操作，以便 Claude 可以编辑代码而无需提示。其他工具（如不是文件系统操作的 Bash 命令）仍然需要正常权限。
 
-**Auto-approved operations:**
+**自动批准的操作：**
 
-* File edits (Edit, Write tools)
-* Filesystem commands: `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp`, `sed`
+* 文件编辑（Edit、Write 工具）
+* 文件系统命令：`mkdir`、`touch`、`rm`、`rmdir`、`mv`、`cp`、`sed`
 
-Both apply only to paths inside the working directory or `additionalDirectories`. Paths outside that scope and writes to protected paths still prompt.
+两者都仅适用于工作目录或 `additionalDirectories` 内的路径。该范围外的路径和对受保护路径的写入仍然会提示。
 
-**Use when:** you trust Claude's edits and want faster iteration, such as during prototyping or when working in an isolated directory.
+**使用时机：** 您信任 Claude 的编辑并希望更快的迭代，例如在原型设计期间或在隔离目录中工作时。
 
-#### Don't ask mode (`dontAsk`)
+<h4 id="don’t-ask-mode-dontask">
+  不询问模式（`dontAsk`）
+</h4>
 
-Converts any permission prompt into a denial. Tools pre-approved by `allowed_tools`, `settings.json` allow rules, or a hook run as normal. Connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools) and tools that require user interaction are denied even when an allow rule matches. Everything else is denied without calling `canUseTool`.
+将任何权限提示转换为拒绝。由 `allowed_tools`、`settings.json` 允许规则或作为 hook 运行的工具正常运行。连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和需要用户交互的工具即使允许规则匹配也被拒绝。其他所有内容都被拒绝，无需调用 `canUseTool`。
 
-**Use when:** you want a fixed, explicit tool surface for a headless agent and prefer a hard deny over silent reliance on `canUseTool` being absent.
+**使用时机：** 您想要为无头代理提供固定的、明确的工具表面，并且更喜欢硬拒绝而不是默默依赖 `canUseTool` 不存在。
 
-#### Bypass permissions mode (`bypassPermissions`)
+<h4 id="bypass-permissions-mode-bypasspermissions">
+  绕过权限模式（`bypassPermissions`）
+</h4>
 
-Auto-approves all tool uses without prompts. Hooks still execute and can block operations if needed.
+自动批准所有工具使用而无需提示。Hooks 仍然执行，如果需要可以阻止操作。
 
 <Warning>
-  Use with extreme caution. Claude has full system access in this mode. Only use in controlled environments where you trust all possible operations.
+  谨慎使用。Claude 在此模式下具有完整的系统访问权限。仅在您信任所有可能操作的受控环境中使用。
 
-  `allowed_tools` does not constrain this mode. Every tool is approved, not just the ones you listed. Deny rules (`disallowed_tools`), explicit `ask` rules, and hooks are evaluated before the mode check and can still block a tool. Connector tools [your organization set to `ask`](/docs/en/mcp#organization-controls-on-connector-tools) and tools that require user interaction still fall through to your `canUseTool` callback.
+  `allowed_tools` 不约束此模式。每个工具都被批准，而不仅仅是您列出的工具。拒绝规则（`disallowed_tools`）、显式 `ask` 规则和 hooks 在模式检查之前被评估，仍然可以阻止工具。连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)和需要用户交互的工具仍然会通过您的 `canUseTool` 回调。
 </Warning>
 
-#### Plan mode (`plan`)
+<h4 id="plan-mode-plan">
+  规划模式（`plan`）
+</h4>
 
-Claude explores the codebase and produces a plan without editing your source files. Read-only tools run as in default mode.
+Claude 探索代码库并生成计划而不编辑您的源文件。只读工具在默认模式下运行。文件编辑在规划模式下永远不会自动批准，即使允许规则匹配。它们通过您的 `canUseTool` 回调提示。Claude 可能使用 `AskUserQuestion` 在最终确定计划之前澄清需求。请参阅 [处理批准和用户输入](/docs/zh-CN/agent-sdk/user-input#handle-clarifying-questions) 以处理这些提示。
 
-File edits are never auto-approved in plan mode, even when an allow rule matches. They prompt through your `canUseTool` callback instead. {/* min-version: 2.1.212 */}On Claude Code v2.1.212 or later, shell commands that modify files, such as `touch` and `rm`, reach your `canUseTool` callback the same way.
+**使用时机：** 您想要 Claude 提议更改而不执行它们，例如在代码审查期间或当您需要在进行更改之前批准更改时。
 
-Claude may use `AskUserQuestion` to clarify requirements before finalizing the plan. See [Handle approvals and user input](/docs/en/agent-sdk/user-input#handle-clarifying-questions) for handling these prompts.
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-**Use when:** you want Claude to propose changes without executing them, such as during code review or when you need to approve changes before they're made.
+对于权限评估流程中的其他步骤：
 
-## Related resources
-
-For the other steps in the permission evaluation flow:
-
-* [Handle approvals and user input](/docs/en/agent-sdk/user-input): interactive approval prompts and clarifying questions
-* [Hooks guide](/docs/en/agent-sdk/hooks): run custom code at key points in the agent lifecycle
-* [Permission rules](/docs/en/settings#permission-settings): declarative allow/deny rules in `settings.json`
+* [处理批准和用户输入](/docs/zh-CN/agent-sdk/user-input)：交互式批准提示和澄清问题
+* [Hooks 指南](/docs/zh-CN/agent-sdk/hooks)：在代理生命周期中的关键点运行自定义代码
+* [权限规则](/docs/zh-CN/settings#permission-settings)：`settings.json` 中的声明式允许/拒绝规则

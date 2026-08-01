@@ -2,15 +2,17 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Run prompts on a schedule
+# 按计划运行提示词
 
-> Use /loop and the cron scheduling tools to run prompts repeatedly, poll for status, or set one-time reminders within a Claude Code session.
+> 使用 /loop 和 cron 调度工具在 Claude Code 会话中重复运行提示词、轮询状态或设置一次性提醒。
 
-Scheduled tasks let Claude re-run a prompt automatically on an interval. Use them to poll a deployment, babysit a PR, check back on a long-running build, or remind yourself to do something later in the session. To react to events as they happen instead of polling, see [Channels](/docs/en/channels): your CI can push the failure into the session directly. To keep the session working turn after turn until a condition is met rather than on an interval, see [`/goal`](/docs/en/goal).
+计划任务让 Claude 按间隔自动重新运行提示词。使用它们来轮询部署、监督 PR、检查长时间运行的构建，或在会话中稍后提醒自己做某事。要对事件进行实时反应而不是轮询，请参阅 [Channels](/docs/zh-CN/channels)：您的 CI 可以直接将失败推送到会话中。要保持会话工作转向转向直到满足条件而不是按间隔，请参阅 [`/goal`](/docs/zh-CN/goal)。
 
-Tasks are session-scoped: they live in the current conversation and stop when you start a new one. Resuming with `--resume` or `--continue` brings back any task that hasn't [expired](#seven-day-expiry): a recurring task created within the last 7 days, or a one-shot whose scheduled time hasn't passed yet. For scheduling that survives independently of any session, use [Routines](/docs/en/routines) to create a routine on Anthropic-managed infrastructure, set up a [Desktop scheduled task](/docs/en/desktop-scheduled-tasks), or use [GitHub Actions](/docs/en/github-actions).
+任务是会话范围的：它们存在于当前对话中，当您启动新对话时就会停止。使用 `--resume` 或 `--continue` 恢复会带回任何尚未[过期](#seven-day-expiry)的任务：在过去 7 天内创建的重复任务，或计划时间尚未到达的一次性任务。对于独立于任何会话而存在的调度，请使用 [Routines](/docs/zh-CN/routines) 在 Anthropic 管理的基础设施上创建例程、设置 [Desktop 计划任务](/docs/zh-CN/desktop-scheduled-tasks)，或使用 [GitHub Actions](/docs/zh-CN/github-actions)。
 
-## Compare scheduling options
+<h2 id="compare-scheduling-options">
+  比较调度选项
+</h2>
 
 Claude Code offers three ways to schedule recurring or one-off work:
 
@@ -30,85 +32,95 @@ Claude Code offers three ways to schedule recurring or one-off work:
   Use **cloud tasks** for work that should run reliably without your machine. Use **Desktop tasks** when you need access to local files and tools. Use **`/loop`** for quick polling during a session.
 </Tip>
 
-## Run a prompt repeatedly with /loop
+<h2 id="run-a-prompt-repeatedly-with-/loop">
+  使用 /loop 重复运行提示词
+</h2>
 
-The `/loop` [bundled skill](/docs/en/commands) is the quickest way to run a prompt on repeat while the session stays open. Both the interval and the prompt are optional, and what you provide determines how the loop behaves.
+`/loop` [bundled skill](/docs/zh-CN/commands) 是在会话保持打开时重复运行提示词的最快方式。间隔和提示词都是可选的，您提供的内容决定了循环的行为方式。
 
-| What you provide          | Example                     | What happens                                                                                                  |
-| :------------------------ | :-------------------------- | :------------------------------------------------------------------------------------------------------------ |
-| Interval and prompt       | `/loop 5m check the deploy` | Your prompt runs on a [fixed schedule](#run-on-a-fixed-interval)                                              |
-| Prompt only               | `/loop check the deploy`    | Your prompt runs at an [interval Claude chooses](#let-claude-choose-the-interval) each iteration              |
-| Interval only, or nothing | `/loop`                     | The [built-in maintenance prompt](#run-the-built-in-maintenance-prompt) runs, or your `loop.md` if one exists |
+| 您提供的内容 | 示例                          | 发生的情况                                                                 |
+| :----- | :-------------------------- | :-------------------------------------------------------------------- |
+| 间隔和提示词 | `/loop 5m check the deploy` | 您的提示词在[固定计划](#run-on-a-fixed-interval)上运行                             |
+| 仅提示词   | `/loop check the deploy`    | 您的提示词在 Claude 选择的[间隔](#let-claude-choose-the-interval)上运行，每次迭代        |
+| 仅间隔或无  | `/loop`                     | [内置维护提示词](#run-the-built-in-maintenance-prompt)运行，或您的 `loop.md`（如果存在） |
 
-You can also pass a skill as the prompt, for example `/loop 20m /review-pr 1234`, to re-run that skill each iteration. {/* min-version: 2.1.196 */}As of v2.1.196, a scheduled fire only runs skills that Claude is [allowed to invoke on its own](/docs/en/skills#control-who-invokes-a-skill). The following reach Claude as plain text instead of executing:
+您也可以将 skill 作为提示词传递，例如 `/loop 20m /review-pr 1234`，以在每次迭代时重新运行该 skill。{/* min-version: 2.1.196 */}从 v2.1.196 开始，计划的触发仅运行 Claude [允许自己调用](/docs/zh-CN/skills#control-who-invokes-a-skill)的 skill。以下内容作为纯文本到达 Claude，而不是执行：
 
-* Built-in commands such as `/permissions`, `/model`, or `/clear`
-* Skills marked [`disable-model-invocation: true`](/docs/en/skills#frontmatter-reference), including the bundled `/verify` and `/code-review` skills.
-* Skills withheld from Claude by a [`skillOverrides`](/docs/en/skills#override-skill-visibility-from-settings) setting or a `Skill` [deny rule](/docs/en/skills#restrict-claude’s-skill-access)
-* [MCP prompts](/docs/en/mcp#use-mcp-prompts-as-commands) such as `/mcp__github__list_prs`
+* 内置命令，例如 `/permissions`、`/model` 或 `/clear`
+* 标记为 [`disable-model-invocation: true`](/docs/zh-CN/skills#frontmatter-reference) 的 skill
+* 由 [`skillOverrides`](/docs/zh-CN/skills#override-skill-visibility-from-settings) 设置或 `Skill` [deny rule](/docs/zh-CN/skills#restrict-claude’s-skill-access) 从 Claude 扣留的 skill
+* [MCP prompts](/docs/zh-CN/mcp#use-mcp-prompts-as-commands)，例如 `/mcp__github__list_prs`；MCP 服务器公开的 skill 仍然运行
 
-### Run on a fixed interval
+<h3 id="run-on-a-fixed-interval">
+  在固定间隔上运行
+</h3>
 
-When you supply an interval, Claude converts it to a cron expression, schedules the job, and confirms the cadence and job ID.
+当您提供间隔时，Claude 将其转换为 cron 表达式，计划作业，并确认频率和作业 ID。
 
 ```text theme={null}
 /loop 5m check if the deployment finished and tell me what happened
 ```
 
-The interval can lead the prompt as a bare token like `30m`, or trail it as a clause like `every 2 hours`. Supported units are `s` for seconds, `m` for minutes, `h` for hours, and `d` for days.
+间隔可以作为裸令牌（如 `30m`）在提示词前面，或作为子句（如 `every 2 hours`）在后面。支持的单位是 `s` 表示秒、`m` 表示分钟、`h` 表示小时、`d` 表示天。
 
-Seconds are rounded up to the nearest minute since cron has one-minute granularity. Intervals that don't map to a clean cron step, such as `7m` or `90m`, are rounded to the nearest interval that does and Claude tells you what it picked.
+秒数向上舍入到最近的分钟，因为 cron 的粒度为一分钟。不能均匀映射到干净 cron 步长的间隔，例如 `7m` 或 `90m`，会舍入到最近的间隔，Claude 会告诉您它选择了什么。
 
-### Let Claude choose the interval
+<h3 id="let-claude-choose-the-interval">
+  让 Claude 选择间隔
+</h3>
 
-When you omit the interval, Claude chooses one dynamically instead of running on a fixed cron schedule. After each iteration it picks a delay between one minute and one hour based on what it observed: short waits while a build is finishing or a PR is active, longer waits when nothing is pending. The chosen delay and the reason for it are printed at the end of each iteration.
+当您省略间隔时，Claude 会动态选择一个，而不是在固定 cron 计划上运行。在每次迭代后，它会根据观察到的情况选择一个一分钟到一小时之间的延迟：在构建完成或 PR 活跃时等待较短时间，当没有待处理项时等待较长时间。选择的延迟和原因会在每次迭代结束时打印。
 
-The example below checks CI and review comments, with Claude waiting longer between iterations once the PR goes quiet:
+下面的示例检查 CI 和审查评论，Claude 在 PR 变得安静后在迭代之间等待更长时间：
 
 ```text theme={null}
 /loop check whether CI passed and address any review comments
 ```
 
-When you ask for a dynamic `/loop` schedule, Claude may use the [Monitor tool](/docs/en/tools-reference#monitor-tool) directly. Monitor runs a background script and streams each output line back, which avoids polling altogether and is often more token-efficient and responsive than re-running a prompt on an interval.
+当您要求动态 `/loop` 计划时，Claude 可能会直接使用 [Monitor tool](/docs/zh-CN/tools-reference#monitor-tool)。Monitor 运行后台脚本并流式传输每个输出行，这完全避免了轮询，通常比在间隔上重新运行提示词更节省令牌且响应更快。
 
-A dynamically scheduled loop appears in your [scheduled task list](#manage-scheduled-tasks) like any other task, so you can list or cancel it the same way. The [jitter rules](#jitter) don't apply to it, but the [seven-day expiry](#seven-day-expiry) does: the loop ends automatically seven days after you start it.
+动态计划的循环出现在您的[计划任务列表](#manage-scheduled-tasks)中，就像任何其他任务一样，所以您可以以相同的方式列出或取消它。[抖动规则](#jitter)不适用于它，但[七天过期](#seven-day-expiry)适用：循环在您启动它七天后自动结束。
 
 <Note>
-  On Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, and Microsoft Foundry, a prompt with no interval runs on a fixed 10-minute schedule instead.
+  在 Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上，没有间隔的提示词在固定的 10 分钟计划上运行。
 </Note>
 
-### Run the built-in maintenance prompt
+<h3 id="run-the-built-in-maintenance-prompt">
+  运行内置维护提示词
+</h3>
 
-When you omit the prompt, Claude uses a built-in maintenance prompt instead of one you supply. On each iteration it works through the following, in order:
+当您省略提示词时，Claude 使用内置维护提示词而不是您提供的提示词。在每次迭代中，它按顺序处理以下内容：
 
-* continue any unfinished work from the conversation
-* tend to the current branch's pull request: review comments, failed CI runs, merge conflicts
-* run cleanup passes such as bug hunts or simplification when nothing else is pending
+* 继续对话中的任何未完成工作
+* 照顾当前分支的拉取请求：审查评论、失败的 CI 运行、合并冲突
+* 运行清理通过，例如当没有其他待处理项时的错误搜索或简化
 
-Claude does not start new initiatives outside that scope, and irreversible actions such as pushing or deleting only proceed when they continue something the transcript already authorized.
+Claude 不会启动该范围之外的新举措，不可逆的操作（如推送或删除）仅在继续转录已授权的内容时进行。
 
 ```text theme={null}
 /loop
 ```
 
-A bare `/loop` runs this prompt at a [dynamically chosen interval](#let-claude-choose-the-interval). Add an interval, for example `/loop 15m`, to run it on a fixed schedule instead. To replace the built-in prompt with your own default, see [Customize the default prompt with loop.md](#customize-the-default-prompt-with-loop-md).
+裸 `/loop` 在[动态选择的间隔](#let-claude-choose-the-interval)上运行此提示词。添加间隔，例如 `/loop 15m`，以在固定计划上运行它。要用您自己的默认值替换内置提示词，请参阅[使用 loop.md 自定义默认提示词](#customize-the-default-prompt-with-loop-md)。
 
 <Note>
-  On Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, and Microsoft Foundry, `/loop` with no prompt prints the usage message instead of running the maintenance prompt.
+  在 Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上，没有提示词的 `/loop` 会打印使用消息而不是运行维护提示词。
 </Note>
 
-### Customize the default prompt with loop.md
+<h3 id="customize-the-default-prompt-with-loop-md">
+  使用 loop.md 自定义默认提示词
+</h3>
 
-A `loop.md` file replaces the built-in maintenance prompt with your own instructions. It defines a single default prompt for bare `/loop`, not a list of separate scheduled tasks, and is ignored whenever you supply a prompt on the command line. To schedule additional prompts alongside it, use `/loop <prompt>` or [ask Claude directly](#manage-scheduled-tasks).
+`loop.md` 文件用您自己的说明替换内置维护提示词。它为裸 `/loop` 定义单个默认提示词，而不是单独计划任务的列表，并且在您在命令行上提供提示词时被忽略。要在其旁边计划其他提示词，请使用 `/loop <prompt>` 或[直接询问 Claude](#manage-scheduled-tasks)。
 
-Claude looks for the file in two locations and uses the first one it finds.
+Claude 在两个位置查找文件，并使用它找到的第一个。
 
-| Path                | Scope                                                            |
-| :------------------ | :--------------------------------------------------------------- |
-| `.claude/loop.md`   | Project-level. Takes precedence when both files exist.           |
-| `~/.claude/loop.md` | User-level. Applies in any project that does not define its own. |
+| 路径                  | 范围                  |
+| :------------------ | :------------------ |
+| `.claude/loop.md`   | 项目级别。当两个文件都存在时优先。   |
+| `~/.claude/loop.md` | 用户级别。适用于任何未定义自己的项目。 |
 
-The file is plain Markdown with no required structure. Write it as if you were typing the `/loop` prompt directly. The following example keeps a release branch healthy:
+该文件是纯 Markdown，没有必需的结构。像您直接输入 `/loop` 提示词一样编写它。以下示例保持发布分支健康：
 
 ```markdown title=".claude/loop.md" theme={null}
 Check the `release/next` PR. If CI is red, pull the failing job log,
@@ -117,23 +129,27 @@ address each one and resolve the thread. If everything is green and
 quiet, say so in one line.
 ```
 
-Edits to `loop.md` take effect on the next iteration, so you can refine the instructions while a loop is running. When no `loop.md` exists in either location, the loop falls back to the built-in maintenance prompt. Keep the file concise: content beyond 25,000 bytes is truncated.
+对 `loop.md` 的编辑在下一次迭代时生效，所以您可以在循环运行时优化说明。当任一位置都不存在 `loop.md` 时，循环回退到内置维护提示词。保持文件简洁：超过 25,000 字节的内容会被截断。
 
 <Note>
-  On Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, and Microsoft Foundry, `loop.md` isn't read and `/loop` with no prompt prints the usage message instead.
+  在 Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上，`loop.md` 不被读取，没有提示词的 `/loop` 会打印使用消息。
 </Note>
 
-### Stop a loop
+<h3 id="stop-a-loop">
+  停止循环
+</h3>
 
-To stop a `/loop` while it is waiting for the next iteration, press `Esc`. This clears the pending wakeup so the loop does not fire again. Tasks you scheduled by [asking Claude directly](#manage-scheduled-tasks) are not affected by `Esc` and stay in place until you delete them.
+要在 `/loop` 等待下一次迭代时停止它，请按 `Esc`。这会清除待处理的唤醒，所以循环不会再次触发。您通过[直接询问 Claude](#manage-scheduled-tasks)计划的任务不受 `Esc` 影响，会保留在原位，直到您删除它们。
 
-In [self-paced mode](#let-claude-choose-the-interval), Claude can also end the loop on its own once the task is complete. Claude calls the [`ScheduleWakeup` tool](/docs/en/tools-reference) with `stop: true`, which cancels the pending wakeup immediately. If an iteration ends without either rescheduling or stopping, Claude Code schedules one fallback wakeup about 20 minutes later and ends the loop when that iteration doesn't reschedule either. Before v2.1.202, not rescheduling was the only way Claude could end a loop on its own.
+在[自主进行模式](#let-claude-choose-the-interval)中，Claude 也可以在任务完成后通过调用 [`ScheduleWakeup` tool](/docs/zh-CN/tools-reference) 并设置 `stop: true` 来自己结束循环，这会立即取消待处理的唤醒。如果迭代结束时既没有重新计划也没有停止，Claude Code 会在大约 20 分钟后计划一个备用唤醒，并在该迭代也不重新计划时结束循环。在 v2.1.202 之前，不重新计划是 Claude 自己结束循环的唯一方式。
 
-Loops on a fixed interval keep running until you stop them or [seven days elapse](#seven-day-expiry).
+固定间隔上的循环会一直运行，直到您停止它们或[七天过去](#seven-day-expiry)。
 
-## Set a one-time reminder
+<h2 id="set-a-one-time-reminder">
+  设置一次性提醒
+</h2>
 
-For one-shot reminders, describe what you want in natural language instead of using `/loop`. Claude schedules a single-fire task that deletes itself after running.
+对于一次性提醒，用自然语言描述您想要的内容，而不是使用 `/loop`。Claude 计划一个单次触发的任务，该任务在运行后删除自己。
 
 ```text theme={null}
 remind me at 3pm to push the release branch
@@ -143,11 +159,13 @@ remind me at 3pm to push the release branch
 in 45 minutes, check whether the integration tests passed
 ```
 
-Claude pins the fire time to a specific minute and hour using a cron expression and confirms when it will fire.
+Claude 使用 cron 表达式将触发时间固定到特定的分钟和小时，并确认何时触发。
 
-## Manage scheduled tasks
+<h2 id="manage-scheduled-tasks">
+  管理计划任务
+</h2>
 
-Ask Claude in natural language to list or cancel tasks, or reference the underlying tools directly.
+用自然语言要求 Claude 列出或取消任务，或直接引用底层工具。
 
 ```text theme={null}
 what scheduled tasks do I have?
@@ -157,67 +175,78 @@ what scheduled tasks do I have?
 cancel the deploy check job
 ```
 
-Under the hood, Claude uses these tools:
+在幕后，Claude 使用这些工具：
 
-| Tool         | Purpose                                                                                                         |
-| :----------- | :-------------------------------------------------------------------------------------------------------------- |
-| `CronCreate` | Schedule a new task. Accepts a 5-field cron expression, the prompt to run, and whether it recurs or fires once. |
-| `CronList`   | List all scheduled tasks with their IDs, schedules, and prompts.                                                |
-| `CronDelete` | Cancel a task by ID.                                                                                            |
+| 工具           | 目的                                          |
+| :----------- | :------------------------------------------ |
+| `CronCreate` | 计划新任务。接受 5 字段 cron 表达式、要运行的提示词以及是否重复或仅触发一次。 |
+| `CronList`   | 列出所有计划任务及其 ID、计划和提示词。                       |
+| `CronDelete` | 按 ID 取消任务。                                  |
 
-Each scheduled task has an 8-character ID you can pass to `CronDelete`. A session can hold up to 50 scheduled tasks at once.
+每个计划任务都有一个 8 字符的 ID，您可以将其传递给 `CronDelete`。一个会话最多可以同时保存 50 个计划任务。
 
-## How scheduled tasks run
+<h2 id="how-scheduled-tasks-run">
+  计划任务如何运行
+</h2>
 
-The scheduler checks every second for due tasks and enqueues them at low priority. A scheduled prompt fires between your turns, not while Claude is mid-response. If Claude is busy when a task comes due, the prompt waits until the current turn ends.
+调度程序每秒检查一次到期的任务，并以低优先级将其加入队列。计划的提示词在您的回合之间触发，而不是在 Claude 正在响应时。如果 Claude 在任务到期时忙碌，提示词会等到当前回合结束。
 
-All times are interpreted in your local timezone. A cron expression like `0 9 * * *` means 9am wherever you're running Claude Code, not UTC.
+所有时间都在您的本地时区中解释。像 `0 9 * * *` 这样的 cron 表达式意味着 9am 在您运行 Claude Code 的任何地方，而不是 UTC。
 
-### Jitter
+<h3 id="jitter">
+  抖动
+</h3>
 
-To avoid every session hitting the API at the same wall-clock moment, the scheduler adds a deterministic offset to fire times:
+为了避免每个会话在同一个挂钟时刻击中 API，调度程序会向触发时间添加一个确定性偏移：
 
-* Recurring tasks fire up to 30 minutes after the scheduled time (or up to half the interval, for tasks that run more often than hourly). An hourly job scheduled for `:00` may fire anywhere up to `:30`.
-* One-shot tasks scheduled for the top or bottom of the hour fire up to 90 seconds early.
+* 重复任务最多在计划时间之后 30 分钟触发（或对于运行频率超过每小时的任务，最多为间隔的一半）。为 `:00` 计划的每小时作业可能在 `:00` 到 `:30` 之间的任何时间触发。
+* 为小时顶部或底部计划的一次性任务最多提前 90 秒触发。
 
-The offset is derived from the task ID, so the same task always gets the same offset. If exact timing matters, pick a minute that is not `:00` or `:30`, for example `3 9 * * *` instead of `0 9 * * *`, and the one-shot jitter will not apply.
+偏移是从任务 ID 派生的，所以相同的任务总是获得相同的偏移。如果精确的时间很重要，选择不是 `:00` 或 `:30` 的分钟，例如 `3 9 * * *` 而不是 `0 9 * * *`，一次性抖动将不适用。
 
-### Seven-day expiry
+<h3 id="seven-day-expiry">
+  七天过期
+</h3>
 
-Recurring tasks automatically expire 7 days after creation. The task fires one final time, then deletes itself. This bounds how long a forgotten loop can run. If you need a recurring task to last longer, cancel and recreate it before it expires, or use [Routines](/docs/en/routines) or [Desktop scheduled tasks](/docs/en/desktop-scheduled-tasks) for durable scheduling.
+重复任务在创建后 7 天自动过期。任务最后触发一次，然后删除自己。这限制了被遗忘的循环可以运行多长时间。如果您需要重复任务持续更长时间，请在过期前取消并重新创建它，或使用 [Routines](/docs/zh-CN/routines) 或 [Desktop 计划任务](/docs/zh-CN/desktop-scheduled-tasks) 进行持久调度。
 
-## Cron expression reference
+<h2 id="cron-expression-reference">
+  Cron 表达式参考
+</h2>
 
-`CronCreate` accepts standard 5-field cron expressions: `minute hour day-of-month month day-of-week`. All fields support wildcards (`*`), single values (`5`), steps (`*/15`), ranges (`1-5`), and comma-separated lists (`1,15,30`).
+`CronCreate` 接受标准 5 字段 cron 表达式：`minute hour day-of-month month day-of-week`。所有字段都支持通配符 (`*`)、单个值 (`5`)、步长 (`*/15`)、范围 (`1-5`) 和逗号分隔的列表 (`1,15,30`)。
 
-| Example        | Meaning                      |
-| :------------- | :--------------------------- |
-| `*/5 * * * *`  | Every 5 minutes              |
-| `0 * * * *`    | Every hour on the hour       |
-| `7 * * * *`    | Every hour at 7 minutes past |
-| `0 9 * * *`    | Every day at 9am local       |
-| `0 9 * * 1-5`  | Weekdays at 9am local        |
-| `30 14 15 3 *` | March 15 at 2:30pm local     |
+| 示例             | 含义                  |
+| :------------- | :------------------ |
+| `*/5 * * * *`  | 每 5 分钟              |
+| `0 * * * *`    | 每小时整点               |
+| `7 * * * *`    | 每小时的第 7 分钟          |
+| `0 9 * * *`    | 每天本地时间 9am          |
+| `0 9 * * 1-5`  | 工作日本地时间 9am         |
+| `30 14 15 3 *` | 3 月 15 日本地时间下午 2:30 |
 
-Day-of-week uses `0` or `7` for Sunday through `6` for Saturday. Extended syntax like `L`, `W`, `?`, and name aliases such as `MON` or `JAN` is not supported.
+星期几使用 `0` 或 `7` 表示星期日，`6` 表示星期六。不支持扩展语法如 `L`、`W`、`?` 和名称别名如 `MON` 或 `JAN`。
 
-When both day-of-month and day-of-week are constrained, a date matches if either field matches. This follows standard vixie-cron semantics.
+当月份日期和星期几都受到限制时，如果任一字段匹配，日期就匹配。这遵循标准的 vixie-cron 语义。
 
-## Disable scheduled tasks
+<h2 id="disable-scheduled-tasks">
+  禁用计划任务
+</h2>
 
-Set `CLAUDE_CODE_DISABLE_CRON=1` in your environment to disable the scheduler entirely. The cron tools and `/loop` become unavailable, and any already-scheduled tasks stop firing. See [Environment variables](/docs/en/env-vars) for the full list of disable flags.
+在您的环境中设置 `CLAUDE_CODE_DISABLE_CRON=1` 以完全禁用调度程序。cron 工具和 `/loop` 变得不可用，任何已计划的任务都停止触发。有关禁用标志的完整列表，请参阅[环境变量](/docs/zh-CN/env-vars)。
 
-## Limitations
+<h2 id="limitations">
+  限制
+</h2>
 
-Session-scoped scheduling has inherent constraints:
+会话范围的调度有固有的限制：
 
-* Tasks only fire while Claude Code is running and idle. Closing the terminal or letting the session exit stops them firing. [Backgrounding the session](/docs/en/agent-view#from-inside-a-session) carries `/loop` tasks over to a background session, which keeps running without a terminal.
-* No catch-up for missed fires. If a task's scheduled time passes while Claude is busy on a long-running request, it fires once when Claude becomes idle, not once per missed interval.
-* Starting a fresh conversation clears all session-scoped tasks. Resuming with `claude --resume` or `claude --continue` restores tasks that have not expired: recurring tasks within seven days of creation, and one-shot tasks whose scheduled time has not yet passed. Background Bash and monitor tasks are never restored on resume.
-* {/* min-version: 2.1.216 */}Claude Code stores the scheduled task list in the project's `.claude` directory, and scheduling a task fails with an error when that directory, or the task file inside it, is a symlink. Before v2.1.216, Claude Code wrote the file through the link.
+* 任务仅在 Claude Code 运行且空闲时触发。关闭终端或让会话退出会停止它们触发。[将会话放在后台](/docs/zh-CN/agent-view#from-inside-a-session)会将 `/loop` 任务转移到后台会话，该会话继续运行而无需终端。
+* 没有错过触发的追赶。如果任务的计划时间在 Claude 忙于长时间运行的请求时经过，它会在 Claude 变为空闲时触发一次，而不是每个错过的间隔触发一次。
+* 启动新对话会清除所有会话范围的任务。使用 `claude --resume` 或 `claude --continue` 恢复会恢复尚未过期的任务：创建后七天内的重复任务，以及计划时间尚未到达的一次性任务。后台 Bash 和监视器任务在恢复时永远不会被恢复。
 
-For cron-driven automation that needs to run unattended:
+对于需要无人值守运行的 cron 驱动自动化：
 
-* [Routines](/docs/en/routines): run on Anthropic-managed infrastructure on a schedule, via API call, or on GitHub events
-* [GitHub Actions](/docs/en/github-actions): use a `schedule` trigger in CI
-* [Desktop scheduled tasks](/docs/en/desktop-scheduled-tasks): run locally on your machine
+* [Routines](/docs/zh-CN/routines)：在 Anthropic 管理的基础设施上按计划运行、通过 API 调用或在 GitHub 事件上运行
+* [GitHub Actions](/docs/zh-CN/github-actions)：在 CI 中使用 `schedule` 触发器
+* [Desktop 计划任务](/docs/zh-CN/desktop-scheduled-tasks)：在您的机器上本地运行

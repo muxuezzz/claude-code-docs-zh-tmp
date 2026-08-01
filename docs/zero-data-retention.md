@@ -2,81 +2,91 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Zero data retention
+# 零数据保留
 
-> Learn about Zero Data Retention (ZDR) for Claude Code, available to qualified accounts on Claude for Enterprise, including scope, disabled features, and how to request enablement.
+> 了解 Claude for Enterprise 上 Claude Code 的零数据保留 (ZDR)，包括范围、禁用功能以及如何请求启用。
 
-Zero Data Retention (ZDR) for Claude Code is available to qualified accounts on Claude for Enterprise. When ZDR is enabled, prompts and model responses generated during Claude Code sessions are processed in real time and not stored by Anthropic after the response is returned, except where needed to comply with law or combat misuse.
+零数据保留 (ZDR) 在通过 Claude for Enterprise 使用 Claude Code 时可用。启用 ZDR 后，Claude Code 会话期间生成的提示和模型响应会实时处理，在返回响应后不会由 Anthropic 存储，除非需要遵守法律或防止滥用。
 
 <Note>
-  ZDR is not included in the standard Claude for Enterprise plan and cannot be enabled from your admin settings. It is available to qualified accounts and requires separate enablement by Anthropic. If your organization requires ZDR, [contact sales](https://www.anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=zero_data_retention_request) or your Anthropic account team to confirm eligibility.
+  ZDR 不包含在标准 Claude for Enterprise 计划中，也无法从您的管理员设置中启用。它仅适用于符合条件的账户，需要由 Anthropic 单独启用。如果您的组织需要 ZDR，请[联系销售](https://www.anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=zero_data_retention_request)或您的 Anthropic 账户团队以确认资格。
 </Note>
 
-ZDR on Claude for Enterprise gives enterprise customers the ability to use Claude Code with zero data retention and access administrative capabilities:
+Claude for Enterprise 上的 ZDR 为企业客户提供了使用 Claude Code 并实现零数据保留的能力，同时可以访问管理功能：
 
-* Cost controls per user
-* [Analytics](/docs/en/analytics) dashboard
-* [Server-managed settings](/docs/en/server-managed-settings)
-* Audit logs
+* 按用户的成本控制
+* [分析](/docs/zh-CN/analytics)仪表板
+* [服务器管理的设置](/docs/zh-CN/server-managed-settings)
+* 审计日志
 
-ZDR for Claude Code on Claude for Enterprise applies only to Anthropic's direct platform. For Claude deployments on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry, refer to those platforms' data retention policies.
+Claude for Enterprise 上 Claude Code 的 ZDR 仅适用于 Anthropic 的直接平台。对于在 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 上的 Claude 部署，请参考这些平台的数据保留政策。
 
-## ZDR scope
+<h2 id="zdr-scope">
+  ZDR 范围
+</h2>
 
-ZDR covers Claude Code inference on Claude for Enterprise.
+ZDR 涵盖 Claude for Enterprise 上的 Claude Code 推理。
 
 <Warning>
-  ZDR is enabled on a per-organization basis. Each new organization requires ZDR to be enabled separately by your Anthropic account team. ZDR does not automatically apply to new organizations created under the same account. Contact your account team to enable ZDR for any new organizations.
+  ZDR 在每个组织的基础上启用。每个新组织都需要由您的 Anthropic 账户团队单独启用 ZDR。ZDR 不会自动应用于在同一账户下创建的新组织。请联系您的账户团队为任何新组织启用 ZDR。
 </Warning>
 
-### Route Claude Code traffic to your ZDR organization
+<h3 id="what-zdr-covers">
+  ZDR 涵盖的内容
+</h3>
 
-ZDR applies to requests that authenticate into a ZDR-enabled organization. If a developer signs in to Claude Code with a personal account or with an API key from a different organization, those sessions are not covered. To restrict login to your ZDR organization, deploy the `forceLoginMethod` and `forceLoginOrgUUID` managed settings; see [Restrict login to your organization](/docs/en/authentication#restrict-login-to-your-organization).
+ZDR 涵盖通过 Claude for Enterprise 上的 Claude Code 进行的模型推理调用。当您在终端中使用 Claude Code 时，您发送的提示和 Claude 生成的响应不会由 Anthropic 保留。这适用于 ZDR 组织可用的每个模型。某些模型需要数据保留，在 ZDR 下不可用；请参阅 [ZDR 下的模型可用性](#model-availability-under-zdr)。
 
-### What ZDR covers
+<h3 id="what-zdr-does-not-cover">
+  ZDR 不涵盖的内容
+</h3>
 
-ZDR covers model inference calls made through Claude Code on Claude for Enterprise. When you use Claude Code in your terminal, the prompts you send and the responses Claude generates are not retained by Anthropic. This applies to every model available to ZDR organizations. Some models require data retention and are not available under ZDR; see [Model availability under ZDR](#model-availability-under-zdr).
+ZDR 不适用于以下内容，即使对于启用了 ZDR 的组织也是如此。这些功能遵循[标准数据保留政策](/docs/zh-CN/data-usage#data-retention)：
 
-### What ZDR does not cover
+| 功能             | 详情                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------- |
+| claude.ai 上的聊天 | 通过 Claude for Enterprise 网络界面的聊天对话不受 ZDR 保护。                                          |
+| Cowork         | Cowork 会话不受 ZDR 保护。                                                                   |
+| Claude Code 分析 | 不存储提示或模型响应，但收集生产力元数据，如账户电子邮件和使用统计。对于 ZDR 组织，贡献指标不可用；[分析仪表板](/docs/zh-CN/analytics)仅显示使用指标。 |
+| 用户和席位管理        | 管理数据，如账户电子邮件和席位分配，根据标准政策保留。                                                           |
+| 第三方集成          | 由第三方工具、MCP servers 或其他外部集成处理的数据不受 ZDR 保护。请独立审查这些服务的数据处理实践。                            |
 
-ZDR does not extend to the following, even for organizations with ZDR enabled. These features follow [standard data retention policies](/docs/en/data-usage#data-retention):
+<h2 id="features-disabled-under-zdr">
+  ZDR 下禁用的功能
+</h2>
 
-| Feature                  | Details                                                                                                                                                                                                                                                     |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chat on claude.ai        | Chat conversations through the Claude for Enterprise web interface are not covered by ZDR.                                                                                                                                                                  |
-| Cowork                   | Cowork sessions are not covered by ZDR.                                                                                                                                                                                                                     |
-| Claude Code Analytics    | Does not store prompts or model responses, but collects productivity metadata such as account emails and usage statistics. Contribution metrics are not available for ZDR organizations; the [analytics dashboard](/docs/en/analytics) shows usage metrics only. |
-| User and seat management | Administrative data such as account emails and seat assignments is retained under standard policies.                                                                                                                                                        |
-| Third-party integrations | Data processed by third-party tools, MCP servers, or other external integrations is not covered by ZDR. Review those services' data handling practices independently.                                                                                       |
+当为 Claude for Enterprise 上的 Claude Code 组织启用 ZDR 时，某些需要存储提示或完成的功能会在后端级别自动禁用：
 
-## Features disabled under ZDR
+| 功能                                                 | 原因                                |
+| -------------------------------------------------- | --------------------------------- |
+| [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)  | 需要服务器端存储对话历史。                     |
+| 来自 Desktop 应用的[云会话](/docs/zh-CN/desktop#cloud-sessions) | 需要包含提示和完成的持久会话数据。                 |
+| [Artifacts](/docs/zh-CN/artifacts)                      | 需要在 Anthropic 运营的基础设施上存储已发布的页面内容。 |
+| 反馈提交 (`/feedback`)                                 | 提交反馈会将对话数据发送给 Anthropic。          |
+| [Remote Control](/docs/zh-CN/remote-control)            | 在 Anthropic 服务器上存储会话记录以跨设备同步对话。   |
 
-When ZDR is enabled for a Claude Code organization on Claude for Enterprise, certain features that require storing prompts or completions are automatically disabled at the backend level:
+这些功能在后端被阻止，无论客户端显示如何。如果您在启动期间在 Claude Code 终端中看到禁用的功能，尝试使用它会返回一个错误，指示组织的政策不允许该操作。
 
-| Feature                                                           | Reason                                                                                      |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| [Claude Code on the Web](/docs/en/claude-code-on-the-web)              | Requires server-side storage of conversation history.                                       |
-| [Cloud sessions](/docs/en/desktop#cloud-sessions) from the Desktop app | Requires persistent session data that includes prompts and completions.                     |
-| [Artifacts](/docs/en/artifacts)                                        | Requires storing published page content on Anthropic-operated infrastructure.               |
-| Feedback submission (`/feedback`, `/bug`, `/share`)               | Submitting feedback sends conversation data to Anthropic.                                   |
-| [Remote Control](/docs/en/remote-control)                              | Stores the session transcript on Anthropic servers to sync the conversation across devices. |
+如果未来的功能需要存储提示或完成，它们也可能被禁用。
 
-These features are blocked in the backend regardless of client-side display. If you see a disabled feature in the Claude Code terminal during startup, attempting to use it returns an error indicating the organization's policies do not allow that action.
+<h3 id="model-availability-under-zdr">
+  ZDR 下的模型可用性
+</h3>
 
-Future features may also be disabled if they require storing prompts or completions.
+Claude Fable 5 不适用于启用了零数据保留的组织。此模型类别[需要数据保留](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention#model-specific-data-retention-requirements)，因此来自 ZDR 组织的请求无法由其提供。该模型在 ZDR 组织的 `/model` 选择器中要么不存在，要么显示为禁用，并附带需要禁用 ZDR 的通知，服务器无论客户端配置如何都会拒绝对其的请求。
 
-### Model availability under ZDR
+其他模型在 ZDR 下仍然可用。Fable 5 不是默认模型，`best` 别名在可用的地方解析为 Fable 5，在不可用的地方（包括 ZDR 组织）解析为 Opus。
 
-Claude Fable 5 is not available for organizations with zero data retention enabled. This model class [requires data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention#model-specific-data-retention-requirements), so requests from ZDR organizations cannot be served by it. The model is either absent from the `/model` picker for ZDR organizations or shown as disabled with a notice that disabling ZDR is required, and the server rejects requests for it regardless of client configuration.
+<h2 id="data-retention-for-policy-violations">
+  政策违规的数据保留
+</h2>
 
-Other models remain available under ZDR. Fable 5 is not the default model, and the `best` alias, which resolves to Fable 5 where it is available, resolves to Opus for organizations where it is not, including ZDR organizations.
+即使启用了 ZDR，Anthropic 也可能在法律要求或解决使用政策违规时保留数据。如果会话因政策违规而被标记，Anthropic 可能会保留相关的输入和输出长达 2 年，与 Anthropic 的标准 ZDR 政策一致。
 
-## Data retention for policy violations
+<h2 id="request-zdr">
+  请求 ZDR
+</h2>
 
-Even with ZDR enabled, Anthropic may retain data where required by law or to address Usage Policy violations. If a session is flagged for a policy violation, Anthropic may retain the associated inputs and outputs for up to 2 years, consistent with Anthropic's standard ZDR policy.
+要为 Claude for Enterprise 上的 Claude Code 请求 ZDR，请[联系销售](https://www.anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=zero_data_retention_request)或您的 Anthropic 账户团队。您的账户团队将在内部提交请求，Anthropic 将在确认符合条件后在您的组织上审查并启用 ZDR。所有启用操作都会被审计记录。
 
-## Request ZDR
-
-To request ZDR for Claude Code on Claude for Enterprise, [contact sales](https://www.anthropic.com/contact-sales?utm_source=claude_code\&utm_medium=docs\&utm_content=zero_data_retention_request) or your Anthropic account team. Your account team will submit the request internally, and Anthropic will review and enable ZDR on your organization after confirming eligibility. All enablement actions are audit-logged.
-
-If you are currently using ZDR for Claude Code via pay-as-you-go API keys, you can transition to Claude for Enterprise to gain access to administrative features while maintaining ZDR for Claude Code. Contact your account team to coordinate the migration.
+如果您当前通过按使用量付费的 API 密钥使用 Claude Code 的 ZDR，您可以过渡到 Claude for Enterprise 以获得对管理功能的访问权限，同时为 Claude Code 保持 ZDR。请联系您的账户团队以协调迁移。

@@ -4,360 +4,328 @@
 
 # Code Review
 
-> Set up automated PR reviews that catch logic errors, security vulnerabilities, and regressions using multi-agent analysis of your full codebase
+> 设置自动化 PR 审查，通过对完整代码库的多代理分析来捕获逻辑错误、安全漏洞和回归问题
 
 <Note>
-  Code Review is in research preview, available for [Team and Enterprise](https://claude.ai/admin-settings/claude-code) subscriptions. It is not available for organizations with [Zero Data Retention](/docs/en/zero-data-retention) enabled. On other plans, you can still [review a diff locally](#review-a-diff-locally) with the `/code-review` command.
+  Code Review 处于研究预览阶段，仅适用于 [Team 和 Enterprise](https://claude.ai/admin-settings/claude-code) 订阅。对于启用了 [Zero Data Retention](/docs/zh-CN/zero-data-retention) 的组织，此功能不可用。
 </Note>
 
-Code Review analyzes your GitHub pull requests and posts findings as inline comments on the lines of code where it found issues. A fleet of specialized agents examine the code changes in the context of your full codebase, looking for logic errors, security vulnerabilities, broken edge cases, and subtle regressions.
+Code Review 分析您的 GitHub pull request，并在发现问题的代码行上发布内联评论。一支由专业代理组成的团队在完整代码库的上下文中检查代码更改，寻找逻辑错误、安全漏洞、破损的边界情况和微妙的回归问题。
 
-Findings are tagged by severity and don't approve or block your PR, so existing review workflows stay intact. You can tune what Claude flags by adding a `CLAUDE.md` or `REVIEW.md` file to your repository.
+发现结果按严重程度标记，不会批准或阻止您的 PR，因此现有的审查工作流保持不变。您可以通过向存储库添加 `CLAUDE.md` 或 `REVIEW.md` 文件来调整 Claude 标记的内容。
 
-To run Claude in your own CI infrastructure instead of this managed service, see [GitHub Actions](/docs/en/github-actions) or [GitLab CI/CD](/docs/en/gitlab-ci-cd). For repositories on a self-hosted GitHub instance, see [GitHub Enterprise Server](/docs/en/github-enterprise-server).
+要在您自己的 CI 基础设施中运行 Claude 而不是使用此托管服务，请参阅 [GitHub Actions](/docs/zh-CN/github-actions) 或 [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd)。对于自托管 GitHub 实例上的存储库，请参阅 [GitHub Enterprise Server](/docs/zh-CN/github-enterprise-server)。
 
-This page covers:
+本页涵盖：
 
-* [How reviews work](#how-reviews-work)
-* [Setup](#set-up-code-review)
-* [Triggering reviews manually](#manually-trigger-reviews) with `@claude review` and `@claude review always`
-* [Customizing reviews](#customize-reviews) with `CLAUDE.md` and `REVIEW.md`
-* [Pricing](#pricing)
-* [Troubleshooting](#troubleshooting) failed runs and missing comments
-* [Reviewing a diff locally](#review-a-diff-locally) with the `/code-review` command
+* [审查工作原理](#how-reviews-work)
+* [设置](#set-up-code-review)
+* [手动触发审查](#manually-trigger-reviews)，使用 `@claude review` 和 `@claude review once`
+* [自定义审查](#customize-reviews)，使用 `CLAUDE.md` 和 `REVIEW.md`
+* [定价](#pricing)
+* [故障排除](#troubleshooting)失败的运行和缺失的评论
+* [在本地审查差异](#review-a-diff-locally)，使用 `/code-review` 命令
 
 <Note>
-  To review a diff locally in your terminal without installing the GitHub App, run the `/code-review` command in any Claude Code session. See [Review a diff locally](#review-a-diff-locally).
+  要在本地终端中审查差异而无需安装 GitHub App，请在任何 Claude Code 会话中运行 `/code-review` 命令。请参阅[在本地审查差异](#review-a-diff-locally)。
 </Note>
 
-## How reviews work
+<h2 id="how-reviews-work">
+  审查工作原理
+</h2>
 
-Once an Owner [enables Code Review](#set-up-code-review) for your organization, reviews trigger when a PR opens, on every push, or when manually requested, depending on the repository's configured behavior. Commenting `@claude review` [starts a review on a PR](#manually-trigger-reviews) in any mode.
+一旦管理员为您的组织[启用 Code Review](#set-up-code-review)，审查将在 PR 打开时、每次推送时或手动请求时触发，具体取决于存储库的配置行为。在任何模式下，注释 `@claude review` 可以[在 PR 上启动审查](#manually-trigger-reviews)。
 
-When a review runs, multiple agents analyze the diff and surrounding code in parallel on Anthropic infrastructure. Each agent looks for a different class of issue, then a verification step checks candidates against actual code behavior to filter out false positives. The results are deduplicated, ranked by severity, and posted as inline comments on the specific lines where issues were found, with a summary in the review body. If no issues are found, Code Review updates the GitHub check run to show that no issues were detected. Claude may also post a short confirmation comment on the PR.
+当审查运行时，多个代理在 Anthropic 基础设施上并行分析差异和周围代码。每个代理寻找不同类别的问题，然后验证步骤检查候选项是否与实际代码行为相符，以过滤掉误报。结果被去重、按严重程度排序，并作为内联评论发布在发现问题的特定行上，并在审查正文中包含摘要。如果未发现问题，Code Review 会更新 GitHub 检查运行以显示未检测到问题。Claude 也可能在 PR 上发布简短的确认评论。
 
-Reviews scale in cost with PR size and complexity, completing in 20 minutes on average. Owners can monitor review activity and spend via the [analytics dashboard](#view-usage).
+审查成本随 PR 大小和复杂性而扩展，平均在 20 分钟内完成。管理员可以通过[分析仪表板](#view-usage)监控审查活动和支出。
 
-### Severity levels
+<h3 id="severity-levels">
+  严重程度级别
+</h3>
 
-Each finding is tagged with a severity level:
+每个发现都标有严重程度级别：
 
-| Marker | Severity     | Meaning                                                             |
-| :----- | :----------- | :------------------------------------------------------------------ |
-| 🔴     | Important    | A bug that should be fixed before merging                           |
-| 🟡     | Nit          | A minor issue, worth fixing but not blocking                        |
-| 🟣     | Pre-existing | A bug that exists in the codebase but was not introduced by this PR |
+| 标记 | 严重程度 | 含义                   |
+| :- | :--- | :------------------- |
+| 🔴 | 重要   | 应在合并前修复的错误           |
+| 🟡 | 小问题  | 轻微问题，值得修复但不阻止        |
+| 🟣 | 预先存在 | 代码库中存在但不是由此 PR 引入的错误 |
 
-Findings include a collapsible extended reasoning section you can expand to understand why Claude flagged the issue and how it verified the problem.
+发现包括可折叠的扩展推理部分，您可以展开以了解 Claude 为什么标记该问题以及它如何验证问题。
 
-### Rate and reply to findings
+<h3 id="rate-and-reply-to-findings">
+  对发现进行评分和回复
+</h3>
 
-Each review comment from Claude arrives with 👍 and 👎 already attached so both buttons appear in the GitHub UI for one-click rating. Click 👍 if the finding was useful or 👎 if it was wrong or noisy. Anthropic collects reaction counts after the PR merges and uses them to tune the reviewer. Reactions do not trigger a re-review or change anything on the PR.
+Claude 的每条审查评论都已附加 👍 和 👎，因此两个按钮都会在 GitHub UI 中出现，以便一键评分。如果发现有用，请点击 👍；如果发现错误或嘈杂，请点击 👎。Anthropic 在 PR 合并后收集反应计数，并使用它们来调整审查者。反应不会触发重新审查或更改 PR 上的任何内容。
 
-Replying to an inline comment does not prompt Claude to respond or update the PR. To act on a finding, fix the code and push. If the PR is subscribed to push-triggered reviews, the next run resolves the thread when the issue is fixed. To request a fresh review without pushing, comment `@claude review` as a [top-level PR comment](#manually-trigger-reviews).
+回复内联评论不会提示 Claude 响应或更新 PR。要对发现采取行动，请修复代码并推送。如果 PR 订阅了推送触发的审查，下一次运行将在问题修复时解决线程。要请求新审查而不推送，请作为[顶级 PR 评论](#manually-trigger-reviews)注释 `@claude review once`。
 
-### Check run output
+<h3 id="check-run-output">
+  检查运行输出
+</h3>
 
-Beyond the inline review comments, each review populates the **Claude Code Review** check run that appears alongside your CI checks. Expand its **Details** link to see a summary of every finding in one place, sorted by severity:
+除了内联审查评论外，每次审查都会填充 **Claude Code Review** 检查运行，该运行与您的 CI 检查一起出现。展开其 **Details** 链接以在一个地方查看每个发现的摘要，按严重程度排序：
 
-| Severity     | File:Line                 | Issue                                                          |
-| ------------ | ------------------------- | -------------------------------------------------------------- |
-| 🔴 Important | `src/auth/session.ts:142` | Token refresh races with logout, leaving stale sessions active |
-| 🟡 Nit       | `src/auth/session.ts:88`  | `parseExpiry` silently returns 0 on malformed input            |
+| 严重程度   | 文件:行                      | 问题                            |
+| ------ | ------------------------- | ----------------------------- |
+| 🔴 重要  | `src/auth/session.ts:142` | 令牌刷新与登出竞争，导致过期会话保持活跃          |
+| 🟡 小问题 | `src/auth/session.ts:88`  | `parseExpiry` 在格式错误的输入上静默返回 0 |
 
-Each finding also appears as an annotation in the **Files changed** tab, marked directly on the relevant diff lines. Important findings render with a red marker, nits with a yellow warning, and pre-existing bugs with a gray notice. Annotations and the severity table are written to the check run independently of inline review comments, so they remain available even if GitHub rejects an inline comment on a line that moved.
+每个发现也作为 **Files changed** 选项卡中的注释出现，直接标记在相关的差异行上。重要发现用红色标记呈现，小问题用黄色警告，预先存在的错误用灰色通知。注释和严重程度表独立于内联审查评论写入检查运行，因此即使 GitHub 拒绝在移动的行上的内联评论，它们仍然可用。
 
-The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules. If you want to gate merges on Code Review findings, read the severity breakdown from the check run output in your own CI. The last line of the Details text is a machine-readable comment your workflow can parse with `gh` and jq. To find the check run ID, list the commit's check runs with `gh api repos/OWNER/REPO/commits/<commit-sha>/check-runs --jq '.check_runs[] | {id, name}'` and take the `id` of the `Claude Code Review` run. Replace `OWNER`, `REPO`, and `CHECK_RUN_ID` with your repository owner, repository name, and that ID:
+检查运行始终以中立结论完成，因此它永远不会通过分支保护规则阻止合并。如果您想根据 Code Review 发现来限制合并，请在您自己的 CI 中读取检查运行输出中的严重程度分解。Details 文本的最后一行是一个机器可读的评论，您的工作流可以使用 `gh` 和 jq 解析：
 
 ```bash theme={null}
 gh api repos/OWNER/REPO/check-runs/CHECK_RUN_ID \
   --jq '.output.text | split("bughunter-severity: ")[1] | split(" -->")[0] | fromjson'
 ```
 
-This returns a JSON object with counts per severity, for example `{"normal": 2, "nit": 1, "pre_existing": 0}`. The `normal` key holds the count of Important findings; a non-zero value means Claude found at least one bug worth fixing before merge.
+这返回一个 JSON 对象，其中包含每个严重程度的计数，例如 `{"normal": 2, "nit": 1, "pre_existing": 0}`。`normal` 键保存重要发现的计数；非零值意味着 Claude 发现了至少一个在合并前值得修复的错误。
 
-### What Code Review checks
+<h3 id="what-code-review-checks">
+  Code Review 检查的内容
+</h3>
 
-By default, Code Review focuses on correctness: bugs that would break production, not formatting preferences or missing test coverage. You can expand what it checks by [adding guidance files](#customize-reviews) to your repository.
+默认情况下，Code Review 专注于正确性：会破坏生产的错误，而不是格式偏好或缺失的测试覆盖。您可以通过[向存储库添加指导文件](#customize-reviews)来扩展其检查范围。
 
-## Set up Code Review
+<h2 id="set-up-code-review">
+  设置 Code Review
+</h2>
 
-An Owner enables Code Review once for the organization and selects which repositories to include.
+管理员为组织启用一次 Code Review，并选择要包含的存储库。
 
 <Steps>
-  <Step title="Open Claude Code admin settings">
-    Go to [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) and find the Code Review section. You need the Owner or Primary Owner role in your Claude organization and permission to install GitHub Apps in your GitHub organization.
+  <Step title="打开 Claude Code 管理员设置">
+    转到 [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) 并找到 Code Review 部分。您需要对 Claude 组织具有 Owner 或 Primary Owner 角色，并有权在 GitHub 组织中安装 GitHub Apps。
   </Step>
 
-  <Step title="Start setup">
-    Click **Setup**. This begins the GitHub App installation flow.
+  <Step title="开始设置">
+    点击**设置**。这将开始 GitHub App 安装流程。
   </Step>
 
-  <Step title="Install the Claude GitHub App">
-    Follow the prompts to install the Claude GitHub App to your GitHub organization. The app requests these repository permissions:
+  <Step title="安装 Claude GitHub App">
+    按照提示将 Claude GitHub App 安装到您的 GitHub 组织。该应用请求这些存储库权限：
 
-    * **Contents**: read and write
-    * **Issues**: read and write
-    * **Pull requests**: read and write
+    * **Contents**：读写
+    * **Issues**：读写
+    * **Pull requests**：读写
 
-    Code Review uses read access to contents and write access to pull requests. The broader permission set also supports [GitHub Actions](/docs/en/github-actions) if you enable that later.
+    Code Review 使用对内容的读取访问权限和对 pull request 的写入访问权限。更广泛的权限集也支持 [GitHub Actions](/docs/zh-CN/github-actions)，如果您稍后启用的话。
   </Step>
 
-  <Step title="Select repositories">
-    Choose which repositories to enable for Code Review. If you don't see a repository, make sure you gave the Claude GitHub App access to it during installation. You can add more repositories later.
+  <Step title="选择存储库">
+    选择要为 Code Review 启用的存储库。如果您看不到存储库，请确保在安装期间为 Claude GitHub App 提供了对其的访问权限。您可以稍后添加更多存储库。
   </Step>
 
-  <Step title="Set review triggers per repo">
-    After setup completes, the Code Review section shows your repositories in a table. For each repository, use the **Review Behavior** dropdown to choose when reviews run:
+  <Step title="为每个存储库设置审查触发器">
+    设置完成后，Code Review 部分在表格中显示您的存储库。对于每个存储库，使用**审查行为**下拉菜单选择何时运行审查：
 
-    * **Once after PR creation**: review runs once when a PR is opened or marked ready for review
-    * **After every push**: review runs on every push to the PR branch, catching new issues as the PR evolves and auto-resolving threads when you fix flagged issues
-    * **Manual**: reviews start only when someone [comments `@claude review` on a PR](#manually-trigger-reviews); `@claude review always` starts a review and subscribes the PR to reviews on subsequent pushes
+    * **PR 创建后一次**：当 PR 打开或标记为准备审查时运行一次审查
+    * **每次推送后**：在每次推送到 PR 分支时运行审查，在 PR 演变时捕获新问题，并在您修复标记的问题时自动解决线程
+    * **手动**：仅当有人[在 PR 上注释 `@claude review` 或 `@claude review once`](#manually-trigger-reviews) 时才启动审查；`@claude review` 也会将 PR 订阅到后续推送的审查
 
-    Reviewing on every push runs the most reviews and costs the most. Manual mode is useful for high-traffic repos where you want to opt specific PRs into review, or to only start reviewing your PRs once they're ready.
+    每次推送时审查会运行最多审查并花费最多。手动模式对于高流量存储库很有用，您可以选择特定 PR 进行审查，或仅在 PR 准备好后才开始审查。
   </Step>
 </Steps>
 
-The repositories table also shows the average cost per review for each repo based on recent activity. Use the row actions menu to turn Code Review on or off per repository, or to remove a repository entirely.
+存储库表还显示每个存储库基于最近活动的平均审查成本。使用行操作菜单为每个存储库打开或关闭 Code Review，或完全删除存储库。
 
-To verify setup, open a test PR. If you chose an automatic trigger, a check run named **Claude Code Review** appears within a few minutes. If you chose Manual, comment `@claude review` on the PR to start the first review. If no check run appears, confirm the repository is listed in your admin settings and the Claude GitHub App has access to it.
+要验证设置，请打开测试 PR。如果您选择了自动触发器，在几分钟内会出现名为 **Claude Code Review** 的检查运行。如果您选择了手动，在 PR 上注释 `@claude review` 以启动第一次审查。如果没有出现检查运行，请确认存储库在您的管理员设置中列出，并且 Claude GitHub App 有权访问它。
 
-## Manually trigger reviews
+<h2 id="manually-trigger-reviews">
+  手动触发审查
+</h2>
 
-Comment commands start a review on demand. They work regardless of the repository's configured trigger, so you can use them to opt specific PRs into review in Manual mode or to get an immediate re-review in other modes.
+两个注释命令按需启动审查。无论存储库的配置触发器如何，两者都有效，因此您可以使用它们在手动模式下选择特定 PR 进行审查，或在其他模式下获得立即重新审查。
 
-| Command                 | What it does                                                                  |
-| :---------------------- | :---------------------------------------------------------------------------- |
-| `@claude review`        | Starts a single review without subscribing the PR to future pushes            |
-| `@claude review always` | Starts a review and subscribes the PR to push-triggered reviews going forward |
-| `@claude review once`   | Same as `@claude review`: starts a single review without subscribing          |
+| 命令                    | 作用                     |
+| :-------------------- | :--------------------- |
+| `@claude review`      | 启动审查并将 PR 订阅到今后的推送触发审查 |
+| `@claude review once` | 启动单次审查，不订阅未来推送         |
 
-Use `@claude review always` when you want every subsequent push to the PR to start a fresh review, such as on a high-priority PR in a repository set to Manual mode. Because the bare command doesn't subscribe the PR, you can request a one-off second opinion without changing whether later pushes trigger reviews.
+当您想要对 PR 的当前状态获得反馈但不希望每次后续推送都产生审查时，使用 `@claude review once`。这对于具有频繁推送的长期运行 PR 很有用，或者当您想要一次性第二意见而不改变 PR 的审查行为时。
 
-<Note>
-  Before a July 2026 update, `@claude review` subscribed the PR to push-triggered reviews. If you relied on that behavior, comment `@claude review always` instead. `@claude review once` still works and behaves the same as the bare command.
-</Note>
+对于任一命令触发审查：
 
-For any of these commands to trigger a review:
+* 将其作为顶级 PR 评论发布，而不是差异行上的内联评论
+* 在注释开头放置命令，如果您使用一次性形式，则在同一行上放置 `once`
+* 您必须对存储库具有所有者、成员或协作者访问权限
+* PR 必须打开
 
-* Post it as a top-level PR comment, not an inline comment on a diff line
-* Put the command at the start of the comment, with `once` or `always` on the same line as the rest of the command
-* You must have owner, member, or collaborator access to the repository
-* The PR must be open
+与自动触发不同，手动触发在草稿 PR 上运行，因为显式请求表示您想要现在的审查，无论草稿状态如何。
 
-Unlike automatic triggers, manual triggers run on draft PRs, since an explicit request signals you want the review now regardless of draft status.
+如果该 PR 上已有审查正在运行，请求将排队等待进行中的审查完成。您可以通过 PR 上的检查运行监控进度。
 
-If a review is already running on that PR, the request is queued until the in-progress review completes. You can monitor progress via the check run on the PR.
+<h2 id="customize-reviews">
+  自定义审查
+</h2>
 
-## Customize reviews
+Code Review 从您的存储库读取两个文件来指导它标记的内容。它们在如何强烈影响审查方面有所不同：
 
-Code Review reads two files from your repository to guide what it flags. They differ in how strongly they influence the review:
+* **`CLAUDE.md`**：共享项目说明，Claude Code 用于所有任务，不仅仅是审查。Code Review 将其作为项目上下文读取，并将新引入的违规标记为小问题。
+* **`REVIEW.md`**：仅审查说明，直接注入到审查管道中的每个代理中作为最高优先级。使用它来改变标记的内容、严重程度以及如何报告发现。
 
-* **`CLAUDE.md`**: shared project instructions that Claude Code uses for all tasks, not just reviews. Code Review reads it as project context and flags newly introduced violations as nits.
-* **`REVIEW.md`**: review-only instructions, injected directly into every agent in the review pipeline as highest priority. Use it to change what gets flagged, at what severity, and how findings are reported.
+<h3 id="claude-md">
+  CLAUDE.md
+</h3>
 
-### CLAUDE.md
+Code Review 读取您的存储库的 `CLAUDE.md` 文件，并将新引入的违规视为[小问题级别](#severity-levels)的发现。这是双向工作的：如果您的 PR 以使 `CLAUDE.md` 语句过时的方式更改代码，Claude 会标记文档需要更新。
 
-Code Review reads your repository's `CLAUDE.md` files and treats newly introduced violations as [nit-level](#severity-levels) findings. This works bidirectionally: if your PR changes code in a way that makes a `CLAUDE.md` statement outdated, Claude flags that the docs need updating too.
+Claude 在目录层次结构的每个级别读取 `CLAUDE.md` 文件，因此子目录的 `CLAUDE.md` 中的规则仅适用于该路径下的文件。有关 `CLAUDE.md` 如何工作的更多信息，请参阅[内存文档](/docs/zh-CN/memory)。
 
-Claude reads `CLAUDE.md` files at every level of your directory hierarchy, so rules in a subdirectory's `CLAUDE.md` apply only to files under that path. See the [memory documentation](/docs/en/memory) for more on how `CLAUDE.md` works.
+对于您不想应用于常规 Claude Code 会话的仅审查指导，请改用 [`REVIEW.md`](#review-md)。
 
-For review-specific guidance that you don't want applied to general Claude Code sessions, use [`REVIEW.md`](#review-md) instead.
+<h3 id="review-md">
+  REVIEW\.md
+</h3>
 
-### REVIEW\.md
+`REVIEW.md` 是位于您的存储库根目录的文件，它覆盖 Code Review 在您的存储库上的行为方式。其内容被注入到审查管道中每个代理的系统提示中，作为最高优先级指令块，优先于默认审查指导。
 
-`REVIEW.md` is a file at your repository root that overrides how Code Review behaves on your repo. Its contents are injected into the system prompt of every agent in the review pipeline as the highest-priority instruction block, taking precedence over the default review guidance.
+因为它是逐字粘贴的，`REVIEW.md` 是纯说明：[`@` 导入语法](/docs/zh-CN/memory#import-additional-files)不会展开，引用的文件不会读入提示。将您想要强制执行的规则直接放在文件中。
 
-Because it's pasted verbatim, `REVIEW.md` is plain instructions: [`@` import syntax](/docs/en/memory#import-additional-files) is not expanded, and referenced files are not read into the prompt. Put the rules you want enforced directly in the file.
+<h4 id="what-you-can-tune">
+  您可以调整的内容
+</h4>
 
-#### What you can tune
+`REVIEW.md` 是自由格式的 markdown，因此任何您可以表达为审查说明的内容都在范围内。下面的模式在实践中影响最大。
 
-`REVIEW.md` is freeform markdown, so anything you can express as a review instruction is in scope. The patterns below have the most impact in practice.
+**严重程度**：为您的存储库重新定义 🔴 重要的含义。默认校准针对生产代码；文档存储库、配置存储库或原型可能想要更窄的定义。明确说明哪些类别的发现是重要的，哪些最多是小问题。您也可以向另一个方向升级，例如将任何 `CLAUDE.md` 违规视为重要而不是默认小问题。
 
-**Severity**: redefine what 🔴 Important means for your repo. The default calibration targets production code; a docs repo, a config repo, or a prototype might want a much narrower definition. State explicitly which classes of finding are Important and which are Nit at most. You can also escalate in the other direction, for example treating any `CLAUDE.md` violation as Important rather than the default nit.
+**小问题数量**：限制单次审查发布的 🟡 小问题评论数量。散文和配置文件可以永远被打磨。像"最多报告五个小问题，在摘要中提及其余的计数"这样的上限使审查可操作。
 
-**Nit volume**: cap how many 🟡 Nit comments a single review posts. Prose and config files can be polished forever. A cap like "report at most five nits, mention the rest as a count in the summary" keeps reviews actionable.
+**跳过规则**：列出 Claude 应该不发布任何发现的路径、分支模式和发现类别。常见候选是生成的代码、lockfiles、供应商依赖和机器创作的分支，以及您的 CI 已经强制执行的任何内容，如 linting 或拼写检查。对于值得一些审查但不需要完全审查的路径，设置更高的标准而不是完全跳过："在 `scripts/` 中，仅在接近确定且严重时报告。"
 
-**Skip rules**: list paths, branch patterns, and finding categories where Claude should post no findings. Common candidates are generated code, lockfiles, vendored dependencies, and machine-authored branches, along with anything your CI already enforces like linting or spellcheck. For paths that warrant some review but not full scrutiny, set a higher bar instead of skipping entirely: "in `scripts/`, only report if near-certain and severe."
+**存储库特定检查**：添加您想在每个 PR 上标记的规则，如"新 API 路由必须有集成测试。"因为 `REVIEW.md` 被注入为最高优先级，这些比长 `CLAUDE.md` 中的相同规则更可靠地着陆。
 
-**Repo-specific checks**: add rules you want flagged on every PR, like "new API routes must have an integration test." Because `REVIEW.md` is injected as highest priority, these land more reliably than the same rules in a long `CLAUDE.md`.
+**验证标准**：在发布发现类别之前需要证据。例如，"行为声明需要源中的 `file:line` 引用，而不是从命名推断"会减少否则会花费作者往返的误报。
 
-**Verification bar**: require evidence before a class of finding is posted. For example, "behavior claims need a `file:line` citation in the source, not an inference from naming" cuts false positives that would otherwise cost the author a round trip.
+**重新审查收敛**：告诉 Claude 当 PR 已经被审查时如何表现。像"在第一次审查后，抑制新的小问题并仅发布重要发现"这样的规则会阻止单行修复仅因风格而达到第七轮。
 
-**Re-review convergence**: tell Claude how to behave when a PR has already been reviewed. A rule like "after the first review, suppress new nits and post Important findings only" stops a one-line fix from reaching round seven on style alone.
+**摘要形状**：要求审查正文以一行计数开头，如 `2 factual, 4 style`，并在这种情况下以"没有事实问题"开头。作者想在详细信息之前知道工作的形状。
 
-**Summary shape**: ask for the review body to open with a one-line tally such as `2 factual, 4 style`, and to lead with "no factual issues" when that's the case. The author wants to know the shape of the work before the details.
+<h4 id="example">
+  示例
+</h4>
 
-#### Example
-
-This `REVIEW.md` recalibrates severity for a backend service, caps nits, skips generated files, and adds repo-specific checks.
+这个 `REVIEW.md` 为后端服务重新校准严重程度，限制小问题，跳过生成的文件，并添加存储库特定检查。
 
 ```markdown theme={null}
-# Review instructions
+# 审查说明
 
-## What Important means here
+## 重要在这里的含义
 
-Reserve Important for findings that would break behavior, leak data,
-or block a rollback: incorrect logic, unscoped database queries, PII
-in logs or error messages, and migrations that aren't backward
-compatible. Style, naming, and refactoring suggestions are Nit at
-most.
+保留重要用于会破坏行为、泄露数据或阻止回滚的发现：不正确的逻辑、无范围的数据库查询、日志或错误消息中的 PII，以及不向后兼容的迁移。风格、命名和重构建议最多是小问题。
 
-## Cap the nits
+## 限制小问题
 
-Report at most five Nits per review. If you found more, say "plus N
-similar items" in the summary instead of posting them inline. If
-everything you found is a Nit, lead the summary with "No blocking
-issues."
+每次审查最多报告五个小问题。如果您发现了更多，请在摘要中说"加上 N 个类似项目"而不是内联发布它们。如果您发现的一切都是小问题，请以"没有阻止问题"开头摘要。
 
-## Do not report
+## 不要报告
 
-- Anything CI already enforces: lint, formatting, type errors
-- Generated files under `src/gen/` and any `*.lock` file
-- Test-only code that intentionally violates production rules
+- CI 已经强制执行的任何内容：lint、格式化、类型错误
+- `src/gen/` 下生成的文件和任何 `*.lock` 文件
+- 故意违反生产规则的仅测试代码
 
-## Always check
+## 始终检查
 
-- New API routes have an integration test
-- Log lines don't include email addresses, user IDs, or request bodies
-- Database queries are scoped to the caller's tenant
+- 新 API 路由有集成测试
+- 日志行不包括电子邮件地址、用户 ID 或请求正文
+- 数据库查询的范围限定为调用者的租户
 ```
 
-#### Keep it focused
+<h4 id="keep-it-focused">
+  保持专注
+</h4>
 
-Length has a cost: a long `REVIEW.md` dilutes the rules that matter most. Keep it to instructions that change review behavior, and leave general project context in `CLAUDE.md`.
+长度有成本：长 `REVIEW.md` 会稀释最重要的规则。将其保持为改变审查行为的说明，并将常规项目上下文留在 `CLAUDE.md` 中。
 
-## View usage
+<h2 id="view-usage">
+  查看使用情况
+</h2>
 
-Go to [claude.ai/analytics/code-review](https://claude.ai/analytics/code-review) to see Code Review activity across your organization. The dashboard shows:
+转到 [claude.ai/analytics/code-review](https://claude.ai/analytics/code-review) 以查看整个组织的 Code Review 活动。仪表板显示：
 
-| Section              | What it shows                                                                            |
-| :------------------- | :--------------------------------------------------------------------------------------- |
-| PRs reviewed         | Daily count of pull requests reviewed over the selected time range                       |
-| Cost weekly          | Weekly spend on Code Review                                                              |
-| Feedback             | Count of review comments that were auto-resolved because a developer addressed the issue |
-| Repository breakdown | Per-repo counts of PRs reviewed and comments resolved                                    |
+| 部分     | 显示内容                         |
+| :----- | :--------------------------- |
+| 审查的 PR | 所选时间范围内每日审查的 pull request 计数 |
+| 每周成本   | Code Review 的每周支出            |
+| 反馈     | 因开发人员解决问题而自动解决的审查评论计数        |
+| 存储库分解  | 每个存储库的审查 PR 计数和已解决评论         |
 
-The repositories table in admin settings also shows average cost per review for each repo. Dashboard cost figures are estimates for monitoring activity; for invoice-accurate spend, refer to your Anthropic bill.
+管理员设置中的存储库表也显示每个存储库的平均审查成本。仪表板成本数字是用于监控活动的估计；对于发票准确的支出，请参考您的 Anthropic 账单。
 
-## Pricing
+<h2 id="pricing">
+  定价
+</h2>
 
-Code Review is billed based on token usage. Each review averages \$15-25 in cost, scaling with PR size, codebase complexity, and how many issues require verification. Code Review usage is billed separately through [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) and does not count against your plan's included usage.
+Code Review 根据令牌使用情况计费。每次审查平均花费 \$15-25，随 PR 大小、代码库复杂性和需要验证的问题数量而扩展。Code Review 使用通过[使用额度](https://support.claude.com/zh-CN/articles/12429409-extra-usage-for-paid-claude-plans)单独计费，不计入您的计划包含的使用。
 
-The review trigger you choose affects total cost:
+您选择的审查触发器影响总成本：
 
-* **Once after PR creation**: runs once per PR
-* **After every push**: runs on each push, multiplying cost by the number of pushes
-* **Manual**: no reviews until someone comments `@claude review` on a PR
+* **PR 创建后一次**：每个 PR 运行一次
+* **每次推送后**：在每次推送时运行，将成本乘以推送次数
+* **手动**：在有人在 PR 上注释 `@claude review` 之前没有审查
 
-In Once after PR creation or Manual mode, commenting `@claude review always` [opts the PR into push-triggered reviews](#manually-trigger-reviews), so additional cost accrues per push after that comment. In After every push mode, pushes already trigger reviews, so the subscription doesn't change per-push cost. Commenting `@claude review` runs a single review without subscribing to future pushes.
+在任何模式下，注释 `@claude review` [选择 PR 进入推送触发审查](#manually-trigger-reviews)，因此在该注释后每次推送都会产生额外成本。要运行单次审查而不订阅未来推送，请改为注释 `@claude review once`。
 
-Costs appear on your Anthropic bill regardless of whether your organization uses Amazon Bedrock or Google Cloud's Agent Platform for other Claude Code features. To set a monthly spend cap for Code Review, go to [claude.ai/admin-settings/usage](https://claude.ai/admin-settings/usage) and configure the limit for the Claude Code Review service.
+无论您的组织是否为其他 Claude Code 功能使用 Amazon Bedrock 或 Google Cloud 的 Agent Platform，成本都会出现在您的 Anthropic 账单上。要为 Code Review 设置每月支出上限，请转到 [claude.ai/admin-settings/usage](https://claude.ai/admin-settings/usage) 并为 Claude Code Review 服务配置限制。
 
-Monitor spend via the weekly cost chart in [analytics](#view-usage) or the per-repo average cost column in admin settings.
+通过[分析](#view-usage)中的每周成本图表或管理员设置中的每个存储库平均成本列监控支出。
 
-## Troubleshooting
+<h2 id="troubleshooting">
+  故障排除
+</h2>
 
-Review runs are best-effort. A failed run never blocks your PR, but it also doesn't retry on its own. This section covers how to recover from a failed run and where to look when the check run reports issues you can't find.
+审查运行是尽力而为的。失败的运行永远不会阻止您的 PR，但它也不会自动重试。本部分介绍如何从失败的运行中恢复，以及当检查运行报告您找不到的问题时在哪里查看。
 
-### Retrigger a failed or timed-out review
+<h3 id="retrigger-a-failed-or-timed-out-review">
+  重新触发失败或超时的审查
+</h3>
 
-When the review infrastructure hits an internal error or exceeds its time limit, the check run completes with a title of **Code review encountered an error** or **Code review timed out**. The conclusion is still neutral, so nothing blocks your merge, but no findings are posted.
+当审查基础设施遇到内部错误或超过时间限制时，检查运行完成，标题为 **Code review encountered an error** 或 **Code review timed out**。结论仍然是中立的，因此没有任何东西阻止您的合并，但没有发现被发布。
 
-To run the review again, comment `@claude review` on the PR. This starts a fresh review without subscribing the PR to future pushes. If the PR is already subscribed to push-triggered reviews, pushing a new commit also starts a new review.
+要再次运行审查，在 PR 上注释 `@claude review once`。这启动一个新的审查，不订阅 PR 到未来推送。如果 PR 已订阅推送触发审查，推送新提交也会启动新审查。
 
-The **Re-run** button in GitHub's Checks tab does not retrigger Code Review. Use the comment command or a new push instead.
+GitHub 检查选项卡中的**重新运行**按钮不会重新触发 Code Review。改用注释命令或新推送。
 
-### Review didn't run and the PR shows a spend-cap message
+<h3 id="review-didn’t-run-and-the-pr-shows-a-spend-cap-message">
+  审查未运行，PR 显示支出上限消息
+</h3>
 
-When your organization's monthly spend cap is reached, Code Review posts a single comment on the PR explaining that the review was skipped. Reviews resume automatically at the start of the next billing period, or immediately when an admin raises the cap at [claude.ai/admin-settings/usage](https://claude.ai/admin-settings/usage).
+当您的组织的每月支出上限达到时，Code Review 在 PR 上发布单条评论，解释审查被跳过。审查在下一个计费周期开始时自动恢复，或当管理员在 [claude.ai/admin-settings/usage](https://claude.ai/admin-settings/usage) 提高上限时立即恢复。
 
-### Find issues that aren't showing as inline comments
+<h3 id="find-issues-that-aren’t-showing-as-inline-comments">
+  查找未显示为内联评论的问题
+</h3>
 
-If the check run title says issues were found but you don't see inline review comments on the diff, look in these other locations where findings are surfaced:
+如果检查运行标题说发现了问题但您在差异上看不到内联审查评论，请在这些其他位置查看发现的位置：
 
-* **Check run Details**: click **Details** next to the Claude Code Review check in the Checks tab. The severity table lists every finding with its file, line, and summary regardless of whether the inline comment was accepted.
-* **Files changed annotations**: open the **Files changed** tab on the PR. Findings render as annotations attached directly to the diff lines, separate from review comments.
-* **Review body**: if you pushed to the PR while a review was running, some findings may reference lines that no longer exist in the current diff. Those appear under an **Additional findings** heading in the review body text rather than as inline comments.
+* **检查运行 Details**：在检查选项卡中的 Claude Code Review 检查旁边点击 **Details**。严重程度表列出每个发现及其文件、行和摘要，无论内联评论是否被接受。
+* **Files changed 注释**：在 PR 上打开 **Files changed** 选项卡。发现呈现为直接附加到差异行的注释，与审查评论分开。
+* **审查正文**：如果您在审查运行时推送到 PR，某些发现可能引用当前差异中不再存在的行。这些出现在审查正文文本中的 **Additional findings** 标题下，而不是作为内联评论。
 
-## Review a diff locally
+<h2 id="review-a-diff-locally">
+  在本地审查差异
+</h2>
 
-The [`/code-review` command](/docs/en/commands) reviews a diff in your terminal without installing the GitHub App. It reports correctness bugs and {/* min-version: 2.1.151 */}reuse, simplification, and efficiency cleanups.
+[`/code-review` 命令](/docs/zh-CN/commands)在您的终端中审查差异，无需安装 GitHub App。在任何 Claude Code 会话中运行它：它报告正确性错误和{/* min-version: 2.1.151 */}重用、简化和效率清理。默认情况下，本地审查涵盖您分支相对于其上游的提前提交加上工作树中的任何未提交更改。传递 `--comment` 以将发现作为内联 PR 评论发布，或传递 `--fix` 以在审查后将发现应用到您的工作树。
 
-<Steps>
-  <Step title="Run /code-review">
-    From the session where you're working, run the command:
+较低的[工作量级别](/docs/zh-CN/model-config#adjust-effort-level)返回较少、更高置信度的发现，而 `high` 到 `max` 提供更广泛的覆盖范围，可能包括不确定的发现。没有工作量参数，审查使用会话的当前工作量。要审查默认差异以外的内容，请传递一个目标：文件路径、PR 编号、分支名称或引用范围，例如 `main...my-feature`。引用范围形式审查从 `my-feature` 到 `main` 的拉取请求将包含的已提交差异，无论分支的上游如何配置。
 
-    ```text theme={null}
-    /code-review
-    ```
+`/code-review ultra --fix` 在云中运行更深入的 [ultrareview](/docs/zh-CN/ultrareview)，然后在发现到达您的会话时将其应用到您的工作树。Ultrareview 使用其自己的范围：您当前的分支与存储库的默认分支，加上工作树中的任何未提交和暂存的更改。
 
-    It reviews your branch's commits ahead of its upstream plus any uncommitted changes, so it needs work on the branch or in the working tree to have something to report. To review something else, pass a target: a file path, a PR number, a branch name, or a ref range such as `main...my-feature`.
+该命令在 v2.1.147 之前被命名为 `/simplify`，当时它默认应用修复。{/* min-version: 2.1.154 */}从 v2.1.154 开始，`/simplify` 运行单独的仅清理审查，应用修复而不寻找错误。如果您为错误查找编写了 `/simplify` 脚本，请切换到 `/code-review --fix`，它保持不变。
 
-    You can also add flags:
+<h2 id="related-resources">
+  相关资源
+</h2>
 
-    * `--fix`: applies the findings to your working tree after the review
-    * `--comment`: posts the findings as inline PR comments
-  </Step>
+Code Review 旨在与 Claude Code 的其余部分一起工作。如果您想在打开 PR 之前在本地运行审查、需要自托管设置或想深入了解 `CLAUDE.md` 如何在工具中塑造 Claude 的行为，这些页面是很好的下一步：
 
-  <Step title="Keep working">
-    {/* min-version: 2.1.218 */}The review runs as a background [subagent](/docs/en/sub-agents) with its own context window, so it doesn't fill your conversation. The findings arrive in your conversation when the review completes.
-  </Step>
-
-  <Step title="Act on the findings">
-    Ask Claude to fix what the review found. If you passed `--fix` or `--comment`, the review has already applied or posted its findings.
-  </Step>
-</Steps>
-
-{/* min-version: 2.1.218 */}When the host application requests it, Claude reports the review's findings through the [`ReportFindings` tool](/docs/en/tools-reference) instead of as text in its reply. Claude Code renders the report as a findings list, one entry per finding. Each entry shows the file location, a one-sentence summary, and a category tag such as `correctness` when the finding carries one. A host request applies at every effort level and requires Claude Code v2.1.218 or later.
-
-{/* min-version: 2.1.218 */}In a terminal session, `/code-review` runs the review as a fork and reports the findings as text in the reply, and Claude reports as text in any `-p` run with text or JSON output, even when the host application requests the findings list. {/* max-version: 2.1.217 */}On v2.1.216 and v2.1.217, a terminal review at `medium` or higher effort reported the findings list instead.
-
-When Claude fixes reported findings later in the session, it reports them again, and Claude Code marks each finding in the new list as fixed, skipped, or no change needed.
-
-### What the review reads and edits
-
-The review follows your `CLAUDE.md` like any Claude Code session, but it doesn't read [`REVIEW.md`](#review-md). {/* min-version: 2.1.218 */}A background review applies its `--fix` edits outside your session's [checkpoints](/docs/en/checkpointing#subagent-edits-not-restored), so `/rewind` doesn't undo them; use git to revert them. When the review [runs in the foreground](#run-in-the-foreground), it edits your working tree during your own turn, so `/rewind` restores its edits as usual.
-
-### Tune effort and arguments
-
-Pass an [effort level](/docs/en/model-config#adjust-effort-level) to trade coverage for confidence. At `low` and `medium`, the review reports only the findings it's most confident in, so you see fewer false positives; `high` through `max` cast a wider net and may include findings the review is less sure about. Without an effort argument, the review uses the session's current effort.
-
-After the effort level and flags, Claude Code reads the rest of the line in one of two ways:
-
-* **Without `ultra`**: everything left is the review target, even when it starts with another command name. `/code-review /fix-issue 123` reviews with `/fix-issue 123` as target text instead of loading `/fix-issue` as a second [stacked skill](/docs/en/skills#pass-arguments-to-skills). {/* min-version: 2.1.218 */}Before v2.1.218, a command stacked after `/code-review` expanded as its own skill.
-* **With `ultra`**: Claude Code reads a single word as a base branch or PR number, and turns longer text that doesn't name a branch or PR into [a note attached to the review](/docs/en/ultrareview#pass-a-request-in-plain-words). `/code-review ultra check my auth changes` reviews your current branch, and Claude relates the findings to your note.
-
-### Run in the foreground
-
-{/* min-version: 2.1.218 */}The review runs in the background by default; before v2.1.218, it ran inside your conversation. It runs in the foreground instead in cases like these:
-
-* You run `/code-review` again while an earlier review is still in progress
-* You run it in non-interactive mode, with the `-p` flag or the Agent SDK; Claude Code waits for the review and includes the findings in the response, except for `ultra`, which [launches the cloud review without waiting](#escalate-to-ultrareview)
-* You set [`CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`](/docs/en/env-vars) to `1`, which also turns off every other background task feature
-
-You can't schedule the review: `/code-review` is marked [`disable-model-invocation`](/docs/en/skills#frontmatter-reference), so if you set it as a [scheduled task](/docs/en/scheduled-tasks)'s prompt, Claude reads it as plain text instead of running the review.
-
-### Escalate to ultrareview
-
-`/code-review ultra --fix` runs the deeper [ultrareview](/docs/en/ultrareview) in the cloud, then applies its findings to your working tree when they arrive back in your session. Ultrareview uses its own scope: your current branch against the repository's default branch, plus any uncommitted and staged changes in the working tree. Pass a branch name, such as `/code-review ultra develop`, to compare against a different base.
-
-<Note>
-  Ultrareview requires authentication with a claude.ai account and is not available on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry, or to organizations with Zero Data Retention enabled. When ultrareview is not available, `/code-review ultra` runs a local review in your session instead.
-</Note>
-
-{/* min-version: 2.1.218 */}To start a cloud review from a script or CI, run `claude -p '/code-review ultra'`. Claude Code launches the review and prints a link for tracking it. Requires Claude Code v2.1.218 or later.
-
-When the review would bill [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans), Claude Code stops before launching, because the billing confirmation needs an interactive session. Run the [`claude ultrareview` subcommand](/docs/en/ultrareview#run-ultrareview-non-interactively) instead; by running it, you consent to the charge.
-
-The command was named `/simplify` before v2.1.147, when it applied fixes by default. {/* min-version: 2.1.154 */}From v2.1.154, `/simplify` runs a separate cleanup-only review that applies fixes without hunting for bugs. If you scripted `/simplify` for bug-finding, switch to `/code-review --fix`, which is unchanged.
-
-## Related resources
-
-Code Review is designed to work alongside the rest of Claude Code. If you want to run reviews locally before opening a PR, need a self-hosted setup, or want to go deeper on how `CLAUDE.md` shapes Claude's behavior across tools, these pages are good next stops:
-
-* [Commands](/docs/en/commands): run `/code-review` in a local Claude Code session to check a diff before pushing
-* [GitHub Actions](/docs/en/github-actions): run Claude in your own GitHub Actions workflows for custom automation beyond code review
-* [GitLab CI/CD](/docs/en/gitlab-ci-cd): self-hosted Claude integration for GitLab pipelines
-* [Memory](/docs/en/memory): how `CLAUDE.md` files work across Claude Code
-* [Analytics](/docs/en/analytics): track Claude Code usage beyond code review
+* [Commands](/docs/zh-CN/commands)：在本地 Claude Code 会话中运行 `/code-review` 以在推送前检查差异
+* [GitHub Actions](/docs/zh-CN/github-actions)：在您自己的 GitHub Actions 工作流中运行 Claude，以实现超越代码审查的自定义自动化
+* [GitLab CI/CD](/docs/zh-CN/gitlab-ci-cd)：GitLab 管道的自托管 Claude 集成
+* [Memory](/docs/zh-CN/memory)：`CLAUDE.md` 文件如何在 Claude Code 中工作
+* [Analytics](/docs/zh-CN/analytics)：跟踪超越代码审查的 Claude Code 使用情况

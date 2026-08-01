@@ -2,47 +2,53 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Todo Lists
+# 待办事项列表
 
-> Track and display todos using the Claude Agent SDK for organized task management
+> 使用 Claude Agent SDK 跟踪和显示待办事项，实现有组织的任务管理
 
-Todo tracking provides a structured way to manage tasks and display progress to users. The Claude Agent SDK includes built-in todo functionality that helps organize complex workflows and keep users informed about task progression.
+待办事项跟踪提供了一种结构化的方式来管理任务并向用户显示进度。Claude Agent SDK 包含内置的待办事项功能，可帮助组织复杂的工作流程并让用户了解任务进度。
 
 <Note>
-  As of TypeScript Agent SDK 0.3.142 and Claude Code v2.1.142, sessions use the structured Task tools `TaskCreate`, `TaskUpdate`, `TaskGet`, and `TaskList` instead of `TodoWrite`. The Python SDK gets this change from the Claude Code CLI it launches, not from the Python package version: the switch applies once that CLI — the copy bundled inside the pip package, or one you point to with `cli_path` — is v2.1.142 or later. See [Migrate to Task tools](#migrate-to-task-tools) for how monitoring code changes. The examples on this page set `CLAUDE_CODE_ENABLE_TASKS=0` to keep showing `TodoWrite` for sessions that have not migrated yet.
+  截至 TypeScript Agent SDK 0.3.142 和 Claude Code v2.1.142，会话使用结构化的 Task 工具 `TaskCreate`、`TaskUpdate`、`TaskGet` 和 `TaskList`，而不是 `TodoWrite`。Python SDK 从它启动的 Claude Code CLI 获得此更改，而不是从 Python 包版本获得：一旦该 CLI（pip 包内捆绑的副本，或您使用 `cli_path` 指向的副本）为 v2.1.142 或更高版本，该切换就会应用。请参阅[迁移到 Task 工具](#migrate-to-task-tools)了解监控代码如何变化。本页面上的示例设置 `CLAUDE_CODE_ENABLE_TASKS=0` 以继续为尚未迁移的会话显示 `TodoWrite`。
 </Note>
 
-### Todo Lifecycle
+<h3 id="todo-lifecycle">
+  待办事项生命周期
+</h3>
 
-Claude moves each todo through a predictable lifecycle:
+待办事项遵循可预测的生命周期：
 
-1. **Created**: Claude adds the todo as `pending` when it identifies a task
-2. **Activated**: Claude sets the todo to `in_progress` when it starts the work
-3. **Completed**: Claude marks it completed when the task finishes successfully
-4. **Removed**: Claude deletes a todo it no longer needs by setting `status: "deleted"` in a `TaskUpdate` call
+1. **创建**为 `pending` 状态，当任务被识别时
+2. **激活**为 `in_progress` 状态，当工作开始时
+3. **完成**当任务成功完成时
+4. **移除**当组中的所有任务都完成时
 
-### When Todos Are Used
+<h3 id="when-todos-are-used">
+  何时使用待办事项
+</h3>
 
-Claude creates todos for most multi-step work, such as:
+SDK 会自动为以下情况创建待办事项：
 
-* **Complex multi-step tasks** requiring 3 or more distinct actions
-* **User-provided task lists** when multiple items are mentioned
-* **Non-trivial operations** that benefit from progress tracking
-* **Explicit requests** when users ask for todo organization
+* **复杂的多步骤任务**需要 3 个或更多不同的操作
+* **用户提供的任务列表**当提到多个项目时
+* **非平凡的操作**受益于进度跟踪
+* **明确的请求**当用户要求组织待办事项时
 
-It may skip todos for very short or single-step requests.
+<h2 id="examples">
+  示例
+</h2>
 
-## Examples
+在运行这些示例之前，请按照[快速入门](/docs/zh-CN/agent-sdk/quickstart)安装 Claude Agent SDK。
 
-Before running these examples, install the Claude Agent SDK by following the [quickstart](/docs/en/agent-sdk/quickstart).
+每个示例运行到代理完成并产生其最终结果消息为止。如果会话首先达到其轮次限制，该结果消息将具有 `error_max_turns` 子类型。检查 `subtype` 以检测该结束。
 
-Each example runs until the agent finishes and yields its final result message. If a session reaches its turn limit first, that result message has the `error_max_turns` subtype. Check `subtype` to detect that ending.
+这些示例使用单次 `query()` 调用。在产生 `error_max_turns` 结果后，`query()` 会抛出一个包含 `Reached maximum number of turns` 的错误。每个示例都将其循环包装在 try 块中，以便在发生这种情况时干净地退出。
 
-These examples use single-shot `query()` calls. After yielding an `error_max_turns` result, `query()` raises an error that includes `Reached maximum number of turns`. Each example wraps its loop in a try block to exit cleanly when that happens.
+有关结果子类型，请参阅[处理结果](/docs/zh-CN/agent-sdk/agent-loop#handle-the-result)。
 
-See [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result) for the result subtypes.
-
-### Monitoring Todo Changes
+<h3 id="monitoring-todo-changes">
+  监控待办事项变化
+</h3>
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -101,11 +107,11 @@ See [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result) for the
                           print("Todo Status Update:")
                           for i, todo in enumerate(todos):
                               status = (
-                                  "✅"
-                                  if todo["status"] == "completed"
-                                  else "🔧"
-                                  if todo["status"] == "in_progress"
-                                  else "❌"
+   "✅"
+   if todo["status"] == "completed"
+   else "🔧"
+   if todo["status"] == "in_progress"
+   else "❌"
                               )
                               print(f"{i + 1}. {status} {todo['content']}")
       except Exception as error:
@@ -118,7 +124,9 @@ See [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result) for the
   ```
 </CodeGroup>
 
-### Real-time Progress Display
+<h3 id="real-time-progress-display">
+  实时进度显示
+</h3>
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -239,20 +247,22 @@ See [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result) for the
   ```
 </CodeGroup>
 
-## Migrate to Task tools
+<h2 id="migrate-to-task-tools">
+  迁移到 Task 工具
+</h2>
 
-The Task tools split the single `TodoWrite` call into `TaskCreate` for each new item and `TaskUpdate` for each status change, with `TaskList` and `TaskGet` available for the model to read back the current list. Your monitoring code still inspects `tool_use` blocks in the assistant stream, but maintains a map keyed by task ID instead of replacing the whole list on every call. {/* min-version: 2.1.142 */}The Task tools are the default as of TypeScript Agent SDK 0.3.142 and Claude Code v2.1.142, so no `options.env` change is needed.
+Task 工具将单个 `TodoWrite` 调用分为 `TaskCreate`（用于每个新项目）和 `TaskUpdate`（用于每个状态更改），`TaskList` 和 `TaskGet` 可供模型读取当前列表。您的监控代码仍然检查助手流中的 `tool_use` 块，但维护一个由任务 ID 键入的映射，而不是在每次调用时替换整个列表。{/* min-version: 2.1.142 */}Task 工具是 TypeScript Agent SDK 0.3.142 和 Claude Code v2.1.142 的默认工具，因此不需要更改 `options.env`。
 
-| With `TodoWrite`                              | With Task tools                                                                                                                                                                                                                                                                                     |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| One tool call rewrites the full `todos` array | `TaskCreate` adds one item, `TaskUpdate` patches one item by `taskId`                                                                                                                                                                                                                               |
-| Match `block.name === "TodoWrite"`            | Match `block.name === "TaskCreate"` or `"TaskUpdate"`                                                                                                                                                                                                                                               |
-| Item shape: `{ content, status, activeForm }` | `TaskCreate` input: `{ subject, description, activeForm?, metadata? }`. `TaskUpdate` input: `{ taskId, status?, subject?, description?, activeForm?, addBlocks?, addBlockedBy?, owner?, metadata? }`. `status` is `"pending"`, `"in_progress"`, or `"completed"`; set `status: "deleted"` to delete |
-| Render `block.input.todos` directly           | Accumulate items across calls, or read a snapshot from a `TaskList` tool result                                                                                                                                                                                                                     |
+| 使用 `TodoWrite`                         | 使用 Task 工具                                                                                                                                                                                                                                                                    |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 一个工具调用重写完整的 `todos` 数组                 | `TaskCreate` 添加一个项目，`TaskUpdate` 按 `taskId` 修补一个项目                                                                                                                                                                                                                            |
+| 匹配 `block.name === "TodoWrite"`        | 匹配 `block.name === "TaskCreate"` 或 `"TaskUpdate"`                                                                                                                                                                                                                             |
+| 项目形状：`{ content, status, activeForm }` | `TaskCreate` 输入：`{ subject, description, activeForm?, metadata? }`。`TaskUpdate` 输入：`{ taskId, status?, subject?, description?, activeForm?, addBlocks?, addBlockedBy?, owner?, metadata? }`。`status` 是 `"pending"`、`"in_progress"` 或 `"completed"`；设置 `status: "deleted"` 以删除 |
+| 直接渲染 `block.input.todos`               | 跨调用累积项目，或从 `TaskList` 工具结果读取快照                                                                                                                                                                                                                                                |
 
-The assigned task ID is not in the `TaskCreate` input. It comes back in the matching `tool_result` as `{ task: { id, subject } }`, so capture it from the result block to key your map. The following example shows the minimal change to the [Monitoring Todo Changes](#monitoring-todo-changes) loop. It reads only `tool_use` inputs and skips capturing IDs from `tool_result` blocks. To render a complete list, watch for a `TaskList` tool result in the stream or accumulate `TaskCreate` results and `TaskUpdate` inputs into a map.
+分配的任务 ID 不在 `TaskCreate` 输入中。它在匹配的 `tool_result` 中返回为 `{ task: { id, subject } }`，因此从结果块捕获它以键入您的映射。以下示例显示了对[监控待办事项变化](#monitoring-todo-changes)循环的最小更改。它仅读取 `tool_use` 输入并跳过从 `tool_result` 块捕获 ID。要渲染完整列表，请在流中监视 `TaskList` 工具结果或将 `TaskCreate` 结果和 `TaskUpdate` 输入累积到映射中。
 
-The streamed `tool_use` input is the raw shape the model emitted. Claude Code repairs some close-but-incorrect key names before execution, mapping `id` or `task_id` to `taskId` and `active_form` to `activeForm`, but that repair is not reflected in the stream. Read `TaskUpdate` input fields defensively, as the samples below do, rather than assuming the canonical name is always present.
+流式传输的 `tool_use` 输入是模型发出的原始形状。Claude Code 在执行前修复一些接近但不正确的键名，将 `id` 或 `task_id` 映射到 `taskId`，将 `active_form` 映射到 `activeForm`，但该修复不会反映在流中。防御性地读取 `TaskUpdate` 输入字段，如下面的示例所示，而不是假设规范名称始终存在。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -322,9 +332,11 @@ The streamed `tool_use` input is the raw shape the model emitted. Claude Code re
   ```
 </CodeGroup>
 
-## Related Documentation
+<h2 id="related-documentation">
+  相关文档
+</h2>
 
-* [TypeScript SDK Reference](/docs/en/agent-sdk/typescript)
-* [Python SDK Reference](/docs/en/agent-sdk/python)
-* [Streaming vs Single Mode](/docs/en/agent-sdk/streaming-vs-single-mode)
-* [Custom Tools](/docs/en/agent-sdk/custom-tools)
+* [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript)
+* [Python SDK 参考](/docs/zh-CN/agent-sdk/python)
+* [流式模式与单一模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)
+* [自定义工具](/docs/zh-CN/agent-sdk/custom-tools)
