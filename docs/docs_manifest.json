@@ -1011,8 +1011,8 @@
     }
   },
   "fetch_metadata": {
-    "last_fetch_completed": "2026-08-01T17:20:11.316078",
-    "fetch_duration_seconds": 194.52708,
+    "last_fetch_completed": "2026-08-02T07:00:09.762515",
+    "fetch_duration_seconds": 170.883749,
     "total_pages_discovered": 167,
     "pages_fetched_successfully": 168,
     "pages_failed": 0,
@@ -1022,9 +1022,9 @@
     "total_files": 168,
     "fetch_tool_version": "3.0"
   },
-  "last_updated": "2026-08-01T17:20:11.316094",
-  "base_url": "https://raw.githubusercontent.com/muxuezzz/claude-code-docs-zh-tmp/main/docs/",
+  "last_updated": "2026-08-02T07:00:09.762542",
+  "base_url": "https://raw.githubusercontent.com/muxuezzz/claude-code-docs-zh-tmp/tmptest/docs/",
   "github_repository": "muxuezzz/claude-code-docs-zh-tmp",
-  "github_ref": "main",
+  "github_ref": "tmptest",
   "description": "Claude Code documentation manifest. Keys are filenames, append to base_url for full URL."
 }
