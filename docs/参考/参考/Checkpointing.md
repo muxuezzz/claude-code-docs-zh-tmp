@@ -21,7 +21,7 @@ Claude Code 自动跟踪 Claude 在工作时所做的文件编辑，允许您快
 Claude Code 跟踪其文件编辑工具所做的所有更改：
 
 * 每个用户提示都会创建一个新的 checkpoint
-* Claude Code 在一个会话中保留最近 100 个 checkpoint 的文件快照。丢弃较旧的 checkpoint 会删除没有其他 checkpoint 引用的快照文件，除了每个文件的第一个快照，VS Code 扩展将其用作会话 diffs 的基线。{/* min-version: 2.1.208 */}在 v2.1.208 之前，这些被取代的快照文件会保留在磁盘上，直到会话被清理。
+* Claude Code 在一个会话中保留最近 100 个 checkpoint 的文件快照。丢弃较旧的 checkpoint 会删除没有其他 checkpoint 引用的快照文件，除了每个文件的第一个快照，VS Code 扩展将其用作会话 diffs 的基线。在 v2.1.208 之前，这些被取代的快照文件会保留在磁盘上，直到会话被清理。
 * Checkpoints 与对话一起保存，因此恢复的会话仍然可以 `/rewind` 到它们
 * 在 30 天后自动清理（可配置）
 

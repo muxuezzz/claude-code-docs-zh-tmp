@@ -116,7 +116,7 @@ API 通过将每个请求的开始部分（称为前缀）与最近处理过的�
 
 例外是提供 [MCP 服务器](/docs/zh-CN/plugins-reference#mcp-servers)的插件。启用或禁用一个遵循与[连接或断开 MCP 服务器](#connecting-or-disconnecting-an-mcp-server)相同的规则：当服务器的工具被延迟时缓存保存，当它们加载到前缀中时下一个请求重新读取整个对话。
 
-插件更改在您运行 [`/reload-plugins`](/docs/zh-CN/discover-plugins#apply-plugin-changes-without-restarting) 或启动新会话时应用。成本（无论是附加的公告还是完整的重新读取）显示在重新加载后的第一个回合，而不是当您运行 `/plugin install`、`/plugin enable` 或 `/plugin disable` 时。{/* min-version: 2.1.163 */}从 v2.1.163 开始，当重新加载会触发完整重新读取时，`/reload-plugins` 会显示警告并不应用重新加载。传递 `--force` 以强制应用。
+插件更改在您运行 [`/reload-plugins`](/docs/zh-CN/discover-plugins#apply-plugin-changes-without-restarting) 或启动新会话时应用。成本（无论是附加的公告还是完整的重新读取）显示在重新加载后的第一个回合，而不是当您运行 `/plugin install`、`/plugin enable` 或 `/plugin disable` 时。从 v2.1.163 开始，当重新加载会触发完整重新读取时，`/reload-plugins` 会显示警告并不应用重新加载。传递 `--force` 以强制应用。
 
 禁用您在会话早期启用的插件会恢复之前的请求形状。如果该前缀仍在其[缓存生命周期](#cache-lifetime)内，下一个请求读取较旧的缓存条目而不是重建。
 

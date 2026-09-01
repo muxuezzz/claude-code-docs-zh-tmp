@@ -107,7 +107,7 @@ VS Code 扩展为 Claude Code 提供了原生图形界面，直接集成到您�
   * **Plan**：Claude 描述它将做什么，并在进行更改前等待批准。VS Code 会自动将计划作为完整的 Markdown 文档打开，您可以添加内联注释以在 Claude 开始前提供反馈。
   * **Edit automatically**：Claude 进行编辑而不询问。
 * **命令菜单**：点击 `/` 或输入 `/` 以打开命令菜单。选项包括附加文件、切换模型、切换扩展思考、查看计划使用情况（`/usage`）以及启动 [Remote Control](/docs/zh-CN/remote-control) 会话（`/remote-control`）。自定义部分提供对 MCP servers、hooks、memory、permissions 和 plugins 的访问。带有终端图标的项目在集成终端中打开。
-  * {/* min-version: 2.1.203 */}设置部分包括**为所有会话启用 Remote Control**，它设置 [`remoteControlAtStartup`](/docs/zh-CN/settings#available-settings) 以便[每个新的交互式会话都自动连接到 Remote Control](/docs/zh-CN/remote-control#enable-remote-control-for-all-sessions)。需要 Claude Code v2.1.203 或更高版本。
+  * 设置部分包括**为所有会话启用 Remote Control**，它设置 [`remoteControlAtStartup`](/docs/zh-CN/settings#available-settings) 以便[每个新的交互式会话都自动连接到 Remote Control](/docs/zh-CN/remote-control#enable-remote-control-for-all-sessions)。需要 Claude Code v2.1.203 或更高版本。
 * **上下文指示器**：提示框显示您使用了多少 Claude 的 context window。Claude 在需要时自动压缩，或者您可以手动运行 `/compact`。
 * **扩展思考**：让 Claude 花更多时间推理复杂问题。通过命令菜单（`/`）切换它。Claude 的推理在对话中显示为折叠块：点击一个块来阅读它，或按 `Ctrl+O` 以展开或折叠会话中的每个思考块。有关详细信息，请参阅[扩展思考](/docs/zh-CN/model-config#extended-thinking)。
 * **多行输入**：按 `Shift+Enter` 添加新行而不发送。这也适用于问题对话框的"其他"自由文本输入。
@@ -362,7 +362,7 @@ vscode://anthropic.claude-code/open?prompt=review%20my%20changes
 | 设置                                  | 默认值       | 描述                                                                                                                                                                                                                     |
 | ----------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useTerminal`                       | `false`   | 以终端模式而不是图形面板启动 Claude                                                                                                                                                                                                  |
-| `initialPermissionMode`             | `default` | 控制新对话的批准提示：`default`、`plan`、`acceptEdits` 或 `bypassPermissions`。{/* min-version: 2.1.200 */}`manual` 是 `default` 的别名，选择模式指示器中标记为**手动**的模式。需要 Claude Code v2.1.200 或更高版本。请参阅[权限模式](/docs/zh-CN/permission-modes)。            |
+| `initialPermissionMode`             | `default` | 控制新对话的批准提示：`default`、`plan`、`acceptEdits` 或 `bypassPermissions`。`manual` 是 `default` 的别名，选择模式指示器中标记为**手动**的模式。需要 Claude Code v2.1.200 或更高版本。请参阅[权限模式](/docs/zh-CN/permission-modes)。                                        |
 | `preferredLocation`                 | `panel`   | Claude 打开的位置：`sidebar`（右侧）或 `panel`（新选项卡）                                                                                                                                                                              |
 | `autosave`                          | `true`    | 在 Claude 读取或写入文件前自动保存文件                                                                                                                                                                                                |
 | `useCtrlEnterToSend`                | `false`   | 使用 Ctrl/Cmd+Enter 而不是 Enter 发送提示                                                                                                                                                                                       |

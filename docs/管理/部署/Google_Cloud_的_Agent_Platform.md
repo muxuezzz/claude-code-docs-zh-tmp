@@ -254,7 +254,7 @@ Claude Code 在未设置固定变量时使用这些默认模型：
   Opus 模型的每个令牌价格高于 Sonnet 模型，因此不固定主模型的部署在更新到 v2.1.207 或更高版本后将按 Opus 费率计费。要将 Sonnet 4.5 保持为主模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署会保持其引导的 Sonnet 模型作为默认值。
 </Warning>
 
-{/* min-version: 2.1.207 */}在 v2.1.207 之前，Google Cloud 的 Agent Platform 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
+在 v2.1.207 之前，Google Cloud 的 Agent Platform 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
 
 要进一步自定义模型：
 

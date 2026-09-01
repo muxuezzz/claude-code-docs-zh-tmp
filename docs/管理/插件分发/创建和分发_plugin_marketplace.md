@@ -188,14 +188,14 @@
   可选字段
 </h3>
 
-| 字段                                    | 类型     | 描述                                                                                                                                                                                                |
-| :------------------------------------ | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `$schema`                             | string | 用于编辑器自动完成和验证的 JSON Schema URL。Claude Code 在加载时忽略此字段。                                                                                                                                              |
-| `description`                         | string | 简短的 marketplace 描述                                                                                                                                                                                |
-| `version`                             | string | Marketplace 清单版本                                                                                                                                                                                  |
-| `metadata.pluginRoot`                 | string | 前置到相对 plugin 源路径的基目录（例如，`"./plugins"` 让你写 `"source": "formatter"` 而不是 `"source": "./plugins/formatter"`）                                                                                          |
-| `allowCrossMarketplaceDependenciesOn` | array  | 此 marketplace 中的 plugins 可能依赖的其他 marketplaces。来自此处未列出的 marketplace 的依赖项在安装时被阻止。见[依赖来自另一个 marketplace 的 plugin](/docs/zh-CN/plugin-dependencies#depend-on-a-plugin-from-another-marketplace)。           |
-| `renames`                             | object | {/* min-version: 2.1.193 */}从前一个 plugin `name` 到其当前名称的映射，或如果 plugin 被移除则映射到 `null`。当你重命名或移除 `plugins` 中的条目时，让现有用户自动迁移。见[重命名或移除 plugin](#rename-or-remove-a-plugin)。需要 Claude Code v2.1.193 或更高版本。 |
+| 字段                                    | 类型     | 描述                                                                                                                                                                                      |
+| :------------------------------------ | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$schema`                             | string | 用于编辑器自动完成和验证的 JSON Schema URL。Claude Code 在加载时忽略此字段。                                                                                                                                    |
+| `description`                         | string | 简短的 marketplace 描述                                                                                                                                                                      |
+| `version`                             | string | Marketplace 清单版本                                                                                                                                                                        |
+| `metadata.pluginRoot`                 | string | 前置到相对 plugin 源路径的基目录（例如，`"./plugins"` 让你写 `"source": "formatter"` 而不是 `"source": "./plugins/formatter"`）                                                                                |
+| `allowCrossMarketplaceDependenciesOn` | array  | 此 marketplace 中的 plugins 可能依赖的其他 marketplaces。来自此处未列出的 marketplace 的依赖项在安装时被阻止。见[依赖来自另一个 marketplace 的 plugin](/docs/zh-CN/plugin-dependencies#depend-on-a-plugin-from-another-marketplace)。 |
+| `renames`                             | object | 从前一个 plugin `name` 到其当前名称的映射，或如果 plugin 被移除则映射到 `null`。当你重命名或移除 `plugins` 中的条目时，让现有用户自动迁移。见[重命名或移除 plugin](#rename-or-remove-a-plugin)。需要 Claude Code v2.1.193 或更高版本。                   |
 
 `description` 和 `version` 也可以在 `metadata` 下接受，以实现向后兼容性。
 
@@ -220,21 +220,21 @@
 
 **标准元数据字段：**
 
-| 字段               | 类型      | 描述                                                                                                                                                                                                            |
-| :--------------- | :------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `displayName`    | string  | {/* min-version: 2.1.143 */}在 UI 界面中显示的人类可读名称。当省略时回退到 `name`。可以包含空格和任何大小写。不用于命名空间或查找。需要 Claude Code v2.1.143 或更高版本。                                                                                           |
-| `description`    | string  | 简短的 plugin 描述                                                                                                                                                                                                 |
-| `version`        | string  | Plugin 版本。如果设置（在此处或在 `plugin.json` 中），plugin 将固定到此字符串，用户仅在其更改时才会收到更新。省略以回退到 git commit SHA。见 [版本解析](#version-resolution-and-release-channels)。                                                                |
-| `author`         | object  | Plugin 作者信息（`name` 必需，`email` 可选）                                                                                                                                                                             |
-| `homepage`       | string  | Plugin 主页或文档 URL                                                                                                                                                                                              |
-| `repository`     | string  | 源代码存储库 URL                                                                                                                                                                                                    |
-| `license`        | string  | SPDX 许可证标识符（例如，MIT、Apache-2.0）                                                                                                                                                                                |
-| `keywords`       | array   | 用于 plugin 发现和分类的标签                                                                                                                                                                                            |
-| `category`       | string  | Plugin 类别以供组织                                                                                                                                                                                                 |
-| `tags`           | array   | 用于可搜索性的标签                                                                                                                                                                                                     |
-| `strict`         | boolean | 控制 `plugin.json` 是否是组件定义的权威（默认：true）。见下面的 [Strict 模式](#strict-mode)。                                                                                                                                          |
-| `relevance`      | object  | {/* min-version: 2.1.152 */}告诉 Claude Code 何时向用户建议此 plugin 的信号。仅对管理员在托管设置中允许列表的 marketplace 生效。见 [为你的组织推荐 plugin](/docs/zh-CN/plugin-relevance)。需要 Claude Code v2.1.152 或更高版本。                                     |
-| `defaultEnabled` | boolean | {/* min-version: 2.1.154 */}plugin 安装后是否启用（默认：true）。设置为 `false` 以安装禁用的 plugin，直到用户选择启用。优先于 plugin 的 `plugin.json` 中的同一字段。见 [默认启用](/docs/zh-CN/plugins-reference#default-enablement)。需要 Claude Code v2.1.154 或更高版本。 |
+| 字段               | 类型      | 描述                                                                                                                                                                                |
+| :--------------- | :------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `displayName`    | string  | 在 UI 界面中显示的人类可读名称。当省略时回退到 `name`。可以包含空格和任何大小写。不用于命名空间或查找。需要 Claude Code v2.1.143 或更高版本。                                                                                           |
+| `description`    | string  | 简短的 plugin 描述                                                                                                                                                                     |
+| `version`        | string  | Plugin 版本。如果设置（在此处或在 `plugin.json` 中），plugin 将固定到此字符串，用户仅在其更改时才会收到更新。省略以回退到 git commit SHA。见 [版本解析](#version-resolution-and-release-channels)。                                    |
+| `author`         | object  | Plugin 作者信息（`name` 必需，`email` 可选）                                                                                                                                                 |
+| `homepage`       | string  | Plugin 主页或文档 URL                                                                                                                                                                  |
+| `repository`     | string  | 源代码存储库 URL                                                                                                                                                                        |
+| `license`        | string  | SPDX 许可证标识符（例如，MIT、Apache-2.0）                                                                                                                                                    |
+| `keywords`       | array   | 用于 plugin 发现和分类的标签                                                                                                                                                                |
+| `category`       | string  | Plugin 类别以供组织                                                                                                                                                                     |
+| `tags`           | array   | 用于可搜索性的标签                                                                                                                                                                         |
+| `strict`         | boolean | 控制 `plugin.json` 是否是组件定义的权威（默认：true）。见下面的 [Strict 模式](#strict-mode)。                                                                                                              |
+| `relevance`      | object  | 告诉 Claude Code 何时向用户建议此 plugin 的信号。仅对管理员在托管设置中允许列表的 marketplace 生效。见 [为你的组织推荐 plugin](/docs/zh-CN/plugin-relevance)。需要 Claude Code v2.1.152 或更高版本。                                     |
+| `defaultEnabled` | boolean | plugin 安装后是否启用（默认：true）。设置为 `false` 以安装禁用的 plugin，直到用户选择启用。优先于 plugin 的 `plugin.json` 中的同一字段。见 [默认启用](/docs/zh-CN/plugins-reference#default-enablement)。需要 Claude Code v2.1.154 或更高版本。 |
 
 **组件配置字段：**
 

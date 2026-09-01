@@ -26,44 +26,47 @@ Hooks 在 Claude Code 会话期间的特定点触发。当事件触发且匹配�
 
 <div style={{maxWidth: "500px", margin: "0 auto"}}>
   <Frame>
-    <img src="https://mintcdn.com/claude-code/uLsR38F1U_5zPppm/images/hooks-lifecycle.svg?fit=max&auto=format&n=uLsR38F1U_5zPppm&q=85&s=fbdbd78ad9f474da7d344879341341f0" alt="Hook 生命周期图，显示可选的 Setup 流入 SessionStart，然后是每轮循环，包含 UserPromptSubmit、用于 slash commands 的 UserPromptExpansion、嵌套的代理循环（PreToolUse、PermissionRequest、PostToolUse、PostToolUseFailure、PostToolBatch、SubagentStart/Stop、TaskCreated、TaskCompleted）和 Stop 或 StopFailure，然后是 TeammateIdle、PreCompact、PostCompact 和 SessionEnd，Elicitation 和 ElicitationResult 嵌套在 MCP 工具执行内，PermissionDenied 作为 PermissionRequest 的副分支用于自动模式拒绝，WorktreeCreate、WorktreeRemove、Notification、ConfigChange、InstructionsLoaded、CwdChanged 和 FileChanged 作为独立异步事件，MessageDisplay 作为仅显示事件，在助手消息文本流式传输时运行" width="520" height="1228" data-path="images/hooks-lifecycle.svg" />
+    <img src="https://mintcdn.com/claude-code/x7pO8l4XcvAXCoVc/images/hooks-lifecycle.svg?fit=max&auto=format&n=x7pO8l4XcvAXCoVc&q=85&s=81b9256c1bbe8832553485f5d9e9c746" alt="Hook 生命周期图，显示可选的 Setup 流入 SessionStart，然后是每轮循环，包含 UserPromptSubmit、用于 slash commands 的 UserPromptExpansion、嵌套的代理循环（PreToolUse、PermissionRequest、PostToolUse、PostToolUseFailure、PostToolBatch、SubagentStart/Stop、TaskCreated、TaskCompleted）和 Stop 或 StopFailure，然后是 TeammateIdle、PreCompact、PostCompact 和 SessionEnd，Elicitation 和 ElicitationResult 嵌套在 MCP 工具执行内，PermissionDenied 作为 PermissionRequest 的副分支用于自动模式拒绝，WorktreeCreate、WorktreeRemove、Notification、ConfigChange、InstructionsLoaded、CwdChanged 和 FileChanged 作为独立异步事件，MessageDisplay 作为仅显示事件，在助手消息文本流式传输时运行" width="520" height="1336" data-path="images/hooks-lifecycle.svg" />
   </Frame>
 </div>
 
 下表总结了每个事件何时触发。[Hook 事件](#hook-events)部分记录了每个事件的完整输入架构和决定控制选项。
 
-| Event                 | When it fires                                                                                                                                          |
-| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SessionStart`        | When a session begins or resumes                                                                                                                       |
-| `Setup`               | When you start Claude Code with `--init-only`, or with `--init` or `--maintenance` in `-p` mode. For one-time preparation in CI or scripts             |
-| `UserPromptSubmit`    | When you submit a prompt, before Claude processes it                                                                                                   |
-| `UserPromptExpansion` | When a user-typed command expands into a prompt, before it reaches Claude. Can block the expansion                                                     |
-| `PreToolUse`          | Before a tool call executes. Can block it                                                                                                              |
-| `PermissionRequest`   | When a tool call needs a permission decision                                                                                                           |
-| `PermissionDenied`    | When a tool call is denied by the auto mode classifier. Return `{retry: true}` to tell the model it may retry the denied tool call                     |
-| `PostToolUse`         | After a tool call succeeds                                                                                                                             |
-| `PostToolUseFailure`  | After a tool call fails                                                                                                                                |
-| `PostToolBatch`       | After a full batch of parallel tool calls resolves, before the next model call                                                                         |
-| `Notification`        | When Claude Code sends a notification                                                                                                                  |
-| `MessageDisplay`      | While assistant message text is displayed                                                                                                              |
-| `SubagentStart`       | When a subagent is spawned                                                                                                                             |
-| `SubagentStop`        | When a subagent finishes                                                                                                                               |
-| `TaskCreated`         | When a task is being created via `TaskCreate`                                                                                                          |
-| `TaskCompleted`       | When a task is being marked as completed                                                                                                               |
-| `Stop`                | When Claude finishes responding                                                                                                                        |
-| `StopFailure`         | When the turn ends due to an API error. Output and exit code are ignored                                                                               |
-| `TeammateIdle`        | When an [agent team](/docs/en/agent-teams) teammate is about to go idle                                                                                     |
-| `InstructionsLoaded`  | When a CLAUDE.md or `.claude/rules/*.md` file is loaded into context. Fires at session start and when files are lazily loaded during a session         |
-| `ConfigChange`        | When a configuration file changes during a session                                                                                                     |
-| `CwdChanged`          | When the working directory changes, for example when Claude executes a `cd` command. Useful for reactive environment management with tools like direnv |
-| `FileChanged`         | When a watched file changes on disk. The `matcher` field specifies which filenames to watch                                                            |
-| `WorktreeCreate`      | When a worktree is being created via `--worktree`, `isolation: "worktree"`, or for a background session. Replaces default git behavior                 |
-| `WorktreeRemove`      | When a worktree is being removed at session exit, when a subagent finishes, or when you delete a background session                                    |
-| `PreCompact`          | Before context compaction                                                                                                                              |
-| `PostCompact`         | After context compaction completes                                                                                                                     |
-| `Elicitation`         | When an MCP server requests user input during a tool call                                                                                              |
-| `ElicitationResult`   | After a user responds to an MCP elicitation, before the response is sent back to the server                                                            |
-| `SessionEnd`          | When a session terminates                                                                                                                              |
+| Event                 | When it fires                                                                                                                                                                                                                                         |
+| :-------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SessionStart`        | When a session begins or resumes                                                                                                                                                                                                                      |
+| `Setup`               | When you start Claude Code with `--init-only`, or with `--init` or `--maintenance` in `-p` mode. For one-time preparation in CI or scripts                                                                                                            |
+| `UserPromptSubmit`    | When you submit a prompt, before Claude processes it                                                                                                                                                                                                  |
+| `UserPromptExpansion` | When a user-typed command expands into a prompt, before it reaches Claude. Can block the expansion                                                                                                                                                    |
+| `PreToolUse`          | Before a tool call executes. Can block it                                                                                                                                                                                                             |
+| `PermissionRequest`   | When a tool call needs a permission decision                                                                                                                                                                                                          |
+| `PermissionDenied`    | When auto mode denies a tool call, including denials without a classifier verdict. Use JSON `hookSpecificOutput.retry: true` to tell the model it may retry the denied tool call. Claude Code ignores `retry` when the classifier produced no verdict |
+| `PostToolUse`         | After a tool call succeeds                                                                                                                                                                                                                            |
+| `PostToolUseFailure`  | After a tool call fails                                                                                                                                                                                                                               |
+| `PostToolBatch`       | After a full batch of parallel tool calls resolves, before the next model call                                                                                                                                                                        |
+| `Notification`        | When Claude Code sends a notification                                                                                                                                                                                                                 |
+| `MessageDisplay`      | While assistant message text is displayed                                                                                                                                                                                                             |
+| `SubagentStart`       | When a subagent is spawned                                                                                                                                                                                                                            |
+| `SubagentStop`        | When a subagent finishes                                                                                                                                                                                                                              |
+| `TaskCreated`         | When a task is being created via `TaskCreate`                                                                                                                                                                                                         |
+| `TaskCompleted`       | When a task is being marked as completed                                                                                                                                                                                                              |
+| `Stop`                | When Claude finishes responding                                                                                                                                                                                                                       |
+| `StopFailure`         | When the turn ends due to an API error                                                                                                                                                                                                                |
+| `TeammateIdle`        | When an [agent team](/docs/en/agent-teams) teammate is about to go idle                                                                                                                                                                                    |
+| `InstructionsLoaded`  | When a CLAUDE.md or `.claude/rules/*.md` file is loaded into context. Fires at session start and when files are lazily loaded during a session                                                                                                        |
+| `ConfigChange`        | When a configuration file changes during a session                                                                                                                                                                                                    |
+| `CwdChanged`          | When the working directory changes, for example when Claude executes a `cd` command. Useful for reactive environment management with tools like direnv                                                                                                |
+| `DirectoryAdded`      | When a working directory is added mid-session via `/add-dir` or the SDK `register_repo_root` control request                                                                                                                                          |
+| `FileChanged`         | When a watched file changes on disk. The `matcher` field specifies which filenames to watch                                                                                                                                                           |
+| `WorktreeCreate`      | When a worktree is being created via `--worktree`, `isolation: "worktree"`, or for a background session. Replaces default git behavior                                                                                                                |
+| `WorktreeRemove`      | When a worktree is being removed at session exit, when a subagent finishes, or when you delete a background session                                                                                                                                   |
+| `PreCompact`          | Before context compaction                                                                                                                                                                                                                             |
+| `PostCompact`         | After context compaction completes                                                                                                                                                                                                                    |
+| `PreModelSwitch`      | Before Claude Code applies a model switch that you or a client requested. Can block the switch                                                                                                                                                        |
+| `PostModelSwitch`     | After the session's model changes, including changes Claude Code makes on its own, such as restoring the model when you resume a session                                                                                                              |
+| `Elicitation`         | When an MCP server requests user input during a tool call                                                                                                                                                                                             |
+| `ElicitationResult`   | After a user responds to an MCP elicitation, before the response is sent back to the server                                                                                                                                                           |
+| `SessionEnd`          | When a session terminates                                                                                                                                                                                                                             |
 
 <h3 id="how-a-hook-resolves">
   Hook 如何解析
@@ -325,7 +328,7 @@ MCP 工具遵循命名模式 `mcp__<server>__<tool>`，例如：
 
 所有匹配的 hooks 并行运行，相同的处理程序会自动去重。命令 hooks 按命令字符串和 `args` 去重，HTTP hooks 按 URL 去重。
 
-处理程序在当前目录中运行，使用 Claude Code 的环境。在远程 web 环境中，`$CLAUDE_CODE_REMOTE` 环境变量设置为 `"true"`，在本地 CLI 中未设置。{/* min-version: 2.1.199 */}从 v2.1.199 开始，[`$CLAUDE_CODE_BRIDGE_SESSION_ID`](/docs/zh-CN/env-vars)设置为[远程控制](/docs/zh-CN/remote-control)会话 ID，而本地会话具有活跃的远程控制连接。
+处理程序在当前目录中运行，使用 Claude Code 的环境。在远程 web 环境中，`$CLAUDE_CODE_REMOTE` 环境变量设置为 `"true"`，在本地 CLI 中未设置。从 v2.1.199 开始，[`$CLAUDE_CODE_BRIDGE_SESSION_ID`](/docs/zh-CN/env-vars)设置为[远程控制](/docs/zh-CN/remote-control)会话 ID，而本地会话具有活跃的远程控制连接。
 
 <h4 id="common-fields">
   通用字段
@@ -643,7 +646,7 @@ Hook 事件接收这些字段作为 JSON，除了每个[hook 事件](#hook-event
 | 字段                | 描述                                                                                                                                                                                                                                                                                                                                                                                                |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `session_id`      | 当前会话标识符                                                                                                                                                                                                                                                                                                                                                                                           |
-| `prompt_id`       | UUID 标识当前正在处理的用户提示。与 OpenTelemetry 事件上的[`prompt.id` 属性](/docs/zh-CN/monitoring-usage#event-correlation-attributes)匹配，因此您可以将 hook 输出与单个提示的遥测关联起来。在第一个用户输入之前不存在。{/* min-version: 2.1.196 */}需要 Claude Code v2.1.196 或更高版本                                                                                                                                                                                |
+| `prompt_id`       | UUID 标识当前正在处理的用户提示。与 OpenTelemetry 事件上的[`prompt.id` 属性](/docs/zh-CN/monitoring-usage#event-correlation-attributes)匹配，因此您可以将 hook 输出与单个提示的遥测关联起来。在第一个用户输入之前不存在。需要 Claude Code v2.1.196 或更高版本                                                                                                                                                                                                            |
 | `transcript_path` | 对话 JSON 的路径。成绩单文件异步写入，可能滞后于内存中的对话，因此当 hook 触发时，它可能还不包括当前轮次的最新消息。需要当前轮次最后助手文本的 hooks 应该在[Stop](#stop) 和 [SubagentStop](#subagentstop) 上使用 `last_assistant_message`，而不是读取成绩单                                                                                                                                                                                                                        |
 | `cwd`             | 调用 hook 时的当前工作目录                                                                                                                                                                                                                                                                                                                                                                                  |
 | `permission_mode` | 当前[权限模式](/docs/zh-CN/permissions#permission-modes)：`"default"`、`"plan"`、`"acceptEdits"`、`"auto"`、`"dontAsk"` 或 `"bypassPermissions"`。标记为**手动**的模式作为 `"default"` 到达，永远不会作为 `"manual"` 到达，因此匹配 `"default"` 的脚本继续工作。并非所有事件都接收此字段。检查每个[hook 事件](#hook-events)部分中的 JSON 示例                                                                                                                                  |
@@ -1567,16 +1570,16 @@ MessageDisplay hooks 没有决定控制。它们无法阻止消息或改变成�
 
 在 `PostToolUse` 中，已完成的 Agent 调用的 `tool_response` 携带 subagent 的最终文本以及使用遥测。读取这些字段以从 hook 记录每个 subagent 的成本：
 
-| 字段                  | 类型     | 示例                                                    | 描述                                                                                                                                                                          |
-| :------------------ | :----- | :---------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`            | string | `"completed"`                                         | 前台 subagents 为 `"completed"`，后台 subagents 为 `"async_launched"`。{/* min-version: 2.1.198 */}从 v2.1.198 开始，subagents 默认在后台运行，因此省略的 `run_in_background` 也产生 `"async_launched"` |
-| `agentId`           | string | `"a4d2c8f1e0b3a297"`                                  | subagent 运行的标识符                                                                                                                                                             |
-| `content`           | array  | `[{"type": "text", "text": "Found 12 endpoints..."}]` | subagent 的最终文本块                                                                                                                                                             |
-| `resolvedModel`     | string | `"claude-sonnet-4-5"`                                 | subagent 运行的模型，可能与请求的模型不同。{/* min-version: 2.1.174 */}需要 Claude Code v2.1.174 或更高版本                                                                                         |
-| `totalTokens`       | number | `12450`                                               | 在 subagent 轮次中计费的总令牌数                                                                                                                                                       |
-| `totalDurationMs`   | number | `48211`                                               | subagent 运行的挂钟时间                                                                                                                                                            |
-| `totalToolUseCount` | number | `7`                                                   | subagent 进行的工具调用计数                                                                                                                                                          |
-| `usage`             | object | `{"input_tokens": 8320, ...}`                         | 按类型的令牌分解：`input_tokens`、`output_tokens`、`cache_creation_input_tokens`、`cache_read_input_tokens`                                                                             |
+| 字段                  | 类型     | 示例                                                    | 描述                                                                                                                                              |
+| :------------------ | :----- | :---------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`            | string | `"completed"`                                         | 前台 subagents 为 `"completed"`，后台 subagents 为 `"async_launched"`。从 v2.1.198 开始，subagents 默认在后台运行，因此省略的 `run_in_background` 也产生 `"async_launched"` |
+| `agentId`           | string | `"a4d2c8f1e0b3a297"`                                  | subagent 运行的标识符                                                                                                                                 |
+| `content`           | array  | `[{"type": "text", "text": "Found 12 endpoints..."}]` | subagent 的最终文本块                                                                                                                                 |
+| `resolvedModel`     | string | `"claude-sonnet-4-5"`                                 | subagent 运行的模型，可能与请求的模型不同。需要 Claude Code v2.1.174 或更高版本                                                                                         |
+| `totalTokens`       | number | `12450`                                               | 在 subagent 轮次中计费的总令牌数                                                                                                                           |
+| `totalDurationMs`   | number | `48211`                                               | subagent 运行的挂钟时间                                                                                                                                |
+| `totalToolUseCount` | number | `7`                                                   | subagent 进行的工具调用计数                                                                                                                              |
+| `usage`             | object | `{"input_tokens": 8320, ...}`                         | 按类型的令牌分解：`input_tokens`、`output_tokens`、`cache_creation_input_tokens`、`cache_read_input_tokens`                                                 |
 
 对于后台 subagents，工具在启动 subagent 后立即返回，因此 `tool_response` 不携带使用字段。它具有 `status: "async_launched"`、`agentId`、`description`、`prompt`、`outputFile` 和 `resolvedModel`。
 
@@ -1601,11 +1604,11 @@ MessageDisplay hooks 没有决定控制。它们无法阻止消息或改变成�
 
 呈现一个计划并要求用户在 Claude 离开[Plan Mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode)之前批准它。Claude 在调用工具之前将计划写入磁盘上的文件，因此来自模型的字面 `tool_input` 通常为空。Claude Code 在将输入传递给 hooks 之前注入计划内容和文件路径。
 
-| 字段               | 类型     | 示例                                          | 描述                                                                                            |
-| :--------------- | :----- | :------------------------------------------ | :-------------------------------------------------------------------------------------------- |
-| `plan`           | string | `"## Refactor auth\n1. Extract..."`         | Markdown 中的计划内容。从磁盘上的计划文件注入                                                                   |
-| `planFilePath`   | string | `"/Users/.../plans/refactor-auth.md"`       | 计划文件的路径。注入                                                                                    |
-| `allowedPrompts` | array  | `[{"tool": "Bash", "prompt": "run tests"}]` | {/* min-version: 2.1.205 */}已弃用。Claude Code 接受该字段但忽略它。在 v2.1.205 之前，它携带 Claude 请求实现计划的基于提示的权限 |
+| 字段               | 类型     | 示例                                          | 描述                                                                |
+| :--------------- | :----- | :------------------------------------------ | :---------------------------------------------------------------- |
+| `plan`           | string | `"## Refactor auth\n1. Extract..."`         | Markdown 中的计划内容。从磁盘上的计划文件注入                                       |
+| `planFilePath`   | string | `"/Users/.../plans/refactor-auth.md"`       | 计划文件的路径。注入                                                        |
+| `allowedPrompts` | array  | `[{"tool": "Bash", "prompt": "run tests"}]` | 已弃用。Claude Code 接受该字段但忽略它。在 v2.1.205 之前，它携带 Claude 请求实现计划的基于提示的权限 |
 
 在 `PostToolUse` 中，`tool_response` 是一个对象，具有 `plan` 和 `filePath` 字段，保存批准的计划，加上内部状态标志。读取 `tool_response.plan` 以获取计划内容，而不是从磁盘重新读取文件。
 
@@ -1761,14 +1764,14 @@ PermissionRequest hooks 接收 `tool_name` 和 `tool_input` 字段，如 PreTool
 
 `updatedPermissions` 输出字段和[`permission_suggestions` 输入字段](#permissionrequest-input)都使用相同的条目对象数组。每个条目都有一个 `type` 来确定其其他字段，以及一个 `destination` 来控制更改的写入位置。
 
-| `type`              | 字段                               | 效果                                                                                                                                                                                |
-| :------------------ | :------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `addRules`          | `rules`、`behavior`、`destination` | 添加权限规则。`rules` 是 `{toolName, ruleContent?}` 对象的数组。省略 `ruleContent` 以匹配整个工具。`behavior` 是 `"allow"`、`"deny"` 或 `"ask"`                                                              |
-| `replaceRules`      | `rules`、`behavior`、`destination` | 用提供的 `rules` 替换 `destination` 处给定 `behavior` 的所有规则                                                                                                                                |
-| `removeRules`       | `rules`、`behavior`、`destination` | 移除给定 `behavior` 的匹配规则                                                                                                                                                             |
-| `setMode`           | `mode`、`destination`             | 更改权限模式。有效模式为 `default`、`auto`、`acceptEdits`、`dontAsk`、`bypassPermissions`、`plan` 和 {/* min-version: 2.1.200 */}`manual` 作为 `default` 的别名。`manual` 别名需要 Claude Code v2.1.200 或更高版本 |
-| `addDirectories`    | `directories`、`destination`      | 添加工作目录。`directories` 是路径字符串的数组                                                                                                                                                    |
-| `removeDirectories` | `directories`、`destination`      | 移除工作目录                                                                                                                                                                            |
+| `type`              | 字段                               | 效果                                                                                                                                                    |
+| :------------------ | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addRules`          | `rules`、`behavior`、`destination` | 添加权限规则。`rules` 是 `{toolName, ruleContent?}` 对象的数组。省略 `ruleContent` 以匹配整个工具。`behavior` 是 `"allow"`、`"deny"` 或 `"ask"`                                  |
+| `replaceRules`      | `rules`、`behavior`、`destination` | 用提供的 `rules` 替换 `destination` 处给定 `behavior` 的所有规则                                                                                                    |
+| `removeRules`       | `rules`、`behavior`、`destination` | 移除给定 `behavior` 的匹配规则                                                                                                                                 |
+| `setMode`           | `mode`、`destination`             | 更改权限模式。有效模式为 `default`、`auto`、`acceptEdits`、`dontAsk`、`bypassPermissions`、`plan` 和 `manual` 作为 `default` 的别名。`manual` 别名需要 Claude Code v2.1.200 或更高版本 |
+| `addDirectories`    | `directories`、`destination`      | 添加工作目录。`directories` 是路径字符串的数组                                                                                                                        |
+| `removeDirectories` | `directories`、`destination`      | 移除工作目录                                                                                                                                                |
 
 <Note>
   `setMode` 与 `bypassPermissions` 仅在会话已启动时生效，绕过模式已可用：`--dangerously-skip-permissions`、`--permission-mode bypassPermissions`、`--allow-dangerously-skip-permissions` 或设置中的 `permissions.defaultMode: "bypassPermissions"`，且模式未被 [`permissions.disableBypassPermissionsMode`](/docs/zh-CN/permissions#managed-settings) 禁用。否则更新是无操作。`bypassPermissions` 无论 `destination` 如何都永远不会作为 `defaultMode` 持久化。

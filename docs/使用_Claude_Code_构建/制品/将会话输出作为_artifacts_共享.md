@@ -6,8 +6,6 @@
 
 > Artifacts 将 Claude Code 的工作转化为实时交互式页面，可在 claude.ai 上保持私密、与您的组织共享或发布到公开链接。
 
-{/* plan-availability: feature=artifacts plans=pro,max,team,enterprise providers=anthropic */}
-
 <Note>
   Artifacts 在 Pro、Max、Team 和 Enterprise 计划上可用，需要使用 [`/login`](/docs/zh-CN/setup#authenticate) 登录的会话。有关完整的要求集，请参阅 [可用性](#availability)。
 </Note>
@@ -103,8 +101,6 @@ Update https://claude.ai/code/artifact/5fbea6f3-... with today's numbers.
 <h2 id="pull-live-data-with-mcp-connectors">
   使用 MCP 连接器拉取实时数据
 </h2>
-
-{/* plan-availability: feature=artifact-mcp plans=pro,max,team,enterprise providers=anthropic */}
 
 artifact 可以在每次有人查看它时调用 [MCP 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)，因此页面显示的是当前数据而不是构建它的会话中的快照。来自 artifact 的连接器调用在 Pro、Max、Team 和 Enterprise 计划上可用，需要 Claude Code v2.1.209 或更高版本。在早期版本上，Claude 会发布该页面，其中包含会话在构建时收集的任何数据。
 

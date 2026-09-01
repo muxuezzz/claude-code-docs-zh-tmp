@@ -205,7 +205,7 @@ Claude Code v2.1.198 中的两个子代理行为发生了变化：
 * 子代理继承主会话的扩展思考配置。在早期版本中，无论主会话的设置如何，扩展思考在子代理内被禁用。
 
 <Note>
-  {/* min-version: 2.1.172 */}自 Claude Code v2.1.172 起，子代理可以生成自己的子代理。位于主代理下方五个级别的子代理无法生成进一步的子代理，无论其是在前台还是后台运行。要防止子代理生成其他子代理，请从其 `tools` 数组中省略 `Agent` 或将其添加到 `disallowedTools`。有关完整的深度规则，请参阅[嵌套子代理](/docs/zh-CN/sub-agents#spawn-nested-subagents)。
+  自 Claude Code v2.1.172 起，子代理可以生成自己的子代理。位于主代理下方五个级别的子代理无法生成进一步的子代理，无论其是在前台还是后台运行。要防止子代理生成其他子代理，请从其 `tools` 数组中省略 `Agent` 或将其添加到 `disallowedTools`。有关完整的深度规则，请参阅[嵌套子代理](/docs/zh-CN/sub-agents#spawn-nested-subagents)。
 </Note>
 
 <h3 id="filesystem-based-definition-alternative">
@@ -224,7 +224,7 @@ Claude Code v2.1.198 中的两个子代理行为发生了变化：
 
 子代理的上下文窗口从新开始，没有父对话，但不是空的。从父代理到子代理的唯一内容是 Agent 工具的提示词字符串，因此请直接在该提示词中包含子代理需要的任何文件路径、错误消息或决策。
 
-{/* min-version: 2.1.206 */}具有 [`SendMessage`](/docs/zh-CN/tools-reference) 工具的子代理会从会话中运行的其他命名代理列表开始，因此它知道可以向哪些名称发送消息。Claude Code 会自动在子代理的第一轮中添加该列表。[fork](/docs/zh-CN/sub-agents#fork-the-current-conversation) 不会获得该列表，因为它继承了父对话。该列表需要 Claude Code v2.1.206 或更高版本。
+具有 [`SendMessage`](/docs/zh-CN/tools-reference) 工具的子代理会从会话中运行的其他命名代理列表开始，因此它知道可以向哪些名称发送消息。Claude Code 会自动在子代理的第一轮中添加该列表。[fork](/docs/zh-CN/sub-agents#fork-the-current-conversation) 不会获得该列表，因为它继承了父对话。该列表需要 Claude Code v2.1.206 或更高版本。
 
 | 子代理接收                                                                                                                         | 子代理不接收                                         |
 | :---------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------- |
@@ -236,7 +236,7 @@ Claude Code v2.1.198 中的两个子代理行为发生了变化：
   父代理逐字接收子代理的最终消息作为 Agent 工具结果，但可能在其自己的响应中总结它。要在面向用户的响应中逐字保留子代理输出，请在您传递给主 `query()` 调用的提示词或 `systemPrompt` 选项中包含一条指令。
 </Note>
 
-{/* min-version: 2.1.199 */}结束子代理早期的 API 错误（例如速率限制）永远不会作为其结果传递。如果速率限制、过载或服务器错误中断了已经产生文本输出的前台子代理，Agent 工具会返回该部分输出并注明子代理未完成。{/* min-version: 2.1.200 */}未产生任何内容的子代理，或其唯一输出仅为工具调用且没有文本的子代理，会失败并显示错误消息 `Agent terminated early due to an API error`，后跟错误详情。有关前台和后台行为，请参阅 [API errors in subagents](/docs/zh-CN/sub-agents#api-errors-in-subagents)。
+结束子代理早期的 API 错误（例如速率限制）永远不会作为其结果传递。如果速率限制、过载或服务器错误中断了已经产生文本输出的前台子代理，Agent 工具会返回该部分输出并注明子代理未完成。未产生任何内容的子代理，或其唯一输出仅为工具调用且没有文本的子代理，会失败并显示错误消息 `Agent terminated early due to an API error`，后跟错误详情。有关前台和后台行为，请参阅 [API errors in subagents](/docs/zh-CN/sub-agents#api-errors-in-subagents)。
 
 这种部分输出处理需要 Claude Code v2.1.199 或更高版本。在 v2.1.199 中，速率限制、过载或服务器错误会导致仅工具调用的形状出现空的部分结果，仅包含中断注记。
 

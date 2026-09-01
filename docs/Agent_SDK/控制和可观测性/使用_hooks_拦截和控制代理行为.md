@@ -818,7 +818,7 @@ const myHook: HookCallback = async (input, toolUseID, { signal }) => {
 * 增加 `HookMatcher` 配置中的 `timeout` 值
 * 在 TypeScript 中使用第三个回调参数中的 `AbortSignal` 来优雅地处理取消
 
-{/* min-version: 2.1.208 */}超过超时时间的 `UserPromptSubmit` 或 [`UserPromptExpansion`](/docs/zh-CN/hooks#userpromptexpansion) 回调会用超时消息阻止该提示，会话继续进行。在回调待处理时中断查询会取消待处理的工具调用。在 v2.1.208 之前，这些事件上的回调超时会以 `error_during_execution` 结束查询，在待处理的 `PreToolUse` 回调期间中断可能会让工具调用继续进行。
+超过超时时间的 `UserPromptSubmit` 或 [`UserPromptExpansion`](/docs/zh-CN/hooks#userpromptexpansion) 回调会用超时消息阻止该提示，会话继续进行。在回调待处理时中断查询会取消待处理的工具调用。在 v2.1.208 之前，这些事件上的回调超时会以 `error_during_execution` 结束查询，在待处理的 `PreToolUse` 回调期间中断可能会让工具调用继续进行。
 
 <h3 id="tool-blocked-unexpectedly">
   工具意外被阻止

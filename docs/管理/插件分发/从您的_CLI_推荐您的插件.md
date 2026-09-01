@@ -16,7 +16,7 @@ Claude Code 在将命令输出发送给模型之前会从命令输出中删除�
   工作原理
 </h2>
 
-Claude Code 为通过 Bash 和 PowerShell 工具运行的每个命令以及 [hook](/docs/zh-CN/hooks) 命令设置 [`CLAUDECODE`](/docs/zh-CN/env-vars) 环境变量为 `1`。{/* min-version: 2.1.172 */}从 v2.1.172 开始，它还在这些相同的子进程中将 [`CLAUDE_CODE_CHILD_SESSION`](/docs/zh-CN/env-vars) 设置为 `1`。当您的 CLI 看到这些变量之一时，它会向 stderr 写入一个自闭合的 `<claude-code-hint />` 标签。在 hook 命令中，提示标签会被剥离并忽略。只有 Bash 和 PowerShell 工具输出会触发安装提示。
+Claude Code 为通过 Bash 和 PowerShell 工具运行的每个命令以及 [hook](/docs/zh-CN/hooks) 命令设置 [`CLAUDECODE`](/docs/zh-CN/env-vars) 环境变量为 `1`。从 v2.1.172 开始，它还在这些相同的子进程中将 [`CLAUDE_CODE_CHILD_SESSION`](/docs/zh-CN/env-vars) 设置为 `1`。当您的 CLI 看到这些变量之一时，它会向 stderr 写入一个自闭合的 `<claude-code-hint />` 标签。在 hook 命令中，提示标签会被剥离并忽略。只有 Bash 和 PowerShell 工具输出会触发安装提示。
 
 当 Claude Code 接收到命令输出时，它会：
 
@@ -36,7 +36,7 @@ Claude Code 永远不会自动安装插件。用户始终需要确认。
 在环境变量上进行门控以发出提示，使标记不太可能在人类直接运行您的 CLI 时出现，然后将标签写入 stderr，单独占一行。选择要检查的变量：
 
 * `CLAUDECODE`：在每个 Claude Code 版本上设置，因此可以到达最多的会话。它也在 tmux 会话和 Claude Code 启动的 stdio MCP 服务器子进程中设置，IDE 扩展在其集成终端中设置它，人类可能在那里直接运行您的 CLI。
-* {/* min-version: 2.1.172 */}`CLAUDE_CODE_CHILD_SESSION`：仅在 Claude Code 本身生成的子进程中设置，例如工具调用、hook 命令和[状态行](/docs/zh-CN/statusline)命令，因此标签通常不会到达人类终端。在会话内启动的长期进程（例如 tmux 服务器）会捕获该变量，因此从该进程启动的后续 shell 仍然显示原始标签。需要 Claude Code v2.1.172 或更高版本，因此较旧版本上的会话会错过提示。
+* `CLAUDE_CODE_CHILD_SESSION`：仅在 Claude Code 本身生成的子进程中设置，例如工具调用、hook 命令和[状态行](/docs/zh-CN/statusline)命令，因此标签通常不会到达人类终端。在会话内启动的长期进程（例如 tmux 服务器）会捕获该变量，因此从该进程启动的后续 shell 仍然显示原始标签。需要 Claude Code v2.1.172 或更高版本，因此较旧版本上的会话会错过提示。
 
 以下示例在 `CLAUDECODE` 上进行门控以获得最大覆盖范围，并为官方市场中名为 `example-cli` 的插件发出提示：
 

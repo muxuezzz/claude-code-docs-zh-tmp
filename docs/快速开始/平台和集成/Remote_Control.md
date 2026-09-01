@@ -15,9 +15,9 @@ Remote Control 将 [claude.ai/code](https://claude.ai/code) 或 Claude 应用（
 当您在机器上启动 Remote Control 会话时，Claude 始终在本地运行，因此您的代码执行和文件系统访问保留在您的机器上。使用 Remote Control，您可以：
 
 * **远程使用您的完整本地环境**：您的文件系统、[MCP servers](/docs/zh-CN/mcp)、工具和项目配置都保持可用，输入 `@` 会自动完成本地项目中的文件路径
-* **同时从两个界面工作**：对话和 [subagents](/docs/zh-CN/sub-agents) 和 [dynamic workflows](/docs/zh-CN/workflows) 的进度在所有连接的设备上保持同步，因此您可以从终端、浏览器和手机交替发送消息。{/* min-version: 2.1.207 */}在 v2.1.207 之前，由 [Desktop app](/docs/zh-CN/desktop) 托管的会话不会将 subagent 或工作流进度发送到连接的设备。
-* **从您的手机或浏览器发送图像和文件**：当您在 Claude 应用或 claude.ai/code 中添加附件时，Claude Code 会将其下载到您的机器并将其作为 `@` 文件引用传递给 Claude，可以带有或不带有标题。{/* min-version: 2.1.202 */}在 v2.1.202 之前，Claude Code 可能会在不带标题的附件到达会话之前将其丢弃。
-* **在中断后恢复**：如果您的笔记本电脑进入睡眠状态或网络断开，当您的机器重新上线时，会话会自动重新连接。Claude Code 在连接重建时对 subagents 和工作流的状态更新进行排队，并在恢复后传递它们。{/* min-version: 2.1.207 */}在 v2.1.207 之前，在重新连接或凭证刷新期间发送的更新可能会丢失，因此连接的设备会继续将已完成的任务显示为正在运行。
+* **同时从两个界面工作**：对话和 [subagents](/docs/zh-CN/sub-agents) 和 [dynamic workflows](/docs/zh-CN/workflows) 的进度在所有连接的设备上保持同步，因此您可以从终端、浏览器和手机交替发送消息。在 v2.1.207 之前，由 [Desktop app](/docs/zh-CN/desktop) 托管的会话不会将 subagent 或工作流进度发送到连接的设备。
+* **从您的手机或浏览器发送图像和文件**：当您在 Claude 应用或 claude.ai/code 中添加附件时，Claude Code 会将其下载到您的机器并将其作为 `@` 文件引用传递给 Claude，可以带有或不带有标题。在 v2.1.202 之前，Claude Code 可能会在不带标题的附件到达会话之前将其丢弃。
+* **在中断后恢复**：如果您的笔记本电脑进入睡眠状态或网络断开，当您的机器重新上线时，会话会自动重新连接。Claude Code 在连接重建时对 subagents 和工作流的状态更新进行排队，并在恢复后传递它们。在 v2.1.207 之前，在重新连接或凭证刷新期间发送的更新可能会丢失，因此连接的设备会继续将已完成的任务显示为正在运行。
 
 与[网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)（在云基础设施上运行）不同，Remote Control 会话直接在您的机器上运行并与您的本地文件系统交互。网络和移动界面只是该本地会话的一个窗口。
 
@@ -31,7 +31,7 @@ Remote Control 将 [claude.ai/code](https://claude.ai/code) 或 Claude 应用（
 
 * **订阅**：在 Pro、Max、Team 和 Enterprise 计划中可用。不支持 API 密钥。在 Team 和 Enterprise 上，Owner 必须首先在 [Claude Code 管理员设置](https://claude.ai/admin-settings/claude-code)中启用 Remote Control 切换。
 * **身份验证**：运行 `claude` 并使用 `/login` 通过 claude.ai 登录（如果您还没有登录）。
-* **API 端点**：在 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 上不可用。{/* min-version: 2.1.196 */}从 v2.1.196 开始，当 [`ANTHROPIC_BASE_URL`](/docs/zh-CN/env-vars) 指向 `api.anthropic.com` 以外的主机（例如 [LLM gateway](/docs/zh-CN/llm-gateway) 或代理）时，Remote Control 也会被禁用。取消设置该变量以使用 Remote Control。
+* **API 端点**：在 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 上不可用。从 v2.1.196 开始，当 [`ANTHROPIC_BASE_URL`](/docs/zh-CN/env-vars) 指向 `api.anthropic.com` 以外的主机（例如 [LLM gateway](/docs/zh-CN/llm-gateway) 或代理）时，Remote Control 也会被禁用。取消设置该变量以使用 Remote Control。
 * **工作区信任**：在您的项目目录中至少运行一次 `claude` 以接受工作区信任对话框。
 
 <h2 id="start-a-remote-control-session">
@@ -56,8 +56,8 @@ Remote Control 将 [claude.ai/code](https://claude.ai/code) 或 Claude 应用（
     | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
     | `--name "My Project"`                           | 设置自定义会话标题，在 claude.ai/code 的会话列表中可见。                                                                                                                                                                                                       |
     | `--remote-control-session-name-prefix <prefix>` | 未设置显式名称时自动生成的会话名称的前缀。默认为您的机器的主机名，生成类似 `myhost-graceful-unicorn` 的名称。设置 `CLAUDE_REMOTE_CONTROL_SESSION_NAME_PREFIX` 以获得相同效果。                                                                                                                |
-    | `-c`, `--continue`                              | {/* min-version: 2.1.200 */}恢复从此目录启动的最近的 Remote Control 会话，而不是创建新会话。不能与 `--session-id`、`--spawn`、`--capacity` 或 `--create-session-in-dir` 结合使用。需要 Claude Code v2.1.200 或更高版本；早期版本会将该标志拒绝为未知参数。                                             |
-    | `--session-id <id>`                             | {/* min-version: 2.1.200 */}通过其 ID 恢复特定的 Remote Control 会话。不能与 `--continue`、`--spawn`、`--capacity` 或 `--create-session-in-dir` 结合使用。需要 Claude Code v2.1.200 或更高版本；早期版本会将该标志拒绝为未知参数。                                                        |
+    | `-c`, `--continue`                              | 恢复从此目录启动的最近的 Remote Control 会话，而不是创建新会话。不能与 `--session-id`、`--spawn`、`--capacity` 或 `--create-session-in-dir` 结合使用。需要 Claude Code v2.1.200 或更高版本；早期版本会将该标志拒绝为未知参数。                                                                         |
+    | `--session-id <id>`                             | 通过其 ID 恢复特定的 Remote Control 会话。不能与 `--continue`、`--spawn`、`--capacity` 或 `--create-session-in-dir` 结合使用。需要 Claude Code v2.1.200 或更高版本；早期版本会将该标志拒绝为未知参数。                                                                                    |
     | `--spawn <mode>`                                | 服务器如何创建会话。<br />• `same-dir`（默认）：所有会话共享当前工作目录，因此如果编辑相同的文件可能会冲突。<br />• `worktree`：每个按需会话都获得自己的 [git worktree](/docs/zh-CN/worktrees)。需要 git 存储库。<br />• `session`：单会话模式。恰好提供一个会话并拒绝其他连接。仅在启动时设置。<br />在运行时按 `w` 在 `same-dir` 和 `worktree` 之间切换。 |
     | `--capacity <N>`                                | 最大并发会话数。默认为 32。不能与 `--spawn=session` 一起使用。                                                                                                                                                                                                 |
     | `--[no-]create-session-in-dir`                  | 在服务器启动时在当前目录中预创建一个会话，以便您有地方立即输入。在 `worktree` 模式下，此会话保留在当前目录中，而按需会话获得隔离的 worktrees。默认启用；传递 `--no-create-session-in-dir` 以不创建任何会话启动。                                                                                                         |
@@ -132,7 +132,7 @@ Remote Control 将 [claude.ai/code](https://claude.ai/code) 或 Claude 应用（
 * **扫描 QR 码** 显示在会话 URL 旁边，直接在 Claude 应用中打开它。使用 `claude remote-control` 时，按空格键切换 QR 码显示。
 * **打开 [claude.ai/code](https://claude.ai/code) 或 Claude 应用** 并在会话列表中按名称查找会话。在 Claude 移动应用中，点击导航中的**代码**以访问会话列表。Remote Control 会话在在线时显示带有绿色状态点的计算机图标。
 
-当您连接时，设备显示会话已在后台运行的任何子代理和工作流。{/* min-version: 2.1.208 */}在 v2.1.208 之前，连接到在交互式终端中托管的会话的设备在其中一个子代理或工作流启动或停止之前不会显示已在运行的子代理和工作流。
+当您连接时，设备显示会话已在后台运行的任何子代理和工作流。在 v2.1.208 之前，连接到在交互式终端中托管的会话的设备在其中一个子代理或工作流启动或停止之前不会显示已在运行的子代理和工作流。
 
 远程会话标题按以下顺序选择：
 
@@ -141,7 +141,7 @@ Remote Control 将 [claude.ai/code](https://claude.ai/code) 或 Claude 应用（
 3. 现有对话历史记录中的最后一条有意义的消息
 4. 自动生成的名称，如 `myhost-graceful-unicorn`，其中 `myhost` 是您的机器的主机名或您使用 `--remote-control-session-name-prefix` 设置的前缀
 
-如果您没有设置显式名称，一旦您发送提示，标题会更新以反映您的提示。{/* min-version: 2.1.176 */}从 Claude Code v2.1.176 开始，自动生成的标题与您的对话语言相匹配，或与配置的 [`language`](/docs/zh-CN/settings#available-settings) 设置相匹配。从 claude.ai 或 Claude 应用重命名会话也会更新在 `claude --resume` 中显示的本地标题。
+如果您没有设置显式名称，一旦您发送提示，标题会更新以反映您的提示。从 Claude Code v2.1.176 开始，自动生成的标题与您的对话语言相匹配，或与配置的 [`language`](/docs/zh-CN/settings#available-settings) 设置相匹配。从 claude.ai 或 Claude 应用重命名会话也会更新在 `claude --resume` 中显示的本地标题。
 
 如果环境已经有活动会话，您将被询问是否继续它或启动新会话。
 
@@ -151,7 +151,7 @@ Remote Control 将 [claude.ai/code](https://claude.ai/code) 或 Claude 应用（
   为所有会话启用 Remote Control
 </h3>
 
-默认情况下，Remote Control 仅在您显式运行 `claude remote-control`、`claude --remote-control` 或 `/remote-control` 时激活。要为每个交互式会话自动启用它，请在 Claude Code 中运行 `/config` 并将**为所有会话启用 Remote Control** 设置为 `true`。将其设置为 `false` 以禁用，或将其保留为未设置以遵循您的组织的默认值。在桌面应用中，您也可以从**设置 → Claude Code → 默认启用远程控制**切换此选项。{/* min-version: 2.1.203 */}在 [VS Code 扩展](/docs/zh-CN/vs-code#use-the-prompt-box)中，相同的切换显示为命令菜单的设置部分中的**为所有会话启用 Remote Control**；需要 Claude Code v2.1.203 或更高版本。
+默认情况下，Remote Control 仅在您显式运行 `claude remote-control`、`claude --remote-control` 或 `/remote-control` 时激活。要为每个交互式会话自动启用它，请在 Claude Code 中运行 `/config` 并将**为所有会话启用 Remote Control** 设置为 `true`。将其设置为 `false` 以禁用，或将其保留为未设置以遵循您的组织的默认值。在桌面应用中，您也可以从**设置 → Claude Code → 默认启用远程控制**切换此选项。在 [VS Code 扩展](/docs/zh-CN/vs-code#use-the-prompt-box)中，相同的切换显示为命令菜单的设置部分中的**为所有会话启用 Remote Control**；需要 Claude Code v2.1.203 或更高版本。
 
 启用此设置后，每个交互式 Claude Code 进程注册一个远程会话。如果您运行多个实例，每个实例都获得自己的环境和会话。要从单个进程运行多个并发会话，请改用[服务器模式](#start-a-remote-control-session)。
 
@@ -272,7 +272,7 @@ Claude 决定何时推送。它通常在长时间运行的任务完成或需要�
 * 在 iOS 上，焦点模式和通知摘要可能会抑制或延迟推送。检查设置 → 通知 → Claude。
 * 在 Android 上，激进的电池优化可能会延迟传递。在系统设置中将 Claude 应用从电池优化中豁免。
 
-Claude Code 在您在连接的终端中输入或专注时会跳过移动推送通知。{/* min-version: 2.1.181 */}从 v2.1.181 开始，您可以将 [`CLAUDE_CLIENT_PRESENCE_FILE`](/docs/zh-CN/env-vars) 设置为标记文件路径，以将其扩展到您在机器上的任何时间，即使在另一个窗口中：当文件存在时，通知会被跳过。配置屏幕锁定侦听器或类似工具，以在屏幕解锁时创建文件，在屏幕锁定时删除文件。
+Claude Code 在您在连接的终端中输入或专注时会跳过移动推送通知。从 v2.1.181 开始，您可以将 [`CLAUDE_CLIENT_PRESENCE_FILE`](/docs/zh-CN/env-vars) 设置为标记文件路径，以将其扩展到您在机器上的任何时间，即使在另一个窗口中：当文件存在时，通知会被跳过。配置屏幕锁定侦听器或类似工具，以在屏幕解锁时创建文件，在屏幕锁定时删除文件。
 
 <h2 id="limitations">
   限制
@@ -285,8 +285,8 @@ Claude Code 在您在连接的终端中输入或专注时会跳过移动推送�
 * **某些命令仅限本地**：仅在终端界面中运行的命令，例如 `/plugin` 或 `/resume`，仅从本地 CLI 工作，无论您是否传递参数。以下命令可从移动和网络工作：
   * 文本输出命令：`/compact`、`/clear`、`/context`、`/usage`、`/exit`、`/usage-credits`（运行文本形式而不是打开 CLI 内对话框）、`/recap`、`/reload-plugins`
   * `/model`、`/effort`、`/fast`、`/color` 和 `/rename`：将值作为参数传递，例如 `/model sonnet` 或 `/effort high`。从移动和网络，`/model` 和 `/effort` 在终端选择器或滑块的位置接受参数。
-  * {/* min-version: 2.1.166 */}`/mcp`，从 v2.1.166 开始：从移动应用返回服务器状态的文本摘要而不是打开选择器。在网络上，`/mcp` 单独打开 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai) 的目录而不是返回摘要。`reconnect`、`enable` 和 `disable` [子命令](/docs/zh-CN/commands#all-commands)可从两者工作。与本地 CLI 不同，不带服务器名称的 `/mcp reconnect` 会重新连接每个已失败或需要身份验证的服务器。
-  * {/* min-version: 2.1.181 */}`/config`，从 v2.1.181 开始：从移动应用，传递 `key=value` 以设置一个设置，或不带参数运行它以列出您可以设置的键。在网络上，`/config` 打开您设置的 Claude Code 部分，并忽略命令后的文本。
+  * `/mcp`，从 v2.1.166 开始：从移动应用返回服务器状态的文本摘要而不是打开选择器。在网络上，`/mcp` 单独打开 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai) 的目录而不是返回摘要。`reconnect`、`enable` 和 `disable` [子命令](/docs/zh-CN/commands#all-commands)可从两者工作。与本地 CLI 不同，不带服务器名称的 `/mcp reconnect` 会重新连接每个已失败或需要身份验证的服务器。
+  * `/config`，从 v2.1.181 开始：从移动应用，传递 `key=value` 以设置一个设置，或不带参数运行它以列出您可以设置的键。在网络上，`/config` 打开您设置的 Claude Code 部分，并忽略命令后的文本。
 
 <h2 id="troubleshooting">
   故障排除
@@ -298,7 +298,7 @@ Claude Code 在您在连接的终端中输入或专注时会跳过移动推送�
 
 您未使用 claude.ai 账户进行身份验证。运行 `claude auth login` 并选择 claude.ai 选项。如果在您的环境中设置了 `ANTHROPIC_API_KEY`，请先取消设置它。
 
-{/* min-version: 2.1.206 */}在 v2.1.206 之前，在未登出的情况下运行 `/remote-control` 会报告 `Unknown command: /remote-control` 而不是此消息。
+在 v2.1.206 之前，在未登出的情况下运行 `/remote-control` 会报告 `Unknown command: /remote-control` 而不是此消息。
 
 <h3 id="remote-control-requires-a-full-scope-login-token">
   "Remote Control 需要完整范围的登录令牌"
@@ -328,7 +328,7 @@ Claude Code 无法到达功能标志服务以检查是否为您的账户启用�
   "Remote Control 仅在通过 api.anthropic.com 使用 Claude 时可用"
 </h3>
 
-该会话不是直接与 Anthropic API 通信，因此没有 claude.ai 后端可配对。这发生在 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上。{/* min-version: 2.1.196 */}从 v2.1.196 开始，当 [`ANTHROPIC_BASE_URL`](/docs/zh-CN/env-vars) 指向 `api.anthropic.com` 以外的主机时，例如 [LLM 网关](/docs/zh-CN/llm-gateway) 或代理，即使您使用 claude.ai 登录，也会发生这种情况。取消设置 `ANTHROPIC_BASE_URL` 并重启会话以使用 Remote Control。
+该会话不是直接与 Anthropic API 通信，因此没有 claude.ai 后端可配对。这发生在 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上。从 v2.1.196 开始，当 [`ANTHROPIC_BASE_URL`](/docs/zh-CN/env-vars) 指向 `api.anthropic.com` 以外的主机时，例如 [LLM 网关](/docs/zh-CN/llm-gateway) 或代理，即使您使用 claude.ai 登录，也会发生这种情况。取消设置 `ANTHROPIC_BASE_URL` 并重启会话以使用 Remote Control。
 
 <h3 id="remote-control-is-disabled-by-your-organization’s-policy">
   "Remote Control 被您的组织的策略禁用"
@@ -365,7 +365,7 @@ claude remote-control --verbose
 
 您的本地会话继续运行而不使用 Remote Control。运行 `/remote-control` 以重试连接，或启动 Claude Code 而不使用 `--resume` 以创建新的 Remote Control 会话。
 
-{/* min-version: 2.1.200 */}在 v2.1.200 之前，重新连接失败会创建新的 Remote Control 会话而不是显示此消息，这在 claude.ai/code 的会话列表中留下了额外的会话。
+在 v2.1.200 之前，重新连接失败会创建新的 Remote Control 会话而不是显示此消息，这在 claude.ai/code 的会话列表中留下了额外的会话。
 
 <h3 id="your-organization-requires-trusted-devices-for-remote-control-but-this-device-is-not-enrolled">
   "您的组织需要受信任的设备用于 Remote Control，但此设备未注册"
@@ -385,13 +385,14 @@ claude remote-control --verbose
 
 Claude Code offers several ways to work when you're not at your terminal. They differ in what triggers the work, where Claude runs, and how much you need to set up.
 
-|                                                | Trigger                                                                                        | Claude runs on                                                                               | Setup                                                                                                                                | Best for                                                      |
-| :--------------------------------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
-| [Dispatch](/docs/en/desktop#sessions-from-dispatch) | Message a task from the Claude mobile app                                                      | Your machine (Desktop)                                                                       | [Pair the mobile app with Desktop](https://support.claude.com/en/articles/13947068)                                                  | Delegating work while you're away, minimal setup              |
-| [Remote Control](/docs/en/remote-control)           | Drive a running session from [claude.ai/code](https://claude.ai/code) or the Claude mobile app | Your machine (CLI or VS Code)                                                                | Run `claude remote-control`                                                                                                          | Steering in-progress work from another device                 |
-| [Channels](/docs/en/channels)                       | Push events from a chat app like Telegram or Discord, or your own server                       | Your machine (CLI)                                                                           | [Install a channel plugin](/docs/en/channels#quickstart) or [build your own](/docs/en/channels-reference)                                      | Reacting to external events like CI failures or chat messages |
-| [Slack](/docs/en/slack)                             | Mention `@Claude` in a team channel                                                            | Anthropic cloud                                                                              | [Install the Slack app](/docs/en/slack#setting-up-claude-code-in-slack) with [Claude Code on the web](/docs/en/claude-code-on-the-web) enabled | PRs and reviews from team chat                                |
-| [Scheduled tasks](/docs/en/scheduled-tasks)         | Set a schedule                                                                                 | [CLI](/docs/en/scheduled-tasks), [Desktop](/docs/en/desktop-scheduled-tasks), or [cloud](/docs/en/routines) | Pick a frequency                                                                                                                     | Recurring automation like daily reviews                       |
+|                                                          | Trigger                                                                                        | Claude runs on                                                                               | Setup                                                                                                                                | Best for                                                      |
+| :------------------------------------------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| [Dispatch](/docs/en/desktop#sessions-from-dispatch)           | Message a task from the Claude mobile app                                                      | Your machine (Desktop)                                                                       | [Pair the mobile app with Desktop](https://support.claude.com/en/articles/13947068)                                                  | Delegating work while you're away, minimal setup              |
+| [Remote Control](/docs/en/remote-control)                     | Drive a running session from [claude.ai/code](https://claude.ai/code) or the Claude mobile app | Your machine (CLI or VS Code)                                                                | Run `claude remote-control`                                                                                                          | Steering in-progress work from another device                 |
+| [Channels](/docs/en/channels)                                 | Push events from a chat app like Telegram or Discord, or your own server                       | Your machine (CLI)                                                                           | [Install a channel plugin](/docs/en/channels#quickstart) or [build your own](/docs/en/channels-reference)                                      | Reacting to external events like CI failures or chat messages |
+| [Slack](/docs/en/slack)                                       | Mention `@Claude` in a team channel                                                            | Anthropic cloud                                                                              | [Install the Slack app](/docs/en/slack#setting-up-claude-code-in-slack) with [Claude Code on the web](/docs/en/claude-code-on-the-web) enabled | PRs and reviews from team chat                                |
+| [Self-hosted environments](/docs/en/self-hosted-environments) | Start a [cloud session](/docs/en/claude-code-on-the-web) and pick your organization's environment   | Your organization's infrastructure                                                           | [Deploy runners](/docs/en/self-hosted-environments-quickstart), on Team and Enterprise plans                                              | Cloud sessions that must run inside your network              |
+| [Scheduled tasks](/docs/en/scheduled-tasks)                   | Set a schedule                                                                                 | [CLI](/docs/en/scheduled-tasks), [Desktop](/docs/en/desktop-scheduled-tasks), or [cloud](/docs/en/routines) | Pick a frequency                                                                                                                     | Recurring automation like daily reviews                       |
 
 <h2 id="related-resources">
   相关资源

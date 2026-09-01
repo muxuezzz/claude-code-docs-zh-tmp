@@ -168,7 +168,7 @@ Claude Code 仅从管理员控制的策略层读取此设置：服务器管理�
 
 `serverName` 验证在两个列表之间有所不同：
 
-* {/* min-version: 2.1.182 */}在 `deniedMcpServers` 中，`serverName` 接受任何非空字符串，因此您可以按显示名称阻止 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)。例如，`{ "serverName": "claude.ai Slack" }` 阻止 Slack 连接器。当您需要拒绝对重命名具有鲁棒性时，或当连接器名称冲突并获得 ` (N)` 后缀时，更倾向于使用 `serverUrl` 条目。
+* 在 `deniedMcpServers` 中，`serverName` 接受任何非空字符串，因此您可以按显示名称阻止 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)。例如，`{ "serverName": "claude.ai Slack" }` 阻止 Slack 连接器。当您需要拒绝对重命名具有鲁棒性时，或当连接器名称冲突并获得 ` (N)` 后缀时，更倾向于使用 `serverUrl` 条目。
 * 在 `allowedMcpServers` 中，`serverName` 仅限于字母、数字、连字符和下划线。使用 `serverUrl` 来允许列表 claude.ai 连接器。
 
 要关闭所有 claude.ai 连接器，请参阅 [`disableClaudeAiConnectors`](/docs/zh-CN/mcp#disable-claude-ai-connectors)。

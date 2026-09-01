@@ -139,7 +139,7 @@ az login
 
 **选项 C：Bearer 令牌身份验证**
 
-{/* min-version: 2.1.203 */}Claude Code 在每个请求中将 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 的值作为 `Authorization: Bearer` 标头发送。当另一个进程（例如主机应用程序或登录脚本）已经为您获取了访问令牌时，请使用此选项。需要 Claude Code v2.1.203 或更高版本。
+Claude Code 在每个请求中将 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 的值作为 `Authorization: Bearer` 标头发送。当另一个进程（例如主机应用程序或登录脚本）已经为您获取了访问令牌时，请使用此选项。需要 Claude Code v2.1.203 或更高版本。
 
 将变量设置为 Microsoft Entra ID 为您的资源颁发的 Bearer 令牌：
 

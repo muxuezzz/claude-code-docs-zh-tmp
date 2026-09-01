@@ -278,7 +278,7 @@ export AWS_REGION=us-east-1
 
 AWS 上的 Claude Platform 使用与直接 Claude API 相同的模型 ID。
 
-默认别名 `fable`、`opus`、`sonnet` 和 `haiku` 解析为 Claude Code 为 AWS 上的 Claude Platform 内置的默认值，这些值可能滞后于最新版本。如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，`opus` 别名解析为 Opus 4.8。{/* min-version: 2.1.207 */}在 v2.1.207 之前，它解析为 Opus 4.7。
+默认别名 `fable`、`opus`、`sonnet` 和 `haiku` 解析为 Claude Code 为 AWS 上的 Claude Platform 内置的默认值，这些值可能滞后于最新版本。如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，`opus` 别名解析为 Opus 4.8。在 v2.1.207 之前，它解析为 Opus 4.7。
 
 如果您将 Claude Code 部署到团队，请显式固定模型 ID，以便新版本不会一次性移动所有人：
 

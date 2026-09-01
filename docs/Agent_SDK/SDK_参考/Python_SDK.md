@@ -966,7 +966,7 @@ options = ClaudeAgentOptions(
 ```
 
 * `API_TIMEOUT_MS`：Anthropic 客户端上的每个请求超时，以毫秒为单位。默认 `600000`。适用于主循环和所有子代理。
-* `CLAUDE_CODE_MAX_RETRIES`：最大 API 重试次数。默认 `10`，上限为 `15`。每次重试都有自己的 `API_TIMEOUT_MS` 窗口，因此最坏情况下的实际时间大约是 `API_TIMEOUT_MS × (CLAUDE_CODE_MAX_RETRIES + 1)` 加上退避。对于需要等待更长时间中断的无人值守运行，设置 `CLAUDE_CODE_RETRY_WATCHDOG=1`：它无限期重试容量错误，{/* min-version: 2.1.199 */}自 Claude Code v2.1.199 起，对其他瞬时错误将默认值提高到 `300` 并移除此变量的上限。
+* `CLAUDE_CODE_MAX_RETRIES`：最大 API 重试次数。默认 `10`，上限为 `15`。每次重试都有自己的 `API_TIMEOUT_MS` 窗口，因此最坏情况下的实际时间大约是 `API_TIMEOUT_MS × (CLAUDE_CODE_MAX_RETRIES + 1)` 加上退避。对于需要等待更长时间中断的无人值守运行，设置 `CLAUDE_CODE_RETRY_WATCHDOG=1`：它无限期重试容量错误，自 Claude Code v2.1.199 起，对其他瞬时错误将默认值提高到 `300` 并移除此变量的上限。
 * `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`：使用 `run_in_background` 启动的子代理的停滞监视器。默认 `600000`。在每个流事件时重置；停滞时中止子代理，将任务标记为失败，并将错误与任何部分结果一起呈现给父代理。不适用于同步子代理。
 * `CLAUDE_ENABLE_STREAM_WATCHDOG` 与 `CLAUDE_STREAM_IDLE_TIMEOUT_MS`：当标头已到达但响应体停止流式传输时中止请求。监视器对所有提供商默认启用；设置 `CLAUDE_ENABLE_STREAM_WATCHDOG=0` 以禁用它。`CLAUDE_STREAM_IDLE_TIMEOUT_MS` 默认为 `300000` 并被限制为该最小值。中止的请求通过正常重试路径进行。
 
@@ -2717,7 +2717,7 @@ async for message in query(prompt="Analyze this codebase", options=options):
 
 运行后台源并将每个事件传递给 Claude，以便它可以做出反应而无需轮询：`command` 运行脚本并每个 stdout 行发出一个事件，`ws` 打开 WebSocket 并每个文本帧发出一个事件。恰好提供 `command` 或 `ws` 中的一个。
 
-当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则；WebSocket 监视会单独提示批准。{/* min-version: 2.1.195 */}`ws` 源需要 Claude Code v2.1.195 或更高版本。见 [Monitor 工具参考](/docs/zh-CN/tools-reference#monitor-tool) 了解行为和提供商可用性。
+当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则；WebSocket 监视会单独提示批准。`ws` 源需要 Claude Code v2.1.195 或更高版本。见 [Monitor 工具参考](/docs/zh-CN/tools-reference#monitor-tool) 了解行为和提供商可用性。
 
 **输入：**
 

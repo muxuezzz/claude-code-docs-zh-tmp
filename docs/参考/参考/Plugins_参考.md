@@ -118,38 +118,41 @@ Plugins 可以提供事件处理程序，自动响应 Claude Code 事件。
 
 Plugin hooks 响应与 [用户定义的 hooks](/docs/zh-CN/hooks) 相同的生命周期事件：
 
-| Event                 | When it fires                                                                                                                                          |
-| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SessionStart`        | When a session begins or resumes                                                                                                                       |
-| `Setup`               | When you start Claude Code with `--init-only`, or with `--init` or `--maintenance` in `-p` mode. For one-time preparation in CI or scripts             |
-| `UserPromptSubmit`    | When you submit a prompt, before Claude processes it                                                                                                   |
-| `UserPromptExpansion` | When a user-typed command expands into a prompt, before it reaches Claude. Can block the expansion                                                     |
-| `PreToolUse`          | Before a tool call executes. Can block it                                                                                                              |
-| `PermissionRequest`   | When a tool call needs a permission decision                                                                                                           |
-| `PermissionDenied`    | When a tool call is denied by the auto mode classifier. Return `{retry: true}` to tell the model it may retry the denied tool call                     |
-| `PostToolUse`         | After a tool call succeeds                                                                                                                             |
-| `PostToolUseFailure`  | After a tool call fails                                                                                                                                |
-| `PostToolBatch`       | After a full batch of parallel tool calls resolves, before the next model call                                                                         |
-| `Notification`        | When Claude Code sends a notification                                                                                                                  |
-| `MessageDisplay`      | While assistant message text is displayed                                                                                                              |
-| `SubagentStart`       | When a subagent is spawned                                                                                                                             |
-| `SubagentStop`        | When a subagent finishes                                                                                                                               |
-| `TaskCreated`         | When a task is being created via `TaskCreate`                                                                                                          |
-| `TaskCompleted`       | When a task is being marked as completed                                                                                                               |
-| `Stop`                | When Claude finishes responding                                                                                                                        |
-| `StopFailure`         | When the turn ends due to an API error. Output and exit code are ignored                                                                               |
-| `TeammateIdle`        | When an [agent team](/docs/en/agent-teams) teammate is about to go idle                                                                                     |
-| `InstructionsLoaded`  | When a CLAUDE.md or `.claude/rules/*.md` file is loaded into context. Fires at session start and when files are lazily loaded during a session         |
-| `ConfigChange`        | When a configuration file changes during a session                                                                                                     |
-| `CwdChanged`          | When the working directory changes, for example when Claude executes a `cd` command. Useful for reactive environment management with tools like direnv |
-| `FileChanged`         | When a watched file changes on disk. The `matcher` field specifies which filenames to watch                                                            |
-| `WorktreeCreate`      | When a worktree is being created via `--worktree`, `isolation: "worktree"`, or for a background session. Replaces default git behavior                 |
-| `WorktreeRemove`      | When a worktree is being removed at session exit, when a subagent finishes, or when you delete a background session                                    |
-| `PreCompact`          | Before context compaction                                                                                                                              |
-| `PostCompact`         | After context compaction completes                                                                                                                     |
-| `Elicitation`         | When an MCP server requests user input during a tool call                                                                                              |
-| `ElicitationResult`   | After a user responds to an MCP elicitation, before the response is sent back to the server                                                            |
-| `SessionEnd`          | When a session terminates                                                                                                                              |
+| Event                 | When it fires                                                                                                                                                                                                                                         |
+| :-------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SessionStart`        | When a session begins or resumes                                                                                                                                                                                                                      |
+| `Setup`               | When you start Claude Code with `--init-only`, or with `--init` or `--maintenance` in `-p` mode. For one-time preparation in CI or scripts                                                                                                            |
+| `UserPromptSubmit`    | When you submit a prompt, before Claude processes it                                                                                                                                                                                                  |
+| `UserPromptExpansion` | When a user-typed command expands into a prompt, before it reaches Claude. Can block the expansion                                                                                                                                                    |
+| `PreToolUse`          | Before a tool call executes. Can block it                                                                                                                                                                                                             |
+| `PermissionRequest`   | When a tool call needs a permission decision                                                                                                                                                                                                          |
+| `PermissionDenied`    | When auto mode denies a tool call, including denials without a classifier verdict. Use JSON `hookSpecificOutput.retry: true` to tell the model it may retry the denied tool call. Claude Code ignores `retry` when the classifier produced no verdict |
+| `PostToolUse`         | After a tool call succeeds                                                                                                                                                                                                                            |
+| `PostToolUseFailure`  | After a tool call fails                                                                                                                                                                                                                               |
+| `PostToolBatch`       | After a full batch of parallel tool calls resolves, before the next model call                                                                                                                                                                        |
+| `Notification`        | When Claude Code sends a notification                                                                                                                                                                                                                 |
+| `MessageDisplay`      | While assistant message text is displayed                                                                                                                                                                                                             |
+| `SubagentStart`       | When a subagent is spawned                                                                                                                                                                                                                            |
+| `SubagentStop`        | When a subagent finishes                                                                                                                                                                                                                              |
+| `TaskCreated`         | When a task is being created via `TaskCreate`                                                                                                                                                                                                         |
+| `TaskCompleted`       | When a task is being marked as completed                                                                                                                                                                                                              |
+| `Stop`                | When Claude finishes responding                                                                                                                                                                                                                       |
+| `StopFailure`         | When the turn ends due to an API error                                                                                                                                                                                                                |
+| `TeammateIdle`        | When an [agent team](/docs/en/agent-teams) teammate is about to go idle                                                                                                                                                                                    |
+| `InstructionsLoaded`  | When a CLAUDE.md or `.claude/rules/*.md` file is loaded into context. Fires at session start and when files are lazily loaded during a session                                                                                                        |
+| `ConfigChange`        | When a configuration file changes during a session                                                                                                                                                                                                    |
+| `CwdChanged`          | When the working directory changes, for example when Claude executes a `cd` command. Useful for reactive environment management with tools like direnv                                                                                                |
+| `DirectoryAdded`      | When a working directory is added mid-session via `/add-dir` or the SDK `register_repo_root` control request                                                                                                                                          |
+| `FileChanged`         | When a watched file changes on disk. The `matcher` field specifies which filenames to watch                                                                                                                                                           |
+| `WorktreeCreate`      | When a worktree is being created via `--worktree`, `isolation: "worktree"`, or for a background session. Replaces default git behavior                                                                                                                |
+| `WorktreeRemove`      | When a worktree is being removed at session exit, when a subagent finishes, or when you delete a background session                                                                                                                                   |
+| `PreCompact`          | Before context compaction                                                                                                                                                                                                                             |
+| `PostCompact`         | After context compaction completes                                                                                                                                                                                                                    |
+| `PreModelSwitch`      | Before Claude Code applies a model switch that you or a client requested. Can block the switch                                                                                                                                                        |
+| `PostModelSwitch`     | After the session's model changes, including changes Claude Code makes on its own, such as restoring the model when you resume a session                                                                                                              |
+| `Elicitation`         | When an MCP server requests user input during a tool call                                                                                                                                                                                             |
+| `ElicitationResult`   | After a user responds to an MCP elicitation, before the response is sent back to the server                                                                                                                                                           |
+| `SessionEnd`          | When a session terminates                                                                                                                                                                                                                             |
 
 **Hook 类型**：
 
@@ -514,7 +517,7 @@ claude plugin validate ./my-plugin --strict
 | 字段               | 类型      | 描述                                                                                                                                                                       | 示例                                                                |
 | :--------------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
 | `$schema`        | string  | 用于编辑器自动完成和验证的 JSON Schema URL。Claude Code 在加载时忽略此字段。                                                                                                                     | `"https://json.schemastore.org/claude-code-plugin-manifest.json"` |
-| `displayName`    | string  | {/* min-version: 2.1.143 */}在 `/plugin` 选择器和其他 UI 界面中显示的人类可读名称。当省略时回退到 `name`。与 `name` 不同，可以包含空格和任何大小写。不用于命名空间或查找。需要 Claude Code v2.1.143 或更高版本。                         | `"Deployment Tools"`                                              |
+| `displayName`    | string  | 在 `/plugin` 选择器和其他 UI 界面中显示的人类可读名称。当省略时回退到 `name`。与 `name` 不同，可以包含空格和任何大小写。不用于命名空间或查找。需要 Claude Code v2.1.143 或更高版本。                                                     | `"Deployment Tools"`                                              |
 | `version`        | string  | 可选。语义版本。设置此项会将 plugin 固定到该版本字符串，因此用户仅在您提升版本时才会收到更新。如果省略，Claude Code 会回退到 git commit SHA，因此每个 commit 都被视为新版本。如果也在市场条目中设置，`plugin.json` 优先。请参阅[版本管理](#version-management)。 | `"2.1.0"`                                                         |
 | `description`    | string  | plugin 目的的简要说明                                                                                                                                                           | `"Deployment automation tools"`                                   |
 | `author`         | object  | 作者信息                                                                                                                                                                     | `{"name": "Dev Team", "email": "dev@company.com"}`                |
@@ -522,7 +525,7 @@ claude plugin validate ./my-plugin --strict
 | `repository`     | string  | 源代码 URL                                                                                                                                                                  | `"https://github.com/user/plugin"`                                |
 | `license`        | string  | 许可证标识符                                                                                                                                                                   | `"MIT"`、`"Apache-2.0"`                                            |
 | `keywords`       | array   | 发现标签                                                                                                                                                                     | `["deployment", "ci-cd"]`                                         |
-| `defaultEnabled` | boolean | {/* min-version: 2.1.154 */}当用户未设置时，plugin 是否在启用状态下启动。默认为 `true`。请参阅[默认启用](#default-enablement)。需要 Claude Code v2.1.154 或更高版本。                                           | `false`                                                           |
+| `defaultEnabled` | boolean | 当用户未设置时，plugin 是否在启用状态下启动。默认为 `true`。请参阅[默认启用](#default-enablement)。需要 Claude Code v2.1.154 或更高版本。                                                                       | `false`                                                           |
 
 <h3 id="default-enablement">
   默认启用
@@ -611,7 +614,7 @@ claude plugin validate ./my-plugin --strict
 
 在 v2.1.207 之前，这些字段替换了 `${user_config.KEY}` 值；更新依赖此功能的 plugins。
 
-非敏感值存储在 `settings.json` 中的 [`pluginConfigs`](/docs/zh-CN/settings#pluginconfigs) 键下，作为 `pluginConfigs[<plugin-id>].options`。{/* min-version: 2.1.207 */}Claude Code 将键写入用户设置并从用户设置、`--settings` 标志和托管设置中读取它；项目的 `.claude/settings.json` 或 `.claude/settings.local.json` 中的条目被忽略。在 v2.1.207 之前，Claude Code 也读取项目和本地设置。
+非敏感值存储在 `settings.json` 中的 [`pluginConfigs`](/docs/zh-CN/settings#pluginconfigs) 键下，作为 `pluginConfigs[<plugin-id>].options`。Claude Code 将键写入用户设置并从用户设置、`--settings` 标志和托管设置中读取它；项目的 `.claude/settings.json` 或 `.claude/settings.local.json` 中的条目被忽略。在 v2.1.207 之前，Claude Code 也读取项目和本地设置。
 
 敏感值进入 macOS Keychain，或在没有支持的钥匙链的平台上进入 `~/.claude/.credentials.json`。钥匙链存储与 OAuth 令牌共享，总限制约为 2 KB，因此请保持敏感值较小。
 

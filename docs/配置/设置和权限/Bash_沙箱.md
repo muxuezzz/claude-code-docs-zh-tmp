@@ -292,13 +292,13 @@ Claude Code 提供两种沙箱模式：
 
 网络访问通过在沙箱外运行的代理服务器进行控制：
 
-* **域名限制**：没有预先允许的域名。命令第一次需要新的域名时，Claude Code 会提示批准。{/* min-version: 2.1.191 */}从 v2.1.191 开始，选择"是"会在当前会话的其余时间内允许该主机，因此稍后连接到同一主机时不会再次提示。使用 [`allowedDomains`](/docs/zh-CN/settings#sandbox-settings) 预先允许域名以避免提示。
+* **域名限制**：没有预先允许的域名。命令第一次需要新的域名时，Claude Code 会提示批准。从 v2.1.191 开始，选择"是"会在当前会话的其余时间内允许该主机，因此稍后连接到同一主机时不会再次提示。使用 [`allowedDomains`](/docs/zh-CN/settings#sandbox-settings) 预先允许域名以避免提示。
 * **托管锁定**：如果在托管设置中设置了 [`allowManagedDomainsOnly`](/docs/zh-CN/settings#sandbox-settings)，非允许的域名会自动被阻止而不是提示，只有来自托管设置的 `allowedDomains` 被尊重。
 * **自定义代理支持**：高级用户可以在出站流量上实现自定义规则
 * **全面覆盖**：限制适用于所有脚本、程序和由命令生成的子进程
 
 <Note>
-  内置代理基于请求的主机名强制执行允许列表，默认情况下不会终止或检查 TLS 流量。{/* min-version: 2.1.199 */}实验性的 [`network.tlsTerminate`](/docs/zh-CN/settings#sandbox-settings) 设置在 Claude Code v2.1.199 及更高版本中可用，使内置代理自行终止 TLS，这是 [`mask` 凭证条目](#protect-credentials)所需的。有关默认设置的含义，请参阅 [Security limitations](#security-limitations)，如果你的威胁模型需要 TLS 检查，请参阅 [Custom proxy configuration](#custom-proxy-configuration)。
+  内置代理基于请求的主机名强制执行允许列表，默认情况下不会终止或检查 TLS 流量。实验性的 [`network.tlsTerminate`](/docs/zh-CN/settings#sandbox-settings) 设置在 Claude Code v2.1.199 及更高版本中可用，使内置代理自行终止 TLS，这是 [`mask` 凭证条目](#protect-credentials)所需的。有关默认设置的含义，请参阅 [Security limitations](#security-limitations)，如果你的威胁模型需要 TLS 检查，请参阅 [Custom proxy configuration](#custom-proxy-configuration)。
 </Note>
 
 <h3 id="os-level-enforcement">

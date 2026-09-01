@@ -40,7 +40,7 @@ Claude Code 包括一组捆绑 skills，在每个会话中都可用，除非通�
 | `/verify`              | 构建并运行你的应用以确认代码更改是否按预期工作，无需回退到测试或类型检查 |
 | `/run-skill-generator` | 教 `/run` 和 `/verify` 如何构建和启动你的项目     |
 
-{/* min-version: 2.1.145 */}所有三个 skills 都需要 Claude Code v2.1.145 或更高版本。
+所有三个 skills 都需要 Claude Code v2.1.145 或更高版本。
 
 `/run` 和 `/verify` 无需设置即可工作。它们根据你的项目类型（CLI、服务器、TUI、浏览器驱动）以及 README、`package.json` 或 `Makefile` 中的内容推断启动方式。对于需要标准启动之外的任何东西的项目，该推断变得不可靠：数据库、env 文件、图形会话、多步骤构建。
 

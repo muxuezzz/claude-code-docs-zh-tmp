@@ -162,7 +162,7 @@ aws sso login --profile=your-profile-name
 export AWS_PROFILE=your-profile-name
 ```
 
-Claude Code 从 IAM Identity Center 区域请求角色凭证，该区域由配置文件的 `sso_region` 命名，不需要与您运行 Amazon Bedrock 的区域匹配。{/* min-version: 2.1.208 */}在 v2.1.207 中，Amazon Bedrock 区域覆盖了 `sso_region`，因此其 IAM Identity Center 实例在不同区域的配置文件无法使用 `Session token not found or invalid` 错误进行身份验证。
+Claude Code 从 IAM Identity Center 区域请求角色凭证，该区域由配置文件的 `sso_region` 命名，不需要与您运行 Amazon Bedrock 的区域匹配。在 v2.1.207 中，Amazon Bedrock 区域覆盖了 `sso_region`，因此其 IAM Identity Center 实例在不同区域的配置文件无法使用 `Session token not found or invalid` 错误进行身份验证。
 
 **选项 D：AWS 管理控制台凭证**
 
@@ -235,9 +235,9 @@ Claude Code 支持 AWS SSO 和企业身份提供商的自动凭证刷新。将�
 }
 ```
 
-{/* min-version: 2.1.181 */}从 Claude Code v2.1.181 开始，`aws configure export-credentials --format process` 的平面输出也被接受，具有相同的密钥在顶级而不是嵌套在 `Credentials` 下。
+从 Claude Code v2.1.181 开始，`aws configure export-credentials --format process` 的平面输出也被接受，具有相同的密钥在顶级而不是嵌套在 `Credentials` 下。
 
-`Expiration` 是可选的。{/* min-version: 2.1.176 */}从 Claude Code v2.1.176 开始，当命令返回有效的 ISO 8601 `Expiration` 时，Claude Code 会缓存凭证直到该时间前五分钟。没有它，或在更早的版本上，凭证被缓存一小时。
+`Expiration` 是可选的。从 Claude Code v2.1.176 开始，当命令返回有效的 ISO 8601 `Expiration` 时，Claude Code 会缓存凭证直到该时间前五分钟。没有它，或在更早的版本上，凭证被缓存一小时。
 
 当您配置 `awsCredentialExport` 而不配置 `awsAuthRefresh` 时，Claude Code 直接使用导出的凭证，不在启动时重新解析 AWS 默认凭证提供商链。在 v2.1.206 之前，启动也会重新解析默认提供商链，这会在您的代理配置之外进行实时 SSO 或 STS 调用，并可能在具有受限出口的网络上阻止第一个提示数分钟。
 
@@ -263,7 +263,7 @@ export ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION=us-west-2
 
 为 Claude Code 启用 Amazon Bedrock 时，请记住以下几点：
 
-* {/* min-version: 2.1.172 */}从 v2.1.172 开始，您只需设置 `AWS_REGION` 来覆盖您的 AWS 配置文件的区域，或在您的配置文件没有区域时设置。Claude Code 按此顺序解析区域：
+* 从 v2.1.172 开始，您只需设置 `AWS_REGION` 来覆盖您的 AWS 配置文件的区域，或在您的配置文件没有区域时设置。Claude Code 按此顺序解析区域：
 
   * `AWS_REGION`
   * `AWS_DEFAULT_REGION`
@@ -311,7 +311,7 @@ Claude Code 使用这些默认模型当未设置固定变量时：
   Opus 模型的每令牌价格高于 Sonnet 模型，因此不固定主模型的部署在更新到 v2.1.207 或更高版本后将按 Opus 费率计费。要将 Sonnet 4.5 保持为主模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署会保持其引导的 Sonnet 模型作为默认值。
 </Warning>
 
-{/* min-version: 2.1.207 */}在 v2.1.207 之前，Amazon Bedrock 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
+在 v2.1.207 之前，Amazon Bedrock 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
 
 要进一步自定义模型，请使用以下方法之一：
 
@@ -353,7 +353,7 @@ export ENABLE_PROMPT_CACHING_1H=1
 }
 ```
 
-当用户在 `/model` 中选择其中一个版本时，Claude Code 使用映射的 ARN 调用 Amazon Bedrock。{/* min-version: 2.1.200 */}当您通过 `--model` 或 `ANTHROPIC_MODEL` 直接传递 Anthropic 模型 ID 时，相同的映射也适用。没有覆盖的版本回退到内置的 Amazon Bedrock 模型 ID 或启动时发现的任何匹配推理配置文件。在 v2.1.200 之前，`--model` 和 `ANTHROPIC_MODEL` 值直接到达 Amazon Bedrock，不经过覆盖映射。请参阅[按版本覆盖模型 ID](/docs/zh-CN/model-config#override-model-ids-per-version)了解覆盖如何与 `availableModels` 和其他模型设置交互的详情。
+当用户在 `/model` 中选择其中一个版本时，Claude Code 使用映射的 ARN 调用 Amazon Bedrock。当您通过 `--model` 或 `ANTHROPIC_MODEL` 直接传递 Anthropic 模型 ID 时，相同的映射也适用。没有覆盖的版本回退到内置的 Amazon Bedrock 模型 ID 或启动时发现的任何匹配推理配置文件。在 v2.1.200 之前，`--model` 和 `ANTHROPIC_MODEL` 值直接到达 Amazon Bedrock，不经过覆盖映射。请参阅[按版本覆盖模型 ID](/docs/zh-CN/model-config#override-model-ids-per-version)了解覆盖如何与 `availableModels` 和其他模型设置交互的详情。
 
 <h2 id="startup-model-checks">
   启动模型检查
@@ -473,7 +473,7 @@ export CLAUDE_CODE_USE_MANTLE=1
 export AWS_REGION=us-east-1
 ```
 
-Claude Code 从 AWS 区域构造端点 URL。{/* min-version: 2.1.172 */}从 v2.1.172 开始，区域的解析优先级与[上面的 Amazon Bedrock](#3-configure-claude-code) 相同；较早的版本仅使用 `AWS_REGION`。要为自定义端点或网关覆盖 URL，请设置 `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`。
+Claude Code 从 AWS 区域构造端点 URL。从 v2.1.172 开始，区域的解析优先级与[上面的 Amazon Bedrock](#3-configure-claude-code) 相同；较早的版本仅使用 `AWS_REGION`。要为自定义端点或网关覆盖 URL，请设置 `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`。
 
 在 Claude Code 内运行 `/status` 来确认。当 Mantle 处于活动状态时，提供者行显示 `Amazon Bedrock (Mantle)`。
 
@@ -579,7 +579,7 @@ Claude Code 使用 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedro
   /context 中的零令牌计数
 </h3>
 
-`/context` 命令通过将工具架构发送到 Amazon Bedrock count-tokens API 来计算每个工具组的令牌。{/* min-version: 2.1.196 */}在 Claude Code v2.1.196 之前的版本中，Amazon Bedrock 拒绝了该请求，因为架构包含其 count-tokens API 不接受的字段，因此每个工具组显示 0 个令牌。分解中的其他行（如消息和内存文件）不受影响。
+`/context` 命令通过将工具架构发送到 Amazon Bedrock count-tokens API 来计算每个工具组的令牌。在 Claude Code v2.1.196 之前的版本中，Amazon Bedrock 拒绝了该请求，因为架构包含其 count-tokens API 不接受的字段，因此每个工具组显示 0 个令牌。分解中的其他行（如消息和内存文件）不受影响。
 
 更新到 v2.1.196 或更高版本。
 

@@ -38,7 +38,7 @@ claude --worktree
 
 进入存储库的 `.claude/worktrees/` 目录之外的路径首先会要求您的批准，因为它会移动会话的工作目录、写入访问权限和项目配置，例如 `CLAUDE.md` 和设置到该位置。`EnterWorktree` [权限规则](/docs/zh-CN/permissions)或选择"不再询问"不会抑制此提示；只有 `bypassPermissions` 模式会跳过它。在 v2.1.206 之前，Claude 可以进入任何现有的 worktree 路径而无需询问。
 
-{/* min-version: 2.1.198 */}从 v2.1.198 开始，进入或退出 worktree 也会将会话记录重新定位到该目录的项目存储，与 [`/cd`](/docs/zh-CN/commands) 的方式相同，因此 `/desktop` 和 `--resume` 之后会在那里找到会话。由 [`WorktreeCreate` hook](#non-git-version-control) 创建的 Worktrees 被排除在外，并将记录保留在启动目录中。
+从 v2.1.198 开始，进入或退出 worktree 也会将会话记录重新定位到该目录的项目存储，与 [`/cd`](/docs/zh-CN/commands) 的方式相同，因此 `/desktop` 和 `--resume` 之后会在那里找到会话。由 [`WorktreeCreate` hook](#non-git-version-control) 创建的 Worktrees 被排除在外，并将记录保留在启动目录中。
 
 Worktrees 在启用[沙箱](/docs/zh-CN/sandboxing#filesystem-isolation)的情况下工作：沙箱允许写入主存储库的共享 `.git` 目录，以便 `git commit` 等命令可以从链接的 worktree 内部更新引用和索引。
 
@@ -46,7 +46,7 @@ Worktrees 在启用[沙箱](/docs/zh-CN/sandboxing#filesystem-isolation)的情�
 
 如果 Claude Code 在启动时无法进入 worktree 目录，例如因为 [`WorktreeCreate` hook](/docs/zh-CN/hooks#worktreecreate) 打印了除了它创建的目录之外的其他内容，或者因为目录在设置后被删除，Claude Code 会打印一个错误，命名该路径并以代码 1 退出。在 v2.1.205 之前，这会导致会话崩溃，使用 `-p` 时会在大约 30 秒后停滞，然后以代码 0 退出。
 
-{/* min-version: 2.1.200 */}从 Claude Code v2.1.200 开始，在主检出处从[项目范围](/docs/zh-CN/plugins-reference#plugin-installation-scopes)安装的插件也会在同一存储库的 worktrees 中加载，因此您无需为每个 worktree 重新安装它们。这适用于您是使用 `--worktree` 还是使用 `git worktree add` 创建 worktree。需要 Claude Code v2.1.200 或更高版本。
+从 Claude Code v2.1.200 开始，在主检出处从[项目范围](/docs/zh-CN/plugins-reference#plugin-installation-scopes)安装的插件也会在同一存储库的 worktrees 中加载，因此您无需为每个 worktree 重新安装它们。这适用于您是使用 `--worktree` 还是使用 `git worktree add` 创建 worktree。需要 Claude Code v2.1.200 或更高版本。
 
 <Tip>
   将 `.claude/worktrees/` 添加到您的 `.gitignore`，以便 worktree 内容不会在您的主检出中显示为未跟踪的文件。
