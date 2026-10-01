@@ -95,19 +95,19 @@ export const ContactSalesCard = ({surface}) => {
   使用 Bedrock 登录
 </h2>
 
-如果您拥有 AWS 凭证并想开始通过 Amazon Bedrock 使用 Claude Code，登录向导会引导您完成整个过程。您每个账户完成一次 AWS 端的前置条件；向导处理 Claude Code 端。
+如果您拥有 AWS 凭证并想通过 Amazon Bedrock 开始使用 Claude Code，登录向导会引导您完成整个过程。您需要在每个账户上完成一次 AWS 端的先决条件；向导会处理 Claude Code 端的事务。
 
 <Steps>
   <Step title="在您的 AWS 账户中启用 Anthropic 模型">
-    在 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)中，打开模型目录，选择一个 Anthropic 模型，并提交用例表单。提交后立即授予访问权限。有关 AWS Organizations，请参阅[提交用例详情](#1-submit-use-case-details)，有关权限，请参阅 [IAM 配置](#iam-configuration)。
+    在 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)中，打开模型目录，选择一个 Anthropic 模型，并提交用例表单。提交后立即授予访问权限。有关 AWS Organizations 的信息，请参阅[提交用例详情](#1-submit-use-case-details)；有关您的角色所需的权限，请参阅 [IAM 配置](#iam-configuration)。
   </Step>
 
   <Step title="启动 Claude Code 并选择 Amazon Bedrock">
-    运行 `claude`。在登录提示处，选择 **3rd-party platform**，然后选择 **Amazon Bedrock**。
+    运行 `claude`。在登录提示处，选择**第三方平台**，然后选择 **Amazon Bedrock**。如果您已经登录并看到聊天提示，请运行 `/setup-bedrock` 打开向导。在设置 `CLAUDE_CODE_USE_BEDROCK=1` 之前，Claude Code [会从命令菜单中隐藏该命令](/docs/zh-CN/commands#how-the-command-menu-matches-what-you-type)；请完整输入它。
   </Step>
 
   <Step title="按照向导提示操作">
-    选择您如何向 AWS 进行身份验证：从您的 `~/.aws` 目录检测到的 AWS 配置文件、Amazon Bedrock API 密钥、访问密钥和密钥，或已在您的环境中的凭证。向导会获取您的区域，验证您的账户可以调用哪些 Claude 模型，并让您固定它们。它将结果保存到您的[用户设置文件](/docs/zh-CN/settings)的 `env` 块中，因此您无需自己导出环境变量。
+    选择您如何向 AWS 进行身份验证：从您的 `~/.aws` 目录检测到的 AWS 配置文件、Amazon Bedrock API 密钥、访问密钥和密钥，或已在您的环境中的凭证。向导会询问您的区域，验证您的账户可以调用哪些 Claude 模型，并让您固定它们。它将结果保存到您的[用户设置文件](/docs/zh-CN/settings)的 `env` 块中，因此您无需自己导出环境变量。
   </Step>
 </Steps>
 
@@ -117,26 +117,26 @@ export const ContactSalesCard = ({surface}) => {
   手动设置
 </h2>
 
-要通过环境变量而不是向导配置 Amazon Bedrock，例如在 CI 或脚本化企业推出中，请按照下面的步骤操作。
+要通过环境变量而不是向导来配置 Amazon Bedrock，例如在 CI 或脚本化企业部署中，请按照以下步骤操作。
 
 <h3 id="1-submit-use-case-details">
   1. 提交用例详情
 </h3>
 
-Anthropic 模型的首次用户需要在调用模型之前提交用例详情。这是每个 AWS 账户执行一次的操作。
+在首次调用 Anthropic 模型之前，请提交用例详情。每个 AWS 账户只需执行一次。
 
 1. 确保您拥有下面描述的正确 IAM 权限
 2. 导航到 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)
-3. 从**模型目录**中选择一个 Anthropic 模型
+3. 从**模型目录**中选择 Anthropic 模型
 4. 完成用例表单。提交后立即授予访问权限。
 
-如果您使用 AWS Organizations，您可以使用 [`PutUseCaseForModelAccess` API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_PutUseCaseForModelAccess.html) 从管理账户提交一次表单。此调用需要 `bedrock:PutUseCaseForModelAccess` IAM 权限。批准自动扩展到子账户。
+如果您使用 AWS Organizations，可以使用 [`PutUseCaseForModelAccess` API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_PutUseCaseForModelAccess.html) 从管理账户提交一次表单。此调用需要 `bedrock:PutUseCaseForModelAccess` IAM 权限。批准会自动扩展到子账户。
 
 <h3 id="2-configure-aws-credentials">
   2. 配置 AWS 凭证
 </h3>
 
-Claude Code 使用默认的 AWS SDK 凭证链。使用以下方法之一设置您的凭证：
+Claude Code 使用默认 AWS SDK 凭证链。使用以下方法之一设置您的凭证：
 
 **选项 A：AWS CLI 配置**
 
@@ -154,7 +154,7 @@ export AWS_SESSION_TOKEN=your-session-token
 
 **选项 C：环境变量（SSO 配置文件）**
 
-将 `your-profile-name` 替换为您的 AWS 配置文件的名称，然后运行这些命令。
+在运行这些命令之前，将 `your-profile-name` 替换为您的 AWS 配置文件的名称。
 
 ```bash theme={null}
 aws sso login --profile=your-profile-name
@@ -162,7 +162,7 @@ aws sso login --profile=your-profile-name
 export AWS_PROFILE=your-profile-name
 ```
 
-Claude Code 从 IAM Identity Center 区域请求角色凭证，该区域由配置文件的 `sso_region` 命名，不需要与您运行 Amazon Bedrock 的区域匹配。在 v2.1.207 中，Amazon Bedrock 区域覆盖了 `sso_region`，因此其 IAM Identity Center 实例在不同区域的配置文件无法使用 `Session token not found or invalid` 错误进行身份验证。
+Claude Code 从配置文件的 `sso_region` 命名的 IAM Identity Center 区域请求角色凭证，这不需要与您运行 Amazon Bedrock 的区域匹配。在 v2.1.207 中，Amazon Bedrock 区域覆盖了 `sso_region`，因此 IAM Identity Center 实例在不同区域的配置文件无法使用 `Session token not found or invalid` 错误进行身份验证。
 
 **选项 D：AWS 管理控制台凭证**
 
@@ -184,24 +184,26 @@ Amazon Bedrock API 密钥提供了一种更简单的身份验证方法，无需�
   凭证缓存和解析超时
 </h4>
 
-Claude Code 解析 AWS 默认凭证提供商链一次，并将解析的凭证保存在内存中。它重复使用它们，直到它们过期前五分钟，或在没有过期时间时使用一小时，因此 SSO 支持的配置文件大约每个凭证生命周期从 IAM Identity Center 请求一次凭证。来自 API 的凭证错误会清除缓存，重试会解析新的凭证。
+Claude Code 解析 AWS 默认凭证提供程序链一次，并将解析的凭证保存在内存中。它重复使用这些凭证，直到它们过期前五分钟，或在没有过期时间时使用一小时，因此 SSO 支持的配置文件大约每个凭证生命周期从 IAM Identity Center 请求一次凭证。来自 API 的凭证错误会清除缓存，重试会解析新凭证。需要 Claude Code v2.1.207 或更高版本。
 
-在 v2.1.207 之前，Claude Code 在每个 API 请求时解析链，因此 SSO 支持的配置文件每次都从 IAM Identity Center 请求新凭证，在大型部署中可能会被限流。
+缓存涵盖上述所有凭证选项，除了 Amazon Bedrock API 密钥，它不使用提供程序链。要在每个请求上解析链，请改为设置 [`CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1`](/docs/zh-CN/env-vars)。
 
-缓存涵盖上面的每个凭证选项，除了 Amazon Bedrock API 密钥，它不使用提供商链。要改为在每个请求时解析链，请设置 [`CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1`](/docs/zh-CN/env-vars)。
+链的每次解析在 60 秒后超时。如果链中的某个步骤停滞，例如等待无法接收的输入的 `credential_process` 帮助程序，请求会失败并显示 [`AWS default-chain credential resolve timed out`](/docs/zh-CN/errors#aws-default-chain-credential-resolve-timed-out)。如果您的链运行合法需要更长时间的交互式登录，例如通过 `aws-vault` 等包装器进行基于浏览器的 SSO 和 MFA，请使用 [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](/docs/zh-CN/env-vars) 以毫秒为单位提高限制。在 v2.1.207 之前，停滞的凭证解析会使请求无限期等待。
 
-链的每次解析在 60 秒后超时。如果链中的一个步骤停滞，例如等待无法接收的输入的 `credential_process` 帮助程序，请求会失败，显示 [`AWS default-chain credential resolve timed out`](/docs/zh-CN/errors#aws-default-chain-credential-resolve-timed-out)。如果您的链运行合法需要更长时间的交互式登录，例如通过 `aws-vault` 等包装器进行基于浏览器的 SSO 和 MFA，请使用 [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](/docs/zh-CN/env-vars) 以毫秒为单位提高限制。在 v2.1.207 之前，停滞的凭证解析会使请求无限期等待。
+除了使用 Amazon Bedrock API 密钥进行身份验证外，[设置向导](#sign-in-with-bedrock)对它在验证您的凭证时进行的每个 AWS 调用以及每个模型检查之前的凭证查找应用相同的限制。在凭证验证期间，超过限制的检查会失败并显示 [`Timed out after 60s waiting for AWS`](/docs/zh-CN/errors#bedrock-setup-verification-timed-out-waiting-for-aws)。
 
 <h4 id="advanced-credential-configuration">
   高级凭证配置
 </h4>
 
-Claude Code 支持 AWS SSO 和企业身份提供商的自动凭证刷新。将这些设置添加到您的 Claude Code 设置文件（请参阅[设置](/docs/zh-CN/settings)了解文件位置）。
+Claude Code 支持 AWS SSO 和企业身份提供程序的自动凭证刷新。将这些设置添加到您的 Claude Code 设置文件（有关文件位置，请参阅[设置](/docs/zh-CN/settings)）。
 
 这两个设置有不同的触发条件：
 
-* **`awsAuthRefresh`**：仅当 Claude Code 检测到您的 AWS 凭证已过期时运行，基于本地时间戳或当 API 返回凭证错误时，然后使用刷新的凭证重试请求。
-* **`awsCredentialExport`**：在会话启动和每次凭证重新加载时运行，即使您的 AWS 默认凭证提供商链中的凭证仍然有效。当您的 Amazon Bedrock 账户需要与默认提供商链会解析的凭证不同的跨账户凭证时，请使用此选项。
+* **`awsAuthRefresh`**：仅当 Claude Code 检测到您的 AWS 凭证已过期时运行，可以基于其时间戳在本地检测，或者当 API 返回凭证错误时，然后使用刷新的凭证重试请求。
+* **`awsCredentialExport`**：在会话启动和每次凭证重新加载时运行，即使 AWS 默认凭证提供程序链中的凭证仍然有效。当您的 Amazon Bedrock 账户需要与默认提供程序链将解析的凭证不同的跨账户凭证时，请使用此选项。
+
+在运行 `awsAuthRefresh` 命令之前，Claude Code 会进行 STS `GetCallerIdentity` 调用以确认您的凭证确实已过期，并在凭证仍然有效时跳过该命令。Claude Code 通过您的[代理配置](/docs/zh-CN/network-config#proxy-configuration)发送此检查，遵守 `HTTPS_PROXY` 和 `NO_PROXY`。在 v2.1.239 之前，Claude Code 直接发送此检查，在仅允许通过代理出站的网络上在启动时挂起。
 
 <h5 id="example-configuration">
   示例配置
@@ -222,7 +224,7 @@ Claude Code 支持 AWS SSO 和企业身份提供商的自动凭证刷新。将�
 
 **`awsAuthRefresh`**：用于修改 `.aws` 目录的命令，例如更新凭证、SSO 缓存或配置文件。命令的输出显示给用户，但不支持交互式输入。这适用于基于浏览器的 SSO 流，其中 CLI 显示 URL 或代码，您在浏览器中完成身份验证。
 
-**`awsCredentialExport`**：仅在您无法修改 `.aws` 且必须直接返回凭证时使用。此命令在需要刷新凭证时运行，而不仅仅是在凭证过期时。输出被静默捕获，不显示给用户。命令必须以此格式输出 JSON：
+**`awsCredentialExport`**：仅当您无法修改 `.aws` 且必须直接返回凭证时才使用此选项。输出被静默捕获，不显示给用户。命令必须输出以下格式的 JSON：
 
 ```json theme={null}
 {
@@ -235,11 +237,11 @@ Claude Code 支持 AWS SSO 和企业身份提供商的自动凭证刷新。将�
 }
 ```
 
-从 Claude Code v2.1.181 开始，`aws configure export-credentials --format process` 的平面输出也被接受，具有相同的密钥在顶级而不是嵌套在 `Credentials` 下。
+来自 `aws configure export-credentials --format process` 的平面输出也被接受，在顶级而不是嵌套在 `Credentials` 下具有相同的密钥。
 
-`Expiration` 是可选的。从 Claude Code v2.1.176 开始，当命令返回有效的 ISO 8601 `Expiration` 时，Claude Code 会缓存凭证直到该时间前五分钟。没有它，或在更早的版本上，凭证被缓存一小时。
+`Expiration` 是可选的。当命令返回有效的 ISO 8601 `Expiration` 时，Claude Code 会缓存凭证直到该时间前五分钟。没有它，凭证被缓存一小时。
 
-当您配置 `awsCredentialExport` 而不配置 `awsAuthRefresh` 时，Claude Code 直接使用导出的凭证，不在启动时重新解析 AWS 默认凭证提供商链。在 v2.1.206 之前，启动也会重新解析默认提供商链，这会在您的代理配置之外进行实时 SSO 或 STS 调用，并可能在具有受限出口的网络上阻止第一个提示数分钟。
+当您配置 `awsCredentialExport` 而不配置 `awsAuthRefresh` 时，Claude Code 直接使用导出的凭证，不在启动时重新解析 AWS 默认凭证提供程序链。需要 Claude Code v2.1.206 或更高版本。
 
 <h3 id="3-configure-claude-code">
   3. 配置 Claude Code
@@ -252,9 +254,9 @@ Claude Code 支持 AWS SSO 和企业身份提供商的自动凭证刷新。将�
 export CLAUDE_CODE_USE_BEDROCK=1
 export AWS_REGION=us-east-1  # 如果您的 AWS 配置文件已设置区域，则可选
 
-# 可选：覆盖小型/快速模型 (Bedrock 和 Mantle) 的 AWS 区域。
-# 在 Bedrock 上，如果未设置 ANTHROPIC_DEFAULT_HAIKU_MODEL
-# 或已弃用的 ANTHROPIC_SMALL_FAST_MODEL，则无效。
+# 可选：覆盖小型/快速模型的 AWS 区域（Bedrock 和 Mantle）。
+# 在 Bedrock 上，没有 ANTHROPIC_DEFAULT_HAIKU_MODEL
+# 或已弃用的 ANTHROPIC_SMALL_FAST_MODEL 设置时无效。
 export ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION=us-west-2
 
 # 可选：覆盖 Bedrock 端点 URL 以用于自定义端点或网关
@@ -263,29 +265,33 @@ export ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION=us-west-2
 
 为 Claude Code 启用 Amazon Bedrock 时，请记住以下几点：
 
-* 从 v2.1.172 开始，您只需设置 `AWS_REGION` 来覆盖您的 AWS 配置文件的区域，或在您的配置文件没有区域时设置。Claude Code 按此顺序解析区域：
+* 您只需设置 `AWS_REGION` 来覆盖您的 AWS 配置文件的区域或当您的配置文件没有区域时。Claude Code 按以下顺序解析区域：
 
   * `AWS_REGION`
   * `AWS_DEFAULT_REGION`
   * 在您的活跃 AWS 配置文件上设置的 `region`，首先从 AWS 共享凭证文件读取，然后从共享配置文件读取，匹配 AWS SDK 优先级
   * `us-east-1`
 
-  活跃配置文件是 `AWS_PROFILE`（如果已设置），否则为 `default`。设置 `AWS_SHARED_CREDENTIALS_FILE` 或 `AWS_CONFIG_FILE` 以指向非默认文件路径。运行 `/status` 以查看解析的区域。当区域来自您的 AWS 配置文件或默认回退时，`/status` 也会注明来源。在 v2.1.171 及更早版本上，Claude Code 不读取 AWS 配置文件，因此请显式设置 `AWS_REGION`。
+  如果来自任何这些源的值看起来不像区域名称，Claude Code 会将其视为未设置并继续按顺序进行。例如，Claude Code 将包含斜杠、点或空格的值视为未设置。
+
+  活跃配置文件是 `AWS_PROFILE`（如果已设置），否则为 `default`。设置 `AWS_SHARED_CREDENTIALS_FILE` 或 `AWS_CONFIG_FILE` 以指向非默认文件路径。
+
+  运行 `/status` 以查看解析的区域。当区域来自您的 AWS 配置文件或默认回退时，Claude Code 也会在 `/status` 输出中注明源。
 * 使用 Amazon Bedrock 时，`/logout` 命令不可用，因为身份验证通过 AWS 凭证处理。
 * WebSearch 工具在 Amazon Bedrock 上不可用。请参阅 [WebSearch 工具行为](/docs/zh-CN/tools-reference#websearch-tool-behavior)。
-* 您可以使用设置文件来处理环境变量，如 `AWS_PROFILE`，您不希望泄露给其他进程。请参阅[设置](/docs/zh-CN/settings)了解更多信息。
+* 您可以对不想泄露给其他进程的环境变量（如 `AWS_PROFILE`）使用设置文件。有关更多信息，请参阅[设置](/docs/zh-CN/settings)。
 
 <h3 id="4-pin-model-versions">
   4. 固定模型版本
 </h3>
 
 <Warning>
-  在部署到多个用户时固定特定的模型版本。如果不固定，模型别名（如 `sonnet` 和 `opus`）会解析为 Claude Code 为 Amazon Bedrock 内置的默认值，这可能滞后于最新版本，并且可能在您的账户中还不可用。Claude Code 在启动时会[回退](#startup-model-checks)到上一个版本或更低级别的模型（如果默认版本不可用），但固定让您可以控制用户何时迁移到新模型。
+  在部署到多个用户时固定特定模型版本。不固定的话，模型别名（如 `sonnet` 和 `opus`）会解析为 Claude Code 对 Amazon Bedrock 的内置默认值，这可能滞后于最新版本，并且可能在您的账户中尚不可用。Claude Code 在启动时当默认值不可用时会[回退](#startup-model-checks)到较早或较低级别的模型，但固定让您可以控制用户何时迁移到新模型。
 </Warning>
 
 将这些环境变量设置为特定的 Amazon Bedrock 模型 ID。
 
-如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，Amazon Bedrock 上的 `opus` 别名会解析为 Opus 4.8，如果没有 `ANTHROPIC_DEFAULT_SONNET_MODEL`，`sonnet` 别名会解析为 Sonnet 4.5。此示例将每个别名固定到特定版本：
+没有 `ANTHROPIC_DEFAULT_OPUS_MODEL` 时，Amazon Bedrock 上的 `opus` 别名解析为 Opus 5.5，没有 `ANTHROPIC_DEFAULT_SONNET_MODEL` 时，`sonnet` 别名解析为 Sonnet 4.5。此示例将每个别名固定到特定版本：
 
 ```bash theme={null}
 export ANTHROPIC_DEFAULT_OPUS_MODEL='us.anthropic.claude-opus-4-8'
@@ -293,25 +299,34 @@ export ANTHROPIC_DEFAULT_SONNET_MODEL='us.anthropic.claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='us.anthropic.claude-haiku-4-5-20251001-v1:0'
 ```
 
-这些变量使用跨区域推理配置文件 ID（带有 `us.` 前缀）。如果您使用不同的区域前缀或应用推理配置文件，请相应调整。在 AWS GovCloud 区域中，使用 `us-gov.` 前缀。有关当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。请参阅[模型配置](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解完整的环境变量列表。
+这些 ID 使用 `us.` 跨区域推理配置文件前缀。如果您使用不同的区域前缀或应用程序推理配置文件，请相应调整。在 AWS GovCloud 区域中，使用 `us-gov.` 前缀。
 
-Claude Code 使用这些默认模型当未设置固定变量时：
+要保留内置默认模型并仅更改其首选前缀，请改为设置 [`ANTHROPIC_BEDROCK_REGION_PREFIX`](#cross-region-inference-profile-prefixes)。差异显示在 `opus` 别名解析为什么：
 
-| 模型类型    | 默认值                                            |
-| :------ | :--------------------------------------------- |
-| 主模型     | `us.anthropic.claude-opus-4-8`                 |
-| 小型/快速模型 | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| 您设置 | `opus` 别名解析为 |
+| :- | :- |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL='us.anthropic.claude-opus-4-8'` | `us.anthropic.claude-opus-4-8`，您固定的确切 ID |
+| `ANTHROPIC_BEDROCK_REGION_PREFIX=eu` | `eu.anthropic.claude-opus-5-5`，具有您首选前缀的内置默认值 |
 
-后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Amazon Bedrock 上，Claude Code 为后台任务使用默认 Sonnet 模型，因为并非每个账户或区域都启用了 Haiku。两个选择改变哪个模型执行它们：
+有关当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。有关完整的固定环境变量列表，请参阅[模型配置](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
 
-* 当您使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置选择主模型时，后台任务使用该模型。设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 而不设置 `ANTHROPIC_DEFAULT_SONNET_MODEL` 也算作一个选择，因为内置 Sonnet 模型可能在引导自己的 Opus 的账户中不启用。
-* 要为后台任务使用 Haiku，请将 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 设置为您账户中可用的模型 ID。
+未设置固定变量时，Claude Code 使用这些默认模型：
+
+| 模型类型 | 默认模型 |
+| :- | :- |
+| 主要模型 | Opus 5.5，例如 `us-*` 区域中的 `us.anthropic.claude-opus-5-5` |
+| 小型/快速模型 | Sonnet 4.5，例如 `us-*` 区域中的 `us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
+
+后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Amazon Bedrock 上，Claude Code 为后台任务使用默认 Sonnet 模型，因为 Haiku 可能不会在每个账户或区域中启用。两个选择改变哪个模型执行它们：
+
+* 当您使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置选择主要模型时，后台任务使用该模型。当 Claude Code 在您使用 [`ANTHROPIC_DEFAULT_MODEL`](/docs/zh-CN/model-config#set-a-default-model-for-new-sessions) 设置的模型上启动会话时，后台任务也使用该模型。设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 而不设置 `ANTHROPIC_DEFAULT_SONNET_MODEL` 也算作选择，因为内置 Sonnet 模型可能在引导自己的 Opus 的账户中不启用。
+* 要为后台任务使用 Haiku，请将 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 设置为在您的账户中可用的模型 ID。
 
 <Warning>
-  Opus 模型的每令牌价格高于 Sonnet 模型，因此不固定主模型的部署在更新到 v2.1.207 或更高版本后将按 Opus 费率计费。要将 Sonnet 4.5 保持为主模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署会保持其引导的 Sonnet 模型作为默认值。
+  Opus 模型的每令牌价格高于 Sonnet 模型，因此不固定主要模型的部署在更新到 v2.1.207 或更高版本后将按 Opus 费率计费。要将 Sonnet 4.5 保留为主要模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署保留其引导的 Sonnet 模型作为默认值。
 </Warning>
 
-在 v2.1.207 之前，Amazon Bedrock 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
+在 v2.1.280 之前，Amazon Bedrock 上的主要模型默认为 Opus 5，`opus` 别名从 v2.1.219 解析为 Opus 5。在 v2.1.207 到 v2.1.218 上，Amazon Bedrock 上的主要模型默认为 Opus 4.8，`opus` 别名解析为 Opus 4.8。在 v2.1.207 之前，主要模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主要模型。
 
 要进一步自定义模型，请使用以下方法之一：
 
@@ -320,27 +335,27 @@ Claude Code 使用这些默认模型当未设置固定变量时：
 export ANTHROPIC_MODEL='us.anthropic.claude-sonnet-4-6'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='us.anthropic.claude-haiku-4-5-20251001-v1:0'
 
-# 使用应用推理配置文件 ARN
+# 使用应用程序推理配置文件 ARN
 export ANTHROPIC_MODEL='arn:aws:bedrock:us-east-2:your-account-id:application-inference-profile/your-model-id'
 
-# 可选：如果需要，禁用 prompt caching
-export DISABLE_PROMPT_CACHING=1
+# 可选：如果需要禁用提示缓存
+# export DISABLE_PROMPT_CACHING=1
 
-# 可选：请求 1 小时 prompt cache TTL 而不是 5 分钟默认值
-export ENABLE_PROMPT_CACHING_1H=1
+# 可选：请求 1 小时提示缓存 TTL 而不是 5 分钟默认值
+# export ENABLE_PROMPT_CACHING_1H=1
 ```
 
-1 小时缓存 TTL 的计费费率高于 5 分钟默认值。请参阅[缓存生命周期](/docs/zh-CN/prompt-caching#cache-lifetime)。
+1 小时缓存 TTL 的计费费率高于 5 分钟默认值。请参阅[缓存生命周期](/docs/zh-CN/prompt-caching#cache-lifetime)。要为您的主要对话和 Claude Code 在其外部进行的请求设置不同的 TTL，请[自己选择 TTL](/docs/zh-CN/prompt-caching#choose-the-ttl-yourself)。
 
-<Note>Prompt caching 可能在所有 Amazon Bedrock 区域都不可用。如果缓存令牌计数保持为零，请检查 Amazon Bedrock 文档中的[支持的模型、区域和限制](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html#prompt-caching-models)。</Note>
+<Note>提示缓存可能不在所有 Amazon Bedrock 区域中可用。如果缓存令牌计数保持为零，请检查 Amazon Bedrock 文档中的[支持的模型、区域和限制](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html#prompt-caching-models)。</Note>
 
 <h4 id="map-each-model-version-to-an-inference-profile">
   将每个模型版本映射到推理配置文件
 </h4>
 
-`ANTHROPIC_DEFAULT_*_MODEL` 环境变量为每个模型系列配置一个推理配置文件。如果您的组织需要在 `/model` 选择器中公开同一系列的多个版本，每个版本路由到其自己的应用推理配置文件 ARN，请改用[设置文件](/docs/zh-CN/settings#settings-files)中的 `modelOverrides` 设置。
+`ANTHROPIC_DEFAULT_*_MODEL` 环境变量为每个模型系列配置一个推理配置文件。如果您的组织需要在 `/model` 选择器中公开同一系列的多个版本，每个版本路由到其自己的应用程序推理配置文件 ARN，请改为在您的[设置文件](/docs/zh-CN/settings#where-settings-live)中使用 `modelOverrides` 设置。
 
-此示例将四个 Opus 版本映射到不同的 ARN，以便用户可以在它们之间切换，而无需绕过您组织的推理配置文件：
+此示例将四个 Opus 版本映射到不同的 ARN，以便用户可以在它们之间切换，而无需绕过您的组织的推理配置文件：
 
 ```json theme={null}
 {
@@ -353,17 +368,70 @@ export ENABLE_PROMPT_CACHING_1H=1
 }
 ```
 
-当用户在 `/model` 中选择其中一个版本时，Claude Code 使用映射的 ARN 调用 Amazon Bedrock。当您通过 `--model` 或 `ANTHROPIC_MODEL` 直接传递 Anthropic 模型 ID 时，相同的映射也适用。没有覆盖的版本回退到内置的 Amazon Bedrock 模型 ID 或启动时发现的任何匹配推理配置文件。在 v2.1.200 之前，`--model` 和 `ANTHROPIC_MODEL` 值直接到达 Amazon Bedrock，不经过覆盖映射。请参阅[按版本覆盖模型 ID](/docs/zh-CN/model-config#override-model-ids-per-version)了解覆盖如何与 `availableModels` 和其他模型设置交互的详情。
+当用户在 `/model` 中选择这些版本之一时，Claude Code 使用映射的 ARN 调用 Amazon Bedrock。当您通过 `--model` 或 `ANTHROPIC_MODEL` 直接传递 Anthropic 模型 ID 时，相同的映射也适用。没有覆盖的版本回退到内置 Amazon Bedrock 模型 ID 或在启动时发现的任何匹配推理配置文件。在 v2.1.200 之前，`--model` 和 `ANTHROPIC_MODEL` 值直接到达 Amazon Bedrock，不经过覆盖映射。有关覆盖如何与 `availableModels` 和其他模型设置交互的详细信息，请参阅[按版本覆盖模型 ID](/docs/zh-CN/model-config#override-model-ids-per-version)。
 
 <h2 id="startup-model-checks">
   启动模型检查
 </h2>
 
-当 Claude Code 启动并配置了 Amazon Bedrock 时，它会验证它打算使用的模型在您的账户中是否可访问。
+当 Claude Code 配置了 Amazon Bedrock 时，它会验证其打算使用的模型在您的账户中是否可访问。
 
-如果您固定了一个比当前 Claude Code 默认值更旧的模型版本，并且您的账户可以调用较新版本，Claude Code 会提示您更新固定。接受会将新模型 ID 写入您的[用户设置文件](/docs/zh-CN/settings)并重启 Claude Code。拒绝会被记住，直到下一个默认版本更改。指向[应用推理配置文件 ARN](#map-each-model-version-to-an-inference-profile) 的固定会被跳过，因为这些由您的管理员管理。
+如果您已固定的模型版本比 Claude Code 当前默认版本更旧，且您的账户可以调用较新版本，Claude Code 会提示您更新该固定版本。接受会将新的模型 ID 写入您的[用户设置文件](/docs/zh-CN/settings)并重启 Claude Code。拒绝会被记住，直到下一次默认版本更改。指向[应用推理配置文件 ARN](#map-each-model-version-to-an-inference-profile) 的固定版本会被跳过，因为这些由您的管理员管理。
 
-如果您没有固定模型，并且当前默认值在您的账户中不可用，Claude Code 会在当前会话中回退并显示通知。它首先尝试默认模型的早期版本，当默认值是 Opus 模型且没有 Opus 版本可用时，会回退到默认 Sonnet 模型。回退不会被持久化。在您的 Amazon Bedrock 账户中启用较新的模型或[固定一个版本](#4-pin-model-versions)以使选择永久化。
+如果您未固定模型且当前默认模型在您的账户中不可用，Claude Code 会为当前会话进行回退并显示通知。它首先尝试默认模型的早期版本，当默认模型是 Opus 模型且没有可用的 Opus 版本时，会回退到默认 Sonnet 模型。回退不会被保留。在您的 Amazon Bedrock 账户中启用较新的模型或[固定一个版本](#4-pin-model-versions)以使选择永久生效。
+
+当您在特定 Sonnet 或 Opus 版本上启动会话时，例如使用 `--model`、`ANTHROPIC_MODEL` 或[`model` 设置](/docs/zh-CN/settings-reference#model)，该版本将作为会话针对匹配的 `sonnet` 或 `opus` 别名的固定默认版本。Claude Code 会跳过对您的模型替换的内置默认版本的可用性检查，并在您配置的模型上启动，不显示回退通知。
+
+模型别名（如 `opus`）不充当固定版本，Claude Code 无法识别的模型 ID（如应用推理配置文件 ARN）也不充当固定版本。
+
+当这些检查发现您的账户无法调用的模型时，Claude Code 会在这台机器上记住该拒绝长达一天，在此期间启动时会跳过记住的模型，而不再询问 Amazon Bedrock。Claude Code 会在距离上次检查已过十分钟后再次检查当前默认模型的记住拒绝，因此您的管理员重新启用的默认模型会恢复。要关闭此内存功能，请设置 [`CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY=1`](/docs/zh-CN/env-vars)。
+
+<h3 id="when-a-model-is-disabled-mid-session">
+  当模型在会话中被禁用时
+</h3>
+
+如果您的账户失去对会话正在运行的模型的访问权限，例如因为管理员在您的 Amazon Bedrock 账户中禁用了它，Claude Code 会将会话切换到另一个模型，而不是使每个请求都失败，并显示 `Switched to <fallback> because <model> is not available`。它尝试与启动回退相同的模型：首先尝试同一层级的早期版本，对于没有可用 Opus 版本的 Opus 会话，则使用默认 Sonnet 模型。
+
+切换仅适用于您未固定的层级，这与启动回退的条件相同。在您选择的特定版本上的会话，或在[应用推理配置文件 ARN](#map-each-model-version-to-an-inference-profile) 上的会话，会保持其模型，没有回退模型链，请求会失败。在[自动模式](/docs/zh-CN/permission-modes#enable-auto-mode-on-bedrock-agent-platform-or-foundry)中，Claude Code 仅切换到自动模式在 Amazon Bedrock 上支持的模型。如果这些模型中也没有可用的，请求会失败并显示 [AWS 身份验证失败](/docs/zh-CN/errors#aws-authentication-failed)，并提示启用该模型。
+
+您配置的[回退模型链](/docs/zh-CN/model-config#fallback-model-chains)会替换层级切换：在这些拒绝上，Claude Code 会切换到您配置的回退模型。要使被拒绝的请求失败而不是切换，请设置 [`CLAUDE_CODE_DISABLE_MODEL_ACCESS_FALLBACK=1`](/docs/zh-CN/env-vars)。您配置的回退链仍会在这些拒绝上切换；如果您希望每个被拒绝的请求都失败，也请移除该链。
+
+<h2 id="cross-region-inference-profile-prefixes">
+  跨区域推理配置文件前缀
+</h2>
+
+在 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModelWithResponseStream.html) 上，Claude Code 将其内置默认模型解析为[跨区域推理配置文件](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) ID；要通过您自己的推理配置文件路由模型版本，请参阅[将每个模型版本映射到推理配置文件](#map-each-model-version-to-an-inference-profile)。此表显示了 Claude Code 对每个已解析的 AWS 区域首选的前缀：
+
+| AWS 区域 | 前缀 |
+| :- | :- |
+| `us-gov-*` (AWS GovCloud) | `us-gov.` |
+| `us-*` | `us.` |
+| `eu-*` | `eu.` |
+| `ap-*` | `apac.` |
+| 所有其他区域 | `global.` |
+
+设置 `ANTHROPIC_BEDROCK_REGION_PREFIX` 以选择 Claude Code 首先尝试的前缀；当 Claude Code 可以检查配置文件可用性并且找不到模型的匹配配置文件时，它会按照下面的解析顺序进行回退。有效值为 `us`、`eu`、`apac`、`jp`、`au` 和 `global`。例如，当您的账户启用了 `global.` 配置文件但 Claude Code 会从您的 AWS 区域派生地理位置特定的配置文件时，将其设置为 `global`。需要 Claude Code v2.1.224 或更高版本。
+
+此示例通过 `global.` 配置文件路由默认模型：
+
+```bash theme={null}
+export ANTHROPIC_BEDROCK_REGION_PREFIX=global
+# 在 us-* 区域中，主模型现在解析为
+# global.anthropic.claude-opus-5-5 而不是 us.anthropic.claude-opus-5-5
+```
+
+首选前缀是一个偏好，而不是保证，无论它来自您的区域还是来自变量。Claude Code 如何应用它取决于它是否可以检查您账户中的配置文件可用性：
+
+* 当 Claude Code 可以[列出您账户中的推理配置文件](#iam-configuration)时，它按以下顺序解析每个模型：
+  1. 具有您首选前缀的配置文件。
+  2. 任何匹配的配置文件，用于没有该前缀的配置文件的模型。
+  3. 具有您首选前缀的内置模型 ID，用于根本没有匹配配置文件的模型。Claude Code 在此步骤中应用此 ID 而不检查可用性；[启动模型检查](#startup-model-checks)仍然涵盖会话的默认模型。
+* 当配置文件发现不可用时，Claude Code 应用前缀而不检查可用性。如果您的账户没有启用该前缀的推理配置文件，请求将失败并显示 400 错误。
+
+Claude Code 不会重写您自己配置的 Amazon Bedrock 推理配置文件 ID 或 ARN，或 [`modelOverrides`](#map-each-model-version-to-an-inference-profile) 值；Anthropic 格式的模型 ID 通过[与 `/model` 选择器相同的映射](#map-each-model-version-to-an-inference-profile)解析。Claude Code 在两种情况下也会忽略该变量：
+
+* 在 AWS GovCloud 区域中，Claude Code 始终使用 `us-gov.`，这是在 GovCloud 分区内路由的唯一前缀。
+* 当您设置的值不是有效值之一时，Claude Code 会回退到区域派生的首选前缀。
 
 <h2 id="iam-configuration">
   IAM 配置
@@ -424,9 +492,9 @@ export ENABLE_PROMPT_CACHING_1H=1
   1M 令牌上下文窗口
 </h2>
 
-Claude Sonnet 5、Opus 4.6 及更高版本，以及 Sonnet 4.6 在 Amazon Bedrock 上支持 [1M 令牌上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)。Sonnet 5 通过 [Mantle 端点](#use-the-mantle-endpoint)提供，始终以 1M 窗口运行，没有 `[1m]` 变体可选择。对于其他模型，当您选择 1M 模型变体时，Claude Code 会自动启用扩展上下文窗口。
+Claude Sonnet 5、Opus 4.6 及更高版本，以及 Sonnet 4.6 在 Amazon Bedrock 上支持 [1M 令牌上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)。Sonnet 5 在 Invoke API 和 [Mantle 端点](#use-the-mantle-endpoint)上始终以 1M 窗口运行，没有 `[1m]` 变体可选择。对于 Invoke API 上的其他模型，当您选择 1M 模型变体时，Claude Code 会自动启用扩展上下文窗口。
 
-[设置向导](#sign-in-with-bedrock)在固定模型时提供 1M 上下文选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解详情。
+[设置向导](#sign-in-with-bedrock)在固定模型时提供 1M 上下文选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解详情，包括如何在不更改固定的情况下使用 1M 窗口。
 
 <h2 id="service-tiers">
   服务层级
@@ -456,11 +524,15 @@ Claude Code 在每个请求上将此作为 `X-Amzn-Bedrock-Service-Tier` 标头�
 }
 ```
 
+如果您的组织通过 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway) 策略传递 guardrail 标头，它们将被视为[需要批准的设置](/docs/zh-CN/server-managed-settings#environment-variables-and-the-approval-dialog)。
+
 <h2 id="use-the-mantle-endpoint">
   使用 Mantle 端点
 </h2>
 
-Mantle 是一个 Amazon Bedrock 端点，通过原生 Anthropic API 形状而不是 Amazon Bedrock Invoke API 提供 Claude 模型。它使用相同的 AWS 凭证、IAM 权限和本页面前面描述的 `awsAuthRefresh` 配置。
+Mantle 是一个 Amazon Bedrock 端点，通过原生 Anthropic API 形状而不是 Amazon Bedrock Invoke API 提供 Claude 模型。它使用相同的 [AWS 凭证](#2-configure-aws-credentials) 和 [`awsAuthRefresh` 配置](#advanced-credential-configuration)。
+
+Mantle 在 `bedrock-mantle:` 前缀下有自己的 IAM 操作，因此 [IAM 配置](#iam-configuration) 中的 `bedrock:` 操作不涵盖它。为推理授予您的 IAM 身份 `bedrock-mantle:CreateInference`，为令牌计数授予 `bedrock-mantle:CountTokens`。请参阅 AWS 文档中的[进行推理请求](https://docs.aws.amazon.com/bedrock/latest/userguide/inference.html)和[计数令牌](https://docs.aws.amazon.com/bedrock/latest/userguide/count-tokens.html)，以及[服务授权参考](https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazonbedrockpoweredbyawsmantle.html)了解每个 Mantle 操作。
 
 <h3 id="enable-mantle">
   启用 Mantle
@@ -473,7 +545,7 @@ export CLAUDE_CODE_USE_MANTLE=1
 export AWS_REGION=us-east-1
 ```
 
-Claude Code 从 AWS 区域构造端点 URL。从 v2.1.172 开始，区域的解析优先级与[上面的 Amazon Bedrock](#3-configure-claude-code) 相同；较早的版本仅使用 `AWS_REGION`。要为自定义端点或网关覆盖 URL，请设置 `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`。
+Claude Code 从 AWS 区域构造端点 URL，使用与[上面的 Amazon Bedrock](#3-configure-claude-code) 相同的优先级解析。要为自定义端点或网关覆盖 URL，请设置 `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`。
 
 在 Claude Code 内运行 `/status` 来确认。当 Mantle 处于活动状态时，提供者行显示 `Amazon Bedrock (Mantle)`。
 
@@ -530,11 +602,11 @@ export ANTHROPIC_BEDROCK_MANTLE_BASE_URL=https://your-gateway.example.com
 
 这些变量特定于 Mantle 端点。请参阅[环境变量](/docs/zh-CN/env-vars)了解完整列表。
 
-| 变量                                      | 目的                                        |
-| :-------------------------------------- | :---------------------------------------- |
-| `CLAUDE_CODE_USE_MANTLE`                | 启用 Mantle 端点。设置为 `1` 或 `true`。            |
-| `ANTHROPIC_BEDROCK_MANTLE_BASE_URL`     | 覆盖默认 Mantle 端点 URL                        |
-| `CLAUDE_CODE_SKIP_MANTLE_AUTH`          | 跳过客户端身份验证以用于代理设置                          |
+| 变量 | 目的 |
+| :- | :- |
+| `CLAUDE_CODE_USE_MANTLE` | 启用 Mantle 端点。设置为 `1` 或 `true`。 |
+| `ANTHROPIC_BEDROCK_MANTLE_BASE_URL` | 覆盖默认 Mantle 端点 URL |
+| `CLAUDE_CODE_SKIP_MANTLE_AUTH` | 跳过客户端身份验证以用于代理设置 |
 | `ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION` | 覆盖 Haiku 类模型的 AWS 区域（与 Amazon Bedrock 共享） |
 
 <h2 id="troubleshooting">
@@ -548,6 +620,23 @@ export ANTHROPIC_BEDROCK_MANTLE_BASE_URL=https://your-gateway.example.com
 如果在使用 AWS SSO 时浏览器标签页反复生成，请从您的[设置文件](/docs/zh-CN/settings)中删除 `awsAuthRefresh` 设置。这可能发生在企业 VPN 或 TLS 检查代理中断 SSO 浏览器流时。Claude Code 将中断的连接视为身份验证失败，重新运行 `awsAuthRefresh`，并无限循环。
 
 如果您的网络环境干扰自动基于浏览器的 SSO 流，请在启动 Claude Code 之前手动使用 `aws sso login`，而不是依赖 `awsAuthRefresh`。
+
+<h3 id="certificate-errors-behind-a-tls-inspecting-proxy">
+  TLS 检查代理后的证书错误
+</h3>
+
+Claude Code 将您的[CA 证书存储](/docs/zh-CN/network-config#ca-certificate-store)配置应用于其对 AWS 的请求，包括：
+
+* 模型发现
+* 令牌计数
+* 解析您的 AWS 凭证的 STS 和 SSO 角色凭证调用
+* [设置向导](#sign-in-with-bedrock)的凭证验证和模型检查
+
+对于这些请求，您的 OS 信任存储或 `NODE_EXTRA_CA_CERTS` 包中的企业根证书不需要特定于 Amazon Bedrock 的设置。
+
+在 v2.1.260 之前，Claude Code 仅在这些请求通过配置的代理时才将您的 CA 配置应用于这些请求，在直接连接上，它们仅信任运行时的默认证书存储。
+
+在 v2.1.261 之前，使用**使用我的环境中已有的凭证**选项的设置向导的模型检查后的凭证查找仍然仅信任运行时的默认证书存储。在 TLS 检查代理后面，其根证书仅在 OS 存储中，受影响的请求失败，显示 `unable to get local issuer certificate`，或向导将模型显示为 `unreachable`，而推理请求成功。更新到 v2.1.261 或更高版本。
 
 <h3 id="region-issues">
   区域问题
@@ -569,11 +658,17 @@ Claude Code 使用 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedro
   网关或代理后的流式传输错误
 </h3>
 
-如果流式传输请求失败，错误以 `Bedrock streaming response has content-type` 开头，则 Claude Code 和 Amazon Bedrock 之间的网关或代理正在转换流式传输响应。Amazon Bedrock 以二进制事件流格式流式传输响应，内容类型为 `application/vnd.amazon.eventstream`，Claude Code 拒绝报告不同内容类型的成功流式传输响应，而不是解码它无法读取的正文。该错误命名了它收到的内容类型，通常是来自 Amazon API Gateway 和 Lambda 集成的 `text/event-stream`，该集成将流重新发出为服务器发送的事件。
+Amazon Bedrock 以二进制事件流格式流式传输 `InvokeModelWithResponseStream` 响应，标头为 `Content-Type: application/vnd.amazon.eventstream`。Claude Code 和 Amazon Bedrock 之间的网关或代理必须转发响应正文及其标头，包括 `Content-Type`，就像 Amazon Bedrock 发送的那样。
 
-在 v2.1.208 之前，相同的配置错误在整个响应被缓冲后显示为 `API Error: Truncated event message received`。
+如果网关将 `Content-Type` 重写为另一个值，Claude Code 会拒绝响应，错误以 `Bedrock streaming response has content-type` 开头，命名它收到的值。常见的重写是 `text/event-stream`，来自将流重新发出为服务器发送事件的集成。
 
-要修复它，请配置网关以通过未修改的 `InvokeModelWithResponseStream` 响应正文及其 `Content-Type` 标头。如果网关仅重写标头并通过完整的二进制正文，请设置 [`CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD=1`](/docs/zh-CN/env-vars) 以跳过检查，直到网关被修复。关闭检查后，被转换的响应正文再次失败，显示 `Truncated event message received`。
+如果网关删除或清空标头，Claude Code 会假设正文是 Amazon Bedrock 的事件流并对其进行解码，因此网关未修改地通过的正文会继续流式传输。
+
+如果删除标头的网关也将流重新发出为服务器发送事件，Claude Code 无法解码正文，并在每个回合上回退到较慢的非流式传输路径：每个响应仅在完成后才出现，而不是流式传输。在这种情况下，设置 [`CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_DEFAULT=1`](/docs/zh-CN/env-vars)，以便 Claude Code 将正文读取为服务器发送事件。
+
+要修复错误或回退，请配置网关以未修改地转发 `InvokeModelWithResponseStream` 响应正文及其 `Content-Type` 标头。
+
+将流转换为服务器发送事件的网关不再提供 Amazon Bedrock API。如果它也接受 Anthropic Messages API 请求，请使用 `ANTHROPIC_BASE_URL` 而不是 `CLAUDE_CODE_USE_BEDROCK` 将其作为 [LLM 网关](/docs/zh-CN/llm-gateway-connect)连接。
 
 <h3 id="zero-token-counts-in-/context">
   /context 中的零令牌计数
@@ -589,7 +684,10 @@ Claude Code 使用 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedro
 
 如果在设置 `CLAUDE_CODE_USE_MANTLE` 后 `/status` 没有显示 `Amazon Bedrock (Mantle)`，则该变量没有到达进程。确认它在您启动 `claude` 的 shell 中被导出，或在您的[设置文件](/docs/zh-CN/settings)的 `env` 块中设置它。
 
-来自 Mantle 端点的 `403`（具有有效凭证）意味着您的 AWS 账户没有被授予访问您请求的模型的权限。联系您的 AWS 账户团队以请求访问。
+来自 Mantle 端点的 `403` 的含义取决于错误是否命名了 IAM 操作：
+
+* 如果错误命名了 `bedrock-mantle:` 操作，请为您的 IAM 身份授予该操作。
+* 如果错误没有命名任何操作且您的凭证有效，您的 AWS 账户没有被授予访问您请求的模型的权限。联系您的 AWS 账户团队以请求访问。
 
 命名模型 ID 的 `400` 意味着该模型不在 Mantle 上提供。Mantle 有其自己的模型阵容，与标准 Amazon Bedrock 目录分开，因此推理配置文件 ID（如 `us.anthropic.claude-sonnet-4-6`）将不起作用。使用 Mantle 格式的 ID，或启用[两个端点](#run-mantle-alongside-the-invoke-api)，以便 Claude Code 将每个请求路由到模型可用的端点。
 
@@ -601,5 +699,5 @@ Claude Code 使用 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedro
 * [Amazon Bedrock 定价](https://aws.amazon.com/bedrock/pricing/)
 * [Amazon Bedrock 推理配置文件](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html)
 * [Amazon Bedrock 令牌消耗和配额](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html)
-* [Amazon Bedrock 上的 Claude Code：快速设置指南](https://community.aws/content/2tXkZKrZzlrlu0KfH8gST5Dkppq/claude-code-on-amazon-bedrock-quick-setup-guide)
+* [Amazon Bedrock 上的 Claude Code：快速设置指南](https://builder.aws.com/content/2tXkZKrZzlrlu0KfH8gST5Dkppq/claude-code-on-amazon-bedrock-quick-setup-guide)
 * [Claude Code 监控实现 (Amazon Bedrock)](https://github.com/aws-solutions-library-samples/guidance-for-claude-code-with-amazon-bedrock/blob/main/assets/docs/MONITORING.md)

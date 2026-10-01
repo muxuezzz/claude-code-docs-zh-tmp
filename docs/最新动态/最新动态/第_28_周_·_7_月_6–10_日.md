@@ -7,7 +7,7 @@
 > 从 Desktop 应用的内置浏览器浏览外部网站，使用 /doctor 运行完整的设置检查，并获取自动模式的文本记录保护和代理视图升级。
 
 <div className="digest-meta">
-  <span>发布版本 <a href="/docs/docs/en/changelog#2-1-202">v2.1.202 → v2.1.206</a></span>
+  <span>发布版本 <a href="/docs/en/changelog#2-1-202">v2.1.202 → v2.1.206</a></span>
   <span>2 项功能 · 7 月 6–10 日</span>
 </div>
 
@@ -23,7 +23,7 @@
     <video autoPlay muted loop playsInline className="w-full" src="https://mintcdn.com/claude-code/x358isu_VzLnyTEN/images/whats-new/desktop-browser.mp4?fit=max&auto=format&n=x358isu_VzLnyTEN&q=85&s=8033e85a1cb0a37870a79e702c18f4e4" data-path="images/whats-new/desktop-browser.mp4" />
   </Frame>
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/desktop#browse-external-sites">浏览外部网站</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/desktop#browse-external-sites">浏览外部网站</a>
 </div>
 
 <div className="digest-feature">
@@ -40,7 +40,7 @@
   > /doctor
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/commands#all-commands">所有命令</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/commands#all-commands">所有命令</a>
 </div>
 
 <div className="digest-wins">

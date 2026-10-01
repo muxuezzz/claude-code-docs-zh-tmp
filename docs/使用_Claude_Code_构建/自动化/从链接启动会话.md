@@ -19,11 +19,11 @@
 
 本页面涵盖如何[构建链接](#build-a-link)、[在运行手册中嵌入链接或从 shell 触发](#examples)，以及[在每个平台上管理或禁用处理程序注册](#registration-and-supported-platforms)。
 
-<h2 id="how-it-works">
-  工作原理
+<h2 id="how-deep-links-work">
+  深链接的工作原理
 </h2>
 
-`claude-cli://` 前缀是一个自定义 URL 方案，Claude Code 向你的操作系统注册，类似于 `mailto:` 链接打开你的电子邮件客户端的方式。该链接可以存在于网页、wiki、Slack 消息或任何呈现链接的应用中。当你点击一个时：
+`claude-cli://` 前缀是一个自定义 URL 方案，Claude Code 向你的操作系统注册，类似于 `mailto:` 链接打开你的电子邮件客户端的方式。当你点击一个深链接时：
 
 1. 浏览器或应用将 URL 传递给你的操作系统。
 2. 操作系统识别 `claude-cli://` 前缀并在你的机器上启动 Claude Code。
@@ -32,9 +32,7 @@
 
 链接本身可以托管在任何地方，但会话总是在你点击的计算机上本地打开。请参阅[注册和支持的平台](#registration-and-supported-platforms)了解在每个操作系统上打开哪个终端模拟器。
 
-<Note>
-  显示链接的平台必须允许自定义 URL 方案。GitHub 呈现的 Markdown 允许 `http` 和 `https`，但在 README、问题、拉取请求和 wiki 中删除 `claude-cli://` 等方案。只显示链接文本，没有链接，URL 被隐藏。请参阅[故障排除](#the-link-renders-as-plain-text-instead-of-being-clickable)了解解决方法。
-</Note>
+显示链接的平台必须允许自定义 URL 方案。关于 GitHub 如何处理它们以及解决方法，请参阅[链接呈现为纯文本而不是可点击](#the-link-renders-as-plain-text-instead-of-being-clickable)。
 
 <h3 id="what-a-launched-session-shows">
   启动的会话显示什么
@@ -48,19 +46,21 @@
   构建链接
 </h2>
 
-每个深链接都以 `claude-cli://open` 开头，这是处理程序接受的唯一路径，后跟可选的查询参数。最小形式在你的主目录中打开 Claude Code，带有空提示：
+深链接以 `claude-cli://open` 开头，后跟可选的查询参数。最小形式在你的主目录中打开 Claude Code，带有空提示：
 
 ```text theme={null}
 claude-cli://open
 ```
 
+要在不将其放在页面上的情况下尝试链接，请将其粘贴到浏览器的地址栏中或[从 shell 打开它](#open-a-link-from-the-shell)。
+
 添加参数以控制会话开始的位置和提示框包含的内容：
 
-| 参数     | 描述                                                                                                                                                             |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `q`    | 在提示框中预填充的文本。[URL 编码](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)该值。在多行提示中使用 `%0A` 表示换行符。最多 5,000 个字符。 |
-| `cwd`  | 用作工作目录的绝对路径。网络和 UNC 路径被拒绝，包含不可见或双向控制字符的路径也被拒绝。                                                                                                                 |
-| `repo` | 一个 GitHub `owner/name` slug。Claude Code 将其解析为它之前看到的本地克隆并从那里开始。如果你没有匹配的克隆，会话将在你的主目录中打开。                                                                         |
+| 参数 | 描述 |
+| - | - |
+| `q` | 在提示框中预填充的文本。[URL 编码](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)该值。在多行提示中使用 `%0A` 表示换行符。最多 5,000 个字符。 |
+| `cwd` | 用作工作目录的绝对路径。网络和 UNC 路径被拒绝，包含 `..` 段或不可见或双向控制字符的路径也被拒绝。 |
+| `repo` | 一个 GitHub `owner/name` slug。Claude Code 将其解析为它之前看到的本地克隆并从那里开始。如果你没有匹配的克隆，会话将在你的主目录中打开。 |
 
 `cwd` 和 `repo` 是[设置工作目录的两种方式](#choose-between-cwd-and-repo)。如果你同时传递两者，`cwd` 优先，`repo` 被忽略，即使 `cwd` 路径不存在。
 
@@ -77,7 +77,7 @@ Investigate the failed deploy of payments-api.
 Check recent commits to main and the last successful build.
 ```
 
-你可以在按 Enter 发送之前编辑提示。如果你没有该仓库的本地克隆，会话将在你的主目录中打开。请参阅[在 `cwd` 和 `repo` 之间选择](#choose-between-cwd-and-repo)了解当你有多个克隆或 worktrees 时如何选择本地路径。
+你可以在按 Enter 发送之前编辑提示。请参阅[在 `cwd` 和 `repo` 之间选择](#choose-between-cwd-and-repo)了解当你有多个克隆或 worktrees 时如何选择本地路径。
 
 <h3 id="choose-between-cwd-and-repo">
   在 `cwd` 和 `repo` 之间选择
@@ -87,9 +87,7 @@ Check recent commits to main and the last successful build.
 
 当链接被共享且每个人克隆到不同位置时，使用 `repo`。Claude Code 按如下方式将 slug 解析为本地路径：
 
-* 每次你在 Git 仓库中运行 `claude` 时，该目录的文件系统路径都会针对仓库的 GitHub `owner/name` slug 被记录。
-* 当深链接到达时，`repo` 打开你最近使用的任何匹配路径。多个克隆和 worktrees 被单独跟踪，所以它选择你最后工作的那个。
-* 查找只找到你已经至少运行过一次 Claude Code 的路径。
+* `repo` 打开你最近运行 `claude` 的链接仓库的克隆或 worktree。每次你在 Git 仓库中运行 `claude` 时，Claude Code 都会针对仓库的 GitHub `owner/name` slug 记录该目录的路径。Claude Code 单独跟踪克隆和 worktrees。
 * 链接不改变检出的分支。会话在该目录当前所处的任何状态下打开。
 
 启动的会话显示它选择了哪个路径，所以你可以确认正确的克隆已打开。
@@ -124,7 +122,7 @@ Check recent commits to main and the last successful build.
   从 shell 打开链接
 </h3>
 
-你也可以从 shell 脚本、别名或自动化中打开深链接，而不是通过点击它。使用链接作为参数调用你的操作系统的 URL 打开命令。
+你也可以从 shell 脚本、别名或自动化中打开深链接，而不是通过点击它。使用链接作为参数调用你的操作系统的 URL 打开命令。这些命令依赖于 Claude Code [在你在机器上发送交互式会话的第一个提示时注册的](#registration-and-supported-platforms)处理程序。
 
 <Tabs>
   <Tab title="macOS">
@@ -133,6 +131,8 @@ Check recent commits to main and the last successful build.
     ```bash theme={null}
     open "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
     ```
+
+    成功时，会打开一个新的终端窗口，Claude Code 运行，提示已预填充。
   </Tab>
 
   <Tab title="Linux">
@@ -141,6 +141,8 @@ Check recent commits to main and the last successful build.
     ```bash theme={null}
     xdg-open "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
     ```
+
+    成功时，会打开一个新的终端窗口，Claude Code 运行，提示已预填充。如果 shell 报告找不到 `xdg-open`，请参阅[故障排除](#xdg-open-is-not-found-on-linux)。
   </Tab>
 
   <Tab title="Windows">
@@ -155,6 +157,8 @@ Check recent commits to main and the last successful build.
     ```cmd theme={null}
     start "" "claude-cli://open?repo=acme/payments&q=review%20open%20PRs"
     ```
+
+    成功时，会打开一个新的终端窗口，Claude Code 运行，提示已预填充。
   </Tab>
 </Tabs>
 
@@ -162,17 +166,17 @@ Check recent commits to main and the last successful build.
   注册和支持的平台
 </h2>
 
-Claude Code 在你第一次在 macOS、Linux 和 Windows 上启动交互式会话时向你的操作系统注册 `claude-cli://` 处理程序。你不需要运行单独的安装命令。注册仅写入用户级位置：
+Claude Code 在你第一次在 macOS、Linux 和 Windows 上发送交互式会话的第一个提示时向你的操作系统注册 `claude-cli://` 处理程序。启动 `claude` 并在不发送提示的情况下退出不会注册处理程序。你不需要运行单独的安装命令。注册仅写入用户级位置：
 
-| 平台      | 处理程序位置                                                                                                |
-| ------- | ----------------------------------------------------------------------------------------------------- |
-| macOS   | `~/Applications/Claude Code URL Handler.app`                                                          |
-| Linux   | `claude-code-url-handler.desktop` 在 `$XDG_DATA_HOME/applications` 下，默认为 `~/.local/share/applications` |
-| Windows | `HKEY_CURRENT_USER\Software\Classes\claude-cli`                                                       |
+| 平台 | 处理程序位置 |
+| - | - |
+| macOS | `~/Applications/Claude Code URL Handler.app` |
+| Linux | `claude-code-url-handler.desktop` 在 `$XDG_DATA_HOME/applications` 下，默认为 `~/.local/share/applications` |
+| Windows | `HKEY_CURRENT_USER\Software\Classes\claude-cli` |
 
 处理程序在检测到的终端模拟器中启动 Claude Code。在 macOS 上，Claude Code 记住你最近交互式会话中的终端并重复使用它，支持 iTerm2、Ghostty、kitty、Alacritty、WezTerm 和 Terminal.app。在 Linux 上，它遵守 `$TERMINAL` 环境变量，然后是 `x-terminal-emulator`，然后是常见模拟器的列表。在 Windows 上，它优先选择 Windows Terminal，然后是 PowerShell，然后是 `cmd.exe`。
 
-要完全防止注册，在 `settings.json` 中将 [`disableDeepLinkRegistration`](/docs/zh-CN/settings) 设置为 `"disable"`。要在整个组织中强制执行此操作，使用户无法重新启用它，请改为在[托管设置](/docs/zh-CN/server-managed-settings)中设置它。
+要完全防止注册，在 `settings.json` 中将 [`disableDeepLinkRegistration`](/docs/zh-CN/settings-reference#disabledeeplinkregistration) 设置为 `"disable"`。要在整个组织中强制执行此操作，使用户无法重新启用它，请改为在[托管设置](/docs/zh-CN/server-managed-settings)中设置它。
 
 <h2 id="open-a-vs-code-tab-instead-of-a-terminal">
   打开 VS Code 标签页而不是终端
@@ -188,7 +192,13 @@ VS Code 扩展在 `vscode://anthropic.claude-code/open` 注册自己的处理程
   点击链接没有反应
 </h3>
 
-处理程序可能还没有注册。在该机器上启动一次交互式 `claude` 会话，退出，然后再试一次链接。如果你在没有桌面环境的 Linux 上，`xdg-open` 可能没有东西可以分派。
+处理程序可能还没有注册。注册发生在你发送交互式会话的第一个提示时，而不是在会话启动时。在该机器上启动一个交互式 `claude` 会话，发送任何提示，退出，然后再试一次链接。如果你在没有桌面环境的 Linux 上，`xdg-open` 可能没有东西可以分派。
+
+<h3 id="xdg-open-is-not-found-on-linux">
+  在 Linux 上找不到 xdg-open
+</h3>
+
+`xdg-open` 命令是 `xdg-utils` 包的一部分，最小服务器镜像、容器和 WSL 发行版通常会省略它。使用你的发行版的包管理器安装 `xdg-utils`，例如 `sudo apt install xdg-utils`，然后再次运行该命令。如果命令随后运行但没有打开任何内容，`xdg-open` 可能没有桌面环境可以分派；请参阅[点击链接没有反应](#clicking-the-link-does-nothing)。
 
 <h3 id="the-link-renders-as-plain-text-instead-of-being-clickable">
   链接呈现为纯文本而不是可点击的

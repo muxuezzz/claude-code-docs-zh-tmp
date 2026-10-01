@@ -20,9 +20,13 @@
   基于权限的架构
 </h3>
 
-Claude Code 默认使用严格的只读权限。当需要额外操作时（编辑文件、运行测试、执行命令），Claude Code 会请求明确的权限。用户可以控制是否批准一次性操作或自动允许操作。
+在 Manual mode 中，Claude Code 以只读权限开始。当 Claude Code 需要编辑文件、运行测试或执行命令时，它会先询问您，您可以选择批准该操作一次或从此允许该操作。
 
-Claude Code 在运行可以修改您的系统的 Bash 命令之前需要获得批准。一组内置的[只读命令](/docs/zh-CN/permissions#read-only-commands)，如 `ls`、`cat` 和 `git status`，无需提示即可运行。这种方法使用户和组织能够直接配置权限。
+在 Manual mode 中，Claude Code 在运行可以修改您的系统的 Bash 命令之前也会询问。它运行一组内置的[只读命令](/docs/zh-CN/permissions#read-only-commands)，如 `ls`、`cat` 和 `git status`，无需询问。您和您的组织可以直接配置这些权限。
+
+在 [auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode) 中，一个单独的分类器模型会审查操作而不是您，并阻止它认为不安全的操作。[分类器如何评估操作](/docs/zh-CN/permission-modes#how-the-classifier-evaluates-actions) 列出了 Claude Code 直接批准的操作、发送给分类器的操作以及 Claude Code 仍然询问您的操作。您显式设置的 ask 规则和拒绝规则仍然适用，您的组织可以 [关闭 auto mode](/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode)。
+
+会话开始时使用哪种权限模式取决于您的计划、启动它的界面以及您的设置和您的组织的设置；请参阅 [Permission modes](/docs/zh-CN/permission-modes#which-mode-a-session-starts-in)。
 
 有关详细的权限配置，请参阅 [Permissions](/docs/zh-CN/permissions)。
 
@@ -32,8 +36,8 @@ Claude Code 在运行可以修改您的系统的 Bash 命令之前需要获得�
 
 为了降低代理系统中的风险：
 
-* **沙箱化 bash 工具**：使用文件系统和网络隔离的 [Sandbox](/docs/zh-CN/sandboxing) bash 命令，减少权限提示同时保持安全性。使用 `/sandbox` 启用以定义 Claude Code 可以自主工作的边界
-* **工作目录边界**：Claude Code 只能写入启动它的文件夹及其子文件夹，不能在没有明确权限的情况下修改父目录中的文件。使用 Read、Grep 和 Glob 工具读取此边界外的路径在批准提示后是可能的。使用[额外目录](/docs/zh-CN/permissions#working-directories)扩展边界以跳过提示，或使用[沙箱 `denyRead` 规则](/docs/zh-CN/sandboxing#filesystem-isolation)限制对只读 Bash 命令可用的更广泛读取访问，这些规则仅在启用沙箱时适用
+* **沙箱化 bash 工具**：使用文件系统和网络隔离的 [Sandbox](/docs/zh-CN/sandboxing) bash 命令，减少权限提示同时保持安全性。使用 `/sandbox` 配置以定义 Claude Code 可以自主工作的边界
+* **工作目录边界**：在 Manual mode 中，Claude Code 只能写入启动它的文件夹及其子文件夹，不能在没有明确权限的情况下修改父目录中的文件。在 Manual mode 中，Claude Code 在使用 Read、Grep 和 Glob 工具读取此边界外的路径之前也会询问您。使用[额外目录](/docs/zh-CN/permissions#working-directories)扩展边界以跳过提示，或使用[沙箱 `denyRead` 规则](/docs/zh-CN/sandboxing#filesystem-isolation)限制对只读 Bash 命令可用的更广泛读取访问，这些规则仅在启用沙箱时适用
 * **提示疲劳缓解**：支持按用户、按代码库或按组织的白名单常用安全命令
 * **Accept Edits 模式**：自动批准文件编辑和一组固定的文件系统 Bash 命令，如 `mkdir`、`touch`、`rm`、`mv`、`cp` 和 `sed`，用于工作目录中的路径。其他 Bash 命令和超出范围的路径仍然会提示
 
@@ -53,10 +57,10 @@ Claude Code 只拥有您授予它的权限。您负责在批准前审查建议�
   核心保护
 </h3>
 
-* **权限系统**：敏感操作需要明确批准
+* **权限系统**：在手动模式下，敏感操作需要明确批准
 * **上下文感知分析**：通过分析完整请求来检测潜在有害指令
 * **输入清理**：通过处理用户输入来防止命令注入
-* **网络命令批准**：从网络获取内容的命令，如 `curl` 和 `wget`，默认不会自动批准。它们会像任何其他非只读 Bash 命令一样提示，因此您仍然可以批准一次或添加显式允许规则，如 `Bash(curl *)`。要完全阻止它们，请将其添加到 [`permissions.deny`](/docs/zh-CN/permissions#tool-specific-permission-rules)
+* **网络命令批准**：从网络获取内容的命令，如 `curl` 和 `wget`，默认不会自动批准。在手动模式下，它们会像任何其他非只读 Bash 命令一样提示，因此您仍然可以批准一次或添加显式允许规则，如 `Bash(curl *)`。要阻止 Claude 运行它们，请将其添加到 [`permissions.deny`](/docs/zh-CN/permissions#tool-specific-permission-rules)。拒绝规则匹配[按照编写的命令](/docs/zh-CN/permissions#bash-rule-limits)；对于不依赖命令文本的网络强制执行，请参阅[沙箱网络隔离](/docs/zh-CN/sandboxing#network-isolation)
 
 <h3 id="privacy-safeguards">
   隐私保护
@@ -74,13 +78,13 @@ Claude Code 只拥有您授予它的权限。您负责在批准前审查建议�
   其他保护措施
 </h3>
 
-* **网络请求批准**：进行网络请求的工具默认需要用户批准
+* **网络请求批准**：在手动模式下，进行网络请求的大多数工具默认需要用户批准
 * **隔离的上下文窗口**：Web fetch 使用单独的上下文窗口以避免注入潜在恶意提示
 * **信任验证**：首次代码库运行和新 MCP servers 需要信任验证
   * 注意：使用 `-p` 标志以非交互方式运行时，信任验证被禁用
   * 注意：当您直接在主目录中启动 Claude Code 时，信任接受仅在当前会话期间保持，不会写入磁盘，因此提示在每次启动时都会重新出现。没有设置可以持久化它。请从项目子目录启动 Claude Code，其中信任接受按目录保存
-* **命令注入检测**：即使之前已白名单，可疑的 bash 命令也需要手动批准
-* **故障关闭匹配**：不匹配的命令默认需要手动批准
+* **命令注入检测**：在手动模式下，即使之前已白名单，可疑的 bash 命令也需要手动批准
+* **故障关闭匹配**：在手动模式下，不匹配的命令默认需要批准
 * **自然语言描述**：复杂的 bash 命令包括用户理解的说明
 * **安全凭证存储**：API 密钥和令牌存储在可用时的 macOS Keychain 中，在 Windows 和 Linux 上受文件权限保护。请参阅 [Credential Management](/docs/zh-CN/authentication#credential-management)
 
@@ -118,16 +122,17 @@ Claude Code 允许用户配置 Model Context Protocol (MCP) servers。允许的 
   云执行安全性
 </h2>
 
-使用 [Claude Code on the web](/docs/zh-CN/claude-code-on-the-web) 时，会实施额外的安全控制：
+使用 [cloud sessions](/docs/zh-CN/claude-code-on-the-web) 时，会实施额外的安全控制。您的组织路由到 [自托管环境](/docs/zh-CN/self-hosted-environments) 的会话在您自己的基础设施上运行，其中隔离、网络出口和 git 凭证是您部署的责任。在 Anthropic 托管的环境中：
 
 * **隔离的虚拟机**：每个云会话在隔离的、由 Anthropic 管理的 VM 中运行
 * **网络访问控制**：网络访问默认受限，可以配置为禁用或仅允许特定域
-* **凭证保护**：身份验证通过安全代理处理，该代理在沙箱内使用作用域凭证，然后转换为您的实际 GitHub 身份验证令牌
+* **凭证保护**：GitHub 凭证在 Anthropic 的服务器上以加密方式存储，永远不会进入会话 VM。VM 持有一个作用域限制于该会话的短期凭证，GitHub 流量通过 [Anthropic proxy](/docs/zh-CN/cloud-environments#github-proxy) 进行，该代理在服务器端附加 GitHub 凭证。有关如何授予访问权限，请参阅 [GitHub authentication options](/docs/zh-CN/claude-code-on-the-web#github-authentication-options)
 * **分支限制**：Git push 操作限制在当前工作分支
-* **审计日志**：云环境中的所有操作都被记录以用于合规和审计目的
-* **自动清理**：会话完成后，云环境会自动终止
+* **审计日志**：云会话中的所有操作都被记录以用于合规和审计目的
+* **自动清理**：会话 VM 在一段时间不活动后被回收
+* **删除**：您可以随时 [delete a session](/docs/zh-CN/claude-code-on-the-web#delete-sessions)。有关 Anthropic 为云会话存储的内容，请参阅 [Cloud execution data flow](/docs/zh-CN/data-usage#cloud-execution-data-flow-and-dependencies)
 
-有关云执行的更多详情，请参阅 [Claude Code on the web](/docs/zh-CN/claude-code-on-the-web)。
+有关云执行的更多详情，请参阅 [Use Claude Code in the cloud](/docs/zh-CN/claude-code-on-the-web)；要为云会话配置网络访问，请参阅 [Configure cloud environments](/docs/zh-CN/cloud-environments#network-access)。
 
 [Remote Control](/docs/zh-CN/remote-control) 会话的工作方式不同：Web 界面连接到在您本地机器上运行的 Claude Code 进程。所有代码执行和文件访问都保持本地，会话流量通过 TLS 上的 Anthropic API 传输；连接时，会话记录存储在 Anthropic 服务器上以跨设备同步对话，如 [Connection and security](/docs/zh-CN/remote-control#connection-and-security) 中所述。不涉及云 VM 或沙箱。连接使用多个短期的、范围狭窄的凭证，每个凭证限制于特定目的并独立过期，以限制任何单个受损凭证的影响范围。
 
@@ -148,7 +153,7 @@ Claude Code 允许用户配置 Model Context Protocol (MCP) servers。允许的 
   团队安全
 </h3>
 
-* 使用 [managed settings](/docs/zh-CN/settings#settings-files) 来强制执行组织标准
+* 使用 [managed settings](/docs/zh-CN/settings#where-settings-live) 来强制执行组织标准
 * 通过版本控制共享批准的权限配置
 * 培训团队成员了解安全最佳实践
 * 通过 [OpenTelemetry metrics](/docs/zh-CN/monitoring-usage) 监控 Claude Code 使用情况
@@ -170,9 +175,11 @@ Claude Code 允许用户配置 Model Context Protocol (MCP) servers。允许的 
 </h2>
 
 * [Security guidance plugin](/docs/zh-CN/security-guidance)：让 Claude 在会话期间审查和修复其自身代码更改中的漏洞
+* [`/security-review`](/docs/zh-CN/commands#all-commands)：对当前分支上的更改运行按需安全检查
 * [Sandbox environments](/docs/zh-CN/sandbox-environments)：比较隔离方法并为您的威胁模型选择一个
 * [Sandboxing](/docs/zh-CN/sandboxing)：Bash 命令的文件系统和网络隔离
 * [Permissions](/docs/zh-CN/permissions)：配置权限和访问控制
 * [Monitoring usage](/docs/zh-CN/monitoring-usage)：跟踪和审计 Claude Code 活动
 * [Development containers](/docs/zh-CN/devcontainer)：安全、隔离的环境
 * [Anthropic Trust Center](https://trust.anthropic.com)：安全认证和合规
+* [CISO's guide to agentic AI](https://claude.com/blog/ciso-guide-to-agentic-ai)：安全领导者评估代理 AI 部署的框架

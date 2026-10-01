@@ -7,7 +7,7 @@
 > 从一个屏幕管理每个 Claude Code 会话，使用 agent view，让 Claude 持续朝着目标工作直到条件满足，并在 Opus 4.7 上默认运行快速模式。
 
 <div className="digest-meta">
-  <span>发布版本 <a href="/docs/docs/en/changelog#2-1-139">v2.1.139 → v2.1.142</a></span>
+  <span>发布版本 <a href="/docs/en/changelog#2-1-139">v2.1.139 → v2.1.142</a></span>
   <span>3 项功能 · 5 月 11–15</span>
 </div>
 

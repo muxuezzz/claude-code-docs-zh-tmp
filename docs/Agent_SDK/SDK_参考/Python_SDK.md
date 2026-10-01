@@ -18,7 +18,7 @@ source .venv/bin/activate
 pip install claude-agent-sdk
 ```
 
-有关 uv、Windows PowerShell 和 API 密钥设置，请参阅 [Agent SDK 概述中的入门](/docs/zh-CN/agent-sdk/overview#get-started)。
+有关 uv、Windows PowerShell 和 API 密钥设置，请参阅 [Agent SDK 快速入门中的设置](/docs/zh-CN/agent-sdk/quickstart#setup)。
 
 <h2 id="choosing-between-query-and-claudesdkclient">
   在 `query()` 和 `ClaudeSDKClient` 之间选择
@@ -26,54 +26,31 @@ pip install claude-agent-sdk
 
 Python SDK 提供了两种与 Claude Code 交互的方式：
 
-<h3 id="quick-comparison">
-  快速比较
-</h3>
+| 功能 | `query()` | `ClaudeSDKClient` |
+| :- | :- | :- |
+| **会话** | 默认创建新会话 | 重用同一会话 |
+| **对话** | 单次交换 | 同一上下文中的多次交换 |
+| **连接** | 自动管理 | 手动控制 |
+| **流式输入** | ✅ 支持 | ✅ 支持 |
+| **中断** | ❌ 不支持 | ✅ 支持 |
+| **hooks** | ✅ 支持 | ✅ 支持 |
+| **自定义工具** | ✅ 支持 | ✅ 支持 |
+| **继续聊天** | 通过 `continue_conversation` 或 `resume` 手动进行 | ✅ 自动 |
+| **用例** | 一次性任务 | 持续对话 |
 
-| 功能        | `query()`                                  | `ClaudeSDKClient` |
-| :-------- | :----------------------------------------- | :---------------- |
-| **会话**    | 默认创建新会话                                    | 重用同一会话            |
-| **对话**    | 单次交换                                       | 同一上下文中的多次交换       |
-| **连接**    | 自动管理                                       | 手动控制              |
-| **流式输入**  | ✅ 支持                                       | ✅ 支持              |
-| **中断**    | ❌ 不支持                                      | ✅ 支持              |
-| **hooks** | ✅ 支持                                       | ✅ 支持              |
-| **自定义工具** | ✅ 支持                                       | ✅ 支持              |
-| **继续聊天**  | 通过 `continue_conversation` 或 `resume` 手动进行 | ✅ 自动              |
-| **用例**    | 一次性任务                                      | 持续对话              |
-
-<h3 id="when-to-use-query-one-off-tasks">
-  何时使用 `query()`（一次性任务）
-</h3>
-
-**最适合：**
-
-* 不需要对话历史的一次性问题
-* 不需要来自之前交换的上下文的独立任务
-* 简单的自动化脚本
-* 当你想每次都重新开始时
-
-<h3 id="when-to-use-claudesdkclient-continuous-conversation">
-  何时使用 `ClaudeSDKClient`（持续对话）
-</h3>
-
-**最适合：**
-
-* **继续对话** - 当你需要 Claude 记住上下文时
-* **后续问题** - 基于之前的响应进行构建
-* **交互式应用程序** - 聊天界面、REPL
-* **响应驱动的逻辑** - 当下一步操作取决于 Claude 的响应时
-* **会话控制** - 显式管理对话生命周期
+对于交互式应用程序（如聊天界面）或当下一步操作取决于 Claude 的响应时，请使用 `ClaudeSDKClient`。
 
 <h2 id="functions">
   函数
 </h2>
 
+<Note>此页面上的签名块和裸 `async for` / `async with` 片段仅供说明之用。要运行它们，请将主体包装在 `async def main(): ...` 中并调用 `asyncio.run(main())`。</Note>
+
 <h3 id="query">
   `query()`
 </h3>
 
-为每次与 Claude Code 的交互创建一个新会话。默认情况下返回一个异步迭代器，当消息到达时产生消息。每次调用 `query()` 都会重新开始，不记得之前的交互，除非你传递 `continue_conversation=True` 或在 [`ClaudeAgentOptions`](#claudeagentoptions) 中传递 `resume`。参见 [Sessions](/docs/zh-CN/agent-sdk/sessions)。
+默认情况下，为与 Claude Code 的每次交互创建一个新会话。返回一个异步迭代器，在消息到达时产生消息。每次调用 `query()` 都会重新开始，除非您在 [`ClaudeAgentOptions`](#claudeagentoptions) 中传递 `continue_conversation=True` 或 `resume`，否则不会记住之前的交互。请参阅 [Sessions](/docs/zh-CN/agent-sdk/sessions)。
 
 ```python theme={null}
 async def query(
@@ -88,14 +65,14 @@ async def query(
   参数
 </h4>
 
-| 参数          | 类型                           | 描述                                          |
-| :---------- | :--------------------------- | :------------------------------------------ |
-| `prompt`    | `str \| AsyncIterable[dict]` | 输入提示，可以是字符串或用于流式模式的异步可迭代对象                  |
-| `options`   | `ClaudeAgentOptions \| None` | 可选配置对象（如果为 None，默认为 `ClaudeAgentOptions()`） |
-| `transport` | `Transport \| None`          | 用于与 CLI 进程通信的可选自定义传输                        |
+| 参数 | 类型 | 描述 |
+| :- | :- | :- |
+| `prompt` | `str \| AsyncIterable[dict]` | 输入提示，可以是字符串或用于流式模式的异步可迭代对象 |
+| `options` | `ClaudeAgentOptions \| None` | 可选配置对象（如果为 None，默认为 `ClaudeAgentOptions()`） |
+| `transport` | `Transport \| None` | 用于与 CLI 进程通信的可选自定义传输 |
 
 <h4 id="returns">
-  返回
+  返回值
 </h4>
 
 返回一个 `AsyncIterator[Message]`，从对话中产生消息。
@@ -113,7 +90,6 @@ async def main():
     options = ClaudeAgentOptions(
         system_prompt="You are an expert Python developer",
         permission_mode="acceptEdits",
-        cwd="/home/user/project",
     )
 
     async for message in query(prompt="Create a Python web server", options=options):
@@ -142,15 +118,15 @@ def tool(
   参数
 </h4>
 
-| 参数             | 类型                                              | 描述                      |
-| :------------- | :---------------------------------------------- | :---------------------- |
-| `name`         | `str`                                           | 工具的唯一标识符                |
-| `description`  | `str`                                           | 工具功能的人类可读描述             |
-| `input_schema` | `type \| dict[str, Any]`                        | 定义工具输入参数的模式（见下文）        |
-| `annotations`  | [`ToolAnnotations`](#toolannotations)` \| None` | 可选的 MCP 工具注解，为客户端提供行为提示 |
+| 参数 | 类型 | 描述 |
+| :- | :- | :- |
+| `name` | `str` | 工具的唯一标识符 |
+| `description` | `str` | 工具功能的人类可读描述 |
+| `input_schema` | `type \| dict[str, Any]` | 定义工具输入参数的架构。请参阅 [输入架构选项](#input-schema-options) |
+| `annotations` | [`ToolAnnotations`](#toolannotations)` \| None` | 可选的 MCP 工具注解，为客户端提供行为提示 |
 
 <h4 id="input-schema-options">
-  输入模式选项
+  输入架构选项
 </h4>
 
 1. **简单类型映射**（推荐）：
@@ -172,7 +148,7 @@ def tool(
    ```
 
 <h4 id="returns-2">
-  返回
+  返回值
 </h4>
 
 一个装饰器函数，包装工具实现并返回一个 `SdkMcpTool` 实例。
@@ -195,15 +171,20 @@ async def greet(args: dict[str, Any]) -> dict[str, Any]:
   `ToolAnnotations`
 </h4>
 
-从 `mcp.types` 重新导出（也可以从 `claude_agent_sdk` 导入为 `from claude_agent_sdk import ToolAnnotations`）。所有字段都是可选的提示；客户端不应依赖它们做出安全决策。
+工具的行为提示，作为 [`tool()`](#tool) 的 `annotations` 参数传递。`ToolAnnotations` 扩展了 MCP SDK 的 `mcp.types.ToolAnnotations`，添加了 `maxResultSizeChars` 字段，您可以用 camelCase 或 snake\_case 编写每个提示：`ToolAnnotations(readOnlyHint=True)` 和 `ToolAnnotations(read_only_hint=True)` 是等效的。您也可以在 SDK 接受注解的任何地方传递普通的 `mcp.types.ToolAnnotations`。
 
-| 字段                | 类型             | 默认值     | 描述                                                             |
-| :---------------- | :------------- | :------ | :------------------------------------------------------------- |
-| `title`           | `str \| None`  | `None`  | 工具的人类可读标题                                                      |
-| `readOnlyHint`    | `bool \| None` | `False` | 如果为 `True`，工具不修改其环境                                            |
-| `destructiveHint` | `bool \| None` | `True`  | 如果为 `True`，工具可能执行破坏性更新（仅当 `readOnlyHint` 为 `False` 时有意义）       |
-| `idempotentHint`  | `bool \| None` | `False` | 如果为 `True`，使用相同参数的重复调用没有额外效果（仅当 `readOnlyHint` 为 `False` 时有意义） |
-| `openWorldHint`   | `bool \| None` | `True`  | 如果为 `True`，工具与外部实体交互（例如网络搜索）。如果为 `False`，工具的域是封闭的（例如内存工具）      |
+snake\_case 名称和类型化的 `maxResultSizeChars` 字段需要 Python Agent SDK 0.2.140 或更高版本。版本 0.1.31 到 0.2.139 重新导出 `mcp.types.ToolAnnotations` 不变。在版本 0.1.55 到 0.2.139 上，您仍然可以将 `maxResultSizeChars` 作为关键字参数传递：MCP 类接受额外字段，SDK 将值转发给 Claude Code。
+
+所有字段都是可选的。客户端不应依赖这些提示来做出安全决策。
+
+| 字段 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `title` | `str \| None` | `None` | 工具的人类可读标题 |
+| `readOnlyHint` | `bool \| None` | `False` | 如果为 `True`，工具不会修改其环境 |
+| `destructiveHint` | `bool \| None` | `True` | 如果为 `True`，工具可能执行破坏性更新（仅当 `readOnlyHint` 为 `False` 时有意义） |
+| `idempotentHint` | `bool \| None` | `False` | 如果为 `True`，使用相同参数的重复调用没有额外效果（仅当 `readOnlyHint` 为 `False` 时有意义） |
+| `openWorldHint` | `bool \| None` | `True` | 如果为 `True`，工具与外部实体交互（例如，网络搜索）。如果为 `False`，工具的域是封闭的（例如，内存工具） |
+| `maxResultSizeChars` | `int \| None` | `None` | Claude Code 将此工具的文本结果保持内联在对话中而不是保存到文件的字符数，最多 500,000。包含图像的结果不受影响。Claude Code 设置而不是 MCP 提示：SDK 在工具的 `_meta` 中以 `anthropic/maxResultSizeChars` 的形式发送它。请参阅 [提高特定工具的限制](/docs/zh-CN/mcp#raise-the-limit-for-a-specific-tool) |
 
 ```python theme={null}
 from claude_agent_sdk import tool, ToolAnnotations
@@ -238,14 +219,14 @@ def create_sdk_mcp_server(
   参数
 </h4>
 
-| 参数        | 类型                              | 默认值       | 描述                      |
-| :-------- | :------------------------------ | :-------- | :---------------------- |
-| `name`    | `str`                           | -         | 服务器的唯一标识符               |
-| `version` | `str`                           | `"1.0.0"` | 服务器版本字符串                |
-| `tools`   | `list[SdkMcpTool[Any]] \| None` | `None`    | 使用 `@tool` 装饰器创建的工具函数列表 |
+| 参数 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `name` | `str` | - | 服务器的唯一标识符 |
+| `version` | `str` | `"1.0.0"` | 服务器版本字符串 |
+| `tools` | `list[SdkMcpTool[Any]] \| None` | `None` | 使用 `@tool` 装饰器创建的工具函数列表 |
 
 <h4 id="returns-3">
-  返回
+  返回值
 </h4>
 
 返回一个 `McpSdkServerConfig` 对象，可以传递给 `ClaudeAgentOptions.mcp_servers`。
@@ -255,7 +236,7 @@ def create_sdk_mcp_server(
 </h4>
 
 ```python theme={null}
-from claude_agent_sdk import tool, create_sdk_mcp_server
+from claude_agent_sdk import tool, create_sdk_mcp_server, ClaudeAgentOptions
 
 
 @tool("add", "Add two numbers", {"a": float, "b": float})
@@ -285,7 +266,7 @@ options = ClaudeAgentOptions(
   `list_sessions()`
 </h3>
 
-列出带有元数据的过去会话。按项目目录过滤或列出所有项目中的会话。同步；立即返回。
+列出过去的会话及其元数据。按项目目录筛选或列出所有项目中的会话。同步；立即返回。
 
 ```python theme={null}
 def list_sessions(
@@ -300,35 +281,35 @@ def list_sessions(
   参数
 </h4>
 
-| 参数                  | 类型            | 默认值    | 描述                                             |
-| :------------------ | :------------ | :----- | :--------------------------------------------- |
-| `directory`         | `str \| None` | `None` | 列出会话的目录。省略时，返回所有项目中的会话                         |
-| `limit`             | `int \| None` | `None` | 返回的最大会话数                                       |
-| `offset`            | `int`         | `0`    | 从排序结果开始跳过的会话数。与 `limit` 一起用于分页                 |
-| `include_worktrees` | `bool`        | `True` | 当 `directory` 在 git 仓库内时，包括所有 worktrees 路径中的会话 |
+| 参数 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `directory` | `str \| None` | `None` | 要列出会话的目录。省略时，返回所有项目中的会话 |
+| `limit` | `int \| None` | `None` | 要返回的最大会话数 |
+| `offset` | `int` | `0` | 从排序结果开始跳过的会话数。与 `limit` 一起用于分页 |
+| `include_worktrees` | `bool` | `True` | 当 `directory` 在 git 存储库内时，包括所有 worktree 路径中的会话 |
 
 <h4 id="return-type-sdksessioninfo">
   返回类型：`SDKSessionInfo`
 </h4>
 
-| 属性              | 类型            | 描述                                           |
-| :-------------- | :------------ | :------------------------------------------- |
-| `session_id`    | `str`         | 唯一会话标识符                                      |
-| `summary`       | `str`         | 显示标题：自定义标题、自动生成的摘要或第一个提示                     |
-| `last_modified` | `int`         | 上次修改时间（自纪元以来的毫秒数）                            |
-| `file_size`     | `int \| None` | 会话文件大小（字节）（远程存储后端为 `None`）                   |
-| `custom_title`  | `str \| None` | 用户设置的会话标题                                    |
-| `first_prompt`  | `str \| None` | 会话中的第一个有意义的用户提示                              |
-| `git_branch`    | `str \| None` | 会话结束时的 Git 分支                                |
-| `cwd`           | `str \| None` | 会话的工作目录                                      |
-| `tag`           | `str \| None` | 用户设置的会话标签（见 [`tag_session()`](#tag_session)） |
-| `created_at`    | `int \| None` | 会话创建时间（自纪元以来的毫秒数）                            |
+| 属性 | 类型 | 描述 |
+| :- | :- | :- |
+| `session_id` | `str` | 唯一会话标识符 |
+| `summary` | `str` | 显示标题：自定义标题、最近的提示、自动生成的摘要或第一个提示 |
+| `last_modified` | `int` | 上次修改时间，以自纪元以来的毫秒为单位 |
+| `file_size` | `int \| None` | 会话文件大小（以字节为单位）（远程存储后端为 `None`） |
+| `custom_title` | `str \| None` | 会话标题：用户设置的标题，或未设置时的自动生成标题 |
+| `first_prompt` | `str \| None` | 会话中第一个有意义的用户提示 |
+| `git_branch` | `str \| None` | 会话结束时的 Git 分支 |
+| `cwd` | `str \| None` | 会话的工作目录 |
+| `tag` | `str \| None` | 用户设置的会话标签（请参阅 [`tag_session()`](#tag_session)） |
+| `created_at` | `int \| None` | 会话创建时间，以自纪元以来的毫秒为单位 |
 
 <h4 id="example-3">
   示例
 </h4>
 
-打印项目的 10 个最近会话。结果按 `last_modified` 降序排序，所以第一项是最新的。省略 `directory` 以搜索所有项目。
+打印项目的 10 个最近会话。结果按 `last_modified` 降序排序，因此第一项是最新的。省略 `directory` 以搜索所有项目。
 
 ```python theme={null}
 from claude_agent_sdk import list_sessions
@@ -356,24 +337,25 @@ def get_session_messages(
   参数
 </h4>
 
-| 参数           | 类型            | 默认值    | 描述                  |
-| :----------- | :------------ | :----- | :------------------ |
-| `session_id` | `str`         | 必需     | 要检索消息的会话 ID         |
-| `directory`  | `str \| None` | `None` | 要查看的项目目录。省略时，搜索所有项目 |
-| `limit`      | `int \| None` | `None` | 返回的最大消息数            |
-| `offset`     | `int`         | `0`    | 从开始跳过的消息数           |
+| 参数 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `session_id` | `str` | 必需 | 要检索消息的会话 ID |
+| `directory` | `str \| None` | `None` | 要查找的项目目录。省略时，搜索所有项目 |
+| `limit` | `int \| None` | `None` | 要返回的最大消息数 |
+| `offset` | `int` | `0` | 从开始跳过的消息数 |
 
 <h4 id="return-type-sessionmessage">
   返回类型：`SessionMessage`
 </h4>
 
-| 属性                   | 类型                             | 描述      |
-| :------------------- | :----------------------------- | :------ |
-| `type`               | `Literal["user", "assistant"]` | 消息角色    |
-| `uuid`               | `str`                          | 唯一消息标识符 |
-| `session_id`         | `str`                          | 会话标识符   |
-| `message`            | `Any`                          | 原始消息内容  |
-| `parent_tool_use_id` | `None`                         | 保留供将来使用 |
+| 属性 | 类型 | 描述 |
+| :- | :- | :- |
+| `type` | `Literal["user", "assistant"]` | 消息角色 |
+| `uuid` | `str` | 唯一消息标识符 |
+| `session_id` | `str` | 会话标识符 |
+| `message` | `Any` | 原始消息内容 |
+| `parent_tool_use_id` | `str \| None` | 对于子代理消息，生成 `Agent` 工具使用块的 id。对于主会话消息和较旧的会话为 `None` |
+| `parent_agent_id` | `str \| None` | 对于来自 [嵌套子代理](/docs/zh-CN/sub-agents#let-subagents-spawn-their-own-subagents) 的消息，父子代理的代理 id。对于主会话消息、顶级子代理消息和较旧的会话为 `None`。需要 Python Agent SDK 0.2.140 或更高版本 |
 
 <h4 id="example-4">
   示例
@@ -406,10 +388,10 @@ def get_session_info(
   参数
 </h4>
 
-| 参数           | 类型            | 默认值    | 描述                  |
-| :----------- | :------------ | :----- | :------------------ |
-| `session_id` | `str`         | 必需     | 要查找的会话的 UUID        |
-| `directory`  | `str \| None` | `None` | 项目目录路径。省略时，搜索所有项目目录 |
+| 参数 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `session_id` | `str` | 必需 | 要查找的会话的 UUID |
+| `directory` | `str \| None` | `None` | 项目目录路径。省略时，搜索所有项目目录 |
 
 返回 [`SDKSessionInfo`](#return-type-sdksessioninfo)，如果找不到会话则返回 `None`。
 
@@ -417,7 +399,7 @@ def get_session_info(
   示例
 </h4>
 
-查找单个会话的元数据，无需扫描项目目录。当你已经从之前的运行中获得会话 ID 时很有用。
+查找单个会话的元数据，无需扫描项目目录。当您已经从之前的运行中获得会话 ID 时很有用。
 
 ```python theme={null}
 from claude_agent_sdk import get_session_info
@@ -431,7 +413,7 @@ if info:
   `rename_session()`
 </h3>
 
-通过追加自定义标题条目来重命名会话。重复调用是安全的；最新的标题获胜。同步。
+通过附加自定义标题条目来重命名会话。重复调用是安全的；最新的标题获胜。同步。
 
 ```python theme={null}
 def rename_session(
@@ -445,11 +427,11 @@ def rename_session(
   参数
 </h4>
 
-| 参数           | 类型            | 默认值    | 描述                  |
-| :----------- | :------------ | :----- | :------------------ |
-| `session_id` | `str`         | 必需     | 要重命名的会话的 UUID       |
-| `title`      | `str`         | 必需     | 新标题。去除空格后必须非空       |
-| `directory`  | `str \| None` | `None` | 项目目录路径。省略时，搜索所有项目目录 |
+| 参数 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `session_id` | `str` | 必需 | 要重命名的会话的 UUID |
+| `title` | `str` | 必需 | 新标题。去除空格后必须非空 |
+| `directory` | `str \| None` | `None` | 项目目录路径。省略时，搜索所有项目目录 |
 
 如果 `session_id` 不是有效的 UUID 或 `title` 为空，则抛出 `ValueError`；如果找不到会话，则抛出 `FileNotFoundError`。
 
@@ -457,7 +439,7 @@ def rename_session(
   示例
 </h4>
 
-重命名最近的会话，使其更容易找到。新标题在后续读取时出现在 [`SDKSessionInfo.custom_title`](#return-type-sdksessioninfo) 中。
+重命名最近的会话，以便稍后更容易找到。新标题在后续读取时出现在 [`SDKSessionInfo.custom_title`](#return-type-sdksessioninfo) 中。
 
 ```python theme={null}
 from claude_agent_sdk import list_sessions, rename_session
@@ -485,11 +467,11 @@ def tag_session(
   参数
 </h4>
 
-| 参数           | 类型            | 默认值    | 描述                                  |
-| :----------- | :------------ | :----- | :---------------------------------- |
-| `session_id` | `str`         | 必需     | 要标记的会话的 UUID                        |
-| `tag`        | `str \| None` | 必需     | 标签字符串，或 `None` 以清除。存储前进行 Unicode 清理 |
-| `directory`  | `str \| None` | `None` | 项目目录路径。省略时，搜索所有项目目录                 |
+| 参数 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `session_id` | `str` | 必需 | 要标记的会话的 UUID |
+| `tag` | `str \| None` | 必需 | 标签字符串，或 `None` 以清除。存储前进行 Unicode 清理 |
+| `directory` | `str \| None` | `None` | 项目目录路径。省略时，搜索所有项目目录 |
 
 如果 `session_id` 不是有效的 UUID 或 `tag` 在清理后为空，则抛出 `ValueError`；如果找不到会话，则抛出 `FileNotFoundError`。
 
@@ -497,13 +479,15 @@ def tag_session(
   示例
 </h4>
 
-标记会话，然后在稍后的读取中按该标签过滤。传递 `None` 以清除现有标签。
+标记会话，然后在稍后的读取中按该标签筛选。传递 `None` 以清除现有标签。
 
 ```python theme={null}
 from claude_agent_sdk import list_sessions, tag_session
 
-# Tag a session
-tag_session("550e8400-e29b-41d4-a716-446655440000", "needs-review")
+# Tag the most recent session
+sessions = list_sessions(directory="/path/to/project", limit=1)
+if sessions:
+    tag_session(sessions[0].session_id, "needs-review")
 
 # Later: find all sessions with that tag
 for session in list_sessions(directory="/path/to/project"):
@@ -519,18 +503,7 @@ for session in list_sessions(directory="/path/to/project"):
   `ClaudeSDKClient`
 </h3>
 
-**在多次交换中维持对话会话。** 这是 TypeScript SDK 的 `query()` 函数内部工作方式的 Python 等价物 - 它创建一个可以继续对话的客户端对象。
-
-<h4 id="key-features">
-  关键特性
-</h4>
-
-* **会话连续性**：在多个 `query()` 调用中维持对话上下文
-* **同一对话**：会话保留之前的消息
-* **中断支持**：可以在任务中途停止执行
-* **显式生命周期**：你控制会话何时开始和结束
-* **响应驱动的流程**：可以对响应做出反应并发送后续消息
-* **自定义工具和 hooks**：支持自定义工具（使用 `@tool` 装饰器创建）和 hooks
+**在多次交换中维持对话会话。** 这是 TypeScript SDK 的 `query()` 函数内部工作方式的 Python 等价物 - 它创建一个可以继续对话的客户端对象。见[与 `query()` 的比较](#choosing-between-query-and-claudesdkclient)。
 
 ```python theme={null}
 class ClaudeSDKClient:
@@ -540,7 +513,7 @@ class ClaudeSDKClient:
     async def receive_messages(self) -> AsyncIterator[Message]
     async def receive_response(self) -> AsyncIterator[Message]
     async def interrupt(self) -> None
-    async def set_permission_mode(self, mode: str) -> None
+    async def set_permission_mode(self, mode: PermissionMode) -> None
     async def set_model(self, model: str | None = None) -> None
     async def rewind_files(self, user_message_id: str) -> None
     async def get_mcp_status(self) -> McpStatusResponse
@@ -555,23 +528,23 @@ class ClaudeSDKClient:
   方法
 </h4>
 
-| 方法                                        | 描述                                                                                                  |
-| :---------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| `__init__(options)`                       | 使用可选配置初始化客户端                                                                                        |
-| `connect(prompt)`                         | 连接到 Claude，可选初始提示或消息流                                                                               |
-| `query(prompt, session_id)`               | 以流式模式发送新请求                                                                                          |
-| `receive_messages()`                      | 以异步迭代器形式接收来自 Claude 的所有消息                                                                           |
-| `receive_response()`                      | 接收消息直到并包括 ResultMessage                                                                             |
-| `interrupt()`                             | 发送中断信号（仅在流式模式下工作）                                                                                   |
-| `set_permission_mode(mode)`               | 更改当前会话的权限模式                                                                                         |
-| `set_model(model)`                        | 更改当前会话的模型。传递 `None` 以重置为默认值                                                                         |
-| `rewind_files(user_message_id)`           | 将文件恢复到指定用户消息时的状态。需要 `enable_file_checkpointing=True`。见 [文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing) |
-| `get_mcp_status()`                        | 获取所有配置的 MCP 服务器的状态。返回 [`McpStatusResponse`](#mcpstatusresponse)                                     |
-| `reconnect_mcp_server(server_name)`       | 重试连接到失败或断开连接的 MCP 服务器                                                                               |
-| `toggle_mcp_server(server_name, enabled)` | 在会话中启用或禁用 MCP 服务器。禁用会移除其工具                                                                          |
-| `stop_task(task_id)`                      | 停止运行的后台任务。一个状态为 `"stopped"` 的 [`TaskNotificationMessage`](#tasknotificationmessage) 随后在消息流中出现       |
-| `get_server_info()`                       | 获取服务器信息，包括会话 ID 和功能                                                                                 |
-| `disconnect()`                            | 从 Claude 断开连接                                                                                       |
+| 方法 | 描述 |
+| :- | :- |
+| `__init__(options)` | 使用可选配置初始化客户端 |
+| `connect(prompt)` | 连接到 Claude，可选初始提示或消息流 |
+| `query(prompt, session_id)` | 以流式模式发送新请求 |
+| `receive_messages()` | 以异步迭代器形式接收来自 Claude 的所有消息 |
+| `receive_response()` | 接收消息直到并包括 ResultMessage |
+| `interrupt()` | 发送中断信号（仅在流式模式下工作） |
+| `set_permission_mode(mode)` | 更改当前会话的权限模式 |
+| `set_model(model)` | 更改当前会话的模型。传递 `None` 以重置为 [Claude Code 的默认模型](/docs/zh-CN/model-config) |
+| `rewind_files(user_message_id)` | 将文件恢复到指定用户消息时的状态。需要 `enable_file_checkpointing=True`。见 [文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing) |
+| `get_mcp_status()` | 获取所有配置的 MCP 服务器的状态。返回 [`McpStatusResponse`](#mcpstatusresponse) |
+| `reconnect_mcp_server(server_name)` | 重试连接到失败或断开连接的 MCP 服务器 |
+| `toggle_mcp_server(server_name, enabled)` | 在会话中启用或禁用 MCP 服务器。禁用会移除其工具 |
+| `stop_task(task_id)` | 停止运行的后台任务。一个状态为 `"stopped"` 的 [`TaskNotificationMessage`](#tasknotificationmessage) 随后在消息流中出现 |
+| `get_server_info()` | 获取服务器的初始化信息，包括可用命令和输出样式 |
+| `disconnect()` | 从 Claude 断开连接 |
 
 <h4 id="context-manager-support">
   上下文管理器支持
@@ -580,10 +553,18 @@ class ClaudeSDKClient:
 客户端可以用作异步上下文管理器以自动管理连接：
 
 ```python theme={null}
-async with ClaudeSDKClient() as client:
-    await client.query("Hello Claude")
-    async for message in client.receive_response():
-        print(message)
+import asyncio
+from claude_agent_sdk import ClaudeSDKClient
+
+
+async def main():
+    async with ClaudeSDKClient() as client:
+        await client.query("Hello Claude")
+        async for message in client.receive_response():
+            print(message)
+
+
+asyncio.run(main())
 ```
 
 > **重要：** 迭代消息时，避免使用 `break` 提前退出，因为这可能导致 asyncio 清理问题。相反，让迭代自然完成或使用标志来跟踪何时找到了你需要的内容。
@@ -703,8 +684,9 @@ async def interruptible_task():
         # Drain the interrupted task's messages (including its ResultMessage)
         async for message in client.receive_response():
             if isinstance(message, ResultMessage):
-                print(f"Interrupted task finished with subtype={message.subtype!r}")
-                # subtype is "error_during_execution" for interrupted tasks
+                print(f"Interrupted task: terminal_reason={message.terminal_reason!r}")
+                # terminal_reason is "aborted_streaming" or "aborted_tools"
+                # for interrupted turns
 
         # Send a new command
         await client.query("Just say hello instead")
@@ -719,7 +701,7 @@ asyncio.run(interruptible_task())
 ```
 
 <Note>
-  **中断后的缓冲行为：** `interrupt()` 发送停止信号但不清除消息缓冲区。被中断任务已产生的消息，包括其 `ResultMessage`（带 `subtype="error_during_execution"`），保留在流中。你必须在读取新查询的响应之前用 `receive_response()` 清空它们。如果在 `interrupt()` 之后立即发送新查询并仅调用一次 `receive_response()`，你将收到被中断任务的消息，而不是新查询的响应。
+  **中断后的缓冲行为：** `interrupt()` 发送停止信号但不清除消息缓冲区。被中断任务已产生的消息，包括其 `ResultMessage`，保留在流中。你必须在读取新查询的响应之前用 `receive_response()` 清空它们。如果在 `interrupt()` 之后立即发送新查询并仅调用一次 `receive_response()`，你将收到被中断任务的消息，而不是新查询的响应。
 </Note>
 
 <h4 id="example-advanced-permission-control">
@@ -727,6 +709,7 @@ asyncio.run(interruptible_task())
 </h4>
 
 ```python theme={null}
+import asyncio
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
 from claude_agent_sdk.types import (
     PermissionResultAllow,
@@ -796,13 +779,13 @@ class SdkMcpTool(Generic[T]):
     annotations: ToolAnnotations | None = None
 ```
 
-| 属性             | 类型                                         | 描述                                                                               |
-| :------------- | :----------------------------------------- | :------------------------------------------------------------------------------- |
-| `name`         | `str`                                      | 工具的唯一标识符                                                                         |
-| `description`  | `str`                                      | 人类可读的描述                                                                          |
-| `input_schema` | `type[T] \| dict[str, Any]`                | 输入验证的模式                                                                          |
-| `handler`      | `Callable[[T], Awaitable[dict[str, Any]]]` | 处理工具执行的异步函数                                                                      |
-| `annotations`  | `ToolAnnotations \| None`                  | 可选的 MCP 工具注解（例如 `readOnlyHint`、`destructiveHint`、`openWorldHint`）。来自 `mcp.types` |
+| 属性 | 类型 | 描述 |
+| :- | :- | :- |
+| `name` | `str` | 工具的唯一标识符 |
+| `description` | `str` | 人类可读的描述 |
+| `input_schema` | `type[T] \| dict[str, Any]` | 输入验证的模式 |
+| `handler` | `Callable[[T], Awaitable[dict[str, Any]]]` | 处理工具执行的异步函数 |
+| `annotations` | [`ToolAnnotations`](#toolannotations)` \| None` | 可选的工具注解（例如 `readOnlyHint`、`destructiveHint`、`openWorldHint`、`maxResultSizeChars`） |
 
 <h3 id="transport">
   `Transport`
@@ -840,14 +823,14 @@ class Transport(ABC):
     async def end_input(self) -> None: ...
 ```
 
-| 方法                | 描述                       |
-| :---------------- | :----------------------- |
-| `connect()`       | 连接传输并准备通信                |
-| `write(data)`     | 将原始数据（JSON + 换行符）写入传输    |
-| `read_messages()` | 异步迭代器，产生解析的 JSON 消息      |
-| `close()`         | 关闭连接并清理资源                |
-| `is_ready()`      | 如果传输可以发送和接收，返回 `True`    |
-| `end_input()`     | 关闭输入流（例如，为子进程传输关闭 stdin） |
+| 方法 | 描述 |
+| :- | :- |
+| `connect()` | 连接传输并准备通信 |
+| `write(data)` | 将原始数据（JSON + 换行符）写入传输 |
+| `read_messages()` | 异步迭代器，产生解析的 JSON 消息 |
+| `close()` | 关闭连接并清理资源 |
+| `is_ready()` | 如果传输可以发送和接收，返回 `True` |
+| `end_input()` | 关闭输入流（例如，为子进程传输关闭 stdin） |
 
 导入：`from claude_agent_sdk import Transport`
 
@@ -862,12 +845,13 @@ Claude Code 查询的配置数据类。
 class ClaudeAgentOptions:
     tools: list[str] | ToolsPreset | None = None
     allowed_tools: list[str] = field(default_factory=list)
-    system_prompt: str | SystemPromptPreset | SystemPromptFile | None = None
+    system_prompt: str | SystemPromptPreset | SystemPromptCustom | SystemPromptFile | None = None
     mcp_servers: dict[str, McpServerConfig] | str | Path = field(default_factory=dict)
     strict_mcp_config: bool = False
     permission_mode: PermissionMode | None = None
     continue_conversation: bool = False
     resume: str | None = None
+    session_id: str | None = None
     max_turns: int | None = None
     max_budget_usd: float | None = None
     disallowed_tools: list[str] = field(default_factory=list)
@@ -890,7 +874,11 @@ class ClaudeAgentOptions:
     user: str | None = None
     include_partial_messages: bool = False
     include_hook_events: bool = False
+    forward_subagent_text: bool = False
+    verbatim_prompts: bool = False
     fork_session: bool = False
+    resume_session_at: str | None = None
+    resume_drops_turn: str | None = None
     agents: dict[str, AgentDefinition] | None = None
     setting_sources: list[SettingSource] | None = None
     skills: list[str] | Literal["all"] | None = None
@@ -902,52 +890,61 @@ class ClaudeAgentOptions:
     enable_file_checkpointing: bool = False
     session_store: SessionStore | None = None
     session_store_flush: SessionStoreFlushMode = "batched"
+    load_timeout_ms: int = 60_000
+    task_budget: TaskBudget | None = None
 ```
 
-| 属性                            | 类型                                                                                       | 默认值                 | 描述                                                                                                                                                                                                                                                                          |
-| :---------------------------- | :--------------------------------------------------------------------------------------- | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tools`                       | `list[str] \| ToolsPreset \| None`                                                       | `None`              | 工具配置。使用 `{"type": "preset", "preset": "claude_code"}` 获取 Claude Code 的默认工具                                                                                                                                                                                                  |
-| `allowed_tools`               | `list[str]`                                                                              | `[]`                | 无需提示即可自动批准的工具。这不会限制 Claude 仅使用这些工具；未列出的工具会通过 `permission_mode` 和 `can_use_tool` 处理。使用 `disallowed_tools` 阻止工具。见 [权限](/docs/zh-CN/agent-sdk/permissions#allow-and-deny-rules)                                                                                                     |
-| `system_prompt`               | `str \| SystemPromptPreset \| SystemPromptFile \| None`                                  | `None`              | 系统提示配置。传递字符串以获取自定义提示，`{"type": "preset", "preset": "claude_code"}` 获取 Claude Code 的系统提示（带可选 `"append"`），或 `{"type": "file", "path": "..."}` 从磁盘加载大型提示。见 [`SystemPromptPreset`](#systempromptpreset) 和 [`SystemPromptFile`](#systempromptfile)                               |
-| `mcp_servers`                 | `dict[str, McpServerConfig] \| str \| Path`                                              | `{}`                | MCP 服务器配置或配置文件路径                                                                                                                                                                                                                                                            |
-| `strict_mcp_config`           | `bool`                                                                                   | `False`             | 当为 `True` 时，仅使用在 `mcp_servers` 中传递的服务器，忽略项目 `.mcp.json`、用户设置、插件提供的 MCP 服务器和 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)。映射到 CLI `--strict-mcp-config` 标志                                                                                                     |
-| `permission_mode`             | `PermissionMode \| None`                                                                 | `None`              | 工具使用的权限模式                                                                                                                                                                                                                                                                   |
-| `continue_conversation`       | `bool`                                                                                   | `False`             | 继续最近的对话                                                                                                                                                                                                                                                                     |
-| `resume`                      | `str \| None`                                                                            | `None`              | 要恢复的会话 ID                                                                                                                                                                                                                                                                   |
-| `max_turns`                   | `int \| None`                                                                            | `None`              | 最大代理轮次（工具使用往返）                                                                                                                                                                                                                                                              |
-| `max_budget_usd`              | `float \| None`                                                                          | `None`              | 当客户端成本估计达到此 USD 值时停止查询。与 `total_cost_usd` 的相同估计进行比较；见 [跟踪成本和使用](/docs/zh-CN/agent-sdk/cost-tracking) 了解准确性注意事项                                                                                                                                                                   |
-| `disallowed_tools`            | `list[str]`                                                                              | `[]`                | 要拒绝的工具。裸名称如 `"Bash"` 从 Claude 的上下文中移除工具。作用域规则如 `"Bash(rm *)"` 保持工具可用，并在每个权限模式（包括 `bypassPermissions`）中拒绝匹配的调用。见 [权限](/docs/zh-CN/agent-sdk/permissions#allow-and-deny-rules)                                                                                                     |
-| `enable_file_checkpointing`   | `bool`                                                                                   | `False`             | 启用文件更改跟踪以进行回滚。见 [文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing)                                                                                                                                                                                                                |
-| `model`                       | `str \| None`                                                                            | `None`              | Claude 模型别名或完整模型名称。见 [接受的值和特定于提供商的 ID](/docs/zh-CN/model-config#available-models)                                                                                                                                                                                                |
-| `fallback_model`              | `str \| None`                                                                            | `None`              | 主模型失败时使用的备用模型                                                                                                                                                                                                                                                               |
-| `betas`                       | `list[SdkBeta]`                                                                          | `[]`                | 要启用的测试功能。见 [`SdkBeta`](#sdkbeta) 了解可用选项                                                                                                                                                                                                                                     |
-| `output_format`               | `dict[str, Any] \| None`                                                                 | `None`              | 结构化响应的输出格式（例如 `{"type": "json_schema", "schema": {...}}`）。见 [结构化输出](/docs/zh-CN/agent-sdk/structured-outputs) 了解详情                                                                                                                                                               |
-| `permission_prompt_tool_name` | `str \| None`                                                                            | `None`              | 权限提示的 MCP 工具名称                                                                                                                                                                                                                                                              |
-| `cwd`                         | `str \| Path \| None`                                                                    | `None`              | 当前工作目录                                                                                                                                                                                                                                                                      |
-| `cli_path`                    | `str \| Path \| None`                                                                    | `None`              | Claude Code CLI 可执行文件的自定义路径                                                                                                                                                                                                                                                 |
-| `settings`                    | `str \| None`                                                                            | `None`              | 设置文件的路径                                                                                                                                                                                                                                                                     |
-| `add_dirs`                    | `list[str \| Path]`                                                                      | `[]`                | Claude 可以访问的其他目录                                                                                                                                                                                                                                                            |
-| `env`                         | `dict[str, str]`                                                                         | `{}`                | 环境变量合并到继承的进程环境之上。见 [环境变量](/docs/zh-CN/env-vars) 了解底层 CLI 读取的变量，以及 [处理缓慢或停滞的 API 响应](#handle-slow-or-stalled-api-responses) 了解超时相关变量                                                                                                                                              |
-| `extra_args`                  | `dict[str, str \| None]`                                                                 | `{}`                | 直接传递给 CLI 的其他 CLI 参数                                                                                                                                                                                                                                                        |
-| `max_buffer_size`             | `int \| None`                                                                            | `None`              | 缓冲 CLI stdout 时的最大字节数                                                                                                                                                                                                                                                       |
-| `debug_stderr`                | `Any`                                                                                    | `sys.stderr`        | *已弃用* - 用于调试输出的类文件对象。改用 `stderr` 回调                                                                                                                                                                                                                                         |
-| `stderr`                      | `Callable[[str], None] \| None`                                                          | `None`              | CLI 中 stderr 输出的回调函数                                                                                                                                                                                                                                                        |
-| `can_use_tool`                | [`CanUseTool`](#canusetool) ` \| None`                                                   | `None`              | 工具权限回调，仅在[权限流](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)落到提示时调用。不会为 `allowed_tools` 自动批准的调用、允许规则或 `permission_mode` 调用。见 [`CanUseTool`](#canusetool) 了解详情                                                                                                 |
-| `hooks`                       | `dict[HookEvent, list[HookMatcher]] \| None`                                             | `None`              | 用于拦截事件的 hooks 配置                                                                                                                                                                                                                                                            |
-| `user`                        | `str \| None`                                                                            | `None`              | 用户标识符                                                                                                                                                                                                                                                                       |
-| `include_partial_messages`    | `bool`                                                                                   | `False`             | 包括部分消息流式事件。启用时，会产生 [`StreamEvent`](#streamevent) 消息                                                                                                                                                                                                                         |
-| `include_hook_events`         | `bool`                                                                                   | `False`             | 在消息流中包括 hooks 生命周期事件作为 `HookEventMessage` 对象                                                                                                                                                                                                                                |
-| `fork_session`                | `bool`                                                                                   | `False`             | 使用 `resume` 恢复时，分叉到新会话 ID 而不是继续原始会话                                                                                                                                                                                                                                         |
-| `agents`                      | `dict[str, AgentDefinition] \| None`                                                     | `None`              | 以编程方式定义的子代理                                                                                                                                                                                                                                                                 |
-| `plugins`                     | `list[SdkPluginConfig]`                                                                  | `[]`                | 从本地路径加载自定义插件。见 [Plugins](/docs/zh-CN/agent-sdk/plugins) 了解详情                                                                                                                                                                                                                     |
-| `sandbox`                     | [`SandboxSettings`](#sandboxsettings) ` \| None`                                         | `None`              | 以编程方式配置沙箱行为。见 [沙箱设置](#sandboxsettings) 了解详情                                                                                                                                                                                                                                 |
-| `setting_sources`             | `list[SettingSource] \| None`                                                            | `None`（CLI 默认值：所有源） | 控制加载哪些文件系统设置。传递 `[]` 以禁用用户、项目和本地设置。无论如何都会加载托管策略设置；当会话使用组织凭证在[符合条件的配置](/docs/zh-CN/server-managed-settings#platform-availability)上进行身份验证时，会获取服务器管理的设置。见 [使用 Claude Code 功能](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control) 了解无论此选项如何都会读取的输入，以及如何禁用它们 |
-| `skills`                      | `list[str] \| Literal["all"] \| None`                                                    | `None`              | 会话可用的技能。传递 `"all"` 以启用每个发现的技能，或传递技能名称列表。设置时，SDK 会自动将 Skill 工具添加到 `allowed_tools`。如果你也传递 `tools`，在该列表中包含 `"Skill"`。见 [Skills](/docs/zh-CN/agent-sdk/skills)                                                                                                                       |
-| `max_thinking_tokens`         | `int \| None`                                                                            | `None`              | *已弃用* - 思考块的最大令牌数。改用 `thinking`                                                                                                                                                                                                                                             |
-| `thinking`                    | [`ThinkingConfig`](#thinkingconfig) ` \| None`                                           | `None`              | 控制扩展思考行为。优先于 `max_thinking_tokens`                                                                                                                                                                                                                                          |
-| `effort`                      | [`EffortLevel`](#effortlevel) ` \| None`                                                 | `None`              | 思考深度的努力级别。见 [调整努力级别](/docs/zh-CN/model-config#adjust-effort-level)                                                                                                                                                                                                               |
-| `session_store`               | [`SessionStore`](/docs/zh-CN/agent-sdk/session-storage#the-sessionstore-interface) ` \| None` | `None`              | 将会话记录镜像到外部后端，以便任何主机都可以恢复它们。见 [将会话持久化到外部存储](/docs/zh-CN/agent-sdk/session-storage)                                                                                                                                                                                                |
-| `session_store_flush`         | `Literal["batched", "eager"]`                                                            | `"batched"`         | 何时将镜像的记录条目刷新到 `session_store`。`"batched"` 每轮刷新一次或当缓冲区填满时；`"eager"` 在每帧后触发后台刷新。当 `session_store` 为 `None` 时忽略                                                                                                                                                                |
+| 属性 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `tools` | `list[str] \| ToolsPreset \| None` | `None` | 工具配置。使用 `{"type": "preset", "preset": "claude_code"}` 获取 Claude Code 的默认工具 |
+| `allowed_tools` | `list[str]` | `[]` | 无需提示即可自动批准的工具。这不会限制 Claude 仅使用这些工具。如果你在此处命名[任务跟踪工具](/docs/zh-CN/agent-sdk/todo-tracking#model-availability)之一，Claude Code 也会选择该会话。其他未列出的工具会通过 `permission_mode` 和 `can_use_tool` 处理。使用 `disallowed_tools` 阻止工具。见 [权限](/docs/zh-CN/agent-sdk/permissions#allow-and-deny-rules) |
+| `system_prompt` | `str \| SystemPromptPreset \| SystemPromptCustom \| SystemPromptFile \| None` | `None` | 系统提示配置。传递字符串以获取自定义提示，`{"type": "preset", "preset": "claude_code"}` 获取 Claude Code 的系统提示（带可选 `"append"`），`{"type": "custom", "prompt": "..."}` 获取也可以设置 `"snapshot"` 的自定义提示，或 `{"type": "file", "path": "..."}` 从磁盘加载大型提示。见 [`SystemPromptPreset`](#systempromptpreset)、[`SystemPromptCustom`](#systempromptcustom) 和 [`SystemPromptFile`](#systempromptfile) |
+| `mcp_servers` | `dict[str, McpServerConfig] \| str \| Path` | `{}` | MCP 服务器配置或配置文件路径 |
+| `strict_mcp_config` | `bool` | `False` | 当为 `True` 时，仅使用在 `mcp_servers` 中传递的服务器，忽略项目 `.mcp.json`、用户设置、插件提供的 MCP 服务器和 [claude.ai 连接器](/docs/zh-CN/mcp#use-mcp-servers-from-claude-ai)。映射到 CLI `--strict-mcp-config` 标志 |
+| `permission_mode` | `PermissionMode \| None` | `None` | 工具使用的权限模式 |
+| `continue_conversation` | `bool` | `False` | 继续最近的对话 |
+| `resume` | `str \| None` | `None` | 要恢复的会话 ID |
+| `session_id` | `str \| None` | `None` | 使用特定的会话 ID 而不是自动生成的。必须是有效的 UUID。不能与 `continue_conversation` 或 `resume` 结合使用，除非也设置了 `fork_session` |
+| `max_turns` | `int \| None` | `None` | 最大代理轮次（工具使用往返） |
+| `max_budget_usd` | `float \| None` | `None` | 当客户端成本估计达到此 USD 值时停止查询。仅计算调用自身的支出；从恢复的会话恢复的总数不计算。有关准确性注意事项和重置行为，见 [跟踪成本和使用](/docs/zh-CN/agent-sdk/cost-tracking) |
+| `disallowed_tools` | `list[str]` | `[]` | 要拒绝的工具。裸名称如 `"Bash"` 从 Claude 的上下文中移除工具。作用域规则如 `"Bash(rm *)"` 保持工具可用，并在每个权限模式（包括 `bypassPermissions`）中拒绝匹配的调用，对于[按照书写方式](/docs/zh-CN/permissions#bash-rule-limits)的命令。见 [权限](/docs/zh-CN/agent-sdk/permissions#allow-and-deny-rules) |
+| `enable_file_checkpointing` | `bool` | `False` | 启用文件更改跟踪以进行回滚。见 [文件检查点](/docs/zh-CN/agent-sdk/file-checkpointing) |
+| `model` | `str \| None` | `None` | Claude 模型别名或完整模型名称。见 [接受的值和特定于提供商的 ID](/docs/zh-CN/model-config#available-models) |
+| `fallback_model` | `str \| None` | `None` | 主模型失败时使用的备用模型。接受逗号分隔的列表。有关指导，见 [选择模型](/docs/zh-CN/agent-sdk/configuration#choose-a-model) |
+| `betas` | `list[SdkBeta]` | `[]` | 要启用的测试功能。见 [`SdkBeta`](#sdkbeta) 了解可用选项 |
+| `output_format` | `dict[str, Any] \| None` | `None` | 结构化响应的输出格式（例如 `{"type": "json_schema", "schema": {...}}`）。见 [结构化输出](/docs/zh-CN/agent-sdk/structured-outputs) 了解详情 |
+| `permission_prompt_tool_name` | `str \| None` | `None` | 权限提示的 MCP 工具名称 |
+| `cwd` | `str \| Path \| None` | `None` | 当前工作目录 |
+| `cli_path` | `str \| Path \| None` | `None` | Claude Code CLI 可执行文件的自定义路径 |
+| `settings` | `str \| None` | `None` | 设置文件的路径或内联 JSON 字符串 |
+| `add_dirs` | `list[str \| Path]` | `[]` | Claude 可以访问的其他目录。SDK 将每个条目作为 `--add-dir` 传递给 Claude Code，因此使用 `project` 设置源时，Claude Code 也会[加载目录的技能、命令和子代理](/docs/zh-CN/permissions#additional-directories-grant-file-access-not-configuration) |
+| `env` | `dict[str, str]` | `{}` | 环境变量合并到继承的进程环境之上。见 [环境变量](/docs/zh-CN/env-vars) 了解底层 CLI 读取的变量，以及 [处理缓慢或停滞的 API 响应](#handle-slow-or-stalled-api-responses) 了解超时相关变量。设置 `CLAUDE_AGENT_SDK_CLIENT_APP` 以在 User-Agent 标头中标识你的应用 |
+| `extra_args` | `dict[str, str \| None]` | `{}` | 直接传递给 CLI 的其他 CLI 参数 |
+| `max_buffer_size` | `int \| None` | `None` | 缓冲 CLI stdout 时的最大字节数 |
+| `debug_stderr` | `Any` | `sys.stderr` | *已弃用* - SDK 忽略此值。使用 `stderr` 回调获取 CLI stderr 输出 |
+| `stderr` | `Callable[[str], None] \| None` | `None` | CLI 中 stderr 输出的回调函数 |
+| `can_use_tool` | [`CanUseTool`](#canusetool) ` \| None` | `None` | 工具权限回调，仅在[权限流](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)落到提示时调用。不会为 `allowed_tools` 自动批准的调用、允许规则或 `permission_mode` 调用。允许规则不会预批准[任何模式都不自动批准的操作](/docs/zh-CN/permission-modes#actions-no-mode-auto-approves)。见 [`CanUseTool`](#canusetool) 了解详情 |
+| `hooks` | `dict[HookEvent, list[HookMatcher]] \| None` | `None` | 用于拦截事件的 hooks 配置 |
+| `user` | `str \| None` | `None` | 在 POSIX 平台上，Claude Code 子进程运行的 OS 用户账户。Claude Code 保持父进程的环境，包括 `HOME`，并在 `cwd` 中运行 |
+| `include_partial_messages` | `bool` | `False` | 包括部分消息流式事件。启用时，会产生 [`StreamEvent`](#streamevent) 消息 |
+| `include_hook_events` | `bool` | `False` | 在消息流中包括 hooks 生命周期事件作为 `HookEventMessage` 对象 |
+| `forward_subagent_text` | `bool` | `False` | 在消息流中转发子代理文本和思考块。没有此选项，Claude Code 会发出子代理 `tool_use` 和 `tool_result` 块，但不会发出文本或思考。需要 Python Agent SDK 0.2.140 或更高版本 |
+| `verbatim_prompts` | `bool` | `False` | 按照书写方式传递每个提示。SDK 使用 `client_composed` 设置为 `True` 发送每条用户消息。见 [`client_composed`](/docs/zh-CN/agent-sdk/typescript#sdkusermessage) 了解 Claude Code 在这些消息上跳过的内容。当你的提示文本包含最终用户未输入的内容时使用此选项。对于每轮控制，将其关闭并改为在单个流式消息上设置 `"client_composed": True`。启用此选项时，SDK 会覆盖你设置的任何 `client_composed` 值。需要 Python Agent SDK 0.2.158 或更高版本以及 Claude Code v2.1.248 或更高版本；这些 SDK 版本附带的 CLI 满足 Claude Code 要求 |
+| `fork_session` | `bool` | `False` | 使用 `resume` 恢复时，分叉到新会话 ID 而不是继续原始会话 |
+| `resume_session_at` | `str \| None` | `None` | 恢复时，仅加载对话直到并包括具有此 UUID 的消息。与 `resume` 一起使用，通常还要使用 `fork_session`，以从较早的点分支。需要 Python Agent SDK 0.2.137 或更高版本 |
+| `resume_drops_turn` | `str \| None` | `None` | 其轮次被 `resume_session_at` 截断丢弃的用户提示的 UUID。设置时，如果丢弃的范围包含不可归因于该轮次的条目，CLI 会拒绝恢复。需要 Python Agent SDK 0.2.137 或更高版本以及 Claude Code v2.1.223 或更高版本；这些 SDK 版本附带的 CLI 满足 Claude Code 要求 |
+| `agents` | `dict[str, AgentDefinition] \| None` | `None` | 以编程方式定义的子代理 |
+| `plugins` | `list[SdkPluginConfig]` | `[]` | 从本地路径加载自定义插件。见 [Plugins](/docs/zh-CN/agent-sdk/plugins) 了解详情 |
+| `sandbox` | [`SandboxSettings`](#sandboxsettings) ` \| None` | `None` | 以编程方式配置沙箱行为。见 [沙箱设置](#sandboxsettings) 了解详情 |
+| `setting_sources` | `list[SettingSource] \| None` | `None`（CLI 默认值：所有源） | 控制加载哪些文件系统设置。传递 `[]` 以禁用用户、项目和本地设置。无论如何都会加载托管策略设置；当会话使用组织凭证在[符合条件的配置](/docs/zh-CN/server-managed-settings#platform-availability)上进行身份验证时，会获取服务器管理的设置。有关无论此选项如何都会读取的输入，见 [settingSources 不控制什么](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control) |
+| `skills` | `list[str] \| Literal["all"] \| None` | `None` | 会话可用的技能。传递 `"all"` 以启用每个发现的技能，或传递技能名称列表。仅传递精确名称。SDK 在启动 Claude Code 进程之前会以 `ValueError` 拒绝格式错误和通配符形式的名称；此检查需要 Python Agent SDK 0.2.129 或更高版本。设置时，SDK 会自动将 Skill 工具添加到 `allowed_tools`。如果你也传递 `tools`，在该列表中包含 `"Skill"`。见 [Skills](/docs/zh-CN/agent-sdk/skills) |
+| `max_thinking_tokens` | `int \| None` | `None` | *已弃用* - 思考块的最大令牌数。改用 `thinking` |
+| `thinking` | [`ThinkingConfig`](#thinkingconfig) ` \| None` | `None` | 控制扩展思考行为。优先于 `max_thinking_tokens` |
+| `effort` | [`EffortLevel`](#effortlevel) ` \| None` | `None` | 思考深度的努力级别。见 [调整努力级别](/docs/zh-CN/model-config#adjust-effort-level) |
+| `session_store` | [`SessionStore`](/docs/zh-CN/agent-sdk/session-storage#the-sessionstore-interface) ` \| None` | `None` | 将会话记录镜像到外部后端，以便任何主机都可以恢复它们。见 [将会话持久化到外部存储](/docs/zh-CN/agent-sdk/session-storage) |
+| `session_store_flush` | `Literal["batched", "eager"]` | `"batched"` | 何时将镜像的记录条目刷新到 `session_store`。`"batched"` 每轮刷新一次或当缓冲区填满时；`"eager"` 在每帧后触发后台刷新。当 `session_store` 为 `None` 时忽略 |
+| `load_timeout_ms` | `int` | `60000` | 在恢复物化期间，`session_store.load()` 和 `list_subkeys()` 的每次调用超时，以毫秒为单位 |
+| `task_budget` | `TaskBudget \| None` | `None` | API 端令牌预算。使用 `task-budgets-2026-03-13` 测试版标头作为 `output_config.task_budget` 发送。传递 `{"total": <int>}`。 |
 
 <h4 id="handle-slow-or-stalled-api-responses">
   处理缓慢或停滞的 API 响应
@@ -956,6 +953,8 @@ class ClaudeAgentOptions:
 CLI 子进程读取多个环境变量，这些变量控制 API 超时和停滞检测。通过 `ClaudeAgentOptions.env` 传递它们：
 
 ```python theme={null}
+from claude_agent_sdk import ClaudeAgentOptions
+
 options = ClaudeAgentOptions(
     env={
         "API_TIMEOUT_MS": "120000",
@@ -966,9 +965,13 @@ options = ClaudeAgentOptions(
 ```
 
 * `API_TIMEOUT_MS`：Anthropic 客户端上的每个请求超时，以毫秒为单位。默认 `600000`。适用于主循环和所有子代理。
-* `CLAUDE_CODE_MAX_RETRIES`：最大 API 重试次数。默认 `10`，上限为 `15`。每次重试都有自己的 `API_TIMEOUT_MS` 窗口，因此最坏情况下的实际时间大约是 `API_TIMEOUT_MS × (CLAUDE_CODE_MAX_RETRIES + 1)` 加上退避。对于需要等待更长时间中断的无人值守运行，设置 `CLAUDE_CODE_RETRY_WATCHDOG=1`：它无限期重试容量错误，自 Claude Code v2.1.199 起，对其他瞬时错误将默认值提高到 `300` 并移除此变量的上限。
-* `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`：使用 `run_in_background` 启动的子代理的停滞监视器。默认 `600000`。在每个流事件时重置；停滞时中止子代理，将任务标记为失败，并将错误与任何部分结果一起呈现给父代理。不适用于同步子代理。
-* `CLAUDE_ENABLE_STREAM_WATCHDOG` 与 `CLAUDE_STREAM_IDLE_TIMEOUT_MS`：当标头已到达但响应体停止流式传输时中止请求。监视器对所有提供商默认启用；设置 `CLAUDE_ENABLE_STREAM_WATCHDOG=0` 以禁用它。`CLAUDE_STREAM_IDLE_TIMEOUT_MS` 默认为 `300000` 并被限制为该最小值。中止的请求通过正常重试路径进行。
+* `CLAUDE_CODE_MAX_RETRIES`：最大 API 重试次数。默认 `10`，上限为 `15`。每次重试都有自己的 `API_TIMEOUT_MS` 窗口，因此最坏情况下的实际时间大约是 `API_TIMEOUT_MS × (CLAUDE_CODE_MAX_RETRIES + 1)` 加上退避。对于需要等待更长时间中断的无人值守运行，设置 [`CLAUDE_CODE_RETRY_WATCHDOG=1`](/docs/zh-CN/errors#tune-retry-behavior)：它无限期重试瞬时容量错误，自 Claude Code v2.1.199 起，对其他瞬时错误将默认值提高到 `300` 并移除此变量的上限。
+* `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`：子代理的停滞监视器。当流监视器打开时，默认值为 `CLAUDE_STREAM_IDLE_TIMEOUT_MS` 加 5 分钟，即 `600000`，除非你提高该变量。当流监视器关闭时，默认值为 `600000`。在 v2.1.257 之前，默认值始终为 `600000`。
+
+  计时器在每个流事件时重置。停滞时，Claude Code 中止子代理并向父代理报告停滞。对于后台子代理，它也会将任务标记为失败并附加任何部分结果。
+* `CLAUDE_ENABLE_STREAM_WATCHDOG` 与 `CLAUDE_STREAM_IDLE_TIMEOUT_MS`：流监视器，当标头已到达但响应体停止流式传输时中止请求。监视器对所有提供商默认启用；设置 `CLAUDE_ENABLE_STREAM_WATCHDOG=0` 以禁用它。`CLAUDE_STREAM_IDLE_TIMEOUT_MS` 默认为 `300000` 并被限制为该最小值。中止后，[自动重试](/docs/zh-CN/errors#automatic-retries)涵盖 Claude Code 所做的事情，基于响应进行的程度。
+
+  当监视器等待 `ANTHROPIC_BASE_URL` 后面的网关保持打开的响应时，设置 `include_partial_messages` 的主机继续接收 `ping` [`StreamEvent`](#streamevent) 消息。将这些帧读作活跃性而不是在沉默时超时会话。在 v2.1.257 之前，帧在最后一个真实流事件后 5 分钟停止。
 
 <h3 id="outputformat">
   `OutputFormat`
@@ -984,10 +987,10 @@ options = ClaudeAgentOptions(
 }
 ```
 
-| 字段       | 必需 | 描述                                    |
-| :------- | :- | :------------------------------------ |
-| `type`   | 是  | 必须是 `"json_schema"` 用于 JSON Schema 验证 |
-| `schema` | 是  | 用于输出验证的 JSON Schema 定义                |
+| 字段 | 必需 | 描述 |
+| :- | :- | :- |
+| `type` | 是 | 必须是 `"json_schema"` 用于 JSON Schema 验证 |
+| `schema` | 是 | 用于输出验证的 JSON Schema 定义 |
 
 <h3 id="systempromptpreset">
   `SystemPromptPreset`
@@ -1001,14 +1004,35 @@ class SystemPromptPreset(TypedDict):
     preset: Literal["claude_code"]
     append: NotRequired[str]
     exclude_dynamic_sections: NotRequired[bool]
+    snapshot: NotRequired[bool]
 ```
 
-| 字段                         | 必需 | 描述                                                                                                                                                                |
-| :------------------------- | :- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`                     | 是  | 必须是 `"preset"` 以使用预设系统提示                                                                                                                                          |
-| `preset`                   | 是  | 必须是 `"claude_code"` 以使用 Claude Code 的系统提示                                                                                                                         |
-| `append`                   | 否  | 要追加到预设系统提示的其他说明                                                                                                                                                   |
-| `exclude_dynamic_sections` | 否  | 将每个会话的上下文（如工作目录、git 状态和内存路径）从系统提示移到第一条用户消息。改进跨用户和机器的提示缓存重用。见 [修改系统提示](/docs/zh-CN/agent-sdk/modifying-system-prompts#improve-prompt-caching-across-users-and-machines) |
+| 字段 | 必需 | 描述 |
+| :- | :- | :- |
+| `type` | 是 | 必须是 `"preset"` 以使用预设系统提示 |
+| `preset` | 是 | 必须是 `"claude_code"` 以使用 Claude Code 的系统提示 |
+| `append` | 否 | 要追加到预设系统提示的其他说明 |
+| `exclude_dynamic_sections` | 否 | 将每个会话的上下文（如自动内存位置）从系统提示移到第一条用户消息。改进跨用户和机器的提示缓存重用。见 [修改系统提示](/docs/zh-CN/agent-sdk/modifying-system-prompts#improve-prompt-caching-across-users-and-machines) |
+| `snapshot` | 否 | 设置为 `False` 以在每个请求上重建系统提示，而不是[重用会话在其第一个请求上记录的提示](/docs/zh-CN/agent-sdk/modifying-system-prompts#change-the-prompt-of-an-existing-session)。需要 `claude-agent-sdk` v0.2.153 或更高版本 |
+
+<h3 id="systempromptcustom">
+  `SystemPromptCustom`
+</h3>
+
+对象形式的自定义系统提示，等同于将字符串作为 `system_prompt` 传递，也可以设置 `snapshot`。需要 `claude-agent-sdk` v0.2.153 或更高版本。
+
+```python theme={null}
+class SystemPromptCustom(TypedDict):
+    type: Literal["custom"]
+    prompt: str
+    snapshot: NotRequired[bool]
+```
+
+| 字段 | 必需 | 描述 |
+| :- | :- | :- |
+| `type` | 是 | 必须是 `"custom"` |
+| `prompt` | 是 | 系统提示文本。作为命令行参数传递给 CLI，因此[命令行长度限制](#systempromptfile)适用 |
+| `snapshot` | 否 | 与 [`SystemPromptPreset.snapshot`](#systempromptpreset) 相同，应用于 `prompt` |
 
 <h3 id="systempromptfile">
   `SystemPromptFile`
@@ -1022,10 +1046,10 @@ class SystemPromptFile(TypedDict):
     path: str
 ```
 
-| 字段     | 必需 | 描述                    |
-| :----- | :- | :-------------------- |
-| `type` | 是  | 必须是 `"file"` 以从磁盘加载提示 |
-| `path` | 是  | 包含系统提示的文件的路径          |
+| 字段 | 必需 | 描述 |
+| :- | :- | :- |
+| `type` | 是 | 必须是 `"file"` 以从磁盘加载提示 |
+| `path` | 是 | 包含系统提示的文件的路径 |
 
 <h3 id="settingsource">
   `SettingSource`
@@ -1037,17 +1061,17 @@ class SystemPromptFile(TypedDict):
 SettingSource = Literal["user", "project", "local"]
 ```
 
-| 值           | 描述                 | 位置                            |
-| :---------- | :----------------- | :---------------------------- |
-| `"user"`    | 全局用户设置             | `~/.claude/settings.json`     |
-| `"project"` | 共享项目设置（版本控制）       | `.claude/settings.json`       |
-| `"local"`   | 本地项目设置（gitignored） | `.claude/settings.local.json` |
+| 值 | 描述 | 位置 |
+| :- | :- | :- |
+| `"user"` | 全局用户设置 | `~/.claude/settings.json` |
+| `"project"` | 共享项目设置（版本控制） | `.claude/settings.json` |
+| `"local"` | 本地项目设置，当 Claude Code 将设置保存到其中时被 gitignored | `.claude/settings.local.json` |
 
 <h4 id="default-behavior">
   默认行为
 </h4>
 
-当 `setting_sources` 被省略或为 `None` 时，`query()` 加载与 Claude Code CLI 相同的文件系统设置：用户、项目和本地。无论如何都会加载托管策略设置；当会话使用组织凭证在[符合条件的配置](/docs/zh-CN/server-managed-settings#platform-availability)上进行身份验证时，会获取服务器管理的设置。见 [settingSources 不控制什么](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control) 了解无论此选项如何都会读取的输入，以及如何禁用它们。
+当 `setting_sources` 被省略或为 `None` 且 `skills` 未设置时，`query()` 加载与 Claude Code CLI 相同的文件系统设置：用户、项目和本地。使用 `skills` 设置时，[`setting_sources`](#claudeagentoptions) 行描述当前默认值。无论如何都会加载托管策略设置；当会话使用组织凭证在[符合条件的配置](/docs/zh-CN/server-managed-settings#platform-availability)上进行身份验证时，会获取服务器管理的设置。有关更多信息，见 [settingSources 不控制什么](/docs/zh-CN/agent-sdk/claude-code-features#what-settingsources-does-not-control)。
 
 <h4 id="why-use-setting_sources">
   为什么使用 setting\_sources
@@ -1057,60 +1081,46 @@ SettingSource = Literal["user", "project", "local"]
 
 ```python theme={null}
 # Do not load user, project, or local settings from disk
+import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions
 
-async for message in query(
-    prompt="Analyze this code",
-    options=ClaudeAgentOptions(
-        setting_sources=[]
-    ),
-):
-    print(message)
+
+async def main():
+    async for message in query(
+        prompt="Analyze this code",
+        options=ClaudeAgentOptions(
+            setting_sources=[]
+        ),
+    ):
+        print(message)
+
+
+asyncio.run(main())
 ```
 
 <Note>
   在 Python SDK 0.1.59 及更早版本中，空列表的处理方式与省略选项相同，因此 `setting_sources=[]` 不会禁用文件系统设置。如果你需要空列表生效，请升级到较新版本。TypeScript SDK 不受影响。
 </Note>
 
-**显式加载所有文件系统设置：**
-
-```python theme={null}
-from claude_agent_sdk import query, ClaudeAgentOptions
-
-async for message in query(
-    prompt="Analyze this code",
-    options=ClaudeAgentOptions(
-        setting_sources=["user", "project", "local"]
-    ),
-):
-    print(message)
-```
-
 **仅加载特定设置源：**
 
 ```python theme={null}
 # Load only project settings, ignore user and local
-async for message in query(
-    prompt="Run CI checks",
-    options=ClaudeAgentOptions(
-        setting_sources=["project"]  # Only .claude/settings.json
-    ),
-):
-    print(message)
-```
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
 
-**测试和 CI 环境：**
 
-```python theme={null}
-# Ensure consistent behavior in CI by excluding local settings
-async for message in query(
-    prompt="Run tests",
-    options=ClaudeAgentOptions(
-        setting_sources=["project"],  # Only team-shared settings
-        permission_mode="bypassPermissions",
-    ),
-):
-    print(message)
+async def main():
+    async for message in query(
+        prompt="Run CI checks",
+        options=ClaudeAgentOptions(
+            setting_sources=["project"]  # Only .claude/settings.json
+        ),
+    ):
+        print(message)
+
+
+asyncio.run(main())
 ```
 
 **仅 SDK 应用程序：**
@@ -1118,35 +1128,31 @@ async for message in query(
 ```python theme={null}
 # Define everything programmatically.
 # Pass [] to opt out of filesystem setting sources.
-async for message in query(
-    prompt="Review this PR",
-    options=ClaudeAgentOptions(
-        setting_sources=[],
-        agents={...},
-        mcp_servers={...},
-        allowed_tools=["Read", "Grep", "Glob"],
-    ),
-):
-    print(message)
+import asyncio
+from claude_agent_sdk import AgentDefinition, ClaudeAgentOptions, query
+
+
+async def main():
+    async for message in query(
+        prompt="Review this PR",
+        options=ClaudeAgentOptions(
+            setting_sources=[],
+            agents={
+                "code-reviewer": AgentDefinition(
+                    description="Reviews code changes",
+                    prompt="You are a code reviewer. Report issues in the diff.",
+                ),
+            },
+            allowed_tools=["Read", "Grep", "Glob"],
+        ),
+    ):
+        print(message)
+
+
+asyncio.run(main())
 ```
 
-**加载 CLAUDE.md 项目说明：**
-
-```python theme={null}
-# Load project settings to include CLAUDE.md files
-async for message in query(
-    prompt="Add a new feature following project conventions",
-    options=ClaudeAgentOptions(
-        system_prompt={
-            "type": "preset",
-            "preset": "claude_code",  # Use Claude Code's system prompt
-        },
-        setting_sources=["project"],  # Loads CLAUDE.md from project
-        allowed_tools=["Read", "Write", "Edit"],
-    ),
-):
-    print(message)
-```
+要加载 CLAUDE.md 项目说明，在 `setting_sources` 中包含 `"project"`。见 [修改系统提示](/docs/zh-CN/agent-sdk/modifying-system-prompts#claude-md-files-for-project-level-instructions) 了解 CLAUDE.md 加载如何与系统提示选项交互。
 
 <h4 id="settings-precedence">
   设置优先级
@@ -1158,7 +1164,7 @@ async for message in query(
 2. 项目设置（`.claude/settings.json`）
 3. 用户设置（`~/.claude/settings.json`）
 
-编程选项（如 `agents` 和 `allowed_tools`）覆盖用户、项目和本地文件系统设置。托管策略设置优先于编程选项。
+编程选项（如 `agents`、`allowed_tools` 和 `settings`）覆盖用户、项目和本地文件系统设置。托管策略设置优先于编程选项。
 
 <h3 id="agentdefinition">
   `AgentDefinition`
@@ -1184,21 +1190,21 @@ class AgentDefinition:
     permissionMode: PermissionMode | None = None
 ```
 
-| 字段                | 必需 | 描述                                                                                                          |
-| :---------------- | :- | :---------------------------------------------------------------------------------------------------------- |
-| `description`     | 是  | 何时使用此代理的自然语言描述                                                                                              |
-| `prompt`          | 是  | 代理的系统提示                                                                                                     |
-| `tools`           | 否  | 允许的工具名称数组。如果省略，继承所有工具                                                                                       |
-| `disallowedTools` | 否  | 要从代理的工具集中移除的工具名称数组。也接受 MCP 服务器级别的模式：`mcp__server` 或 `mcp__server__*` 移除该服务器的每个工具，`mcp__*` 移除任何服务器的每个 MCP 工具 |
-| `model`           | 否  | 此代理的模型覆盖。接受别名如 `"sonnet"`、`"opus"`、`"haiku"` 或 `"inherit"`，或完整模型 ID。如果省略，使用主模型                              |
-| `skills`          | 否  | 此代理可用的技能名称列表                                                                                                |
-| `memory`          | 否  | 此代理的内存源：`"user"`、`"project"` 或 `"local"`                                                                    |
-| `mcpServers`      | 否  | 此代理可用的 MCP 服务器。每个条目是服务器名称或内联 `{name: config}` 字典                                                            |
-| `initialPrompt`   | 否  | 当此代理作为主线程代理运行时自动提交为第一个用户轮次                                                                                  |
-| `maxTurns`        | 否  | 代理停止前的最大代理轮次数                                                                                               |
-| `background`      | 否  | 调用时将此代理作为非阻塞后台任务运行                                                                                          |
-| `effort`          | 否  | 此代理的推理努力级别。接受命名级别或整数。见 [`EffortLevel`](#effortlevel)                                                        |
-| `permissionMode`  | 否  | 此代理内工具执行的权限模式。见 [`PermissionMode`](#permissionmode)                                                         |
+| 字段 | 必需 | 描述 |
+| :- | :- | :- |
+| `description` | 是 | 何时使用此代理的自然语言描述 |
+| `prompt` | 是 | 代理的系统提示 |
+| `tools` | 否 | 允许的工具名称数组。如果省略，继承[子代理可用的每个工具](/docs/zh-CN/sub-agents#available-tools) |
+| `disallowedTools` | 否 | 要从代理的工具集中移除的工具名称数组。也接受 MCP 服务器级别的模式：`mcp__server` 或 `mcp__server__*` 移除该服务器的每个工具，`mcp__*` 移除任何服务器的每个 MCP 工具 |
+| `model` | 否 | 此代理的模型覆盖。接受别名如 `"sonnet"`、`"opus"`、`"haiku"` 或 `"inherit"`，或完整模型 ID。当你省略它时，Claude Code 按[子代理模型顺序](/docs/zh-CN/sub-agents#choose-a-model)选择模型 |
+| `skills` | 否 | 此代理可用的技能名称列表 |
+| `memory` | 否 | 此代理的内存源：`"user"`、`"project"` 或 `"local"` |
+| `mcpServers` | 否 | 此代理可用的 MCP 服务器。每个条目是服务器名称或内联 `{name: config}` 字典 |
+| `initialPrompt` | 否 | 当此代理作为主线程代理运行时自动提交为第一个用户轮次 |
+| `maxTurns` | 否 | 代理停止前的最大代理轮次数 |
+| `background` | 否 | 调用时将此代理作为非阻塞后台任务运行 |
+| `effort` | 否 | 此代理的推理努力级别。接受命名级别或整数。见 [`EffortLevel`](#effortlevel) |
+| `permissionMode` | 否 | 此代理内工具执行的权限模式。[子代理继承规则](/docs/zh-CN/agent-sdk/permissions#available-modes)决定何时应用。见 [`PermissionMode`](#permissionmode) |
 
 <Note>
   `AgentDefinition` 字段名称使用 camelCase，如 `disallowedTools`、`permissionMode` 和 `maxTurns`。这些名称直接映射到与 TypeScript SDK 共享的线路格式。这与 `ClaudeAgentOptions` 不同，后者对等效的顶级字段（如 `disallowed_tools` 和 `permission_mode`）使用 Python snake\_case。因为 `AgentDefinition` 是数据类，传递 snake\_case 关键字在构造时会引发 `TypeError`。
@@ -1217,7 +1223,7 @@ PermissionMode = Literal[
     "plan",  # Planning mode - explore without editing
     "dontAsk",  # Deny anything not pre-approved instead of prompting
     "bypassPermissions",  # Bypass permission checks; explicit ask rules still prompt (use with caution)
-    "auto",  # A model classifier approves or denies each tool call
+    "auto",  # A model classifier reviews actions such as shell commands and network requests
 ]
 ```
 
@@ -1259,7 +1265,7 @@ CanUseTool = Callable[
 
 回调是 SDK 对交互式权限提示的替代：它仅在[权限评估流](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)解析为提示时调用。已由 `allowed_tools` 条目、设置允许规则或权限模式（如 `acceptEdits` 或 `bypassPermissions`）批准的工具调用永远不会调用它。要限制每个工具调用，改用 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)。
 
-`AskUserQuestion`、标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具，以及你的组织[设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具即使允许规则匹配也会到达回调。在 `dontAsk` 模式下，这些调用被拒绝，不调用回调。
+允许规则不会预批准[任何模式都不自动批准的操作](/docs/zh-CN/permission-modes#actions-no-mode-auto-approves)；见 [权限如何被评估](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated) 了解其中哪些到达回调以及在 `dontAsk` 和 `auto` 模式下发生什么。
 
 <h3 id="toolpermissioncontext">
   `ToolPermissionContext`
@@ -1272,6 +1278,8 @@ CanUseTool = Callable[
 class ToolPermissionContext:
     signal: Any | None = None  # Future: abort signal support
     suggestions: list[PermissionUpdate] = field(default_factory=list)
+    tool_use_id: str | None = None
+    agent_id: str | None = None
     blocked_path: str | None = None
     decision_reason: str | None = None
     title: str | None = None
@@ -1279,15 +1287,17 @@ class ToolPermissionContext:
     description: str | None = None
 ```
 
-| 字段                | 类型                       | 描述                                                                                                                            |
-| :---------------- | :----------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| `signal`          | `Any \| None`            | 保留供将来中止信号支持                                                                                                                   |
-| `suggestions`     | `list[PermissionUpdate]` | 来自 CLI 的权限更新建议。Bash 提示包括带有 `localSettings` 目标的建议，因此在 `updated_permissions` 中返回它会将规则写入 `.claude/settings.local.json` 并在会话间持久化。 |
-| `blocked_path`    | `str \| None`            | 触发权限请求的文件路径（如适用）。例如，当 Bash 命令尝试访问允许目录外的路径时                                                                                    |
-| `decision_reason` | `str \| None`            | 触发此权限请求的原因。从 PreToolUse hooks 的 `permissionDecisionReason` 转发，当 hooks 返回 `"ask"` 时                                            |
-| `title`           | `str \| None`            | 完整权限提示句子，如 `Claude wants to read foo.txt`。存在时用作主要提示文本                                                                         |
-| `display_name`    | `str \| None`            | 工具操作的短名词短语，如 `Read file`，适合按钮标签                                                                                               |
-| `description`     | `str \| None`            | 权限 UI 的人类可读副标题                                                                                                                |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `signal` | `Any \| None` | 保留供将来中止信号支持 |
+| `suggestions` | `list[PermissionUpdate]` | 来自 CLI 的权限更新建议。Bash 提示包括带有 `localSettings` 目标的建议，因此在 `updated_permissions` 中返回它会将规则写入 `.claude/settings.local.json` 并在会话间持久化。 |
+| `tool_use_id` | `str \| None` | 此提示所针对的特定工具调用的标识符。传递给 `can_use_tool` 时始终填充 |
+| `agent_id` | `str \| None` | 当调用来自子代理时的子代理 ID；主代理为 `None` |
+| `blocked_path` | `str \| None` | 触发权限请求的文件路径（如适用）。例如，当 Bash 命令尝试访问允许目录外的路径时 |
+| `decision_reason` | `str \| None` | 触发此权限请求的原因。从 PreToolUse hooks 的 `permissionDecisionReason` 转发，当 hooks 返回 `"ask"` 时 |
+| `title` | `str \| None` | 完整权限提示句子，如 `Claude wants to read foo.txt`。存在时用作主要提示文本 |
+| `display_name` | `str \| None` | 工具操作的短名词短语，如 `Read file`，适合按钮标签 |
+| `description` | `str \| None` | 权限 UI 的人类可读副标题 |
 
 <h3 id="permissionresult">
   `PermissionResult`
@@ -1313,11 +1323,11 @@ class PermissionResultAllow:
     updated_permissions: list[PermissionUpdate] | None = None
 ```
 
-| 字段                    | 类型                               | 默认值       | 描述                |
-| :-------------------- | :------------------------------- | :-------- | :---------------- |
-| `behavior`            | `Literal["allow"]`               | `"allow"` | 必须是 "allow"       |
-| `updated_input`       | `dict[str, Any] \| None`         | `None`    | 要使用的修改后的输入而不是原始输入 |
-| `updated_permissions` | `list[PermissionUpdate] \| None` | `None`    | 要应用的权限更新          |
+| 字段 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `behavior` | `Literal["allow"]` | `"allow"` | 必须是 "allow" |
+| `updated_input` | `dict[str, Any] \| None` | `None` | 要使用的修改后的输入而不是原始输入 |
+| `updated_permissions` | `list[PermissionUpdate] \| None` | `None` | 要应用的权限更新 |
 
 <h3 id="permissionresultdeny">
   `PermissionResultDeny`
@@ -1333,11 +1343,11 @@ class PermissionResultDeny:
     interrupt: bool = False
 ```
 
-| 字段          | 类型                | 默认值      | 描述           |
-| :---------- | :---------------- | :------- | :----------- |
-| `behavior`  | `Literal["deny"]` | `"deny"` | 必须是 "deny"   |
-| `message`   | `str`             | `""`     | 解释为什么拒绝工具的消息 |
-| `interrupt` | `bool`            | `False`  | 是否中断当前执行     |
+| 字段 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `behavior` | `Literal["deny"]` | `"deny"` | 必须是 "deny" |
+| `message` | `str` | `""` | 解释为什么拒绝工具的消息 |
+| `interrupt` | `bool` | `False` | 是否中断当前执行 |
 
 <h3 id="permissionupdate">
   `PermissionUpdate`
@@ -1365,14 +1375,14 @@ class PermissionUpdate:
     ) = None
 ```
 
-| 字段            | 类型                                        | 描述              |
-| :------------ | :---------------------------------------- | :-------------- |
-| `type`        | `Literal[...]`                            | 权限更新操作的类型       |
-| `rules`       | `list[PermissionRuleValue] \| None`       | 用于添加/替换/移除操作的规则 |
-| `behavior`    | `Literal["allow", "deny", "ask"] \| None` | 基于规则的操作的行为      |
-| `mode`        | `PermissionMode \| None`                  | setMode 操作的模式   |
-| `directories` | `list[str] \| None`                       | 用于添加/移除目录操作的目录  |
-| `destination` | `Literal[...] \| None`                    | 应用权限更新的位置       |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `type` | `Literal[...]` | 权限更新操作的类型 |
+| `rules` | `list[PermissionRuleValue] \| None` | 用于添加/替换/移除操作的规则 |
+| `behavior` | `Literal["allow", "deny", "ask"] \| None` | 基于规则的操作的行为 |
+| `mode` | `PermissionMode \| None` | setMode 操作的模式 |
+| `directories` | `list[str] \| None` | 用于添加/移除目录操作的目录 |
+| `destination` | `Literal[...] \| None` | 应用权限更新的位置 |
 
 <h3 id="permissionrulevalue">
   `PermissionRuleValue`
@@ -1427,13 +1437,13 @@ class ThinkingConfigDisabled(TypedDict):
 ThinkingConfig = ThinkingConfigAdaptive | ThinkingConfigEnabled | ThinkingConfigDisabled
 ```
 
-| 变体         | 字段                                 | 描述               |
-| :--------- | :--------------------------------- | :--------------- |
-| `adaptive` | `type`, `display`                  | Claude 自适应决定何时思考 |
-| `enabled`  | `type`, `budget_tokens`, `display` | 启用具有特定令牌预算的思考    |
-| `disabled` | `type`                             | 禁用思考             |
+| 变体 | 字段 | 描述 |
+| :- | :- | :- |
+| `adaptive` | `type`, `display` | Claude 自适应决定何时思考 |
+| `enabled` | `type`, `budget_tokens`, `display` | 启用具有特定令牌预算的思考 |
+| `disabled` | `type` | 禁用思考 |
 
-可选的 `display` 字段控制思考文本是否返回为 `"summarized"` 或 `"omitted"`。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此设置 `"summarized"` 以在 [`ThinkingBlock`](#thinkingblock) 输出中接收思考内容。
+可选的 `display` 字段控制思考文本是否返回为 `"summarized"` 或 `"omitted"`。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此设置 `"summarized"` 以在 [`ThinkingBlock`](#thinkingblock) 输出中接收思考内容。Claude Code 不会向 Amazon Bedrock 或 Google Cloud 的 Agent Platform 发送 `display`，因此在这些提供商上，Opus 4.7 及更高版本即使你将 `display` 设置为 `"summarized"` 也会返回空 `ThinkingBlock` 输出。
 
 因为这些是 `TypedDict` 类，它们在运行时是普通字典。要么将它们构造为字典字面量，要么调用类作为构造函数；两者都产生 `dict`。使用 `config["budget_tokens"]` 访问字段，而不是 `config.budget_tokens`：
 
@@ -1449,6 +1459,23 @@ print(config["budget_tokens"])  # 20000
 # config.budget_tokens would raise AttributeError
 ```
 
+<h3 id="taskbudget">
+  `TaskBudget`
+</h3>
+
+API 端任务预算（以令牌为单位），与 `ClaudeAgentOptions` 中的 `task_budget` 字段一起使用。
+
+```python theme={null}
+class TaskBudget(TypedDict):
+    total: int
+```
+
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `total` | `int` | 任务的总令牌预算 |
+
+因为这是 `TypedDict`，将其作为普通字典传递，如 `ClaudeAgentOptions(task_budget={"total": 50000})`。
+
 <h3 id="sdkbeta">
   `SdkBeta`
 </h3>
@@ -1462,7 +1489,7 @@ SdkBeta = Literal["context-1m-2025-08-07"]
 与 `ClaudeAgentOptions` 中的 `betas` 字段一起使用以启用测试功能。
 
 <Warning>
-  `context-1m-2025-08-07` 测试版自 2026 年 4 月 30 日起已停用。使用 Claude Sonnet 4.5 或 Sonnet 4 传递此标头无效，超过标准 200k 令牌上下文窗口的请求返回错误。要使用 1M 令牌上下文窗口，请迁移到 [Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.6、Claude Opus 4.7 或 Claude Opus 4.8](https://platform.claude.com/docs/en/about-claude/models/overview)，它们以标准定价包括 1M 上下文，无需测试版标头。
+  `context-1m-2025-08-07` 测试版自 2026 年 4 月 30 日起已停用。使用 Claude Sonnet 4.5 或 Sonnet 4 传递此标头无效，超过标准 200k 令牌上下文窗口的请求返回错误。要使用 1M 令牌上下文窗口，请迁移到 [Claude Opus 5.5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.6、Claude Opus 4.7 或 Claude Opus 4.8](https://platform.claude.com/docs/en/about-claude/models/overview)，它们以标准定价包括 1M 上下文，无需测试版标头。
 </Warning>
 
 <h3 id="mcpsdkserverconfig">
@@ -1570,15 +1597,15 @@ class McpServerStatus(TypedDict):
     tools: NotRequired[list[McpToolInfo]]
 ```
 
-| 字段           | 类型                                                    | 描述                                                                                                                  |
-| :----------- | :---------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| `name`       | `str`                                                 | 服务器名称                                                                                                               |
-| `status`     | `str`                                                 | `"connected"`、`"failed"`、`"needs-auth"`、`"pending"` 或 `"disabled"` 之一                                               |
-| `serverInfo` | `dict`（可选）                                            | 服务器名称和版本（`{"name": str, "version": str}`）                                                                           |
-| `error`      | `str`（可选）                                             | 服务器连接失败时的错误消息                                                                                                       |
-| `config`     | [`McpServerStatusConfig`](#mcpserverstatusconfig)（可选） | 服务器配置。与 [`McpServerConfig`](#mcpserverconfig) 形状相同（stdio、SSE、HTTP 或 SDK），加上通过 claude.ai 连接的服务器的 `claudeai-proxy` 变体 |
-| `scope`      | `str`（可选）                                             | 配置范围                                                                                                                |
-| `tools`      | `list`（可选）                                            | 此服务器提供的工具，每个都有 `name`、`description` 和 `annotations` 字段                                                              |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `name` | `str` | 服务器名称 |
+| `status` | `str` | `"connected"`、`"failed"`、`"needs-auth"`、`"pending"` 或 `"disabled"` 之一 |
+| `serverInfo` | `dict`（可选） | 服务器名称和版本（`{"name": str, "version": str}`） |
+| `error` | `str`（可选） | 服务器连接失败时的错误消息 |
+| `config` | [`McpServerStatusConfig`](#mcpserverstatusconfig)（可选） | 服务器配置。与 [`McpServerConfig`](#mcpserverconfig) 形状相同（stdio、SSE、HTTP 或 SDK），加上通过 claude.ai 连接的服务器的 `claudeai-proxy` 变体 |
+| `scope` | `str`（可选） | 配置范围 |
+| `tools` | `list`（可选） | 此服务器提供的工具，每个都有 `name`、`description` 和 `annotations` 字段 |
 
 <h3 id="sdkpluginconfig">
   `SdkPluginConfig`
@@ -1592,10 +1619,10 @@ class SdkPluginConfig(TypedDict):
     path: str
 ```
 
-| 字段     | 类型                 | 描述                       |
-| :----- | :----------------- | :----------------------- |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
 | `type` | `Literal["local"]` | 必须是 `"local"`（目前仅支持本地插件） |
-| `path` | `str`              | 插件目录的绝对或相对路径             |
+| `path` | `str` | 插件目录的绝对或相对路径 |
 
 **示例：**
 
@@ -1626,6 +1653,7 @@ Message = (
     | ResultMessage
     | StreamEvent
     | RateLimitEvent
+    | ConversationResetMessage
 )
 ```
 
@@ -1642,14 +1670,20 @@ class UserMessage:
     uuid: str | None = None
     parent_tool_use_id: str | None = None
     tool_use_result: dict[str, Any] | None = None
+    origin: MessageOrigin | None = None
 ```
 
-| 字段                   | 类型                          | 描述                     |
-| :------------------- | :-------------------------- | :--------------------- |
-| `content`            | `str \| list[ContentBlock]` | 消息内容为文本或内容块            |
-| `uuid`               | `str \| None`               | 唯一消息标识符                |
-| `parent_tool_use_id` | `str \| None`               | 如果此消息是工具结果响应，则为工具使用 ID |
-| `tool_use_result`    | `dict[str, Any] \| None`    | 工具结果数据（如果适用）           |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `content` | `str \| list[ContentBlock]` | 消息内容为文本或内容块 |
+| `uuid` | `str \| None` | 唯一消息标识符 |
+| `parent_tool_use_id` | `str \| None` | 如果此消息是工具结果响应，则为工具使用 ID |
+| `tool_use_result` | `dict[str, Any] \| None` | 工具结果数据（如果适用） |
+| `origin` | `MessageOrigin \| None` | 此消息的来源，在注入的轮次（如任务通知和对等消息）上填充。当 CLI 未归属时为 `None`。需要 Python Agent SDK 0.2.137 或更高版本 |
+
+SDK 从 CLI 未修改地传递 `tool_use_result`。对于外部 MCP 服务器上的工具，其结果包含 `resource_link` 块，该字典具有 `resourceLinks` 键，保存具有 TypeScript [`SDKMcpResourceLink`](/docs/zh-CN/agent-sdk/typescript#sdkmcpresourcelink) 类型键的字典列表。Claude 将每个链接作为工具结果中的一行文本接收。要呈现服务器返回的文件，请读取 `resourceLinks` 而不是解析该文本。`resourceLinks` 键需要 Python Agent SDK 0.2.150 或更高版本和 Claude Code v2.1.257 或更高版本；该 SDK 版本附带的 CLI 满足 Claude Code 要求。
+
+当结果没有链接时，CLI 会省略该键，在来自子代理的结果上也会省略。CLI 每个结果最多保留 50 个链接，一旦列表达到 64 KiB 的序列化 JSON，就停止添加链接。使用 [`tool()`](#tool) 在进程中定义的工具永远不会产生该键，因为 SDK 在 CLI 看到结果之前将其 `resource_link` 块展平为文本。
 
 <h3 id="assistantmessage">
   `AssistantMessage`
@@ -1666,16 +1700,22 @@ class AssistantMessage:
     error: AssistantMessageError | None = None
     usage: dict[str, Any] | None = None
     message_id: str | None = None
+    stop_reason: str | None = None
+    session_id: str | None = None
+    uuid: str | None = None
 ```
 
-| 字段                   | 类型                                                           | 描述                                                          |
-| :------------------- | :----------------------------------------------------------- | :---------------------------------------------------------- |
-| `content`            | `list[ContentBlock]`                                         | 响应中的内容块列表                                                   |
-| `model`              | `str`                                                        | 生成响应的模型                                                     |
-| `parent_tool_use_id` | `str \| None`                                                | 如果这是嵌套响应，则为工具使用 ID                                          |
-| `error`              | [`AssistantMessageError`](#assistantmessageerror) ` \| None` | 如果响应遇到错误，则为错误类型                                             |
-| `usage`              | `dict[str, Any] \| None`                                     | 每条消息的令牌使用情况（与 [`ResultMessage.usage`](#resultmessage) 相同的键） |
-| `message_id`         | `str \| None`                                                | API 消息 ID。来自一个轮次的多条消息共享相同的 ID                               |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `content` | `list[ContentBlock]` | 响应中的内容块列表 |
+| `model` | `str` | 生成响应的模型 |
+| `parent_tool_use_id` | `str \| None` | 如果这是嵌套响应，则为工具使用 ID |
+| `error` | [`AssistantMessageError`](#assistantmessageerror) ` \| None` | 如果响应遇到错误，则为错误类型 |
+| `usage` | `dict[str, Any] \| None` | 每条消息的令牌使用情况（与 [`ResultMessage.usage`](#resultmessage) 相同的键） |
+| `message_id` | `str \| None` | API 消息 ID。来自一个轮次的多条消息共享相同的 ID |
+| `stop_reason` | `str \| None` | 来自 API 的停止原因（例如 `end_turn`、`tool_use`） |
+| `session_id` | `str \| None` | 此消息所属的会话 ID |
+| `uuid` | `str \| None` | 会话记录中的唯一消息标识符 |
 
 <h3 id="assistantmessageerror">
   `AssistantMessageError`
@@ -1690,10 +1730,11 @@ AssistantMessageError = Literal[
     "rate_limit",
     "invalid_request",
     "server_error",
-    "max_output_tokens",
     "unknown",
 ]
 ```
+
+底层 CLI 进程可以发出此 Literal 未列出的错误类型，例如 `max_output_tokens`。SDK 未修改地传递该值，因此将此列表之外的字符串视为处理 `unknown` 的方式。TypeScript [`SDKAssistantMessageError`](/docs/zh-CN/agent-sdk/typescript#sdkassistantmessage) 类型列出了 CLI 可以发出的完整值集。
 
 <h3 id="systemmessage">
   `SystemMessage`
@@ -1728,44 +1769,55 @@ class ResultMessage:
     usage: dict[str, Any] | None = None
     result: str | None = None
     structured_output: Any = None
-    model_usage: dict[str, Any] | None = None
+    model_usage: dict[str, ModelUsage] | None = None
     permission_denials: list[Any] | None = None
     deferred_tool_use: DeferredToolUse | None = None
     errors: list[str] | None = None
     api_error_status: int | None = None
     uuid: str | None = None
+    terminal_reason: str | None = None
+    origin: MessageOrigin | None = None
 ```
 
 `subtype` 字段确定填充哪些其他字段。它是 `"success"`、`"error_during_execution"`、`"error_max_turns"`、`"error_max_budget_usd"` 或 `"error_max_structured_output_retries"` 之一。Python 数据类将所有变体展平为一种形状，因此不适用于返回的子类型的字段为 `None`。
 
-当对话以错误结束时，多个字段会携带诊断详情：
+多个字段携带有关对话如何结束的诊断详情：
 
 * `is_error`：当对话以错误状态结束时为 `True`。在 `error_*` 子类型上始终为 `True`。在 `subtype="success"` 上，当最终模型请求失败时为 `True`，这意味着代理循环完成但最后一个 API 调用返回了错误。
 * `api_error_status`：终止 API 错误的 HTTP 状态代码。当轮次结束时没有错误时为 `None`。仅在 `subtype="success"` 上填充。
 * `result`：在 `subtype="success"` 上为最终助手消息的文本，或在 `error_*` 子类型上为 `None`。当 `subtype="success"` 且 `is_error=True` 时，如果可用，此字段保存 API 错误字符串，但可能为空，因此请检查 `api_error_status` 和前面的 `AssistantMessage` 内容以获取详情。
 * `errors`：循环级别的错误字符串，例如最大轮次消息。仅在 `error_*` 子类型上填充。
+* `terminal_reason`：查询循环结束的原因，例如 `"completed"`、`"max_turns"`、`"api_error"`、`"aborted_streaming"` 或 `"aborted_tools"`。值为 `"aborted_streaming"` 或 `"aborted_tools"` 意味着轮次在完成前被中止。常见原因是 [`interrupt()`](#claudesdkclient) 和权限回调返回 [`PermissionResultDeny`](#permissionresultdeny) 且 `interrupt=True`。在早于该字段的 CLI 版本上为 `None`，在本地命令（如 `/voice` 或 `/usage`）的结果上为 `None`，这些命令绕过查询循环，或在会话严重失败时发出的合成错误结果上为 `None`。镜像 TypeScript SDK 的 [`SDKResultMessage.terminal_reason`](/docs/zh-CN/agent-sdk/typescript#sdkresultmessage)，其列出了完整的值集。
+* `origin`：触发此轮次的用户消息的来源。在[流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)中，检查此项以区分你自己的提示结果（其中 `origin` 为 `None` 或 `{"kind": "human"}`）与注入的轮次（如后台任务通知）的结果。需要 Python Agent SDK 0.2.137 或更高版本。
 
-`usage` 字典在存在时包含以下键：
+`usage` 字典仅涵盖主代理循环，不包括子代理和其他嵌套或辅助模型调用。在[流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)中，值是按轮次的。优先使用 `model_usage` 进行令牌和成本计费。`usage` 字典在存在时包含以下键：
 
-| 键                             | 类型    | 描述                                                                                                                |
-| ----------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------- |
-| `input_tokens`                | `int` | 顶级代理循环消耗的输入令牌。[子代理令牌不包括在内](/docs/zh-CN/agent-sdk/cost-tracking#get-the-total-cost-of-a-query)；使用 `model_usage` 进行整树计费。 |
-| `output_tokens`               | `int` | 顶级代理循环生成的输出令牌。子代理令牌不包括在内。                                                                                         |
-| `cache_creation_input_tokens` | `int` | 用于创建新缓存条目的令牌。                                                                                                     |
-| `cache_read_input_tokens`     | `int` | 从现有缓存条目读取的令牌。                                                                                                     |
+| 键 | 类型 | 描述 |
+| - | - | - |
+| `input_tokens` | `int` | 顶级代理循环消耗的输入令牌。[子代理令牌不包括在内](/docs/zh-CN/agent-sdk/cost-tracking#get-the-total-cost-of-a-query)；使用 `model_usage` 进行整树计费。 |
+| `output_tokens` | `int` | 顶级代理循环生成的输出令牌。子代理令牌不包括在内。 |
+| `cache_creation_input_tokens` | `int` | 用于创建新缓存条目的令牌。 |
+| `cache_read_input_tokens` | `int` | 从现有缓存条目读取的令牌。 |
 
-`model_usage` 字典将模型名称映射到每个模型的使用情况。内部字典键使用 camelCase，因为该值从底层 CLI 进程未修改地传递，匹配 TypeScript [`ModelUsage`](/docs/zh-CN/agent-sdk/typescript#modelusage) 类型：
+`model_usage` 字典将模型名称映射到每个模型的使用情况。它涵盖通过查询管道进行的每个模型调用：主循环、子代理和内部调用（如压缩和 Workflow 代理）。该管道外的辅助调用（如权限分类器和令牌计数请求）从 `model_usage` 中排除。将 `model_usage` 视为估计值，而不是计费声明。
 
-| 键                          | 类型      | 描述                                                                       |
-| -------------------------- | ------- | ------------------------------------------------------------------------ |
-| `inputTokens`              | `int`   | 此模型的输入令牌。                                                                |
-| `outputTokens`             | `int`   | 此模型的输出令牌。                                                                |
-| `cacheReadInputTokens`     | `int`   | 此模型的缓存读取令牌。                                                              |
-| `cacheCreationInputTokens` | `int`   | 此模型的缓存创建令牌。                                                              |
-| `webSearchRequests`        | `int`   | 此模型进行的网络搜索请求。                                                            |
-| `costUSD`                  | `float` | 此模型的估计成本（美元），客户端计算。见 [跟踪成本和使用](/docs/zh-CN/agent-sdk/cost-tracking) 了解计费注意事项。 |
-| `contextWindow`            | `int`   | 此模型的上下文窗口大小。                                                             |
-| `maxOutputTokens`          | `int`   | 此模型的最大输出令牌限制。                                                            |
+在[流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)中，`model_usage` 和 `total_cost_usd` 在轮次间是累积的，因此读取最新结果而不是跨结果求和。调用恢复会话时，也会计算[从会话早期调用恢复的总计](/docs/zh-CN/agent-sdk/cost-tracking#accumulate-costs-across-multiple-calls)。有关重置，请参阅[在流式输入模式中跟踪成本](/docs/zh-CN/agent-sdk/cost-tracking#track-costs-in-streaming-input-mode)，有关清零结果，请参阅[在会话崩溃后恢复总计](/docs/zh-CN/agent-sdk/cost-tracking#recover-totals-after-a-session-crash)。
+
+`model_usage` 中的每个值都是 `ModelUsage` TypedDict，通过 `from claude_agent_sdk.types import ModelUsage` 导入。其键使用 camelCase，因为 SDK 从底层 CLI 进程未修改地传递该值，匹配 TypeScript [`ModelUsage`](/docs/zh-CN/agent-sdk/typescript#modelusage) 类型：
+
+| 键 | 类型 | 描述 |
+| - | - | - |
+| `inputTokens` | `int` | 此模型的输入令牌。 |
+| `outputTokens` | `int` | 此模型的输出令牌。 |
+| `cacheReadInputTokens` | `int` | 此模型的缓存读取令牌。 |
+| `cacheCreationInputTokens` | `int` | 此模型的缓存创建令牌。 |
+| `webSearchRequests` | `int` | 此模型进行的网络搜索请求。 |
+| `thinkingTokens` | `int` | 此模型生成的思考令牌，已计入 `outputTokens`。在轮次在记录它的 Claude Code 版本上运行之前不存在，并且未在 TypedDict 上声明，因此使用 `.get()` 读取它。需要 Python Agent SDK 0.2.150 或更高版本，其附带的 CLI 记录它。 |
+| `costUSD` | `float` | 此模型的估计成本（美元），客户端计算。见[跟踪成本和使用](/docs/zh-CN/agent-sdk/cost-tracking)了解计费注意事项。 |
+| `contextWindow` | `int` | 此模型的上下文窗口大小。 |
+| `maxOutputTokens` | `int` | 此模型的最大输出令牌限制。 |
+| `canonicalModel` | `str` | 用于定价查询的规范模型 ID。可能与条目键入的原始模型字符串不同，例如特定于提供商的 ID 或别名。并非总是存在。 |
+| `provider` | `str` | 提供此模型的 API 提供商，例如 `firstParty`、`bedrock`、`vertex`、`foundry`、`anthropicAws`、`mantle` 或 `gateway`。并非总是存在。 |
 
 <h3 id="streamevent">
   `StreamEvent`
@@ -1782,12 +1834,12 @@ class StreamEvent:
     parent_tool_use_id: str | None = None
 ```
 
-| 字段                   | 类型               | 描述                                                                               |
-| :------------------- | :--------------- | :------------------------------------------------------------------------------- |
-| `uuid`               | `str`            | 此事件的唯一标识符                                                                        |
-| `session_id`         | `str`            | 会话标识符                                                                            |
-| `event`              | `dict[str, Any]` | 原始 Claude API 流事件数据                                                              |
-| `parent_tool_use_id` | `str \| None`    | 始终为 `None`。流事件仅为主会话发出。对于子代理归属，请使用完整消息，例如 [`AssistantMessage`](#assistantmessage) |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `uuid` | `str` | 此事件的唯一标识符 |
+| `session_id` | `str` | 会话标识符 |
+| `event` | `dict[str, Any]` | 原始 Claude API 流事件数据 |
+| `parent_tool_use_id` | `str \| None` | 始终为 `None`。流事件仅为主会话发出。对于子代理归属，请使用完整消息，例如 [`AssistantMessage`](#assistantmessage) |
 
 <h3 id="ratelimitevent">
   `RateLimitEvent`
@@ -1803,11 +1855,11 @@ class RateLimitEvent:
     session_id: str
 ```
 
-| 字段                | 类型                                | 描述       |
-| :---------------- | :-------------------------------- | :------- |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
 | `rate_limit_info` | [`RateLimitInfo`](#ratelimitinfo) | 当前速率限制状态 |
-| `uuid`            | `str`                             | 唯一事件标识符  |
-| `session_id`      | `str`                             | 会话标识符    |
+| `uuid` | `str` | 唯一事件标识符 |
+| `session_id` | `str` | 会话标识符 |
 
 <h3 id="ratelimitinfo">
   `RateLimitInfo`
@@ -1834,16 +1886,36 @@ class RateLimitInfo:
     raw: dict[str, Any] = field(default_factory=dict)
 ```
 
-| 字段                        | 类型                        | 描述                                                  |
-| :------------------------ | :------------------------ | :-------------------------------------------------- |
-| `status`                  | `RateLimitStatus`         | 当前状态。`"allowed_warning"` 表示接近限制；`"rejected"` 表示达到限制 |
-| `resets_at`               | `int \| None`             | 速率限制窗口重置的 Unix 时间戳                                  |
-| `rate_limit_type`         | `RateLimitType \| None`   | 哪个速率限制窗口适用                                          |
-| `utilization`             | `float \| None`           | 消耗的速率限制的分数（0.0 到 1.0）                               |
-| `overage_status`          | `RateLimitStatus \| None` | 按需付费超额使用的状态（如果适用）                                   |
-| `overage_resets_at`       | `int \| None`             | 超额窗口重置的 Unix 时间戳                                    |
-| `overage_disabled_reason` | `str \| None`             | 为什么超额不可用，如果状态为 `"rejected"`                         |
-| `raw`                     | `dict[str, Any]`          | 来自 CLI 的完整原始字典，包括上面未建模的字段                           |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `status` | `RateLimitStatus` | 当前状态，`"allowed"`、`"allowed_warning"` 或 `"rejected"` 之一。`"allowed_warning"` 表示接近限制；`"rejected"` 表示达到限制 |
+| `resets_at` | `int \| None` | 速率限制窗口重置的 Unix 时间戳 |
+| `rate_limit_type` | `RateLimitType \| None` | 哪个速率限制窗口适用 |
+| `utilization` | `float \| None` | 消耗的速率限制的分数（0.0 到 1.0） |
+| `overage_status` | `RateLimitStatus \| None` | 按需付费超额使用的状态（如果适用） |
+| `overage_resets_at` | `int \| None` | 超额窗口重置的 Unix 时间戳 |
+| `overage_disabled_reason` | `str \| None` | 为什么超额不可用，如果状态为 `"rejected"` |
+| `raw` | `dict[str, Any]` | 来自 CLI 的完整原始字典，包括上面未建模的字段 |
+
+<h3 id="conversationresetmessage">
+  `ConversationResetMessage`
+</h3>
+
+在不结束连接的情况下替换对话时发出，例如在 `/clear` 之后。有关重置如何影响后续 `ResultMessage` 对象上的运行总计，请参阅[在流式输入模式中跟踪成本](/docs/zh-CN/agent-sdk/cost-tracking#track-costs-in-streaming-input-mode)。需要 Python Agent SDK 0.2.137 或更高版本。
+
+```python theme={null}
+@dataclass
+class ConversationResetMessage:
+    new_conversation_id: str
+    uuid: str
+    session_id: str
+```
+
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `new_conversation_id` | `str` | 新对话的不透明标识符。不是后续消息的 `session_id`；从下一条消息读取 |
+| `uuid` | `str` | 唯一消息标识符 |
+| `session_id` | `str` | 被重置的会话的 ID。重置后的消息携带新的 `session_id` |
 
 <h3 id="taskstartedmessage">
   `TaskStartedMessage`
@@ -1862,14 +1934,14 @@ class TaskStartedMessage(SystemMessage):
     task_type: str | None = None
 ```
 
-| 字段            | 类型            | 描述                                                                              |
-| :------------ | :------------ | :------------------------------------------------------------------------------ |
-| `task_id`     | `str`         | 任务的唯一标识符                                                                        |
-| `description` | `str`         | 任务的描述                                                                           |
-| `uuid`        | `str`         | 唯一消息标识符                                                                         |
-| `session_id`  | `str`         | 会话标识符                                                                           |
-| `tool_use_id` | `str \| None` | 关联的工具使用 ID                                                                      |
-| `task_type`   | `str \| None` | 哪种后台任务：`"local_bash"` 用于后台 Bash 和 Monitor 监视，`"local_agent"` 或 `"remote_agent"` |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `task_id` | `str` | 任务的唯一标识符 |
+| `description` | `str` | 任务的描述 |
+| `uuid` | `str` | 唯一消息标识符 |
+| `session_id` | `str` | 会话标识符 |
+| `tool_use_id` | `str \| None` | 关联的工具使用 ID |
+| `task_type` | `str \| None` | 哪种后台任务：`"local_bash"` 用于后台 Bash 和 Monitor 监视，`"local_agent"` 或 `"remote_agent"` |
 
 <h3 id="taskusage">
   `TaskUsage`
@@ -1902,14 +1974,14 @@ class TaskProgressMessage(SystemMessage):
     last_tool_name: str | None = None
 ```
 
-| 字段               | 类型            | 描述             |
-| :--------------- | :------------ | :------------- |
-| `task_id`        | `str`         | 任务的唯一标识符       |
-| `description`    | `str`         | 当前状态描述         |
-| `usage`          | `TaskUsage`   | 此任务迄今为止的令牌使用情况 |
-| `uuid`           | `str`         | 唯一消息标识符        |
-| `session_id`     | `str`         | 会话标识符          |
-| `tool_use_id`    | `str \| None` | 关联的工具使用 ID     |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `task_id` | `str` | 任务的唯一标识符 |
+| `description` | `str` | 当前状态描述 |
+| `usage` | `TaskUsage` | 此任务迄今为止的令牌使用情况 |
+| `uuid` | `str` | 唯一消息标识符 |
+| `session_id` | `str` | 会话标识符 |
+| `tool_use_id` | `str \| None` | 关联的工具使用 ID |
 | `last_tool_name` | `str \| None` | 任务使用的最后一个工具的名称 |
 
 <h3 id="tasknotificationmessage">
@@ -1931,16 +2003,20 @@ class TaskNotificationMessage(SystemMessage):
     usage: TaskUsage | None = None
 ```
 
-| 字段            | 类型                       | 描述                                        |
-| :------------ | :----------------------- | :---------------------------------------- |
-| `task_id`     | `str`                    | 任务的唯一标识符                                  |
-| `status`      | `TaskNotificationStatus` | `"completed"`、`"failed"` 或 `"stopped"` 之一 |
-| `output_file` | `str`                    | 任务输出文件的路径                                 |
-| `summary`     | `str`                    | 任务结果的摘要                                   |
-| `uuid`        | `str`                    | 唯一消息标识符                                   |
-| `session_id`  | `str`                    | 会话标识符                                     |
-| `tool_use_id` | `str \| None`            | 关联的工具使用 ID                                |
-| `usage`       | `TaskUsage \| None`      | 任务的最终令牌使用情况                               |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `task_id` | `str` | 任务的唯一标识符 |
+| `status` | `TaskNotificationStatus` | `"completed"`、`"failed"` 或 `"stopped"` 之一 |
+| `output_file` | `str` | 任务输出文件的路径 |
+| `summary` | `str` | 任务结果的摘要 |
+| `uuid` | `str` | 唯一消息标识符 |
+| `session_id` | `str` | 会话标识符 |
+| `tool_use_id` | `str \| None` | 关联的工具使用 ID |
+| `usage` | `TaskUsage \| None` | 任务的最终令牌使用情况 |
+
+当 CLI [将长 MCP 工具调用移到后台](/docs/zh-CN/mcp#automatic-backgrounding-of-long-tool-calls)时，该调用的工具结果仅保存占位符，该调用的真实结果在此消息中到达。在此类调用的 `"completed"` 通知上，CLI 添加 `resource_links` 键，列出工具通过引用返回的文件，具有与 [`UserMessage.tool_use_result`](#usermessage) 上的 `resourceLinks` 键相同的条目和限制。`resource_links` 键需要 Python Agent SDK 0.2.150 或更高版本和 Claude Code v2.1.257 或更高版本；该 SDK 版本附带的 CLI 满足 Claude Code 要求。
+
+数据类没有 `resource_links` 字段。从消息继承自 [`SystemMessage`](#systemmessage) 的 `data` 字典读取它：`message.data.get("resource_links")`。使用 `tool_use_id` 匹配通知与调用。当结果没有链接时，CLI 会省略该键，在不是 MCP 工具调用的任务的通知上也会省略。
 
 <h2 id="content-block-types">
   内容块类型
@@ -1953,7 +2029,14 @@ class TaskNotificationMessage(SystemMessage):
 所有内容块的联合类型。
 
 ```python theme={null}
-ContentBlock = TextBlock | ThinkingBlock | ToolUseBlock | ToolResultBlock
+ContentBlock = (
+    TextBlock
+    | ThinkingBlock
+    | ToolUseBlock
+    | ToolResultBlock
+    | ServerToolUseBlock
+    | ServerToolResultBlock
+)
 ```
 
 <h3 id="textblock">
@@ -2013,6 +2096,8 @@ class ToolResultBlock:
   错误类型
 </h2>
 
+下面的类型定义了你的代码可以捕获的内容。对于与这些类型引发的错误消息相关的条目，包括每个错误的原因和修复方法，请参阅[故障排除](/docs/zh-CN/agent-sdk/troubleshooting)。
+
 <h3 id="claudesdkerror">
   `ClaudeSDKError`
 </h3>
@@ -2023,6 +2108,8 @@ class ToolResultBlock:
 class ClaudeSDKError(Exception):
     """Base error for Claude SDK."""
 ```
+
+当单次 `query()` 以错误结果结束时，例如达到轮次限制错误，SDK 会在生成最终结果消息后引发 [`ResultError`](#resulterror)。Python Agent SDK 0.2.140 之前的版本引发的是不属于 `ClaudeSDKError` 子类的普通 `Exception`。
 
 <h3 id="clinotfounderror">
   `CLINotFoundError`
@@ -2067,6 +2154,25 @@ class ProcessError(ClaudeSDKError):
         self.exit_code = exit_code
         self.stderr = stderr
 ```
+
+<h3 id="resulterror">
+  `ResultError`
+</h3>
+
+当 Claude Code 进程因运行以错误结果结束而退出时引发，例如达到轮次限制错误或 API 错误。在最终 [`ResultMessage`](#resultmessage) 之后引发。`ResultError` 是 `ProcessError` 的子类，因此现有的 `except ProcessError` 处理程序也会捕获它。其属性包含该结果消息的字段，因此你可以根据运行失败的原因进行分支，而无需解析消息文本。需要 Python Agent SDK 0.2.140 或更高版本。
+
+```python theme={null}
+class ResultError(ProcessError):
+    subtype: str | None  # "error_max_turns", "error_during_execution", ...; "success" when the run ended on a failed request
+    errors: list[str]  # an empty list when the result message reported none
+    result: str | None
+    api_error_status: int | None
+    terminal_reason: str | None  # "max_turns", "api_error", ...; check this before subtype
+    session_id: str | None
+    data: dict[str, Any]  # the raw result message payload
+```
+
+要区分失败，请在检查 `subtype` 之前先检查 `terminal_reason`。当最终请求失败时，例如 API 错误，Claude Code 会报告 `subtype` 为 `"success"`，原因在 `terminal_reason` 中，例如 `"api_error"`；当你设置的限制结束运行时，例如 `max_turns` 或 `max_budget_usd`，它会报告 `error_*` 子类型。
 
 <h3 id="clijsondecodeerror">
   `CLIJSONDecodeError`
@@ -2114,7 +2220,7 @@ HookEvent = Literal[
 ```
 
 <Note>
-  TypeScript SDK 支持 Python 中尚未提供的其他 hook 事件：`SessionStart`、`SessionEnd`、`Setup`、`TeammateIdle`、`TaskCompleted`、`ConfigChange`、`WorktreeCreate`、`WorktreeRemove`、`PostToolBatch` 和 `MessageDisplay`。
+  TypeScript SDK 支持 Python 中尚未提供的其他 hook 事件。见 [hook 可用性表](/docs/zh-CN/agent-sdk/hooks#available-hooks) 了解每个 SDK 的支持情况。
 </Note>
 
 <h3 id="hookcallback">
@@ -2133,11 +2239,7 @@ HookCallback = Callable[[HookInput, str | None, HookContext], Awaitable[HookJSON
 * `tool_use_id`：可选工具使用标识符（用于工具相关的 hooks）
 * `context`：带有附加信息的 hook 上下文
 
-返回可能包含以下内容的 [`HookJSONOutput`](#hookjsonoutput)：
-
-* `decision`：`"block"` 以阻止操作
-* `systemMessage`：显示给用户的警告消息
-* `hookSpecificOutput`：hook 特定的输出数据
+返回 [`HookJSONOutput`](#hookjsonoutput)。
 
 <h3 id="hookcontext">
   `HookContext`
@@ -2166,7 +2268,8 @@ class HookMatcher:
         default_factory=list
     )  # List of callbacks to execute
     timeout: float | None = (
-        None  # Timeout in seconds for all hooks in this matcher (default: 60)
+        None  # Timeout in seconds. When omitted, the per-event default applies:
+        # 600 for most events, 30 for UserPromptSubmit
     )
 ```
 
@@ -2205,12 +2308,12 @@ class BaseHookInput(TypedDict):
     permission_mode: NotRequired[str]
 ```
 
-| 字段                | 类型        | 描述        |
-| :---------------- | :-------- | :-------- |
-| `session_id`      | `str`     | 当前会话标识符   |
-| `transcript_path` | `str`     | 会话记录文件的路径 |
-| `cwd`             | `str`     | 当前工作目录    |
-| `permission_mode` | `str`（可选） | 当前权限模式    |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `session_id` | `str` | 当前会话标识符 |
+| `transcript_path` | `str` | 会话记录文件的路径 |
+| `cwd` | `str` | 当前工作目录 |
+| `permission_mode` | `str`（可选） | 当前权限模式 |
 
 <h3 id="pretoolusehookinput">
   `PreToolUseHookInput`
@@ -2228,14 +2331,14 @@ class PreToolUseHookInput(BaseHookInput):
     agent_type: NotRequired[str]
 ```
 
-| 字段                | 类型                      | 描述                       |
-| :---------------- | :---------------------- | :----------------------- |
-| `hook_event_name` | `Literal["PreToolUse"]` | 始终为 "PreToolUse"         |
-| `tool_name`       | `str`                   | 即将执行的工具的名称               |
-| `tool_input`      | `dict[str, Any]`        | 工具的输入参数                  |
-| `tool_use_id`     | `str`                   | 此工具使用的唯一标识符              |
-| `agent_id`        | `str`（可选）               | 子代理标识符，当 hook 在子代理内触发时存在 |
-| `agent_type`      | `str`（可选）               | 子代理类型，当 hook 在子代理内触发时存在  |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["PreToolUse"]` | 始终为 "PreToolUse" |
+| `tool_name` | `str` | 即将执行的工具的名称 |
+| `tool_input` | `dict[str, Any]` | 工具的输入参数 |
+| `tool_use_id` | `str` | 此工具使用的唯一标识符 |
+| `agent_id` | `str`（可选） | 子代理标识符，当 hook 在子代理内触发时存在 |
+| `agent_type` | `str`（可选） | 子代理类型，当 hook 在子代理内触发时存在 |
 
 <h3 id="posttoolusehookinput">
   `PostToolUseHookInput`
@@ -2254,15 +2357,15 @@ class PostToolUseHookInput(BaseHookInput):
     agent_type: NotRequired[str]
 ```
 
-| 字段                | 类型                       | 描述                       |
-| :---------------- | :----------------------- | :----------------------- |
-| `hook_event_name` | `Literal["PostToolUse"]` | 始终为 "PostToolUse"        |
-| `tool_name`       | `str`                    | 已执行的工具的名称                |
-| `tool_input`      | `dict[str, Any]`         | 使用的输入参数                  |
-| `tool_response`   | `Any`                    | 工具执行的响应                  |
-| `tool_use_id`     | `str`                    | 此工具使用的唯一标识符              |
-| `agent_id`        | `str`（可选）                | 子代理标识符，当 hook 在子代理内触发时存在 |
-| `agent_type`      | `str`（可选）                | 子代理类型，当 hook 在子代理内触发时存在  |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["PostToolUse"]` | 始终为 "PostToolUse" |
+| `tool_name` | `str` | 已执行的工具的名称 |
+| `tool_input` | `dict[str, Any]` | 使用的输入参数 |
+| `tool_response` | `Any` | 工具执行的响应 |
+| `tool_use_id` | `str` | 此工具使用的唯一标识符 |
+| `agent_id` | `str`（可选） | 子代理标识符，当 hook 在子代理内触发时存在 |
+| `agent_type` | `str`（可选） | 子代理类型，当 hook 在子代理内触发时存在 |
 
 <h3 id="posttoolusefailurehookinput">
   `PostToolUseFailureHookInput`
@@ -2282,16 +2385,16 @@ class PostToolUseFailureHookInput(BaseHookInput):
     agent_type: NotRequired[str]
 ```
 
-| 字段                | 类型                              | 描述                       |
-| :---------------- | :------------------------------ | :----------------------- |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
 | `hook_event_name` | `Literal["PostToolUseFailure"]` | 始终为 "PostToolUseFailure" |
-| `tool_name`       | `str`                           | 失败的工具的名称                 |
-| `tool_input`      | `dict[str, Any]`                | 使用的输入参数                  |
-| `tool_use_id`     | `str`                           | 此工具使用的唯一标识符              |
-| `error`           | `str`                           | 失败执行的错误消息                |
-| `is_interrupt`    | `bool`（可选）                      | 失败是否由中断引起                |
-| `agent_id`        | `str`（可选）                       | 子代理标识符，当 hook 在子代理内触发时存在 |
-| `agent_type`      | `str`（可选）                       | 子代理类型，当 hook 在子代理内触发时存在  |
+| `tool_name` | `str` | 失败的工具的名称 |
+| `tool_input` | `dict[str, Any]` | 使用的输入参数 |
+| `tool_use_id` | `str` | 此工具使用的唯一标识符 |
+| `error` | `str` | 失败执行的错误消息 |
+| `is_interrupt` | `bool`（可选） | 当失败作为中止而不是工具报告的错误到达 Claude Code 时为真。使用 `interrupt()` 取消正在运行的工具不会触发此 hook；工具结果改为包含中断消息 |
+| `agent_id` | `str`（可选） | 子代理标识符，当 hook 在子代理内触发时存在 |
+| `agent_type` | `str`（可选） | 子代理类型，当 hook 在子代理内触发时存在 |
 
 <h3 id="userpromptsubmithookinput">
   `UserPromptSubmitHookInput`
@@ -2305,10 +2408,10 @@ class UserPromptSubmitHookInput(BaseHookInput):
     prompt: str
 ```
 
-| 字段                | 类型                            | 描述                     |
-| :---------------- | :---------------------------- | :--------------------- |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
 | `hook_event_name` | `Literal["UserPromptSubmit"]` | 始终为 "UserPromptSubmit" |
-| `prompt`          | `str`                         | 用户提交的提示                |
+| `prompt` | `str` | 用户提交的提示 |
 
 <h3 id="stophookinput">
   `StopHookInput`
@@ -2322,10 +2425,10 @@ class StopHookInput(BaseHookInput):
     stop_hook_active: bool
 ```
 
-| 字段                 | 类型                | 描述             |
-| :----------------- | :---------------- | :------------- |
-| `hook_event_name`  | `Literal["Stop"]` | 始终为 "Stop"     |
-| `stop_hook_active` | `bool`            | stop hook 是否活跃 |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["Stop"]` | 始终为 "Stop" |
+| `stop_hook_active` | `bool` | stop hook 是否活跃 |
 
 <h3 id="subagentstophookinput">
   `SubagentStopHookInput`
@@ -2342,13 +2445,13 @@ class SubagentStopHookInput(BaseHookInput):
     agent_type: str
 ```
 
-| 字段                      | 类型                        | 描述                 |
-| :---------------------- | :------------------------ | :----------------- |
-| `hook_event_name`       | `Literal["SubagentStop"]` | 始终为 "SubagentStop" |
-| `stop_hook_active`      | `bool`                    | stop hook 是否活跃     |
-| `agent_id`              | `str`                     | 子代理的唯一标识符          |
-| `agent_transcript_path` | `str`                     | 子代理的记录文件路径         |
-| `agent_type`            | `str`                     | 子代理的类型             |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["SubagentStop"]` | 始终为 "SubagentStop" |
+| `stop_hook_active` | `bool` | stop hook 是否活跃 |
+| `agent_id` | `str` | 子代理的唯一标识符 |
+| `agent_transcript_path` | `str` | 子代理的记录文件路径 |
+| `agent_type` | `str` | 子代理的类型 |
 
 <h3 id="precompacthookinput">
   `PreCompactHookInput`
@@ -2363,11 +2466,11 @@ class PreCompactHookInput(BaseHookInput):
     custom_instructions: str | None
 ```
 
-| 字段                    | 类型                          | 描述               |
-| :-------------------- | :-------------------------- | :--------------- |
-| `hook_event_name`     | `Literal["PreCompact"]`     | 始终为 "PreCompact" |
-| `trigger`             | `Literal["manual", "auto"]` | 什么触发了压缩          |
-| `custom_instructions` | `str \| None`               | 压缩的自定义说明         |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["PreCompact"]` | 始终为 "PreCompact" |
+| `trigger` | `Literal["manual", "auto"]` | 什么触发了压缩 |
+| `custom_instructions` | `str \| None` | 压缩的自定义说明 |
 
 <h3 id="notificationhookinput">
   `NotificationHookInput`
@@ -2383,12 +2486,12 @@ class NotificationHookInput(BaseHookInput):
     notification_type: str
 ```
 
-| 字段                  | 类型                        | 描述                 |
-| :------------------ | :------------------------ | :----------------- |
-| `hook_event_name`   | `Literal["Notification"]` | 始终为 "Notification" |
-| `message`           | `str`                     | 通知消息内容             |
-| `title`             | `str`（可选）                 | 通知标题               |
-| `notification_type` | `str`                     | 通知类型               |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["Notification"]` | 始终为 "Notification" |
+| `message` | `str` | 通知消息内容 |
+| `title` | `str`（可选） | 通知标题 |
+| `notification_type` | `str` | 通知类型 |
 
 <h3 id="subagentstarthookinput">
   `SubagentStartHookInput`
@@ -2403,11 +2506,11 @@ class SubagentStartHookInput(BaseHookInput):
     agent_type: str
 ```
 
-| 字段                | 类型                         | 描述                  |
-| :---------------- | :------------------------- | :------------------ |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
 | `hook_event_name` | `Literal["SubagentStart"]` | 始终为 "SubagentStart" |
-| `agent_id`        | `str`                      | 子代理的唯一标识符           |
-| `agent_type`      | `str`                      | 子代理的类型              |
+| `agent_id` | `str` | 子代理的唯一标识符 |
+| `agent_type` | `str` | 子代理的类型 |
 
 <h3 id="permissionrequesthookinput">
   `PermissionRequestHookInput`
@@ -2425,14 +2528,14 @@ class PermissionRequestHookInput(BaseHookInput):
     agent_type: NotRequired[str]
 ```
 
-| 字段                       | 类型                             | 描述                       |
-| :----------------------- | :----------------------------- | :----------------------- |
-| `hook_event_name`        | `Literal["PermissionRequest"]` | 始终为 "PermissionRequest"  |
-| `tool_name`              | `str`                          | 请求权限的工具的名称               |
-| `tool_input`             | `dict[str, Any]`               | 工具的输入参数                  |
-| `permission_suggestions` | `list[Any]`（可选）                | 来自 CLI 的建议权限更新           |
-| `agent_id`               | `str`（可选）                      | 子代理标识符，当 hook 在子代理内触发时存在 |
-| `agent_type`             | `str`（可选）                      | 子代理类型，当 hook 在子代理内触发时存在  |
+| 字段 | 类型 | 描述 |
+| :- | :- | :- |
+| `hook_event_name` | `Literal["PermissionRequest"]` | 始终为 "PermissionRequest" |
+| `tool_name` | `str` | 请求权限的工具的名称 |
+| `tool_input` | `dict[str, Any]` | 工具的输入参数 |
+| `permission_suggestions` | `list[Any]`（可选） | 来自 CLI 的建议权限更新 |
+| `agent_id` | `str`（可选） | 子代理标识符，当 hook 在子代理内触发时存在 |
+| `agent_type` | `str`（可选） | 子代理类型，当 hook 在子代理内触发时存在 |
 
 <h3 id="hookjsonoutput">
   `HookJSONOutput`
@@ -2474,9 +2577,7 @@ class SyncHookJSONOutput(TypedDict):
   `HookSpecificOutput`
 </h4>
 
-包含 hook 事件名称和事件特定字段的 `TypedDict`。形状取决于 `hookEventName` 值。有关每个 hook 事件的可用字段的完整详情，见 [使用 hooks 控制执行](/docs/zh-CN/agent-sdk/hooks#outputs)。
-
-事件特定输出类型的判别联合。`hookEventName` 字段确定哪些字段有效。
+事件特定输出类型的判别联合。`hookEventName` 字段确定哪些字段有效。有关每个 hook 事件的可用字段的完整详情，见 [使用 hooks 控制执行](/docs/zh-CN/agent-sdk/hooks#outputs)。
 
 ```python theme={null}
 class PreToolUseHookSpecificOutput(TypedDict):
@@ -2553,6 +2654,7 @@ class AsyncHookJSONOutput(TypedDict):
 此示例注册两个 hooks：一个阻止危险的 bash 命令（如 `rm -rf /`），另一个记录所有工具使用以进行审计。安全 hook 仅在 Bash 命令上运行（通过 `matcher`），而日志 hook 在所有工具上运行。
 
 ```python theme={null}
+import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, HookMatcher, HookContext
 from typing import Any
 
@@ -2590,14 +2692,18 @@ options = ClaudeAgentOptions(
             ),  # 2 min for validation
             HookMatcher(
                 hooks=[log_tool_use]
-            ),  # Applies to all tools (default 60s timeout)
+            ),  # Applies to all tools (per-event default timeout)
         ],
         "PostToolUse": [HookMatcher(hooks=[log_tool_use])],
     }
 )
 
-async for message in query(prompt="Analyze this codebase", options=options):
-    print(message)
+async def main():
+    async for message in query(prompt="Analyze this codebase", options=options):
+        print(message)
+
+
+asyncio.run(main())
 ```
 
 <h2 id="tool-input/output-types">
@@ -2610,7 +2716,7 @@ async for message in query(prompt="Analyze this codebase", options=options):
   Agent
 </h3>
 
-**工具名称：** `Agent`（之前为 `Task`，仍然接受作为别名）
+**工具名称：** `Agent`。之前的名称 `Task` 仍然被接受作为别名，初始化 [`SystemMessage`](#systemmessage) 中的 `tools` 列表为了向后兼容将此工具报告为 `Task`。
 
 **输入：**
 
@@ -2618,20 +2724,100 @@ async for message in query(prompt="Analyze this codebase", options=options):
 {
     "description": str,  # 任务的简短描述（3-5 个单词）
     "prompt": str,  # 代理要执行的任务
-    "subagent_type": str,  # 要使用的专门代理的类型
+    "subagent_type": str | None,  # 要使用的专门代理的类型
+    "model": "sonnet" | "opus" | "haiku" | "fable" | None,  # 此代理的模型覆盖
+    "run_in_background": bool | None,  # 代理默认在后台运行；设置为 False 以同步运行
+    "name": str | None,  # 生成的代理的名称
+    "team_name": str | None,  # 已弃用；被忽略
+    "mode": "acceptEdits" | "auto" | "bypassPermissions" | "default" | "dontAsk" | "plan" | None,  # 已弃用；被忽略。子代理继承规则决定子代理的权限模式
+    "isolation": "worktree" | "remote" | None,  # 代理更改的隔离模式
 }
 ```
 
-**输出：**
+启动一个新代理来自主处理复杂的多步骤任务。
+
+**输出（状态：`"completed"`）：**
 
 ```python theme={null}
 {
-    "result": str,  # 来自子代理的最终结果
-    "usage": dict | None,  # 令牌使用统计
-    "total_cost_usd": float | None,  # 以美元计的估计总成本
-    "duration_ms": int | None,  # 执行持续时间（毫秒）
+    "status": "completed",
+    "agentId": str,  # 运行的代理的 ID
+    "agentType": str | None,  # 处理任务的子代理类型
+    "content": [  # 结果内容块
+        {
+            "type": "text",
+            "text": str,
+            "citations": list | None,
+        }
+    ],
+    "resolvedModel": str | None,  # 子代理启动时的模型
+    "modelsUsed": list[str] | None,  # 按顺序使用的模型，连续重复被折叠
+    "totalToolUseCount": int,  # 代理进行的工具调用次数
+    "totalDurationMs": int,  # 执行持续时间（毫秒）
+    "totalTokens": int,  # 来自最终 API 请求的令牌计数，不是整个运行
+    "usage": {  # 令牌使用统计
+        "input_tokens": int,
+        "output_tokens": int,
+        "cache_creation_input_tokens": int | None,
+        "cache_read_input_tokens": int | None,
+        "server_tool_use": {"web_search_requests": int, "web_fetch_requests": int} | None,
+        "service_tier": str | None,
+        "cache_creation": {"ephemeral_1h_input_tokens": int, "ephemeral_5m_input_tokens": int} | None,
+        "inference_geo": str | None,
+        "speed": str | None,
+        "iterations": Any | None,
+        "output_tokens_details": {"thinking_tokens": int | None} | None,
+    },
+    "toolStats": {  # 运行的聚合工具活动
+        "readCount": int,
+        "searchCount": int,
+        "bashCount": int,
+        "editFileCount": int,
+        "linesAdded": int,
+        "linesRemoved": int,
+        "otherToolCount": int,
+        "frameCount": int | None,
+    } | None,
+    "prompt": str,  # 代理运行的提示
+    "worktreePath": str | None,  # 当 Claude Code 保留子代理的 worktree 时出现
+    "worktreeBranch": str | None,  # 当 Claude Code 使用 git 创建该 worktree 时出现
 }
 ```
+
+**输出（状态：`"async_launched"`）：**
+
+```python theme={null}
+{
+    "status": "async_launched",
+    "isAsync": bool | None,  # 后台启动时为 True
+    "agentId": str,  # 启动的代理的 ID
+    "description": str,  # 任务描述
+    "resolvedModel": str | None,  # 后台转换时使用的模型
+    "modelsUsed": list[str] | None,  # 后台转换前使用的模型，按顺序，连续重复被折叠
+    "prompt": str,  # 代理运行的提示
+    "outputFile": str,  # 代理输出被写入的文件路径
+    "canReadOutputFile": bool | None,  # 输出文件是否可以直接读取
+}
+```
+
+**输出（状态：`"remote_launched"`）：**
+
+```python theme={null}
+{
+    "status": "remote_launched",
+    "taskId": str,  # 远程任务的 ID
+    "sessionUrl": str,  # 远程云会话的链接
+    "description": str,  # 任务描述
+    "prompt": str,  # 代理运行的提示
+    "outputFile": str,  # 代理输出被写入的文件路径
+}
+```
+
+返回来自子代理的结果。输出在 `status` 字段上进行区分：`"completed"` 用于完成的任务，`"async_launched"` 用于后台任务，`"remote_launched"` 用于 Claude Code 分派到远程云会话的任务，其中 `sessionUrl` 链接到该会话，`taskId` 标识它。如果 Claude Code [保留了子代理的隔离 worktree](/docs/zh-CN/worktrees#isolate-subagents-with-worktrees)，`completed` 变体上的 `worktreePath` 是找到它的位置，`worktreeBranch` 是当 Claude Code 使用 git 创建 worktree 时的分支。
+
+在 `completed` 变体上，`resolvedModel` 命名子代理启动时的模型，当应用 [`availableModels`](/docs/zh-CN/model-config#restrict-model-selection) 或其他覆盖时，它可能与请求的 `model` 输入不同。此字段需要 Claude Code v2.1.174 或更高版本。在 `async_launched` 变体上，`resolvedModel` 命名代理移到后台时使用的模型，因此在后台转换之前发生的交换会反映在那里。两个变体上的 `modelsUsed` 字段按顺序列出使用的模型，连续重复被折叠；仅当模型在运行中被交换时才设置。`modelsUsed` 和后台转换时的 `resolvedModel` 行为需要 Claude Code v2.1.212 或更高版本。
+
+Claude Code 从子代理的最终 API 请求而不是整个运行中填充 `usage` 和 `totalTokens`。当存在时，`usage` 中 `output_tokens_details` 下的 `thinking_tokens` 是该请求的输出令牌中是思考令牌的数量。`output_tokens_details` 键需要 Python SDK v0.2.136 或更高版本，它捆绑了 Claude Code v2.1.228。
 
 <h3 id="askuserquestion">
   AskUserQuestion
@@ -2653,14 +2839,21 @@ async for message in query(prompt="Analyze this codebase", options=options):
                 {
                     "label": str,  # 此选项的显示文本（1-5 个单词）
                     "description": str,  # 此选项含义的说明
+                    "preview": str | None,  # 当选项被聚焦时呈现的预览内容
                 }
             ],
             "multiSelect": bool,  # 设置为 true 以允许多个选择
         }
     ],
-    "answers": dict[str, str | list[str]] | None,
+    "answers": dict[str, str] | None,
     # 由权限系统填充的用户答案。多选
-    # 答案可能是标签列表或逗号连接的字符串
+    # 答案是所选标签的逗号连接字符串；
+    # 输入时接受标签列表并强制转换为该形式
+    "annotations": dict[str, dict] | None,
+    # 来自用户的按问题文本键入的每个问题注释。
+    # 每个值可以携带"preview"（所选选项的预览
+    # 内容）和"notes"（关于选择的自由文本注释）
+    "metadata": dict | None,  # 分析元数据，例如 {"source": "remember"}；不向用户显示
 }
 ```
 
@@ -2672,12 +2865,17 @@ async for message in query(prompt="Analyze this codebase", options=options):
         {
             "question": str,
             "header": str,
-            "options": [{"label": str, "description": str}],
+            "options": [{"label": str, "description": str, "preview": str | None}],
             "multiSelect": bool,
         }
     ],
     "answers": dict[str, str],  # 将问题文本映射到答案字符串
     # 多选答案以逗号分隔
+    "response": str | None,
+    # 用户输入的自由形式回复而不是回答问题；当设置时，
+    # Claude 收到"用户回复：..."而不是答案列表
+    "annotations": dict[str, dict] | None,  # 来自用户选择的每个问题"preview"和"notes"
+    "afkTimeoutMs": int | None,  # 在用户不活动这么多毫秒后对话自动解决时设置；用户回答时不存在
 }
 ```
 
@@ -2687,12 +2885,14 @@ async for message in query(prompt="Analyze this codebase", options=options):
 
 **工具名称：** `Bash`
 
+关于设置前台上限的内容，见 [超时和输出限制](/docs/zh-CN/tools-reference#timeout-and-output-limits)。关于后台时间限制，见 [后台命令的时间限制](/docs/zh-CN/tools-reference#time-limit-for-background-commands)。
+
 **输入：**
 
 ```python theme={null}
 {
     "command": str,  # 要执行的命令
-    "timeout": int | None,  # 可选的超时时间（毫秒）（最大 600000；更高的值被限制为最大值）
+    "timeout": int | None,  # 毫秒。前台：默认上限为 600000，更高的值被限制。使用 run_in_background（Claude Code v2.1.285 或更高版本）：后台时间限制，省略时为 1800000，上限为 7200000，除非提高
     "description": str | None,  # 清晰、简洁的描述（5-10 个单词）
     "run_in_background": bool | None,  # 设置为 true 以在后台运行
 }
@@ -2702,10 +2902,11 @@ async for message in query(prompt="Analyze this codebase", options=options):
 
 ```python theme={null}
 {
-    "output": str,  # 合并的 stdout 和 stderr 输出
-    "exitCode": int,  # 命令的退出代码
-    "killed": bool | None,  # 命令是否因超时而被杀死
-    "shellId": str | None,  # 后台进程的 Shell ID
+    "stdout": str,  # 命令的输出；stdout 和 stderr 合并到这个一个交错流中
+    "stderr": str,  # 工具本身添加的通知，不是命令的 stderr
+    "interrupted": bool,  # 命令是否被中断
+    "isImage": bool | None,  # stdout 是否包含图像数据
+    "backgroundTaskId": str | None,  # 如果命令在后台运行，后台任务的 ID
 }
 ```
 
@@ -2726,8 +2927,7 @@ async for message in query(prompt="Analyze this codebase", options=options):
     "command": str | None,  # Shell 脚本；每个 stdout 行是一个事件，退出结束监视
     "ws": dict | None,  # WebSocket 源：{"url": str, "protocols": list[str] | None}；每个文本帧是一个事件
     "description": str,  # 在通知中显示的简短描述
-    "timeout_ms": int | None,  # 在此截止时间后杀死（默认 300000，最大 3600000）
-    "persistent": bool | None,  # 在会话的生命周期内运行；使用 TaskStop 停止
+    "timeout_ms": int | None,  # 截止时间（毫秒）（默认 300000，最大 3600000；有效截止时间最多为 1800000）
 }
 ```
 
@@ -2736,8 +2936,8 @@ async for message in query(prompt="Analyze this codebase", options=options):
 ```python theme={null}
 {
     "taskId": str,  # 后台监视任务的 ID
-    "timeoutMs": int,  # 超时截止时间（毫秒）（持久时为 0）
-    "persistent": bool | None,  # 当运行到 TaskStop 或会话结束时为 True
+    "timeoutMs": int,  # 监视的有效截止时间（毫秒）
+    "persistent": bool | None,  # False：每个监视都有一个截止时间
 }
 ```
 
@@ -2995,7 +3195,19 @@ async for message in query(prompt="Analyze this codebase", options=options):
 **工具名称：** `TodoWrite`
 
 <Note>
-  自 Claude Code v2.1.142 起，`TodoWrite` 默认被禁用。改用 `TaskCreate`、`TaskGet`、`TaskUpdate` 和 `TaskList`。见 [迁移到 Task 工具](/docs/zh-CN/agent-sdk/todo-tracking#migrate-to-task-tools) 更新您的监视代码，或设置 `CLAUDE_CODE_ENABLE_TASKS=0` 以恢复到 `TodoWrite`。
+  以下工具仅在 Claude 3.x 模型、Opus 4 至 4.7、Sonnet 4 至 4.6 和 Haiku 4.5 上默认可用。在所有其他模型上，包括 Claude Code 无法识别的模型 ID，除非您选择加入，否则它们不可用：
+
+  * `TodoWrite`
+  * `TaskCreate`
+  * `TaskGet`
+  * `TaskUpdate`
+  * `TaskList`
+
+  无论工具在何处可用，Claude Code 都提供四个 Task 工具，或者当你设置 `CLAUDE_CODE_ENABLE_TASKS=0` 时改为提供 `TodoWrite`。
+
+  此默认集合适用于 Claude Code v2.1.268 及更高版本，TypeScript Agent SDK 从 v0.3.268 开始捆绑此版本。
+
+  见 [模型可用性](/docs/zh-CN/agent-sdk/todo-tracking#model-availability) 以选择加入。
 </Note>
 
 **输入：**
@@ -3137,18 +3349,26 @@ async for message in query(prompt="Analyze this codebase", options=options):
 }
 ```
 
-<h3 id="bashoutput">
-  BashOutput
+<h3 id="taskoutput">
+  TaskOutput
 </h3>
 
-**工具名称：** `BashOutput`
+在 Claude Code v2.1.277 中移除。之前检索来自运行中或已完成的后台任务的输出，`BashOutput` 被接受作为别名；Claude 改用 `Read` 在后台任务的输出文件上读取。
+
+`disallowed_tools` 条目或仍然命名任一名称的拒绝规则被忽略而不发出警告。
+
+<h3 id="taskstop">
+  TaskStop
+</h3>
+
+**工具名称：** `TaskStop`。之前的名称 `KillShell` 和 `KillBash` 仍然被接受作为别名。
 
 **输入：**
 
 ```python theme={null}
 {
-    "bash_id": str,  # 后台 shell 的 ID
-    "filter": str | None,  # 用于过滤输出行的可选正则表达式
+    "task_id": str | None,  # 要停止的后台任务的 ID
+    "shell_id": str | None,  # 已弃用：改用 task_id
 }
 ```
 
@@ -3156,32 +3376,10 @@ async for message in query(prompt="Analyze this codebase", options=options):
 
 ```python theme={null}
 {
-    "output": str,  # 自上次检查以来的新输出
-    "status": "running" | "completed" | "failed",  # 当前 shell 状态
-    "exitCode": int | None,  # 完成时的退出代码
-}
-```
-
-<h3 id="killbash">
-  KillBash
-</h3>
-
-**工具名称：** `KillBash`
-
-**输入：**
-
-```python theme={null}
-{
-    "shell_id": str  # 要杀死的后台 shell 的 ID
-}
-```
-
-**输出：**
-
-```python theme={null}
-{
-    "message": str,  # 成功消息
-    "shell_id": str,  # 被杀死的 shell 的 ID
+    "message": str,  # 关于操作的状态消息
+    "task_id": str,  # 被停止的任务的 ID
+    "task_type": str,  # 被停止的任务的类型
+    "command": str | None,  # 被停止的任务的命令或描述
 }
 ```
 
@@ -3265,13 +3463,11 @@ async for message in query(prompt="Analyze this codebase", options=options):
 }
 ```
 
-<h2 id="advanced-features-with-claudesdkclient">
-  ClaudeSDKClient 的高级功能
+<h2 id="build-a-continuous-conversation-interface">
+  构建持续对话界面
 </h2>
 
-<h3 id="building-a-continuous-conversation-interface">
-  构建持续对话界面
-</h3>
+以下示例保持一个 `ClaudeSDKClient` 在多个回合中保持连接，以便 Claude 记住之前的消息。输入 `new` 可以断开连接并重新连接以获得新的会话，或输入 `exit` 结束对话。
 
 ```python theme={null}
 from claude_agent_sdk import (
@@ -3350,285 +3546,46 @@ async def main():
 asyncio.run(main())
 ```
 
-<h3 id="using-hooks-for-behavior-modification">
-  使用 Hooks 进行行为修改
-</h3>
-
-```python theme={null}
-from claude_agent_sdk import (
-    ClaudeSDKClient,
-    ClaudeAgentOptions,
-    HookMatcher,
-    HookContext,
-)
-import asyncio
-from typing import Any
-
-
-async def pre_tool_logger(
-    input_data: dict[str, Any], tool_use_id: str | None, context: HookContext
-) -> dict[str, Any]:
-    """Log all tool usage before execution."""
-    tool_name = input_data.get("tool_name", "unknown")
-    print(f"[PRE-TOOL] About to use: {tool_name}")
-
-    # You can modify or block the tool execution here
-    if tool_name == "Bash" and "rm -rf" in str(input_data.get("tool_input", {})):
-        return {
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "permissionDecision": "deny",
-                "permissionDecisionReason": "Dangerous command blocked",
-            }
-        }
-    return {}
-
-
-async def post_tool_logger(
-    input_data: dict[str, Any], tool_use_id: str | None, context: HookContext
-) -> dict[str, Any]:
-    """Log results after tool execution."""
-    tool_name = input_data.get("tool_name", "unknown")
-    print(f"[POST-TOOL] Completed: {tool_name}")
-    return {}
-
-
-async def user_prompt_modifier(
-    input_data: dict[str, Any], tool_use_id: str | None, context: HookContext
-) -> dict[str, Any]:
-    """Add context to user prompts."""
-    original_prompt = input_data.get("prompt", "")
-
-    # Add a timestamp as additional context for Claude to see
-    from datetime import datetime
-
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    return {
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": f"[Submitted at {timestamp}] Original prompt: {original_prompt}",
-        }
-    }
-
-
-async def main():
-    options = ClaudeAgentOptions(
-        hooks={
-            "PreToolUse": [
-                HookMatcher(hooks=[pre_tool_logger]),
-                HookMatcher(matcher="Bash", hooks=[pre_tool_logger]),
-            ],
-            "PostToolUse": [HookMatcher(hooks=[post_tool_logger])],
-            "UserPromptSubmit": [HookMatcher(hooks=[user_prompt_modifier])],
-        },
-        allowed_tools=["Read", "Write", "Bash"],
-    )
-
-    async with ClaudeSDKClient(options=options) as client:
-        await client.query("List files in current directory")
-
-        async for message in client.receive_response():
-            # Hooks will automatically log tool usage
-            pass
-
-
-asyncio.run(main())
-```
-
-<h3 id="real-time-progress-monitoring">
-  实时进度监控
-</h3>
-
-```python theme={null}
-from claude_agent_sdk import (
-    ClaudeSDKClient,
-    ClaudeAgentOptions,
-    AssistantMessage,
-    ToolUseBlock,
-    ToolResultBlock,
-    TextBlock,
-)
-import asyncio
-
-
-async def monitor_progress():
-    options = ClaudeAgentOptions(
-        allowed_tools=["Write", "Bash"], permission_mode="acceptEdits"
-    )
-
-    async with ClaudeSDKClient(options=options) as client:
-        await client.query("Create 5 Python files with different sorting algorithms")
-
-        # Monitor progress in real-time
-        async for message in client.receive_response():
-            if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, ToolUseBlock):
-                        if block.name == "Write":
-                            file_path = block.input.get("file_path", "")
-                            print(f"Creating: {file_path}")
-                    elif isinstance(block, ToolResultBlock):
-                        print("Completed tool execution")
-                    elif isinstance(block, TextBlock):
-                        print(f"Claude says: {block.text[:100]}...")
-
-        print("Task completed!")
-
-
-asyncio.run(monitor_progress())
-```
-
-<h2 id="example-usage">
-  示例用法
+<h2 id="error-handling">
+  错误处理
 </h2>
 
-<h3 id="basic-file-operations-using-query">
-  基本文件操作（使用 query）
-</h3>
+以下示例将 `query()` 调用包装在四种 [错误类型](#error-types) 的处理程序中，这些是 SDK 会抛出的错误。
+
+此示例捕获 [`ResultError`](#resulterror)，这需要 Python Agent SDK 0.2.140 或更高版本。
 
 ```python theme={null}
-from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ToolUseBlock
 import asyncio
 
-
-async def create_project():
-    options = ClaudeAgentOptions(
-        allowed_tools=["Read", "Write", "Bash"],
-        permission_mode="acceptEdits",
-        cwd="/home/user/project",
-    )
-
-    async for message in query(
-        prompt="Create a Python project structure with setup.py", options=options
-    ):
-        if isinstance(message, AssistantMessage):
-            for block in message.content:
-                if isinstance(block, ToolUseBlock):
-                    print(f"Using tool: {block.name}")
-
-
-asyncio.run(create_project())
-```
-
-<h3 id="error-handling">
-  错误处理
-</h3>
-
-```python theme={null}
-from claude_agent_sdk import query, CLINotFoundError, ProcessError, CLIJSONDecodeError
-
-try:
-    async for message in query(prompt="Hello"):
-        print(message)
-except CLINotFoundError:
-    print(
-        "Claude Code CLI not found. Try reinstalling: pip install --force-reinstall claude-agent-sdk"
-    )
-except ProcessError as e:
-    print(f"Process failed with exit code: {e.exit_code}")
-except CLIJSONDecodeError as e:
-    print(f"Failed to parse response: {e}")
-```
-
-<h3 id="streaming-mode-with-client">
-  使用客户端的流式模式
-</h3>
-
-```python theme={null}
-from claude_agent_sdk import ClaudeSDKClient
-import asyncio
-
-
-async def interactive_session():
-    async with ClaudeSDKClient() as client:
-        # Send initial message
-        await client.query("What's the weather like?")
-
-        # Process responses
-        async for msg in client.receive_response():
-            print(msg)
-
-        # Send follow-up
-        await client.query("Tell me more about that")
-
-        # Process follow-up response
-        async for msg in client.receive_response():
-            print(msg)
-
-
-asyncio.run(interactive_session())
-```
-
-<h3 id="using-custom-tools-with-claudesdkclient">
-  使用 ClaudeSDKClient 的自定义工具
-</h3>
-
-```python theme={null}
 from claude_agent_sdk import (
-    ClaudeSDKClient,
-    ClaudeAgentOptions,
-    tool,
-    create_sdk_mcp_server,
-    AssistantMessage,
-    TextBlock,
+    query,
+    CLINotFoundError,
+    ProcessError,
+    ResultError,
+    CLIJSONDecodeError,
 )
-import asyncio
-from typing import Any
-
-
-# Define custom tools with @tool decorator
-@tool("calculate", "Perform mathematical calculations", {"expression": str})
-async def calculate(args: dict[str, Any]) -> dict[str, Any]:
-    try:
-        result = eval(args["expression"], {"__builtins__": {}})
-        return {"content": [{"type": "text", "text": f"Result: {result}"}]}
-    except Exception as e:
-        return {
-            "content": [{"type": "text", "text": f"Error: {str(e)}"}],
-            "is_error": True,
-        }
-
-
-@tool("get_time", "Get current time", {})
-async def get_time(args: dict[str, Any]) -> dict[str, Any]:
-    from datetime import datetime
-
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return {"content": [{"type": "text", "text": f"Current time: {current_time}"}]}
 
 
 async def main():
-    # Create SDK MCP server with custom tools
-    my_server = create_sdk_mcp_server(
-        name="utilities", version="1.0.0", tools=[calculate, get_time]
-    )
-
-    # Configure options with the server
-    options = ClaudeAgentOptions(
-        mcp_servers={"utils": my_server},
-        allowed_tools=["mcp__utils__calculate", "mcp__utils__get_time"],
-    )
-
-    # Use ClaudeSDKClient for interactive tool usage
-    async with ClaudeSDKClient(options=options) as client:
-        await client.query("What's 123 * 456?")
-
-        # Process calculation response
-        async for message in client.receive_response():
-            if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, TextBlock):
-                        print(f"Calculation: {block.text}")
-
-        # Follow up with time query
-        await client.query("What time is it now?")
-
-        async for message in client.receive_response():
-            if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, TextBlock):
-                        print(f"Time: {block.text}")
+    try:
+        async for message in query(prompt="Hello"):
+            print(message)
+    except CLINotFoundError:
+        print(
+            "Claude Code CLI not found. Try reinstalling: pip install --force-reinstall claude-agent-sdk"
+        )
+    # Catch ResultError before ProcessError, which it subclasses. Its message
+    # carries the error text. A failed final request, such as an API error,
+    # arrives with subtype "success", so branch on terminal_reason first.
+    except ResultError as e:
+        if e.terminal_reason == "api_error":
+            print(f"API request failed: {e}")
+        else:
+            print(f"Query ended with an error result ({e.terminal_reason or e.subtype}): {e}")
+    except ProcessError as e:
+        print(f"Process failed with exit code: {e.exit_code}")
+    except CLIJSONDecodeError as e:
+        print(f"Failed to parse response: {e}")
 
 
 asyncio.run(main())
@@ -3655,44 +3612,57 @@ class SandboxSettings(TypedDict, total=False):
     enableWeakerNestedSandbox: bool
 ```
 
-| 属性                          | 类型                                                    | 默认值     | 描述                                                                                                                               |
-| :-------------------------- | :---------------------------------------------------- | :------ | :------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`                   | `bool`                                                | `False` | 为命令执行启用沙箱模式                                                                                                                      |
-| `autoAllowBashIfSandboxed`  | `bool`                                                | `True`  | 启用沙箱时自动批准 bash 命令                                                                                                                |
-| `excludedCommands`          | `list[str]`                                           | `[]`    | 始终绕过沙箱限制的命令（例如 `["docker"]`）。这些自动运行沙箱外，无需模型参与                                                                                    |
-| `allowUnsandboxedCommands`  | `bool`                                                | `True`  | 允许模型请求在沙箱外运行命令。当为 `True` 时，模型可以在工具输入中设置 `dangerouslyDisableSandbox`，这会回退到 [权限系统](#permissions-fallback-for-unsandboxed-commands) |
-| `network`                   | [`SandboxNetworkConfig`](#sandboxnetworkconfig)       | `None`  | 网络特定的沙箱配置                                                                                                                        |
-| `ignoreViolations`          | [`SandboxIgnoreViolations`](#sandboxignoreviolations) | `None`  | 配置要忽略的沙箱违规                                                                                                                       |
-| `enableWeakerNestedSandbox` | `bool`                                                | `False` | 启用较弱的嵌套沙箱以实现兼容性                                                                                                                  |
+| 属性 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `enabled` | `bool` | `False` | 为命令执行启用沙箱模式 |
+| `autoAllowBashIfSandboxed` | `bool` | `True` | 启用沙箱时自动批准 bash 命令 |
+| `excludedCommands` | `list[str]` | `[]` | 绕过沙箱限制的命令，例如 `["docker *"]`。这些自动运行沙箱外，无需模型参与；[`sandbox.excludedCommands`](/docs/zh-CN/settings-reference#sandbox-excludedcommands) 涵盖何时应用条目 |
+| `allowUnsandboxedCommands` | `bool` | `True` | 允许模型请求在沙箱外运行命令。当为 `True` 时，模型可以在工具输入中设置 `dangerouslyDisableSandbox`，这会回退到 [权限系统](#permissions-fallback-for-unsandboxed-commands) |
+| `network` | [`SandboxNetworkConfig`](#sandboxnetworkconfig) | `None` | 网络特定的沙箱配置 |
+| `ignoreViolations` | [`SandboxIgnoreViolations`](#sandboxignoreviolations) | `None` | 配置要忽略的沙箱违规 |
+| `enableWeakerNestedSandbox` | `bool` | `False` | 启用较弱的嵌套沙箱以实现兼容性 |
 
 <Note>
   沙箱取决于平台支持，在 Linux 上，需要 `bubblewrap` 和 `socat` 等工具。默认情况下，当 `enabled` 为 `True` 但沙箱无法启动时，命令在沙箱外运行，并在 stderr 上显示警告。此默认值与 TypeScript SDK 不同，后者中 `failIfUnavailable` 默认为 `true`。
 
-  在沙箱设置中设置 `"failIfUnavailable": True` 以改为停止。该键尚未在 `SandboxSettings` 上声明，但 SDK 会将其转发给 Claude Code，后者会遵守它。然后 `query()` 报告一个 `ResultMessage`，其 `subtype="error_during_execution"` 和 `errors` 中的原因。监视该子类型，而不是期望 `query()` 在生成消息之前引发。
+  在沙箱设置中设置 `"failIfUnavailable": True` 以改为停止。该键尚未在 `SandboxSettings` 上声明，但 SDK 会将其转发给 Claude Code，后者会遵守它。然后 `query()` 报告一个 `ResultMessage`，其 `subtype="error_during_execution"` 和 `errors` 中的原因。因为这是一个单次 `query()` 调用，SDK 在生成该错误结果后会引发，所以将循环包装在 try 块中以继续通过它。有关错误合约，请参阅 [处理结果](/docs/zh-CN/agent-sdk/agent-loop#handle-the-result)。
 </Note>
 
-<h4 id="example-usage-2">
+<h4 id="example-usage">
   示例用法
 </h4>
 
 ```python theme={null}
-from claude_agent_sdk import query, ClaudeAgentOptions, SandboxSettings
+import asyncio
 
-sandbox_settings: SandboxSettings = {
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+sandbox_settings = {
     "enabled": True,
     "autoAllowBashIfSandboxed": True,
+    "failIfUnavailable": True,
     "network": {"allowLocalBinding": True},
 }
 
-async for message in query(
-    prompt="Build and test my project",
-    options=ClaudeAgentOptions(sandbox=sandbox_settings),
-):
-    print(message)
+
+async def main():
+    try:
+        async for message in query(
+            prompt="Build and test my project",
+            options=ClaudeAgentOptions(sandbox=sandbox_settings),
+        ):
+            print(message)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result,
+        # such as when failIfUnavailable is set and the sandbox can't start.
+        print(f"Session ended with an error: {error}")
+
+
+asyncio.run(main())
 ```
 
 <Warning>
-  **Unix socket 安全性**：`allowUnixSockets` 选项可以授予对强大系统服务的访问权限。例如，允许 `/var/run/docker.sock` 实际上通过 Docker API 授予完整的主机系统访问权限，绕过沙箱隔离。仅允许严格必要的 Unix sockets，并理解每个的安全含义。
+  **Unix socket 安全性**：`allowUnixSockets` 选项可以授予对系统服务的访问权限，这些服务可能会到达沙箱外。例如，允许 `/var/run/docker.sock` 实际上通过 Docker API 授予完整的主机系统访问权限，绕过沙箱隔离。仅允许严格必要的 Unix sockets，并理解每个的安全含义。
 </Warning>
 
 <h3 id="sandboxnetworkconfig">
@@ -3714,17 +3684,17 @@ class SandboxNetworkConfig(TypedDict, total=False):
     socksProxyPort: int
 ```
 
-| 属性                        | 类型          | 默认值     | 描述                                                           |
-| :------------------------ | :---------- | :------ | :----------------------------------------------------------- |
-| `allowedDomains`          | `list[str]` | `[]`    | 沙箱化进程可以访问的域名                                                 |
-| `deniedDomains`           | `list[str]` | `[]`    | 沙箱化进程无法访问的域名。优先于 `allowedDomains`                            |
-| `allowManagedDomainsOnly` | `bool`      | `False` | 仅限托管设置：在托管设置中设置时，忽略来自非托管设置源的 `allowedDomains`。通过 SDK 选项设置时无效 |
-| `allowUnixSockets`        | `list[str]` | `[]`    | 进程可以访问的 Unix socket 路径（例如 Docker socket）                     |
-| `allowAllUnixSockets`     | `bool`      | `False` | 允许访问所有 Unix sockets                                          |
-| `allowLocalBinding`       | `bool`      | `False` | 允许进程绑定到本地端口（例如开发服务器）                                         |
-| `allowMachLookup`         | `list[str]` | `[]`    | 仅限 macOS：允许的 XPC/Mach 服务名称。支持尾部通配符                           |
-| `httpProxyPort`           | `int`       | `None`  | 网络请求的 HTTP 代理端口                                              |
-| `socksProxyPort`          | `int`       | `None`  | 网络请求的 SOCKS 代理端口                                             |
+| 属性 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `allowedDomains` | `list[str]` | `[]` | 沙箱化进程可以访问的域名 |
+| `deniedDomains` | `list[str]` | `[]` | 沙箱化进程无法访问的域名。优先于 `allowedDomains` |
+| `allowManagedDomainsOnly` | `bool` | `False` | 仅限托管设置：在托管设置中设置时，忽略 `allowedDomains` 和来自非托管设置源的 `WebFetch(domain:...)` 允许规则。通过 SDK 选项设置时无效 |
+| `allowUnixSockets` | `list[str]` | `[]` | 仅限 macOS：进程可以访问的 Unix socket 路径，例如 Docker socket。在 Linux 上被忽略 |
+| `allowAllUnixSockets` | `bool` | `False` | 允许访问所有 Unix sockets |
+| `allowLocalBinding` | `bool` | `False` | 允许进程绑定到本地端口（例如开发服务器） |
+| `allowMachLookup` | `list[str]` | `[]` | 仅限 macOS：允许的 XPC/Mach 服务名称。支持尾部通配符 |
+| `httpProxyPort` | `int` | `None` | 网络请求的 HTTP 代理端口 |
+| `socksProxyPort` | `int` | `None` | 网络请求的 SOCKS 代理端口 |
 
 <Note>
   内置沙箱代理基于请求的主机名强制执行网络允许列表，不会终止或检查 TLS 流量，因此 [域名前置](https://en.wikipedia.org/wiki/Domain_fronting) 等技术可能会绕过它。有关详细信息，请参阅 [沙箱安全限制](/docs/zh-CN/sandboxing#security-limitations)，以及 [安全部署](/docs/zh-CN/agent-sdk/secure-deployment#traffic-forwarding) 以配置 TLS 终止代理。
@@ -3742,10 +3712,10 @@ class SandboxIgnoreViolations(TypedDict, total=False):
     network: list[str]
 ```
 
-| 属性        | 类型          | 默认值  | 描述           |
-| :-------- | :---------- | :--- | :----------- |
-| `file`    | `list[str]` | `[]` | 要忽略违规的文件路径模式 |
-| `network` | `list[str]` | `[]` | 要忽略违规的网络模式   |
+| 属性 | 类型 | 默认值 | 描述 |
+| :- | :- | :- | :- |
+| `file` | `list[str]` | `[]` | 要忽略违规的文件路径模式 |
+| `network` | `list[str]` | `[]` | 要忽略违规的网络模式 |
 
 <h3 id="permissions-fallback-for-unsandboxed-commands">
   沙箱外命令的权限回退
@@ -3753,14 +3723,12 @@ class SandboxIgnoreViolations(TypedDict, total=False):
 
 当 `allowUnsandboxedCommands` 启用时，模型可以通过在工具输入中设置 `dangerouslyDisableSandbox: True` 来请求在沙箱外运行命令。这些请求回退到现有权限系统，意味着你的 `can_use_tool` 处理程序将被调用，允许你实现自定义授权逻辑。
 
-<Note>
-  **`excludedCommands` vs `allowUnsandboxedCommands`：**
+你的 `excludedCommands` 条目改为自动绕过沙箱，无需模型参与；[`sandbox.excludedCommands`](/docs/zh-CN/settings-reference#sandbox-excludedcommands) 涵盖何时应用条目。
 
-  * `excludedCommands`：始终自动绕过沙箱的命令的静态列表（例如 `["docker"]`）。模型对此无控制权。
-  * `allowUnsandboxedCommands`：让模型在运行时通过在工具输入中设置 `dangerouslyDisableSandbox: True` 来决定是否请求沙箱外执行。
-</Note>
+以下示例记录每个沙箱外请求并拒绝它，除非你自己的授权逻辑允许它：
 
 ```python theme={null}
+import asyncio
 from claude_agent_sdk import (
     query,
     ClaudeAgentOptions,
@@ -3769,6 +3737,12 @@ from claude_agent_sdk import (
     PermissionResultDeny,
     ToolPermissionContext,
 )
+
+
+def is_command_authorized(command: str | None) -> bool:
+    # Replace with your own authorization logic
+    return False
+
 
 
 async def can_use_tool(
@@ -3813,18 +3787,15 @@ async def main():
         ),
     ):
         print(message)
+
+
+asyncio.run(main())
 ```
-
-此模式使你能够：
-
-* **审计模型请求**：记录模型何时请求沙箱外执行
-* **实现允许列表**：仅允许特定命令在沙箱外运行
-* **添加批准工作流**：需要显式授权以进行特权操作
 
 <Warning>
   使用 `dangerouslyDisableSandbox: True` 运行的命令具有完整的系统访问权限。确保你的 `can_use_tool` 处理程序仔细验证这些请求。
 
-  如果 `permission_mode` 设置为 `bypassPermissions` 且 `allow_unsandboxed_commands` 启用，模型可以自主执行沙箱外的命令，无需任何批准提示。此组合实际上允许模型无声地逃离沙箱隔离。
+  如果 `permission_mode` 设置为 `bypassPermissions` 且 `allowUnsandboxedCommands` 启用，模型可以自主执行沙箱外的命令，无需批准提示，除了 [操作无模式自动批准](/docs/zh-CN/permission-modes#actions-no-mode-auto-approves) 之外。此组合实际上允许模型无声地逃离沙箱隔离。
 </Warning>
 
 <h2 id="see-also">
@@ -3833,5 +3804,6 @@ async def main():
 
 * [SDK 概述](/docs/zh-CN/agent-sdk/overview) - 一般 SDK 概念
 * [TypeScript SDK 参考](/docs/zh-CN/agent-sdk/typescript) - TypeScript SDK 文档
+* [自定义工具](/docs/zh-CN/agent-sdk/custom-tools) - 为 Claude 定义可调用的进程内 MCP 工具
 * [CLI 参考](/docs/zh-CN/cli-reference) - 命令行界面
 * [常见工作流](/docs/zh-CN/common-workflows) - 分步指南

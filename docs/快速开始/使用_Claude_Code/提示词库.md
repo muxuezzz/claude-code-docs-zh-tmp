@@ -626,13 +626,14 @@ export const PromptLibrary = ({text = {}, labels = {}, tagLabels = {}, phaseLabe
       return base + (href.startsWith('/en/') ? '/' + locale + href.slice(3) : href);
     };
   }, []);
+  const SAFE_HREF = /^(\/(?![\/\\\s])|#|https?:\/\/)/;
   const linkify = s => {
     const out = [];
     let last = 0;
     const re = /\[([^\]]+)\]\(([^)]+)\)/g;
     for (let m; m = re.exec(s); ) {
       if (m.index > last) out.push(s.slice(last, m.index));
-      out.push(<a key={m.index} href={doc(m[2])}>{m[1]}</a>);
+      out.push(SAFE_HREF.test(m[2]) ? <a key={m.index} href={doc(m[2])}>{m[1]}</a> : m[1]);
       last = re.lastIndex;
     }
     if (last < s.length) out.push(s.slice(last));
@@ -776,7 +777,7 @@ export const PromptLibrary = ({text = {}, labels = {}, tagLabels = {}, phaseLabe
             </div>
             <div className="pl-label">{L.whyWorks}</div>
             <div className="pl-teaches">{linkify(p.teaches)}</div>
-            {p.nextHref && p.next && <div className="pl-next">
+            {p.nextHref && p.next && SAFE_HREF.test(p.nextHref) && <div className="pl-next">
                 <span className="pl-next-label">{L.makeItStick}</span>
                 <a href={doc(p.nextHref)}>{codeify(p.next)} →</a>
               </div>}
@@ -1202,7 +1203,7 @@ export const text = {
   },
   "migrate-a-pattern-across": {
     title: "在代码库中迁移模式",
-    teaches: "描述旧模式和新模式。要求 Claude 首先识别每个地方意味着调用站点在响应中列出，所以你可以检查没有遗漏。"
+    teaches: "描述旧模式和新模式。要求 Claude 首先识别每个地方意味着调用站点在响应中列出，所以你可以检查没有遗漏。对于跨许多文件的迁移，运行 [/batch](/docs/zh-CN/commands)。Claude 将工作分成单位供你批准，然后后台子代理进行更改。"
   },
   "optimize-against-a-measurable": {
     title: "针对可测量目标进行优化",
@@ -1222,7 +1223,7 @@ export const text = {
   "review-a-pull-request": {
     title: "审查拉取请求",
     teaches: "Claude 在整个代码库的背景下审查，而不仅仅是差异。它读取更改的代码和它调用的内容，所以它捕获仅差异审查会遗漏的问题。",
-    next: "使用代码审查为每个 PR 打开此功能"
+    next: "为每个 PR 打开代码审查"
   },
   "review-infrastructure-changes-before": {
     title: "在应用前审查基础设施更改",
@@ -1337,37 +1338,37 @@ export const text = {
 
 **描述结果，而不是步骤。** 说出你想要的内容，让 Claude 找到文件。下面的提示词无需命名单个文件路径即可工作。
 
-```text theme={null}
+```text wrap theme={null}
 add rate limiting to the public API and make sure existing tests still pass
 ```
 
-**给它一种检查自己工作的方式。** 在同一提示词中要求运行、测试、比较或验证，以便 Claude 迭代而不是在一次尝试后停止。
+**给它一种检查自己工作的方式。** 在同一提示词中要求运行、测试、比较或验证，以便 Claude 迭代而不是在一次尝试后停止。要检查完成的更改与运行中的应用程序，请运行 [`/verify`](/docs/zh-CN/skills#run-and-verify-your-app)。
 
-```text theme={null}
+```text wrap theme={null}
 write the migration, run it against the dev database, and confirm the schema matches
 ```
 
 **指向参考。** 命名现有文件、测试或模式以匹配，以便新代码与你已有的内容一致。
 
-```text theme={null}
+```text wrap theme={null}
 add a settings page that follows the same layout as the profile page
 ```
 
 **说明可测量的目标。** 当目标是性能或覆盖率时，给出指标和阈值，以便完成是明确的。
 
-```text theme={null}
+```text wrap theme={null}
 get the bundle size under 200KB and show me what you removed
 ```
 
 **给它工件。** 直接在提示词中粘贴错误、日志、屏幕截图和计划输出，或键入 `@` 来引用文件。Claude 读取源而不是你对它的描述。
 
-```text theme={null}
+```text wrap theme={null}
 why is the build failing? @build.log
 ```
 
 **说出你想要答案的方式。** 命名格式、长度或受众，以便解释适合你将如何使用它。要使格式成为每个响应的默认值，请设置 [输出样式](/docs/zh-CN/output-styles)。
 
-```text theme={null}
+```text wrap theme={null}
 explain how the payment retry logic works as an HTML page with a diagram, then open it in my browser
 ```
 
@@ -1384,7 +1385,7 @@ explain how the payment retry logic works as an HTML page with a diagram, then o
 * [Anthropic 团队如何使用 Claude Code](https://claude.com/blog/how-anthropic-teams-use-claude-code)：来自工程、产品、设计和数据团队的真实工作流，深入探讨[法律](https://claude.com/blog/how-anthropic-uses-claude-legal)、[营销](https://claude.com/blog/how-anthropic-uses-claude-marketing)和[网络安全](https://claude.com/blog/how-anthropic-uses-claude-cybersecurity)
 * [扩展代理编码指南](https://resources.anthropic.com/hubfs/Scaling%20agentic%20coding%20across%20your%20organization.pdf)：企业采用指南
 
-有关这些模式的视频演练，请参阅 Anthropic Academy 上的免费 [Claude Code in Action](https://anthropic.skilljar.com/claude-code-in-action) 课程。
+有关这些模式的视频演练，请参阅 [Claude Academy](https://academy.claude.com/) 上的免费 [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action) 课程。
 
 <h2 id="related-resources">
   相关资源

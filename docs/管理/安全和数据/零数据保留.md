@@ -31,11 +31,17 @@ ZDR 涵盖 Claude for Enterprise 上的 Claude Code 推理。
   ZDR 在每个组织的基础上启用。每个新组织都需要由您的 Anthropic 账户团队单独启用 ZDR。ZDR 不会自动应用于在同一账户下创建的新组织。请联系您的账户团队为任何新组织启用 ZDR。
 </Warning>
 
+<h3 id="route-claude-code-traffic-to-your-zdr-organization">
+  将 Claude Code 流量路由到您的 ZDR 组织
+</h3>
+
+ZDR 适用于向启用了 ZDR 的组织进行身份验证的请求。如果开发人员使用个人账户或来自不同组织的 API 密钥登录 Claude Code，这些会话不受保护。要求开发人员的 claude.ai 登录属于您的 ZDR 组织，请部署 `forceLoginMethod` 和 `forceLoginOrgUUID` 托管设置；请参阅[限制登录到您的组织](/docs/zh-CN/authentication#restrict-login-to-your-organization)，其中也解释了这些密钥如何处理 Claude Console 登录。
+
 <h3 id="what-zdr-covers">
   ZDR 涵盖的内容
 </h3>
 
-ZDR 涵盖通过 Claude for Enterprise 上的 Claude Code 进行的模型推理调用。当您在终端中使用 Claude Code 时，您发送的提示和 Claude 生成的响应不会由 Anthropic 保留。这适用于 ZDR 组织可用的每个模型。某些模型需要数据保留，在 ZDR 下不可用；请参阅 [ZDR 下的模型可用性](#model-availability-under-zdr)。
+ZDR 涵盖通过 Claude for Enterprise 上的 Claude Code 进行的模型推理调用。当您在终端中使用 Claude Code 时，您发送的提示和 Claude 生成的响应不会由 Anthropic 保留。这适用于 ZDR 组织可用的每个模型。某些模型默认需要数据保留；请参阅 [ZDR 下的模型可用性](#model-availability-under-zdr)。
 
 <h3 id="what-zdr-does-not-cover">
   ZDR 不涵盖的内容
@@ -43,13 +49,13 @@ ZDR 涵盖通过 Claude for Enterprise 上的 Claude Code 进行的模型推理�
 
 ZDR 不适用于以下内容，即使对于启用了 ZDR 的组织也是如此。这些功能遵循[标准数据保留政策](/docs/zh-CN/data-usage#data-retention)：
 
-| 功能             | 详情                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------- |
-| claude.ai 上的聊天 | 通过 Claude for Enterprise 网络界面的聊天对话不受 ZDR 保护。                                          |
-| Cowork         | Cowork 会话不受 ZDR 保护。                                                                   |
+| 功能 | 详情 |
+| - | - |
+| claude.ai 上的聊天 | 通过 Claude for Enterprise 网络界面的聊天对话不受 ZDR 保护。 |
+| Cowork | Cowork 会话不受 ZDR 保护。 |
 | Claude Code 分析 | 不存储提示或模型响应，但收集生产力元数据，如账户电子邮件和使用统计。对于 ZDR 组织，贡献指标不可用；[分析仪表板](/docs/zh-CN/analytics)仅显示使用指标。 |
-| 用户和席位管理        | 管理数据，如账户电子邮件和席位分配，根据标准政策保留。                                                           |
-| 第三方集成          | 由第三方工具、MCP servers 或其他外部集成处理的数据不受 ZDR 保护。请独立审查这些服务的数据处理实践。                            |
+| 用户和席位管理 | 管理数据，如账户电子邮件和席位分配，根据标准政策保留。 |
+| 第三方集成 | 由第三方工具、MCP servers 或其他外部集成处理的数据不受 ZDR 保护。请独立审查这些服务的数据处理实践。 |
 
 <h2 id="features-disabled-under-zdr">
   ZDR 下禁用的功能
@@ -57,13 +63,13 @@ ZDR 不适用于以下内容，即使对于启用了 ZDR 的组织也是如此�
 
 当为 Claude for Enterprise 上的 Claude Code 组织启用 ZDR 时，某些需要存储提示或完成的功能会在后端级别自动禁用：
 
-| 功能                                                 | 原因                                |
-| -------------------------------------------------- | --------------------------------- |
-| [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)  | 需要服务器端存储对话历史。                     |
-| 来自 Desktop 应用的[云会话](/docs/zh-CN/desktop#cloud-sessions) | 需要包含提示和完成的持久会话数据。                 |
-| [Artifacts](/docs/zh-CN/artifacts)                      | 需要在 Anthropic 运营的基础设施上存储已发布的页面内容。 |
-| 反馈提交 (`/feedback`)                                 | 提交反馈会将对话数据发送给 Anthropic。          |
-| [Remote Control](/docs/zh-CN/remote-control)            | 在 Anthropic 服务器上存储会话记录以跨设备同步对话。   |
+| 功能 | 原因 |
+| - | - |
+| [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)，包括从 [Desktop 应用](/docs/zh-CN/desktop#cloud-sessions)启动的应用 | 需要服务器端存储会话数据，包括包含提示和完成的对话历史。 |
+| [Claude Tag](https://claude.com/docs/claude-tag) | 保留频道内存和会话记录。 |
+| [Artifacts](/docs/zh-CN/artifacts) | 需要在 Anthropic 运营的基础设施上存储已发布的页面内容。 |
+| 反馈提交（`/feedback`、`/bug`、`/share`） | 提交反馈会将对话数据发送给 Anthropic。 |
+| [Remote Control](/docs/zh-CN/remote-control) | 在 Anthropic 服务器上存储会话记录以跨设备同步对话。 |
 
 这些功能在后端被阻止，无论客户端显示如何。如果您在启动期间在 Claude Code 终端中看到禁用的功能，尝试使用它会返回一个错误，指示组织的政策不允许该操作。
 
@@ -73,9 +79,9 @@ ZDR 不适用于以下内容，即使对于启用了 ZDR 的组织也是如此�
   ZDR 下的模型可用性
 </h3>
 
-Claude Fable 5 不适用于启用了零数据保留的组织。此模型类别[需要数据保留](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention#model-specific-data-retention-requirements)，因此来自 ZDR 组织的请求无法由其提供。该模型在 ZDR 组织的 `/model` 选择器中要么不存在，要么显示为禁用，并附带需要禁用 ZDR 的通知，服务器无论客户端配置如何都会拒绝对其的请求。
+Claude Fable 5.1 和 Fable 5 是[覆盖模型](https://support.claude.com/en/articles/15425695-covered-models)，[默认需要数据保留](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention#model-specific-data-retention-requirements)，ZDR 组织或工作区是否可以使用它们由覆盖模型政策而非 Claude Code 管理。如果您的组织无法使用它们，这些模型要么在 `/model` 选择器中不存在，要么显示为禁用，服务器无论客户端配置如何都会拒绝对其的请求。
 
-其他模型在 ZDR 下仍然可用。Fable 5 不是默认模型，`best` 别名在可用的地方解析为 Fable 5，在不可用的地方（包括 ZDR 组织）解析为 Opus。
+其他模型在 ZDR 下仍然可用。Fable 模型不是默认模型，`best` 别名在可用的地方解析为最新的 Fable 模型，在不可用的地方解析为 Opus。
 
 <h2 id="data-retention-for-policy-violations">
   政策违规的数据保留

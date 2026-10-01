@@ -6,7 +6,71 @@
 
 > Claude Code 功能的每周摘要，包含代码片段、演示和背景信息，说明为什么这些功能很重要。
 
-每周开发摘要突出了最有可能改变您工作方式的功能。每个条目都包括可运行的代码、简短的演示和完整文档的链接。有关每个错误修复和次要改进，请参阅[更新日志](/docs/zh-CN/changelog)。
+每周开发摘要突出了最有可能改变您工作方式的功能。每个条目都包括可运行的代码、简短的演示和完整文档的链接。有关每个错误修复和次要改进，请参阅[更新日志](/docs/en/changelog)。
+
+<Update label="Week 37" description="September 7–11, 2026" tags={["v2.1.263–v2.1.269"]}>
+  **`claude plugin eval`**：针对一套测试用例运行您的插件，对结果进行评分，并与无插件基线进行比较。`claude plugin eval init` 为您起草用例和评分器。
+
+  本周还有：将任何 **Claude Code Desktop 窗格**弹出到其自己的窗口中，稍后将其停靠回来；**`maxEffortLevel`** 设置限制每个提供商的努力级别；以及 **WebFetch** 在五分钟内未完成下载的页面会失败而不是挂起。
+
+  [阅读 Week 37 摘要 →](/docs/zh-CN/whats-new/2026-w37)
+</Update>
+
+<Update label="Week 36" description="August 31 – September 4, 2026" tags={["v2.1.251–v2.1.261"]}>
+  **Claude Fable 5.1**：在 Claude Code 中可用，具有 1M 令牌上下文窗口。
+
+  本周还有：在 Pro 和 Max 计划上，**Desktop 应用中的计算机使用**在 macOS 上在后台工作，同时您继续工作；在全屏渲染中，**`/diff`** 在对话旁边打开一个实时面板，在 Claude 编辑时刷新；**`/skill-doctor`** 显示您每个技能在上下文中的成本以及它被使用的频率。
+
+  [阅读 Week 36 摘要 →](/docs/zh-CN/whats-new/2026-w36)
+</Update>
+
+<Update label="Week 35" description="August 24–28, 2026" tags={["v2.1.240–v2.1.250"]}>
+  **在 Desktop 应用中恢复终端会话**：在 Claude Code Desktop 提示框中键入 `/resume` 以继续您从 CLI 启动的任何会话，保持完整的对话和上下文。
+
+  本周还有：**Claude 起草的反馈**在会话中出现问题时让 Claude 编写反馈报告，您审查并从 `/feedback` 发送；**`--restricted`** 启动没有命令运行工具或您的用户和项目设置的会话，用于共享机器上的评估工具；**`modelPicker`** 设置控制 `/model` 选择器列出的模型。
+
+  [阅读 Week 35 摘要 →](/docs/zh-CN/whats-new/2026-w35)
+</Update>
+
+<Update label="Week 34" description="August 17–21, 2026" tags={["v2.1.234–v2.1.239"]}>
+  **`/design`**：一个研究预览版，将 Claude Design 的画板工作流程引入 CLI 和 Claude Code Desktop，基于 artifacts 构建，因此 Claude 为您的 UI 草拟可编辑的画板并实现您选择的那个。
+
+  本周还有：内置的 **Concise output style** 使 Claude 以结果开头并跳过前言；任何运行 `claude remote-control` 的机器都会在您的手机上显示为 **device card**，以便您可以从 Code 选项卡在其上启动会话；**`ANTHROPIC_DEFAULT_MODEL`** 设置新会话启动的模型。
+
+  [阅读 Week 34 摘要 →](/docs/zh-CN/whats-new/2026-w34)
+</Update>
+
+<Update label="Week 33" description="August 10–14, 2026" tags={["v2.1.225–v2.1.233"]}>
+  **Desktop 上的使用限制后自动继续**：当您在 Claude Code Desktop 中达到会话限制时，在限制卡上检查 **Auto-continue when limits reset**，应用将在限制重置后重试中断的回合。
+
+  本周还有：**fork mode** 在交互式会话中默认启用，因此 Claude 可以将侧任务交给继承完整对话的子代理；**GitLab** 合并请求 URL 适用于 `--worktree` 和 `claude agents` 视图，市场克隆裸 `gitlab.com` URL；在提示中键入 **`@`** 按名称提及另一个 Claude 会话。
+
+  [阅读 Week 33 摘要 →](/docs/zh-CN/whats-new/2026-w33)
+</Update>
+
+<Update label="Week 32" description="August 3–7, 2026" tags={["v2.1.220–v2.1.224"]}>
+  **跨会话消息传递**：在 macOS 和 Linux 上，您的 Claude Code 会话现在可以相互发送消息，因此 Claude 可以将发现或决定从一个会话传递到另一个会话，而不是您重新解释它。
+
+  本周还有：**自托管环境**在您的组织运营的基础设施上运行 Claude Code 云会话，在 Team 和 Enterprise 计划上处于公开测试版；**auto mode** 从 8 月 14 日开始成为 Pro、Max 和 Team 计划上新会话的默认权限模式；**VS Code extension** 获得 Focus view。
+
+  [阅读 Week 32 摘要 →](/docs/zh-CN/whats-new/2026-w32)
+</Update>
+
+<Update label="Week 30" description="July 20–24, 2026" tags={["v2.1.214–v2.1.219"]}>
+  **Claude Opus 5**：Claude Code 中的新默认 Opus 模型，具有 1M 令牌上下文窗口和快速模式，每 MTok 费用为 \$10/\$50。
+
+  本周还有：**Claude Code Desktop** 在公开测试版中打开 iOS Simulator 窗格，以便 Claude 可以运行您的应用并在您观看时点击浏览它；**Claude Security plugin** 运行您的代码库的多代理漏洞扫描，并将您选择的发现转变为您自己应用的补丁；**`/code-review`** 作为后台子代理运行。
+
+  [阅读 Week 30 摘要 →](/docs/zh-CN/whats-new/2026-w30)
+</Update>
+
+<Update label="Week 29" description="July 13–17, 2026" tags={["v2.1.207–v2.1.212"]}>
+  **Artifacts 调用您的 MCP 连接器**：已发布的 artifact 可以在查看者打开页面时通过每个查看者自己的 MCP 连接器拉取实时数据并采取行动，本周还添加了公开共享链接、Team 和 Enterprise 上的编辑器角色以及从 Claude Tag 会话创建的 artifacts。
+
+  本周还有：**屏幕阅读器模式**用纯线性文本替换视觉终端界面，适用于 VoiceOver 和 NVDA 等屏幕阅读器；**`/fork`** 将您的对话复制到新的后台会话中，同时您继续工作；**auto mode** 在 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上不再需要选择加入变量。
+
+  [阅读 Week 29 摘要 →](/docs/zh-CN/whats-new/2026-w29)
+</Update>
 
 <Update label="Week 28" description="July 6–10, 2026" tags={["v2.1.202–v2.1.206"]}>
   **桌面应用内置浏览器**：Claude Code 桌面版获得了内置浏览器，因此 Claude 可以调出文档、设计或任何其他网站，并以与本地开发服务器预览相同的方式与页面交互。

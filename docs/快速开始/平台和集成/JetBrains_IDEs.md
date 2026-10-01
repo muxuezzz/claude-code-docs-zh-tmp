@@ -26,10 +26,10 @@ Claude Code 插件适用于大多数 JetBrains IDE，包括：
 </h2>
 
 * **快速启动**：使用 `Cmd+Esc`（Mac）或 `Ctrl+Esc`（Windows/Linux）直接从编辑器打开 Claude Code，或点击 UI 中的 Claude Code 按钮
-* **差异查看**：代码更改可以直接在 IDE 差异查看器中显示，而不是在终端中显示
+* **差异查看**：Claude Code 在 IDE 差异查看器中打开代码更改，而不是在终端中；使用 `/config` 中的 **Diff tool** 设置更改此行为
 * **选择上下文**：IDE 中的当前选择或标签页会自动与 Claude Code 共享。[`Read` 拒绝规则](/docs/zh-CN/permissions#read-and-edit)会阻止对匹配文件的此共享
 * **文件引用快捷方式**：使用 `Cmd+Option+K`（Mac）或 `Alt+Ctrl+K`（Linux/Windows）插入文件引用，例如 `@src/auth.ts#L1-99`
-* **诊断共享**：IDE 中的诊断错误（如 lint 和语法错误）在您工作时会自动与 Claude 共享
+* **诊断共享**：Claude 通过调用 [`getDiagnostics` 工具](#the-built-in-ide-mcp-server)读取 IDE 的检查诊断，例如 lint 和语法错误；Claude Code 在编辑后不会自行从插件请求诊断
 
 <h2 id="installation">
   安装
@@ -50,10 +50,6 @@ Claude Code 插件适用于大多数 JetBrains IDE，包括：
 如果 `claude` 安装在您的 IDE 找不到的位置，请在插件的 [Claude 命令设置](#general-settings)中设置完整路径。
 
 Claude Code 适用于任何付费 Claude 订阅（Pro、Max、Team 或 Enterprise）或 Claude Console 账户，无需 API 密钥。首次运行 `claude` 时，系统会提示您[登录](/docs/zh-CN/authentication#log-in-to-claude-code)。
-
-<Note>
-  安装插件后，您可能需要完全重启 IDE 才能使其生效。
-</Note>
 
 <h2 id="usage">
   使用
@@ -79,6 +75,8 @@ claude
 /ide
 ```
 
+当连接成功时，Claude Code 会确认一条消息，例如 `Connected to IntelliJ IDEA.`。如果 Claude Code 检测到正在运行的 IDE 没有该插件，`/ide` 将为您安装该插件并要求您重新启动 IDE。
+
 如果您希望 Claude 能够访问与 IDE 相同的文件，请从与 IDE 项目根目录相同的目录启动 Claude Code。
 
 <h2 id="configuration">
@@ -93,7 +91,9 @@ claude
 
 1. 运行 `claude`
 2. 输入 `/config` 命令
-3. 将差异工具设置为 `auto` 以在 IDE 中显示差异，或设置为 `terminal` 以在终端中保留它们
+3. 将**差异工具**设置为 `auto` 以在 IDE 中显示差异，或设置为 `terminal` 以在终端中保留它们
+
+**差异工具**条目仅在 Claude Code 连接到 IDE 时才会出现在 `/config` 中，因此请从 JetBrains 终端运行 `claude`，或先从外部终端运行 [`/ide`](/docs/zh-CN/commands)。有关底层设置，请参阅 [`diffTool`](/docs/zh-CN/settings-reference#difftool)。
 
 <h3 id="plugin-settings">
   插件设置
@@ -137,10 +137,8 @@ claude
 </h3>
 
 <Warning>
-  使用 JetBrains 远程开发时，您必须通过 **Settings → Plugin (Host)** 在远程主机上安装插件。
+  使用 JetBrains 远程开发时，您必须通过 **Settings → Plugin (Host)** 在远程主机上安装插件，而不是在您的本地客户端计算机上。
 </Warning>
-
-插件必须安装在远程主机上，而不是在您的本地客户端计算机上。
 
 <h3 id="wsl-configuration">
   WSL 配置
@@ -162,7 +160,7 @@ claude
     hostname -I
     ```
 
-    记下子网，例如 `172.21.123.45` 在 `172.21.0.0/16` 中。
+    记下您的子网：取地址的前两个段，然后跟上 `.0.0/16`。例如，如果地址是 `172.21.123.45`，您的子网是 `172.21.0.0/16`。
   </Step>
 
   <Step title="创建防火墙规则">
@@ -212,11 +210,11 @@ networkingMode=mirrored
   IDE 未检测到
 </h3>
 
-如果运行 `claude` 显示"未检测到可用的 IDE"：
+如果 `/ide` 命令显示"未检测到可用的 IDE"：
 
 * 验证插件已安装并启用
 * 完全重启 IDE
-* 检查您是否从集成终端运行 Claude Code
+* 如果您期望在不运行 `/ide` 的情况下自动连接，请检查您是否从 IDE 的集成终端启动了 `claude`
 * 对于 WSL 用户，请参阅上面的 [WSL 配置](#wsl-configuration)
 
 <h3 id="command-not-found">
@@ -233,38 +231,40 @@ networkingMode=mirrored
   安全考虑
 </h2>
 
-当 Claude Code 在启用 [`acceptEdits` 权限模式](/docs/zh-CN/permission-modes#auto-approve-file-edits-with-acceptedits-mode)的 JetBrains IDE 中运行时，它可能能够修改可由您的 IDE 自动执行的 IDE 配置文件。这可能会增加在 `acceptEdits` 模式下运行 Claude Code 的风险，并允许绕过 Claude Code 对 bash 执行的权限提示。
+当 Claude Code 在 JetBrains IDE 中以 [`acceptEdits` 权限模式](/docs/zh-CN/permission-modes#auto-approve-file-edits-with-acceptedits-mode)运行时，它可能能够修改 IDE 配置文件，这些文件可以由您的 IDE 自动执行。这可能会增加在 `acceptEdits` 模式下运行 Claude Code 的风险，并允许绕过 Claude Code 对 Bash 执行的权限提示。
 
 在 JetBrains IDE 中运行时，请考虑：
 
-* 对编辑使用手动批准模式
+* 对编辑使用手动模式，因为 `acceptEdits` 和自动模式都会批准您工作目录内的编辑而不询问，除了在[受保护路径](/docs/zh-CN/permission-modes#protected-paths)中会询问
 * 特别小心确保 Claude 仅与受信任的提示一起使用
 * 了解 Claude Code 有权修改哪些文件
 
-如需 IDE 外的 Claude Code 安装或登录问题，请参阅[故障排除安装和登录](/docs/zh-CN/troubleshoot-install)。
+对于 IDE 外的 Claude Code 安装或登录问题，请参阅[排查安装和登录问题](/docs/zh-CN/troubleshoot-install)。
 
 <h3 id="the-built-in-ide-mcp-server">
   内置 IDE MCP 服务器
 </h3>
 
-当插件处于活动状态时，它运行一个本地 MCP 服务器，CLI 会自动连接到该服务器。这是 CLI 在 IDE 的原生 diff 查看器中打开 diff、读取您当前的 `@`-提及选择内容以及将检查诊断信息拉入对话的方式。
+当插件处于活动状态时，它运行一个本地 MCP 服务器，CLI 会自动连接到该服务器。这是 CLI 在 IDE 的原生 diff 查看器中打开 diff、读取您当前的 `@`-提及选择以及让 Claude 读取检查诊断的方式。
 
-服务器名为 `ide`，从 `/mcp` 中隐藏，因为没有任何内容需要配置。但是，如果您的组织使用 [`PreToolUse` hook](/docs/zh-CN/hooks#pretooluse) 来允许列表 MCP 工具，您需要知道它的存在。
+服务器名为 `ide`，从 `/mcp` 中隐藏，因为没有什么需要配置。但是，如果您的组织使用 [`PreToolUse` hook](/docs/zh-CN/hooks#pretooluse) 来允许列表 MCP 工具，您需要知道它的存在。
 
-**选择和打开文件上下文。** 连接时，CLI 会在您发送的每个提示中包含您当前的编辑器选择和活动文件的路径作为上下文。当发生这种情况时，记录会显示一行 `⧉ Selected N lines from <file>`。要排除敏感文件（如 `.env`），请为其路径添加 [`Read` 拒绝规则](/docs/zh-CN/permissions#read-and-edit)。匹配的拒绝规则可防止该文件的选定文本和打开文件通知到达 Claude。
+**选择和打开文件上下文。** 连接时，CLI 会在您发送的每个提示中包含您当前的编辑器选择和活动文件的路径作为上下文。当发生这种情况时，记录会显示一行 `⧉ Selected N lines from <file>`。如果您[在 Claude 工作时排队消息](/docs/zh-CN/interactive-mode#queue-messages-while-claude-works)，它会保留您按下 `Enter` 时的选择，无论您之后选择什么。
+
+要排除敏感文件（如 `.env`），请为其路径添加 [`Read` 拒绝规则](/docs/zh-CN/permissions#read-and-edit)。匹配的拒绝规则可防止该文件的选定文本和打开文件通知都到达 Claude。
 
 **传输和身份验证。** 服务器侦听 OS 分配的临时端口，该端口不可配置。传输是未加密的 `ws://`；在环回上，任何可以捕获流量的进程也可以从锁文件中读取令牌，因此 TLS 不会对本地攻击者增加保护。每次 IDE 启动都会生成一个新的随机身份验证令牌，将其写入 `~/.claude/ide/<port>.lock` 处的锁文件，CLI 必须将其作为 `X-Claude-Code-Ide-Authorization` 标头呈现才能连接。如果设置了 `CLAUDE_CONFIG_DIR`，锁文件将改为写入 `$CLAUDE_CONFIG_DIR/ide/`。
 
 **向模型公开的工具。** 服务器托管多个工具，但只有一个对模型可见。其余的是 CLI 用于自己的 UI 的内部 RPC，例如打开 diff 和读取选择，在工具列表到达 Claude 之前会被过滤掉。
 
-| 工具名称（如 hooks 所见）           | 功能                                       | 只读 |
-| -------------------------- | ---------------------------------------- | -- |
-| `mcp__ide__getDiagnostics` | 返回 IDE 的检查诊断信息，即编辑器中显示的错误和警告。可选地限定到一个文件。 | 是  |
+| 工具名称（如 hooks 所见） | 它的作用 | 只读 |
+| - | - | - |
+| `mcp__ide__getDiagnostics` | 返回 IDE 的检查诊断，即编辑器中显示的错误和警告。每次调用涵盖一个文件：Claude 指定的文件，或如果 Claude 未指定文件则为您的活动编辑器中的文件。 | 是 |
 
 JetBrains 插件不向模型公开代码执行工具。
 
-**侦听接口。** 服务器绑定到的网络接口由**设置 → 工具 → Claude Code \[Beta] → 网络（高级）**下的**接受来自所有网络接口的连接**控制。禁用该设置时，服务器仅侦听 `127.0.0.1`，无法从其他主机访问。启用该设置时，该端口可从您的本地网络访问。该设置存在于 CLI 无法通过环回到达 IDE 的情况，例如具有默认 NAT 网络的 WSL2 或远程 IDE 设置；有关该场景，请参阅 [WSL 配置](#wsl-configuration)。
+**侦听接口。** 服务器绑定到哪个网络接口由**设置 → 工具 → Claude Code \[Beta] → 网络（高级）**下的**接受来自所有网络接口的连接**控制。禁用该设置时，服务器仅侦听 `127.0.0.1`，无法从其他主机访问。启用该设置时，该端口可从您的本地网络访问。该设置存在于 CLI 无法通过环回到达 IDE 的情况，例如具有默认 NAT 网络的 WSL2 或远程 IDE 设置；有关该场景，请参阅 [WSL 配置](#wsl-configuration)。
 
 <Warning>
-  启用**接受来自所有网络接口的连接**会使 IDE MCP 端口可从您的本地网络访问。连接仍需要来自锁文件的身份验证令牌，但由于传输是未加密的 `ws://`，当设置打开时，会话流量和该令牌都会以明文形式跨网络传输。仅在环回确实无法工作时才打开它。对于 WSL2，更倾向于[镜像网络](#switch-wsl2-to-mirrored-networking)，以便 Windows 环回接口与 Linux VM 共享，套接字可以保持在环回上。
+  启用**接受来自所有网络接口的连接**会使 IDE MCP 端口可从您的本地网络访问。连接仍然需要来自锁文件的身份验证令牌，但由于传输是未加密的 `ws://`，当设置打开时，会话流量和该令牌都以明文形式跨网络传输。仅在环回无法工作时才打开它。对于 WSL2，更倾向于[镜像网络](#switch-wsl2-to-mirrored-networking)，以便 Windows 环回接口与 Linux VM 共享，套接字可以保持在环回上。
 </Warning>

@@ -104,7 +104,7 @@ export const ContactSalesCard = ({surface}) => {
   </Step>
 
   <Step title="启动 Claude Code 并选择 Google Cloud 的 Agent Platform">
-    运行 `claude`。在登录提示处，选择 **3rd-party platform**，然后选择 **Google Vertex AI**，这是登录提示仍然用于 Google Cloud 的 Agent Platform 的标签。
+    运行 `claude`。在登录提示处，选择 **3rd-party platform**，然后选择 **Google Vertex AI**，这是登录提示仍然用于 Google Cloud 的 Agent Platform 的标签。如果您已经登录，运行 `/login` 来打开相同的菜单。
   </Step>
 
   <Step title="按照向导提示进行操作">
@@ -134,7 +134,7 @@ Claude Code 支持 Google Cloud 的 Agent Platform [全局](https://cloud.google
   1. 启用 Agent Platform API
 </h3>
 
-在您的 GCP 项目中启用 Google Cloud 的 Agent Platform API：
+在您的 GCP 项目中启用 Google Cloud 的 Agent Platform API。将 `YOUR-PROJECT-ID` 替换为您的 GCP 项目 ID，并在下面的配置步骤中使用：
 
 ```bash theme={null}
 # 设置您的项目 ID
@@ -163,17 +163,17 @@ Claude Code 使用标准的 Google Cloud 身份验证。
 
 有关更多信息，请参阅 [Google Cloud 身份验证文档](https://cloud.google.com/docs/authentication)。
 
-Claude Code v2.1.121 或更高版本通过相同的应用默认凭证链支持[基于 X.509 证书的工作负载身份联合](https://cloud.google.com/iam/docs/workload-identity-federation-with-x509-certificates)。将 `GOOGLE_APPLICATION_CREDENTIALS` 设置为您的凭证配置文件的路径。
+Claude Code 通过相同的应用默认凭证链支持[基于 X.509 证书的工作负载身份联合](https://cloud.google.com/iam/docs/workload-identity-federation-with-x509-certificates)。将 `GOOGLE_APPLICATION_CREDENTIALS` 设置为您的凭证配置文件的路径。
 
 <Note>
-  Claude Code 使用 `ANTHROPIC_VERTEX_PROJECT_ID` 作为 Google Cloud 的 Agent Platform 请求的项目 ID。`GCLOUD_PROJECT` 和 `GOOGLE_CLOUD_PROJECT` 环境变量以及 `GOOGLE_APPLICATION_CREDENTIALS` 引用的凭证文件优先于它。如果这些都未设置，项目 ID 将从您的 `gcloud` 配置或附加的服务账户解析。
+  Claude Code 将 Google Cloud 的 Agent Platform 请求寻址到 `ANTHROPIC_VERTEX_PROJECT_ID` 中的项目，即使 `GCLOUD_PROJECT`、`GOOGLE_CLOUD_PROJECT` 或 `GOOGLE_APPLICATION_CREDENTIALS` 引用的凭证文件包含不同的项目。
 </Note>
 
 <h4 id="advanced-credential-configuration">
   高级凭证配置
 </h4>
 
-Claude Code 通过 `gcpAuthRefresh` 设置支持 GCP 的自动凭证刷新。当 Claude Code 检测到您的 GCP 凭证已过期或无法加载时，它会运行配置的命令以在重试请求之前获取新凭证。
+Claude Code 通过 `gcpAuthRefresh` 设置支持 GCP 的自动凭证刷新。将其添加到您的 Claude Code [设置文件](/docs/zh-CN/settings)，例如 `~/.claude/settings.json`。当 Claude Code 检测到您的 GCP 凭证已过期或无法加载时，它会运行配置的命令以在重试请求之前获取新凭证。
 
 ```json theme={null}
 {
@@ -184,7 +184,11 @@ Claude Code 通过 `gcpAuthRefresh` 设置支持 GCP 的自动凭证刷新。当
 }
 ```
 
-命令的输出会显示给用户，但不支持交互式输入。这对于基于浏览器的身份验证流程效果很好，其中 CLI 显示 URL，您在浏览器中完成身份验证。如果身份验证未在三分钟内完成，刷新命令将超时。如果您在项目设置（如 `.claude/settings.json`）中设置 `gcpAuthRefresh`，该命令仅在您接受工作区信任提示后运行。
+在运行命令之前，Claude Code 使用您当前的凭证请求访问令牌以确认它们确实已过期，并在它们仍然有效时跳过该命令。
+
+如果检查在五秒内未完成，Claude Code 也会跳过该命令，仅在请求因凭证错误而失败后运行它。在 v2.1.261 之前，超时的检查被视为过期的凭证，因此即使您的凭证仍然有效，该命令也可能在启动时打开您的浏览器。
+
+Claude Code 向您显示命令的输出，但无法向命令发送交互式输入。这对于基于浏览器的身份验证流程效果很好，其中 CLI 显示 URL，您在浏览器中完成身份验证。如果身份验证未在三分钟内完成，刷新命令将超时。如果您在项目设置（如 `.claude/settings.json`）中设置 `gcpAuthRefresh`，Claude Code 会在与[设置文件中的 hooks 相同的工作区信任规则](/docs/zh-CN/permissions#what-runs-before-you-trust-a-folder)下运行它，其中包括您从未信任的文件夹中的 `-p` 会话。
 
 <h3 id="4-configure-claude-code">
   4. 配置 Claude Code
@@ -201,12 +205,6 @@ export ANTHROPIC_VERTEX_PROJECT_ID=YOUR-PROJECT-ID
 # 可选：为自定义端点或网关覆盖 Agent Platform 端点 URL
 # export ANTHROPIC_VERTEX_BASE_URL=https://aiplatform.googleapis.com
 
-# 可选：如果需要，禁用 prompt caching
-export DISABLE_PROMPT_CACHING=1
-
-# 可选：请求 1 小时的 prompt cache TTL 而不是 5 分钟的默认值
-export ENABLE_PROMPT_CACHING_1H=1
-
 # 当 CLOUD_ML_REGION=global 时，为不支持全局端点的模型覆盖区域
 export VERTEX_REGION_CLAUDE_HAIKU_4_5=us-east5
 export VERTEX_REGION_CLAUDE_4_6_SONNET=europe-west1
@@ -214,9 +212,21 @@ export VERTEX_REGION_CLAUDE_4_6_SONNET=europe-west1
 
 大多数模型版本都有对应的 `VERTEX_REGION_CLAUDE_*` 变量。有关完整列表，请参阅[环境变量参考](/docs/zh-CN/env-vars)。检查 [Google Cloud 的 Agent Platform Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 以确定哪些模型支持全局端点与仅区域端点。
 
-[Prompt caching](/docs/zh-CN/prompt-caching) 会自动启用。要禁用它，请设置 `DISABLE_PROMPT_CACHING=1`。要请求 1 小时的缓存 TTL 而不是 5 分钟的默认值，请设置 `ENABLE_PROMPT_CACHING_1H=1`；具有 1 小时 TTL 的缓存写入按更高费率计费。如需提高速率限制，请联系 Google Cloud 支持。使用 Google Cloud 的 Agent Platform 时，`/logout` 命令不可用，因为身份验证通过 Google Cloud 凭证处理。
+如果区域值的形状不像区域或位置名称，Claude Code 会将其视为未设置。例如，Claude Code 将包含斜杠、点或空格的值视为未设置。Claude Code 为每个变量回退到不同的源：
 
-Claude Code 在 Google Cloud 的 Agent Platform 上默认禁用 [MCP tool search](/docs/zh-CN/mcp#scale-with-mcp-tool-search)，因此 MCP 工具定义会预先加载。Google Cloud 的 Agent Platform 支持 Claude Sonnet 4.5 及更高版本以及 Claude Opus 4.5 及更高版本的工具搜索。设置 `ENABLE_TOOL_SEARCH=true` 以在这些模型上启用它。Google Cloud 的 Agent Platform 上的早期模型不接受所需的 beta 标头，如果您对它们启用工具搜索，请求将失败。
+* `VERTEX_REGION_CLAUDE_*`：Claude Code 回退到 `CLOUD_ML_REGION`。
+* `CLOUD_ML_REGION`：Claude Code 回退到 `us-east5`。
+
+[Prompt caching](/docs/zh-CN/prompt-caching) 会自动启用。要禁用它，请设置 `DISABLE_PROMPT_CACHING=1`。要请求 1 小时的缓存 TTL 而不是 5 分钟的默认值，请设置 `ENABLE_PROMPT_CACHING_1H=1`；具有 1 小时 TTL 的缓存写入按更高费率计费。要为您的主对话和 Claude Code 在其外部进行的请求设置不同的 TTL，请[自己选择 TTL](/docs/zh-CN/prompt-caching#choose-the-ttl-yourself)。
+
+要提高您的速率限制，请联系 Google Cloud 支持。使用 Google Cloud 的 Agent Platform 时，`/logout` 命令不可用，因为身份验证通过 Google Cloud 凭证处理。
+
+Claude Code 在 [MCP tool search](/docs/zh-CN/mcp#scale-with-mcp-tool-search) 和预先加载之间进行决策，具体取决于模型生成：
+
+* **Claude Opus 4.5、Sonnet 4.5、Haiku 4.5 及更高版本**：Claude Code 默认启用工具搜索。
+* **早期模型，包括所有 Claude 3.x 模型**：Claude Code 预先加载 MCP 工具定义，因为它们的 Agent Platform 服务堆栈拒绝所需的 beta 标头。设置 `ENABLE_TOOL_SEARCH=true` 不会覆盖此行为。
+
+设置 `ENABLE_TOOL_SEARCH=false` 以在每个模型上禁用工具搜索。在 v2.1.221 之前，Claude Code 在 Google Cloud 的 Agent Platform 上为所有模型禁用工具搜索，除非您设置 `ENABLE_TOOL_SEARCH=true`。
 
 <h3 id="5-pin-model-versions">
   5. 固定模型版本
@@ -228,7 +238,7 @@ Claude Code 在 Google Cloud 的 Agent Platform 上默认禁用 [MCP tool search
 
 将这些环境变量设置为特定的 Google Cloud 的 Agent Platform 模型 ID。
 
-如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，Google Cloud 的 Agent Platform 上的 `opus` 别名会解析为 Opus 4.8，如果没有 `ANTHROPIC_DEFAULT_SONNET_MODEL`，`sonnet` 别名会解析为 Sonnet 4.5。此示例将每个别名固定到特定版本：
+如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，Google Cloud 的 Agent Platform 上的 `opus` 别名会解析为 Opus 5.5，如果没有 `ANTHROPIC_DEFAULT_SONNET_MODEL`，`sonnet` 别名会解析为 Sonnet 4.5。此示例将每个别名固定到特定版本：
 
 ```bash theme={null}
 export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-8'
@@ -240,21 +250,21 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 
 Claude Code 在未设置固定变量时使用这些默认模型：
 
-| 模型类型    | 默认值                          |
-| :------ | :--------------------------- |
-| 主模型     | `claude-opus-4-8`            |
+| 模型类型 | 默认值 |
+| :- | :- |
+| 主模型 | `claude-opus-5-5` |
 | 小型/快速模型 | `claude-sonnet-4-5@20250929` |
 
 后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Google Cloud 的 Agent Platform 上，Claude Code 为后台任务使用默认的 Sonnet 模型，因为 Haiku 可能不会在每个项目或区域中启用。两个选择会改变哪个模型执行这些任务：
 
-* 当您使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置选择主模型时，后台任务使用该模型。设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 而不设置 `ANTHROPIC_DEFAULT_SONNET_MODEL` 也算作一个选择，因为内置的 Sonnet 模型可能在引导自己的 Opus 的项目中未启用。
+* 当您使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置选择主模型时，后台任务使用该模型。当 Claude Code 在您使用 [`ANTHROPIC_DEFAULT_MODEL`](/docs/zh-CN/model-config#set-a-default-model-for-new-sessions) 设置的模型上启动会话时，后台任务也使用该模型。设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 而不设置 `ANTHROPIC_DEFAULT_SONNET_MODEL` 也算作一个选择，因为内置的 Sonnet 模型可能在引导自己的 Opus 的项目中未启用。
 * 要为后台任务使用 Haiku，请将 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 设置为在您的项目中可用的模型 ID。
 
 <Warning>
   Opus 模型的每个令牌价格高于 Sonnet 模型，因此不固定主模型的部署在更新到 v2.1.207 或更高版本后将按 Opus 费率计费。要将 Sonnet 4.5 保持为主模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署会保持其引导的 Sonnet 模型作为默认值。
 </Warning>
 
-在 v2.1.207 之前，Google Cloud 的 Agent Platform 上的主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
+在 v2.1.280 之前，Google Cloud 的 Agent Platform 上的主模型默认为 Opus 5，`opus` 别名从 v2.1.219 解析为 Opus 5。在 v2.1.207 到 v2.1.218 上，Google Cloud 的 Agent Platform 上的主模型默认为 Opus 4.8，`opus` 别名解析为 Opus 4.8。在 v2.1.207 之前，主模型默认为 Sonnet 4.5，`opus` 别名解析为 Opus 4.6，后台任务始终使用主模型。
 
 要进一步自定义模型：
 
@@ -262,6 +272,12 @@ Claude Code 在未设置固定变量时使用这些默认模型：
 export ANTHROPIC_MODEL='claude-opus-4-8'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 ```
+
+<h3 id="6-verify-your-configuration">
+  6. 验证您的配置
+</h3>
+
+启动 Claude Code 并运行 `/status` 以确认设置。`API provider` 行显示 `Google Vertex AI`，`GCP project`、`Default region` 和 `Model` 行显示您的项目 ID、区域和解析的模型。如果提供程序行缺失，环境变量未到达该进程。确认它们在您启动 `claude` 的 shell 中已导出，或在您的[设置文件](/docs/zh-CN/settings)的 `env` 块中设置它们。
 
 <h2 id="startup-model-checks">
   启动模型检查
@@ -273,13 +289,27 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 
 如果您没有固定模型，并且当前默认值在您的项目中不可用，Claude Code 会在当前会话中回退并显示通知。它首先尝试默认模型的早期版本，当默认值是 Opus 模型且没有可用的 Opus 版本时，会回退到默认 Sonnet 模型。回退不会被持久化。在 [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 中启用较新的模型或[固定一个版本](#5-pin-model-versions)以使选择永久化。
 
+当您在特定的 Sonnet 或 Opus 版本上启动会话时，例如使用 `--model`、`ANTHROPIC_MODEL` 或 [`model` 设置](/docs/zh-CN/settings-reference#model)，该版本充当会话的固定默认值，用于匹配的 `sonnet` 或 `opus` 别名。Claude Code 跳过对您的模型替换的内置默认值的可用性检查，并在您配置的模型上启动，没有回退通知。
+
+模型别名（如 `opus`）不充当固定值，Claude Code 不识别的模型 ID 也不充当固定值。
+
+当这些检查发现您的项目无法调用的模型时，Claude Code 会在这台机器上记住该拒绝长达一天，并在此期间启动时跳过记住的模型，而不再询问 Agent Platform。Claude Code 会在距离上次检查已过十分钟后，再次检查当前默认模型的记住拒绝，因此管理员重新启用的默认值会恢复。要关闭此内存，请设置 [`CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY=1`](/docs/zh-CN/env-vars)。
+
+<h3 id="when-a-model-is-disabled-mid-session">
+  当模型在会话中途被禁用时
+</h3>
+
+如果您的项目失去对会话正在运行的模型的访问权限，例如因为管理员在 [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 中禁用了它，Claude Code 会将会话切换到另一个模型，而不是让每个请求都失败，并显示 `Switched to <fallback> because <model> is not available`。它尝试与启动回退相同的模型：首先尝试同一层级的早期版本，对于没有可用 Opus 版本的 Opus 会话，则使用默认 Sonnet 模型。
+
+切换仅适用于您未固定的层级，这与启动回退的条件相同。在您选择的特定版本上的会话保持其模型，没有回退模型链，请求会失败。在 [auto mode](/docs/zh-CN/permission-modes#enable-auto-mode-on-bedrock-agent-platform-or-foundry) 中，Claude Code 仅切换到 auto mode 在 Agent Platform 上支持的模型。如果这些模型都不可用，请求会失败。
+
+您配置的[回退模型链](/docs/zh-CN/model-config#fallback-model-chains)会替换层级切换：在这些拒绝上，Claude Code 会切换到您配置的回退。要使被拒绝的请求失败而不是切换，请设置 [`CLAUDE_CODE_DISABLE_MODEL_ACCESS_FALLBACK=1`](/docs/zh-CN/env-vars)。您配置的回退链仍会在这些拒绝上切换；如果您希望每个被拒绝的请求都失败，也要移除该链。
+
 <h2 id="iam-configuration">
   IAM 配置
 </h2>
 
-分配所需的 IAM 权限：
-
-`roles/aiplatform.user` 角色包括所需的权限：
+分配 `roles/aiplatform.user` 角色，其中包括所需的权限：
 
 * `aiplatform.endpoints.predict` - 模型调用和令牌计数所需
 
@@ -297,7 +327,7 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 
 Claude Sonnet 5、Opus 4.6 及更高版本以及 Sonnet 4.6 在 Google Cloud 的 Agent Platform 上支持 [1M token context window](https://platform.claude.com/docs/zh-CN/build-with-claude/context-windows#context-window-sizes-by-model)。Sonnet 5 始终以 1M 窗口运行，没有 `[1m]` 变体可选择。对于其他模型，当您选择 1M 模型变体时，Claude Code 会自动启用扩展 context window。
 
-[设置向导](#sign-in-with-agent-platform)在固定模型时提供 1M context 选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。有关详细信息，请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
+[设置向导](#sign-in-with-agent-platform)在固定模型时提供 1M context 选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。有关详细信息，请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)，包括如何在不更改固定的情况下使用 1M 窗口。
 
 <h2 id="troubleshooting">
   故障排除

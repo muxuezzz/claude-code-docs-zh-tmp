@@ -36,7 +36,7 @@
   </Accordion>
 
   <Accordion title="有结构化输出">
-    ```json theme={null}
+    ```jsonc theme={null}
     {
       "name": "Chocolate Chip Cookies",
       "prep_time_minutes": 15,
@@ -77,20 +77,26 @@
     required: ["company_name"]
   };
 
-  for await (const message of query({
-    prompt: "Research Anthropic and provide key company information",
-    options: {
-      outputFormat: {
-        type: "json_schema",
-        schema: schema
+  try {
+    for await (const message of query({
+      prompt: "Research Anthropic and provide key company information",
+      options: {
+        outputFormat: {
+          type: "json_schema",
+          schema: schema
+        }
+      }
+    })) {
+      // 结果消息包含带有验证数据的 structured_output
+      if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+        console.log(message.structured_output);
+        // { company_name: "Anthropic", founded_year: 2021, headquarters: "San Francisco, CA" }
       }
     }
-  })) {
-    // 结果消息包含带有验证数据的 structured_output
-    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
-      console.log(message.structured_output);
-      // { company_name: "Anthropic", founded_year: 2021, headquarters: "San Francisco, CA" }
-    }
+  } catch (error) {
+    // 单次 query() 在产生错误结果后抛出异常，例如
+    // error_max_structured_output_retries；请参阅错误处理部分。
+    console.error(`Session ended with an error: ${error}`);
   }
   ```
 
@@ -111,16 +117,21 @@
 
 
   async def main():
-      async for message in query(
-          prompt="Research Anthropic and provide key company information",
-          options=ClaudeAgentOptions(
-              output_format={"type": "json_schema", "schema": schema}
-          ),
-      ):
-          # 结果消息包含带有验证数据的 structured_output
-          if isinstance(message, ResultMessage) and message.structured_output:
-              print(message.structured_output)
-              # {'company_name': 'Anthropic', 'founded_year': 2021, 'headquarters': 'San Francisco, CA'}
+      try:
+          async for message in query(
+              prompt="Research Anthropic and provide key company information",
+              options=ClaudeAgentOptions(
+                  output_format={"type": "json_schema", "schema": schema}
+              ),
+          ):
+              # 结果消息包含带有验证数据的 structured_output
+              if isinstance(message, ResultMessage) and message.structured_output:
+                  print(message.structured_output)
+                  # {'company_name': 'Anthropic', 'founded_year': 2021, 'headquarters': 'San Francisco, CA'}
+      except Exception as error:
+          # 单次 query() 在产生错误结果后抛出异常，例如
+          # error_max_structured_output_retries；请参阅错误处理部分。
+          print(f"Session ended with an error: {error}")
 
 
   asyncio.run(main())
@@ -134,6 +145,8 @@
 与其手动编写 JSON Schema，你可以使用 [Zod](https://zod.dev/)（TypeScript）或 [Pydantic](https://docs.pydantic.dev/latest/)（Python）来定义你的 schema。这些库为你生成 JSON Schema，并让你将响应解析为完全类型化的对象，你可以在整个代码库中使用，具有自动完成和类型检查。
 
 下面的示例定义了一个功能实现计划的 schema，包括摘要、步骤列表（每个步骤都有复杂度级别）和潜在风险。代理规划功能并返回一个类型化的 `FeaturePlan` 对象。然后你可以访问 `plan.summary` 等属性，并使用完整的类型安全遍历 `plan.steps`。
+
+SDK 使用 JSON Schema draft-07 验证 schema，因此声明更新版本的 schema 会被拒绝。Zod 默认针对 draft 2020-12，所以在转换你的 schema 时传递 `target: "draft-7"`。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -156,32 +169,38 @@
 
   type FeaturePlan = z.infer<typeof FeaturePlan>;
 
-  // 转换为 JSON Schema
-  const schema = z.toJSONSchema(FeaturePlan);
+  // 使用 SDK 期望的 draft-07 目标转换为 JSON Schema
+  const schema = z.toJSONSchema(FeaturePlan, { target: "draft-7" });
 
   // 在查询中使用
-  for await (const message of query({
-    prompt:
-      "Plan how to add dark mode support to a React app. Break it into implementation steps.",
-    options: {
-      outputFormat: {
-        type: "json_schema",
-        schema: schema
+  try {
+    for await (const message of query({
+      prompt:
+        "Plan how to add dark mode support to a React app. Break it into implementation steps.",
+      options: {
+        outputFormat: {
+          type: "json_schema",
+          schema: schema
+        }
+      }
+    })) {
+      if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+        // 验证并获取完全类型化的结果
+        const parsed = FeaturePlan.safeParse(message.structured_output);
+        if (parsed.success) {
+          const plan: FeaturePlan = parsed.data;
+          console.log(`Feature: ${plan.feature_name}`);
+          console.log(`Summary: ${plan.summary}`);
+          plan.steps.forEach((step) => {
+            console.log(`${step.step_number}. [${step.estimated_complexity}] ${step.description}`);
+          });
+        }
       }
     }
-  })) {
-    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
-      // 验证并获取完全类型化的结果
-      const parsed = FeaturePlan.safeParse(message.structured_output);
-      if (parsed.success) {
-        const plan: FeaturePlan = parsed.data;
-        console.log(`Feature: ${plan.feature_name}`);
-        console.log(`Summary: ${plan.summary}`);
-        plan.steps.forEach((step) => {
-          console.log(`${step.step_number}. [${step.estimated_complexity}] ${step.description}`);
-        });
-      }
-    }
+  } catch (error) {
+    // 单次 query() 在产生错误结果后抛出，例如
+    // error_max_structured_output_retries；请参阅错误处理部分。
+    console.error(`Session ended with an error: ${error}`);
   }
   ```
 
@@ -205,36 +224,34 @@
 
 
   async def main():
-      async for message in query(
-          prompt="Plan how to add dark mode support to a React app. Break it into implementation steps.",
-          options=ClaudeAgentOptions(
-              output_format={
-                  "type": "json_schema",
-                  "schema": FeaturePlan.model_json_schema(),
-              }
-          ),
-      ):
-          if isinstance(message, ResultMessage) and message.structured_output:
-              # 验证并获取完全类型化的结果
-              plan = FeaturePlan.model_validate(message.structured_output)
-              print(f"Feature: {plan.feature_name}")
-              print(f"Summary: {plan.summary}")
-              for step in plan.steps:
-                  print(
-                      f"{step.step_number}. [{step.estimated_complexity}] {step.description}"
-                  )
+      try:
+          async for message in query(
+              prompt="Plan how to add dark mode support to a React app. Break it into implementation steps.",
+              options=ClaudeAgentOptions(
+                  output_format={
+                      "type": "json_schema",
+                      "schema": FeaturePlan.model_json_schema(),
+                  }
+              ),
+          ):
+              if isinstance(message, ResultMessage) and message.structured_output:
+                  # 验证并获取完全类型化的结果
+                  plan = FeaturePlan.model_validate(message.structured_output)
+                  print(f"Feature: {plan.feature_name}")
+                  print(f"Summary: {plan.summary}")
+                  for step in plan.steps:
+                      print(
+                          f"{step.step_number}. [{step.estimated_complexity}] {step.description}"
+                      )
+      except Exception as error:
+          # 单次 query() 在产生错误结果后抛出，例如
+          # error_max_structured_output_retries；请参阅错误处理部分。
+          print(f"Session ended with an error: {error}")
 
 
   asyncio.run(main())
   ```
 </CodeGroup>
-
-**优势：**
-
-* 完整的类型推断（TypeScript）和类型提示（Python）
-* 使用 `safeParse()` 或 `model_validate()` 进行运行时验证
-* 更好的错误消息
-* 可组合、可重用的 schema
 
 <h2 id="output-format-configuration">
   输出格式配置
@@ -243,7 +260,7 @@
 `outputFormat`（TypeScript）或 `output_format`（Python）选项接受一个对象，包含：
 
 * `type`：设置为 `"json_schema"` 以获得结构化输出
-* `schema`：一个 [JSON Schema](https://json-schema.org/understanding-json-schema/about) 对象，定义你的输出结构。你可以使用 `z.toJSONSchema()` 从 Zod schema 生成它，或使用 `.model_json_schema()` 从 Pydantic 模型生成它
+* `schema`：一个 [JSON Schema](https://json-schema.org/understanding-json-schema/about) 对象，定义你的输出结构。你可以使用 `z.toJSONSchema(schema, { target: "draft-7" })` 从 Zod schema 生成它，或使用 `.model_json_schema()` 从 Pydantic 模型生成它
 
 SDK 支持标准 JSON Schema 功能，包括所有基本类型（object、array、string、number、boolean、null）、`enum`、`const`、`required`、嵌套对象和 `$ref` 定义。有关支持的功能和限制的完整列表，请参阅 [JSON Schema 限制](https://platform.claude.com/docs/zh-CN/build-with-claude/structured-outputs#json-schema-limitations)。
 
@@ -287,25 +304,31 @@ schema 包括可选字段（`author` 和 `date`），因为 git blame 信息可�
   };
 
   // 代理使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
-  for await (const message of query({
-    prompt: "Find all TODO comments in this codebase and identify who added them",
-    options: {
-      outputFormat: {
-        type: "json_schema",
-        schema: todoSchema
+  try {
+    for await (const message of query({
+      prompt: "Find all TODO comments in this codebase and identify who added them",
+      options: {
+        outputFormat: {
+          type: "json_schema",
+          schema: todoSchema
+        }
+      }
+    })) {
+      if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+        const data = message.structured_output as { total_count: number; todos: Array<{ file: string; line: number; text: string; author?: string; date?: string }> };
+        console.log(`Found ${data.total_count} TODOs`);
+        data.todos.forEach((todo) => {
+          console.log(`${todo.file}:${todo.line} - ${todo.text}`);
+          if (todo.author) {
+            console.log(`  Added by ${todo.author} on ${todo.date}`);
+          }
+        });
       }
     }
-  })) {
-    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
-      const data = message.structured_output as { total_count: number; todos: Array<{ file: string; line: number; text: string; author?: string; date?: string }> };
-      console.log(`Found ${data.total_count} TODOs`);
-      data.todos.forEach((todo) => {
-        console.log(`${todo.file}:${todo.line} - ${todo.text}`);
-        if (todo.author) {
-          console.log(`  Added by ${todo.author} on ${todo.date}`);
-        }
-      });
-    }
+  } catch (error) {
+    // 单次 query() 在产生错误结果后抛出异常，例如
+    // error_max_structured_output_retries；请参阅错误处理部分。
+    console.error(`Session ended with an error: ${error}`);
   }
   ```
 
@@ -339,19 +362,24 @@ schema 包括可选字段（`author` 和 `date`），因为 git blame 信息可�
 
   async def main():
       # 代理使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
-      async for message in query(
-          prompt="Find all TODO comments in this codebase and identify who added them",
-          options=ClaudeAgentOptions(
-              output_format={"type": "json_schema", "schema": todo_schema}
-          ),
-      ):
-          if isinstance(message, ResultMessage) and message.structured_output:
-              data = message.structured_output
-              print(f"Found {data['total_count']} TODOs")
-              for todo in data["todos"]:
-                  print(f"{todo['file']}:{todo['line']} - {todo['text']}")
-                  if "author" in todo:
-                      print(f"  Added by {todo['author']} on {todo['date']}")
+      try:
+          async for message in query(
+              prompt="Find all TODO comments in this codebase and identify who added them",
+              options=ClaudeAgentOptions(
+                  output_format={"type": "json_schema", "schema": todo_schema}
+              ),
+          ):
+              if isinstance(message, ResultMessage) and message.structured_output:
+                  data = message.structured_output
+                  print(f"Found {data['total_count']} TODOs")
+                  for todo in data["todos"]:
+                      print(f"{todo['file']}:{todo['line']} - {todo['text']}")
+                      if "author" in todo:
+                          print(f"  Added by {todo['author']} on {todo['date']}")
+      except Exception as error:
+          # 单次 query() 在产生错误结果后抛出异常，例如
+          # error_max_structured_output_retries；请参阅错误处理部分。
+          print(f"Session ended with an error: {error}")
 
 
   asyncio.run(main())
@@ -362,54 +390,95 @@ schema 包括可选字段（`author` 和 `date`），因为 git blame 信息可�
   错误处理
 </h2>
 
-结构化输出生成可能会失败，当代理无法生成与你的 schema 匹配的有效 JSON 时。这通常发生在 schema 对于任务来说太复杂、任务本身不明确或代理在尝试修复验证错误时达到重试限制时。它也可能在没有任何验证失败的情况下发生：[模型回退](/docs/zh-CN/model-config#automatic-model-fallback)可以在流中途收回已完成的输出，如果没有重试替换它，运行将以相同的错误结束。在调试你的 schema 之前，检查结果消息上的 `errors` 字段以区分这两个原因。
+结构化输出生成可能会失败，当代理无法生成与你的 schema 匹配的有效 JSON 时。这通常发生在 schema 对于任务来说太复杂、任务本身不明确或代理在尝试修复验证错误时达到重试限制时。它也可能在没有任何验证失败的情况下发生：[模型回退](/docs/zh-CN/model-config#automatic-model-fallback)可以在流中途收回已完成的输出，如果没有重试替换它，运行将以相同的错误结束。在调试你的 schema 之前，检查结果消息上的 `errors` 列表以区分这两个原因。
 
 发生错误时，结果消息有一个 `subtype` 指示出了什么问题：
 
-| Subtype                               | 含义                                 |
-| ------------------------------------- | ---------------------------------- |
-| `success`                             | 输出已成功生成并验证                         |
+| Subtype | 含义 |
+| - | - |
+| `success` | 输出已成功生成并验证 |
 | `error_max_structured_output_retries` | 多次尝试后没有有效输出存活（验证失败，或模型回退收回且没有成功重试） |
 
-下面的示例检查 `subtype` 字段以确定输出是否成功生成或你是否需要处理失败：
+结果也可以以 `success` 的 subtype 结束，但没有 `structured_output` 值，例如当运行完成而代理没有生成结构化输出时。将该情况也视为失败。故障排除条目[structured\_output 为 None 但结果显示 success](/docs/zh-CN/agent-sdk/troubleshooting#structured_output-is-none-but-the-result-says-success)涵盖了这种情况。下面的示例仅当 `subtype` 为 `success` 且 `structured_output` 存在时才将结果视为成功，并将所有其他结果作为失败处理：
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
-  for await (const msg of query({
-    prompt: "Extract contact info from the document",
-    options: {
-      outputFormat: {
-        type: "json_schema",
-        schema: contactSchema
+  import { query } from "@anthropic-ai/claude-agent-sdk";
+
+  const contactSchema = {
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      email: { type: "string" }
+    },
+    required: ["name"]
+  };
+
+  try {
+    for await (const msg of query({
+      prompt: "Extract contact info from the document",
+      options: {
+        outputFormat: {
+          type: "json_schema",
+          schema: contactSchema
+        }
+      }
+    })) {
+      if (msg.type === "result") {
+        if (msg.subtype === "success" && msg.structured_output) {
+          // 使用验证的输出
+          console.log(msg.structured_output);
+        } else if (msg.subtype === "error_max_structured_output_retries") {
+          console.error("Could not produce valid output");
+        } else {
+          console.error("Run ended without a structured output");
+        }
       }
     }
-  })) {
-    if (msg.type === "result") {
-      if (msg.subtype === "success" && msg.structured_output) {
-        // 使用验证的输出
-        console.log(msg.structured_output);
-      } else if (msg.subtype === "error_max_structured_output_retries") {
-        // 处理失败 - 使用更简单的提示重试、回退到非结构化等
-        console.error("Could not produce valid output");
-      }
-    }
+  } catch (error) {
+    // 单次 query() 在产生错误结果后抛出。如果失败是错误结果，
+    // 上面的错误 subtype 分支已经运行；连接或进程失败不会产生结果消息。
+    console.log(`Session ended with an error: ${error}`);
   }
   ```
 
   ```python Python theme={null}
-  async for message in query(
-      prompt="Extract contact info from the document",
-      options=ClaudeAgentOptions(
-          output_format={"type": "json_schema", "schema": contact_schema}
-      ),
-  ):
-      if isinstance(message, ResultMessage):
-          if message.subtype == "success" and message.structured_output:
-              # 使用验证的输出
-              print(message.structured_output)
-          elif message.subtype == "error_max_structured_output_retries":
-              # 处理失败
-              print("Could not produce valid output")
+  import asyncio
+  from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+
+  contact_schema = {
+      "type": "object",
+      "properties": {
+          "name": {"type": "string"},
+          "email": {"type": "string"},
+      },
+      "required": ["name"],
+  }
+
+
+  async def main():
+      try:
+          async for message in query(
+              prompt="Extract contact info from the document",
+              options=ClaudeAgentOptions(
+                  output_format={"type": "json_schema", "schema": contact_schema}
+              ),
+          ):
+              if isinstance(message, ResultMessage):
+                  if message.subtype == "success" and message.structured_output:
+                      # 使用验证的输出
+                      print(message.structured_output)
+                  elif message.subtype == "error_max_structured_output_retries":
+                      print("Could not produce valid output")
+                  else:
+                      print("Run ended without a structured output")
+      except Exception as error:
+          # 单次 query() 在产生错误结果后抛出。如果失败是错误结果，
+          # 上面的错误 subtype 分支已经运行；连接或进程失败不会产生结果消息。
+          print(f"Session ended with an error: {error}")
+
+
+  asyncio.run(main())
   ```
 </CodeGroup>
 

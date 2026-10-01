@@ -4,15 +4,18 @@
 
 # Slack 中的 Claude Code
 
-> 直接从 Slack 工作区委派编码任务
+> 直接从 Slack 工作区委派编码任务。Anthropic 正在为 Team 和 Enterprise 工作区停用此早期版本，转而使用 Claude Tag；它仍然是 Pro 和 Max 计划上的设置路径。
 
-<Note>
-  Slack 中的 Claude Code 正在被 [Claude Tag](https://claude.com/product/tag) 替代，用于 Team 和 Enterprise 工作区。Claude Tag 以您组织的共享身份运行 @Claude，具有管理员配置的访问权限，在同一 Slack 应用下运行，因此无需重新安装，现有设置在过渡期间继续工作。要切换工作区，请参阅 [从早期 Claude in Slack 迁移](https://claude.com/docs/claude-tag/admins/migrate-from-earlier)。
-</Note>
+<Warning>
+  本页面记录了早期的 Slack 中的 Claude Code，它在每个会话中以单个用户的账户运行。
 
-Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack 工作区。当您使用编码任务提及 `@Claude` 时，Claude 会自动检测意图并在网络上创建 Claude Code 会话，允许您在不离开团队对话的情况下委派开发工作。
+  * **Team 和 Enterprise 计划：** Anthropic 正在停用此版本，转而使用 [Claude Tag](https://claude.com/product/tag)，它以您组织的共享身份运行 @Claude，具有管理员配置的访问权限。您现有的 Slack 应用和 @Claude 处理保持不变，您的 Anthropic 账户团队可以告诉您切换日期。[为新工作区设置 Claude Tag](https://claude.com/docs/claude-tag/overview)；要移动已经使用此版本的工作区，请参阅 [从早期 Claude in Slack 迁移](https://claude.com/docs/claude-tag/admins/migrate-from-earlier)。
+  * **Pro 和 Max 计划：** Claude Tag 在个人计划上不可用，因此本页面仍然是设置路径。
+</Warning>
 
-此集成基于现有的 Claude for Slack 应用程序构建，但为与编码相关的请求添加了到网络上 Claude Code 的智能路由。每个会话在您自己的 Claude 账户下运行，使用您连接的存储库和您的计划限制。
+Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack 工作区。当您使用编码任务提及 `@Claude` 时，Claude 会自动检测意图并创建 Claude Code 云会话，允许您在不离开团队对话的情况下委派开发工作。
+
+此集成基于现有的 Claude for Slack 应用程序构建，但为与编码相关的请求添加了到 Claude Code 云会话的智能路由。每个会话在您自己的 Claude 账户下运行，使用您连接的存储库和您的计划限制。
 
 <h2 id="use-cases">
   用例
@@ -29,12 +32,12 @@ Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack
 
 在使用 Slack 中的 Claude Code 之前，请确保您具有以下条件：
 
-| 要求               | 详情                                                                         |
-| :--------------- | :------------------------------------------------------------------------- |
-| Claude 计划        | Pro、Max、Team 或 Enterprise，具有 Claude Code 访问权限（高级席位或 Chat + Claude Code 席位） |
-| 网络上的 Claude Code | 必须启用对[网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web)的访问                  |
-| GitHub 账户        | 连接到网络上的 Claude Code，至少有一个存储库已认证                                            |
-| Slack 认证         | 您的 Slack 账户通过 Claude 应用程序链接到您的 Claude 账户                                   |
+| 要求 | 详情 |
+| :- | :- |
+| Claude 计划 | Pro、Max、Team 或 Enterprise，具有 Claude Code 访问权限（高级席位或 Chat + Claude Code 席位） |
+| 云会话 | [云会话](/docs/zh-CN/claude-code-on-the-web)已为您的账户启用 |
+| GitHub 账户 | 在 [claude.ai/code](https://claude.ai/code) 连接，至少有一个存储库已认证 |
+| Slack 认证 | 您的 Slack 账户通过 Claude 应用程序链接到您的 Claude 账户 |
 
 <h2 id="setting-up-claude-code-in-slack">
   在 Slack 中设置 Claude Code
@@ -49,13 +52,13 @@ Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack
     安装应用程序后，认证您的个人 Claude 账户：
 
     1. 通过单击您的应用程序部分中的"Claude"在 Slack 中打开 Claude 应用程序
-    2. 导航到应用程序主页选项卡
+    2. 打开应用程序主页选项卡
     3. 单击"Connect"将您的 Slack 账户与您的 Claude 账户链接
     4. 在浏览器中完成认证流程
   </Step>
 
-  <Step title="配置网络上的 Claude Code">
-    确保您网络上的 Claude Code 已正确配置：
+  <Step title="配置云会话">
+    确保为您的账户正确配置云会话：
 
     * 访问 [claude.ai/code](https://claude.ai/code) 并使用您连接到 Slack 的同一账户登录
     * 如果尚未连接，请连接您的 GitHub 账户
@@ -63,11 +66,11 @@ Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack
   </Step>
 
   <Step title="选择您的路由模式">
-    连接您的账户后，配置 Claude 如何在 Slack 中处理您的消息。导航到 Slack 中的 Claude 应用程序主页以找到**路由模式**设置。
+    连接您的账户后，配置 Claude 如何在 Slack 中处理您的消息。打开 Slack 中的 Claude 应用程序主页以找到**路由模式**设置。
 
-    | 模式          | 行为                                                                                                    |
-    | :---------- | :---------------------------------------------------------------------------------------------------- |
-    | **仅代码**     | Claude 将所有 @mentions 路由到 Claude Code 会话。最适合仅将 Claude 用于 Slack 中开发任务的团队。                               |
+    | 模式 | 行为 |
+    | :- | :- |
+    | **仅代码** | Claude 将所有 @mentions 路由到 Claude Code 会话。最适合仅将 Claude 用于 Slack 中开发任务的团队。 |
     | **代码 + 聊天** | Claude 分析每条消息并在 Claude Code（用于编码任务）和 Claude Chat（用于写作、分析和常见问题）之间智能路由。最适合希望为所有类型工作提供单一 @Claude 入口点的团队。 |
 
     <Note>
@@ -88,7 +91,7 @@ Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack
   自动检测
 </h3>
 
-当您在 Slack 频道或线程中提及 @Claude 时，Claude 会自动分析您的消息以确定它是否是编码任务。如果 Claude 检测到编码意图，它将把您的请求路由到网络上的 Claude Code，而不是作为常规聊天助手响应。
+在 Code + Chat 路由模式下，当您在 Slack 频道或线程中提及 @Claude 时，Claude 会自动检测您的消息是否是编码任务。编码任务会被发送到 Claude Code 云会话。其他任何内容都会获得常规聊天回复。在仅 Code 模式下，每个 @mention 都会发送到 Claude Code。
 
 您也可以明确告诉 Claude 将请求作为编码任务处理，即使它没有自动检测到。
 
@@ -125,12 +128,6 @@ Slack 中的 Claude Code 将 Claude Code 的强大功能直接引入您的 Slack
   用户界面元素
 </h2>
 
-<h3 id="app-home">
-  应用程序主页
-</h3>
-
-应用程序主页选项卡显示您的连接状态，并允许您连接或断开您的 Claude 账户与 Slack 的连接。
-
 <h3 id="message-actions">
   消息操作
 </h3>
@@ -154,12 +151,12 @@ Claude 根据 Slack 对话中的上下文自动选择存储库。如果多个存
   用户级访问
 </h3>
 
-| 访问类型           | 要求                                        |
-| :------------- | :---------------------------------------- |
-| Claude Code 会话 | 每个用户在其自己的 Claude 账户下运行会话                  |
-| 使用情况和速率限制      | 会话计入个人用户的计划限制                             |
-| 存储库访问          | 用户只能访问他们个人连接的存储库                          |
-| 会话历史           | 会话出现在您在 claude.ai/code 上的 Claude Code 历史中 |
+| 访问类型 | 要求 |
+| :- | :- |
+| Claude Code 会话 | 每个用户在其自己的 Claude 账户下运行会话 |
+| 使用情况和速率限制 | 会话计入个人用户的计划限制 |
+| 存储库访问 | 用户只能访问他们个人连接的存储库 |
+| 会话历史 | 会话出现在您在 claude.ai/code 上的 Claude Code 历史中 |
 
 <h3 id="workspace-level-access">
   工作区级访问
@@ -167,24 +164,17 @@ Claude 根据 Slack 对话中的上下文自动选择存储库。如果多个存
 
 Slack 工作区管理员控制 Claude 应用程序是否可以在其工作区中使用：
 
-| 控制                 | 描述                                                   |
-| :----------------- | :--------------------------------------------------- |
-| 应用程序安装             | 工作区管理员决定是否从 Slack 应用程序市场安装 Claude 应用程序               |
+| 控制 | 描述 |
+| :- | :- |
+| 应用程序安装 | 工作区管理员决定是否从 Slack 应用程序市场安装 Claude 应用程序 |
 | Enterprise Grid 分发 | 对于 Enterprise Grid 组织，组织管理员可以控制哪些工作区有权访问 Claude 应用程序 |
-| 应用程序移除             | 从工作区移除应用程序会立即撤销该工作区中所有用户的访问权限                        |
+| 应用程序移除 | 从工作区移除应用程序会立即撤销该工作区中所有用户的访问权限 |
 
 <h3 id="channel-based-access-control">
   基于频道的访问控制
 </h3>
 
-安装后，Claude 不会自动添加到任何频道。用户必须明确邀请 Claude 到他们想要使用它的频道：
-
-* **需要邀请**：在任何频道中键入 `/invite @Claude` 以将 Claude 添加到该频道
-* **频道成员身份控制访问**：Claude 只能在已添加它的频道中响应 @mentions
-* **通过频道进行访问控制**：管理员可以通过管理哪些频道邀请了 Claude 以及谁有权访问这些频道来控制谁使用 Claude Code
-* **私有频道支持**：Claude 在公开和私有频道中都工作，为团队提供了控制可见性的灵活性
-
-这种基于频道的模型允许团队将 Claude Code 使用限制在特定频道，提供了超越工作区级权限的额外访问控制层。
+安装应用程序不会将 Claude 添加到任何频道。Claude 仅在已添加它的频道中响应 @mentions；使用 `/invite @Claude` 邀请它。它在公开和私有频道中都可以工作。管理员可以通过管理哪些频道邀请了 Claude 以及谁有权访问这些频道来控制谁使用 Claude Code。这在工作区级权限之外增加了一层访问控制。
 
 <h2 id="what’s-accessible-where">
   什么可以在哪里访问
@@ -192,9 +182,9 @@ Slack 工作区管理员控制 Claude 应用程序是否可以在其工作区中
 
 **在 Slack 中**：您将看到状态更新、完成摘要和操作按钮。完整记录被保留并始终可访问。
 
-**在网络上**：完整的 Claude Code 会话，包含完整的对话历史、所有代码更改、文件操作以及继续会话或创建拉取请求的能力。
+**在 claude.ai/code**：完整的 Claude Code 会话，包含完整的对话历史、所有代码更改和文件操作。会话保存在您的 Claude Code 历史记录中，位于 [claude.ai/code](https://claude.ai/code)，您可以在那里继续过去的会话、参考它们或创建拉取请求。
 
-对于 Enterprise 和 Team 账户，从 Slack 中的 Claude 创建的会话会自动对组织可见。有关更多详情，请参阅 [Claude Code 网络共享](/docs/zh-CN/claude-code-on-the-web#share-sessions)。
+对于 Enterprise 和 Team 账户，从 Slack 中的 Claude 创建的会话会自动对组织可见。有关更多详情，请参阅 [云会话共享](/docs/zh-CN/claude-code-on-the-web#share-sessions)。
 
 <h2 id="best-practices">
   最佳实践
@@ -206,7 +196,7 @@ Slack 工作区管理员控制 Claude 应用程序是否可以在其工作区中
 
 * **具体说明**：在相关时包括文件名、函数名或错误消息。
 * **提供上下文**：如果从对话中不清楚，请提及存储库或项目。
-* **定义成功**：解释"完成"的样子——Claude 应该编写测试吗？更新文档？创建 PR？
+* **定义成功**：解释"完成"的样子。Claude 应该编写测试吗？更新文档？创建 PR？
 * **使用线程**：在讨论 Bug 或功能时在线程中回复，以便 Claude 可以收集完整的上下文。
 
 <h3 id="when-to-use-slack-vs-web">
@@ -225,21 +215,36 @@ Slack 工作区管理员控制 Claude 应用程序是否可以在其工作区中
   "Claude Code 未为您的账户启用"
 </h3>
 
-此错误意味着您的 Claude 账户还没有云环境，而不是管理员需要启用任何内容。使用连接到 Slack 的同一账户在 [claude.ai/code](https://claude.ai/code) 登录一次。首次访问会创建您的默认云环境，错误将在您下次提及时清除。每个用户必须单独执行此操作。
+此错误意味着您的 Claude 账户还没有云环境。使用连接到 Slack 的同一账户在 [claude.ai/code](https://claude.ai/code) 登录一次，并完成[网络入门](/docs/zh-CN/web-quickstart#connect-github)，这将创建您的默认云环境或要求您创建它。错误将在您下次提及时清除。每个用户必须单独执行此操作。
 
 <h3 id="sessions-not-starting">
   会话未启动
 </h3>
 
 1. 验证您的 Claude 账户在 Claude 应用程序主页中已连接
-2. 检查您是否启用了网络上的 Claude Code 访问权限
+2. 检查您的账户是否启用了云会话
 3. 确保您至少有一个 GitHub 存储库连接到 Claude Code
+
+<h3 id="sessions-from-a-claude-tag-channel-fail-to-start">
+  来自 Claude Tag 频道的会话启动失败
+</h3>
+
+此条目适用于使用 [Claude Tag](https://claude.com/docs/claude-tag/overview) 的工作区，其中 Claude 在频道中作为您组织的共享身份工作，而不是作为任何成员的账户。如果您在 [claude.ai/code](https://claude.ai/code) 创建了频道的云环境，它属于您的个人账户，Claude 无法在个人环境中启动频道会话。Claude Code 会立即使会话失败，重试也无法帮助。
+
+如果您是所有者且环境是您自己的，请从环境选择器中[与组织共享](/docs/zh-CN/cloud-environments#organization-shared-environments)。否则，所有者可从[管理设置](https://claude.ai/admin-settings)中的**云环境**页面将其重新创建为组织共享环境。
+
+您可以通过两种方式应用它：
+
+* 在 [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code) 将其设置为组织默认值。
+* [在 Claude Tag 管理设置中的频道上设置它](https://claude.com/docs/claude-tag/admins/troubleshooting#channel-sessions-use-the-wrong-environment-or-can%E2%80%99t-find-one)。
+
+如果您不是所有者，请将此条目发送给所有者。
 
 <h3 id="repository-not-showing">
   存储库未显示
 </h3>
 
-1. 在 [claude.ai/code](https://claude.ai/code) 的网络上的 Claude Code 中连接存储库
+1. 在 [claude.ai/code](https://claude.ai/code) 连接存储库
 2. 验证您对该存储库的 GitHub 权限
 3. 尝试断开并重新连接您的 GitHub 账户
 
@@ -258,29 +263,21 @@ Slack 工作区管理员控制 Claude 应用程序是否可以在其工作区中
 2. 确保您在浏览器中登录到正确的 Claude 账户
 3. 检查您的 Claude 计划是否包括 Claude Code 访问权限
 
-<h3 id="session-expiration">
-  会话过期
-</h3>
-
-1. 会话在网络上的 Claude Code 历史中保持可访问
-2. 您可以从 [claude.ai/code](https://claude.ai/code) 继续或参考过去的会话
-
 <h2 id="current-limitations">
   当前限制
 </h2>
 
-* **仅 GitHub**：目前支持 GitHub 上的存储库。
+* **仅 GitHub**：存储库必须在 GitHub 上。
 * **一次一个 PR**：每个会话可以创建一个拉取请求。
-* **速率限制适用**：会话使用您的个人 Claude 计划的速率限制。
-* **需要网络访问**：用户必须具有网络上的 Claude Code 访问权限；没有它的用户将只获得标准 Claude 聊天响应。
+* **需要云会话访问**：用户需要访问[云会话](/docs/zh-CN/claude-code-on-the-web)；没有访问权限的用户，Claude 将回复标准聊天响应。
 
 <h2 id="related-resources">
   相关资源
 </h2>
 
 <CardGroup>
-  <Card title="网络上的 Claude Code" icon="globe" href="/docs/zh-CN/claude-code-on-the-web">
-    了解有关网络上的 Claude Code 的更多信息
+  <Card title="云端 Claude Code" icon="cloud" href="/docs/zh-CN/claude-code-on-the-web">
+    了解有关云端会话的更多信息
   </Card>
 
   <Card title="Claude for Slack" icon="slack" href="https://claude.com/claude-and-slack">

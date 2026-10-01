@@ -44,7 +44,7 @@ Claude Code 可与 Anthropic 自己的网关或您的组织已运行的网关配
   Claude apps gateway
 </h3>
 
-Claude apps gateway 是 Anthropic 的自托管网关，包含在 `claude` 二进制文件中。它路由到 Amazon Bedrock、Claude Platform on AWS、Google Cloud、Microsoft Foundry 或 Anthropic API 作为上游。开发人员通过 `/login` 使用您的企业身份提供商登录，网关按 IdP 组强制执行模型访问和 [托管设置](/docs/zh-CN/permissions#managed-settings)，并向您自己的可观测性堆栈发出 [OpenTelemetry Protocol (OTLP)](/docs/zh-CN/monitoring-usage) 使用指标。
+Claude apps gateway 是 Anthropic 的自托管网关，包含在 `claude` 二进制文件中。它路由到 Amazon Bedrock、Claude Platform on AWS、Google Cloud、Microsoft Foundry 或 Anthropic API 作为上游。开发人员通过 `/login` 使用您的企业身份提供商登录，网关按 IdP 组强制执行模型访问和 [托管设置](/docs/zh-CN/managed-settings)，并向您自己的可观测性堆栈发出 [OpenTelemetry Protocol (OTLP)](/docs/zh-CN/monitoring-usage) 使用指标。
 
 因为它与每个 Claude Code 版本一起构建和测试，所以它转发 Claude Code 发送的标头和请求字段。单独维护的网关需要在每个版本中更改这些标头和字段时 [更新其转发规则](/docs/zh-CN/llm-gateway-protocol#forward-as-open-lists)；Claude 应用网关与 CLI 一起发布，因此没有列表需要保持最新。有关在网关会话上行为不同的小功能集，请参阅 [可用性和限制](/docs/zh-CN/claude-apps-gateway#availability-and-limitations)。
 
@@ -73,14 +73,17 @@ Claude apps gateway 是 Anthropic 的自托管网关，包含在 `claude` 二进
 网关路由模型 API 请求。您可能期望它处理的一些事情在其他地方配置：
 
 * **哪个模型回答**：使用 `/model` 命令或 [模型环境变量](/docs/zh-CN/model-config#setting-your-model) 选择模型。网关决定请求去向，而不是开发人员选择的模型。Claude 应用网关可以使用每个组的 `availableModels` 允许列表限制选择，但开发人员仍在其中选择。
-* **其他网络流量**：Claude Code 本身将版本检查和下载直接发送到 Anthropic，与网关路径分开。可选的客户端遥测流是否也在取决于您的提供商；[遥测默认值表](/docs/zh-CN/data-usage#telemetry-services) 涵盖每种情况。在已登录的 Claude 应用网关会话上，网关凭证禁用 Anthropic 绑定的分析，当 [配置遥测转发](/docs/zh-CN/claude-apps-gateway-config#telemetry) 时，将 OTLP 导出固定到网关。您的网络仍需要出口到 [必需的域](/docs/zh-CN/network-config)，或设置 [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](/docs/zh-CN/env-vars) 以关闭可选流。
+* **其他网络流量**：Claude Code 本身将版本检查和下载直接发送到 Anthropic，与网关路径分开。您的网络仍需要出口到 [必需的域](/docs/zh-CN/network-config)，或设置 [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](/docs/zh-CN/env-vars) 以关闭可选流。
+* **客户端遥测**：当会话登录到 Claude 应用网关时，Claude Code 会禁用其 Anthropic 绑定的客户端分析。要在登录前启动分析也保持关闭，请在每个设备上的 [客户端托管设置](/docs/zh-CN/claude-apps-gateway-config#client-side-managed-settings) 中提供 [`DISABLE_TELEMETRY`](/docs/zh-CN/managed-settings#turn-telemetry-off-for-your-organization)。
+* **其他网关上的客户端遥测**：Claude Code 是否发送可选的客户端遥测流取决于您的提供商，[遥测默认值表](/docs/zh-CN/data-usage#default-behaviors-by-api-provider) 涵盖每种情况。
+* **遥测目标**：Claude Code 发送网关会话遥测的位置取决于会话如何登录，[开发人员上强制执行的内容](/docs/zh-CN/claude-apps-gateway#whats-enforced-on-developers) 说明每种会话的导出去向。
 * **企业 HTTP 代理**：`HTTPS_PROXY` 位于 Claude Code 和它与之通信的每个服务器之间，包括网关。如果您的网络需要一个，[配置代理](/docs/zh-CN/network-config) 以及网关。对于您托管的 Claude 应用网关，[登录检查代理主机也在私有网络上](/docs/zh-CN/claude-apps-gateway#prerequisites)；如果不是，将网关主机添加到 `NO_PROXY`，以便 CLI 直接连接到它。
 
 <h2 id="next-steps">
   Next steps
 </h2>
 
-下一页取决于谁运行网关。Anthropic 的网关从 `claude` 二进制文件运行，有自己的设置指南；您的组织已运行的网关有一个要实现的协议和一个管理员推出清单。
+下一页取决于谁运行网关。Anthropic 的网关从 `claude` 二进制文件运行，有自己的设置指南；您的组织已运行的网关有一个要实现的兼容性指南和一个管理员推出清单。
 
 * [Claude 应用网关](/docs/zh-CN/claude-apps-gateway) 部署 Anthropic 的自托管网关，具有 SSO 登录和 OTLP 遥测
 * [其他 LLM 网关](/docs/zh-CN/llm-gateway) 了解您的组织已运行的网关必须实现的内容，以及如何将 Claude Code 指向它

@@ -7,7 +7,7 @@
 > 使用 claude mcp login 从 shell 中对 MCP 服务器进行身份验证，使用 ! 前缀获取对 shell 模式命令输出的响应，以及使用 /rewind 从 /clear 之前恢复对话。
 
 <div className="digest-meta">
-  <span>发布版本 <a href="/docs/docs/en/changelog#2-1-185">v2.1.185 → v2.1.193</a></span>
+  <span>发布版本 <a href="/docs/en/changelog#2-1-185">v2.1.185 → v2.1.193</a></span>
   <span>2 项功能 · 6 月 22–26 日</span>
 </div>
 
@@ -25,7 +25,7 @@
   claude mcp login sentry
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/mcp#authenticate-from-the-command-line">从命令行进行身份验证</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/mcp#authenticate-from-the-command-line">从命令行进行身份验证</a>
 </div>
 
 <div className="digest-feature">
@@ -42,7 +42,7 @@
   > ! npm test
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/interactive-mode#shell-mode-with-prefix">带有 ! 前缀的 Shell 模式</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/interactive-mode#shell-mode-with-prefix">带有 ! 前缀的 Shell 模式</a>
 </div>
 
 <div className="digest-wins">

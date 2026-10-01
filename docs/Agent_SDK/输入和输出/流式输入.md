@@ -12,10 +12,8 @@
 
 Claude Agent SDK 支持两种不同的输入模式来与代理交互：
 
-* **流式输入模式**（默认和推荐）- 一个持久的、交互式的会话
-* **单消息输入** - 使用会话状态和恢复的一次性查询
-
-本指南解释了每种模式的差异、优势和用例，以帮助您为应用程序选择正确的方法。
+* **流式输入模式**：一个持久的、交互式的会话
+* **单消息输入**：使用会话状态和恢复的一次性查询
 
 <h2 id="streaming-input-mode-recommended">
   流式输入模式（推荐）
@@ -25,75 +23,23 @@ Claude Agent SDK 支持两种不同的输入模式来与代理交互：
 
 它允许代理作为一个长期运行的进程运行，接收用户输入、处理中断、显示权限请求并处理会话管理。
 
-<h3 id="how-it-works">
-  工作原理
-</h3>
-
-```mermaid theme={null}
-sequenceDiagram
-    participant App as Your Application
-    participant Agent as Claude Agent
-    participant Tools as Tools/Hooks
-    participant FS as Environment/<br/>File System
-
-    App->>Agent: Initialize with AsyncGenerator
-    activate Agent
-
-    App->>Agent: Yield Message 1
-    Agent->>Tools: Execute tools
-    Tools->>FS: Read files
-    FS-->>Tools: File contents
-    Tools->>FS: Write/Edit files
-    FS-->>Tools: Success/Error
-    Agent-->>App: Stream partial response
-    Agent-->>App: Stream more content...
-    Agent->>App: Complete Message 1
-
-    App->>Agent: Yield Message 2 + Image
-    Agent->>Tools: Process image & execute
-    Tools->>FS: Access filesystem
-    FS-->>Tools: Operation results
-    Agent-->>App: Stream response 2
-
-    App->>Agent: Queue Message 3
-    App->>Agent: Interrupt/Cancel
-    Agent->>App: Handle interruption
-
-    Note over App,Agent: Session stays alive
-    Note over Tools,FS: Persistent file system<br/>state maintained
-
-    deactivate Agent
-```
-
 <h3 id="benefits">
   优势
 </h3>
 
-<CardGroup cols={2}>
-  <Card title="图像上传" icon="image">
-    直接将图像附加到消息中以进行视觉分析和理解
-  </Card>
+在流式输入模式中，您可以在具有以下功能的持久会话中工作：
 
-  <Card title="队列消息" icon="stack">
-    发送多条按顺序处理的消息，具有中断能力
-  </Card>
-
-  <Card title="工具集成" icon="wrench">
-    在会话期间完全访问所有工具和自定义 MCP 服务器
-  </Card>
-
-  <Card title="实时反馈" icon="lightning">
-    查看生成的响应，而不仅仅是最终结果
-  </Card>
-
-  <Card title="上下文持久性" icon="database">
-    自然地跨多个回合维护对话上下文
-  </Card>
-</CardGroup>
+* **图像上传**：直接将图像附加到消息中以进行视觉分析和理解
+* **队列消息**：发送多条按顺序处理的消息，具有中断能力
+* **工具集成**：在会话期间完全访问所有工具和自定义 MCP 服务器
+* **实时反馈**：查看生成的响应，而不仅仅是最终结果
+* **上下文持久性**：自然地跨多个回合维护对话上下文
 
 <h3 id="implementation-example">
   实现示例
 </h3>
+
+这些示例从工作目录读取名为 `diagram.png` 的图像。请先在那里创建一个，或更改文件名以指向您自己的图像。
 
 <CodeGroup>
   ```typescript TypeScript theme={null}
@@ -218,6 +164,8 @@ sequenceDiagram
   ```
 </CodeGroup>
 
+当您运行该示例时，TypeScript 版本会在每个响应完成时打印它。Python 版本的 `receive_response()` 循环在第一条结果消息处结束，因此它会打印安全分析；要读取两个响应，请使用一对 `query()` 和 `receive_response()`，如 [Python 参考中继续对话的示例](/docs/zh-CN/agent-sdk/python#example-continuing-a-conversation)所示。
+
 <Note>
   在 TypeScript SDK 中，如果您的消息生成器抛出异常，例如当它读取的文件丢失时，流会以一条错误消息结束，内容为 `Claude Code process aborted by user`，而不是原始错误，因此当您看到该消息时，请先检查生成器内部的代码。该错误前面可能还有一长行捆绑 SDK 源代码的缩小代码，因此请阅读输出末尾的错误文本。
 
@@ -255,7 +203,7 @@ sequenceDiagram
 
 如果查询以错误结果结束，例如 `error_max_turns`，单个消息 `query()` 调用会抛出一个错误，该错误包含在生成最终结果消息后的失败文本，因此如果您的代码需要继续，请将循环包装在 try 块中。有关结果子类型，请参阅[处理结果](/docs/zh-CN/agent-sdk/agent-loop#handle-the-result)。
 
-<h3 id="implementation-example-1">
+<h3 id="implementation-example-2">
   实现示例
 </h3>
 
@@ -264,29 +212,38 @@ sequenceDiagram
   import { query } from "@anthropic-ai/claude-agent-sdk";
 
   // Simple one-shot query
-  for await (const message of query({
-    prompt: "Explain the authentication flow",
-    options: {
-      maxTurns: 1,
-      allowedTools: ["Read", "Grep"]
+  // query() throws after an error result, such as error_max_turns
+  try {
+    for await (const message of query({
+      prompt: "Explain the authentication flow",
+      options: {
+        maxTurns: 5,
+        allowedTools: ["Read", "Grep"]
+      }
+    })) {
+      if (message.type === "result" && message.subtype === "success") {
+        console.log(message.result);
+      }
     }
-  })) {
-    if (message.type === "result" && message.subtype === "success") {
-      console.log(message.result);
-    }
+  } catch (error) {
+    console.error(`Query failed: ${error}`);
   }
 
   // Continue conversation with session management
-  for await (const message of query({
-    prompt: "Now explain the authorization process",
-    options: {
-      continue: true,
-      maxTurns: 1
+  try {
+    for await (const message of query({
+      prompt: "Now explain the authorization process",
+      options: {
+        continue: true,
+        maxTurns: 5
+      }
+    })) {
+      if (message.type === "result" && message.subtype === "success") {
+        console.log(message.result);
+      }
     }
-  })) {
-    if (message.type === "result" && message.subtype === "success") {
-      console.log(message.result);
-    }
+  } catch (error) {
+    console.error(`Query failed: ${error}`);
   }
   ```
 
@@ -297,22 +254,31 @@ sequenceDiagram
 
   async def single_message_example():
       # Simple one-shot query using query() function
-      async for message in query(
-          prompt="Explain the authentication flow",
-          options=ClaudeAgentOptions(max_turns=1, allowed_tools=["Read", "Grep"]),
-      ):
-          if isinstance(message, ResultMessage):
-              print(message.result)
+      # query() raises ResultError after an error result, such as error_max_turns
+      try:
+          async for message in query(
+              prompt="Explain the authentication flow",
+              options=ClaudeAgentOptions(max_turns=5, allowed_tools=["Read", "Grep"]),
+          ):
+              if isinstance(message, ResultMessage) and message.subtype == "success":
+                  print(message.result)
+      except Exception as e:
+          print(f"Query failed: {e}")
 
       # Continue conversation with session management
-      async for message in query(
-          prompt="Now explain the authorization process",
-          options=ClaudeAgentOptions(continue_conversation=True, max_turns=1),
-      ):
-          if isinstance(message, ResultMessage):
-              print(message.result)
+      try:
+          async for message in query(
+              prompt="Now explain the authorization process",
+              options=ClaudeAgentOptions(continue_conversation=True, max_turns=5),
+          ):
+              if isinstance(message, ResultMessage) and message.subtype == "success":
+                  print(message.result)
+      except Exception as e:
+          print(f"Query failed: {e}")
 
 
   asyncio.run(single_message_example())
   ```
 </CodeGroup>
+
+运行示例时，每个查询都会打印其最终结果文本：首先是身份验证说明，然后是授权说明。

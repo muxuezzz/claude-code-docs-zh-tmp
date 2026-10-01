@@ -4,13 +4,9 @@
 
 # 让 Claude 朝着目标工作
 
-> 使用 /goal 设置完成条件，Claude 会在多个回合中持续工作，直到条件满足。
+> 使用 /goal 设置完成条件，Claude 会持续工作直到条件满足、模型判断其不可能实现或需要修复的错误清除目标。
 
-<Note>
-  `/goal` 需要 Claude Code v2.1.139 或更高版本。
-</Note>
-
-`/goal` 命令设置一个完成条件，Claude 会在没有你逐步提示的情况下持续朝着这个目标工作。每个回合后，一个小型快速模型会检查条件是否满足。如果不满足，Claude 会开始另一个回合，而不是将控制权返回给你。一旦条件满足，目标会自动清除。
+`/goal` 命令设置一个完成条件，Claude 会在没有你逐步提示的情况下持续朝着这个目标工作。每个回合后，一个小型快速模型会检查条件是否满足。如果模型判断条件尚未满足，Claude 会开始另一个回合，而不是将控制权返回给你。一旦条件满足、模型判断条件不可能满足或回合因[需要修复的错误](#errors-you-have-to-fix-clear-the-goal)失败时，目标会自动清除。
 
 对于具有可验证的最终状态的实质性工作，使用目标：
 
@@ -25,11 +21,11 @@
 
 三种方法可以在提示之间保持当前会话运行。根据应该启动下一个回合的内容进行选择：
 
-| 方法                                                                     | 下一个回合何时开始 | 停止条件                 |
-| :--------------------------------------------------------------------- | :-------- | :------------------- |
-| `/goal`                                                                | 前一个回合完成时  | 模型确认条件已满足            |
-| [`/loop`](/docs/zh-CN/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop) | 时间间隔过去时   | 你停止它，或 Claude 决定工作完成 |
-| [Stop hook](/docs/zh-CN/hooks-guide#prompt-based-hooks)                     | 前一个回合完成时  | 你自己的脚本或提示决定          |
+| 方法 | 下一个回合何时开始 | 停止条件 |
+| :- | :- | :- |
+| `/goal` | 前一个回合完成时，或在交互式会话中，[空闲检查](#background-work-defers-evaluation)或[自动重试](#other-errors-retry-or-pause-the-goal)到期时 | 模型确认条件已满足或判断其不可能，或回合因[你必须修复的错误](#errors-you-have-to-fix-clear-the-goal)而失败，或你运行[`/goal clear`](#clear-a-goal) |
+| [`/loop`](/docs/zh-CN/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop) | 时间间隔过去时 | 你停止它，或 Claude 决定工作完成 |
+| [Stop hook](/docs/zh-CN/hooks-guide#prompt-based-hooks) | 前一个回合完成时 | 你自己的脚本或提示决定 |
 
 `/goal` 和 Stop hook 都在每个回合后触发。`/goal` 是一个会话范围的快捷方式：你输入一个条件，它仅在当前会话中活跃。Stop hook 存在于你的设置文件中，适用于其范围内的每个会话，可以运行脚本进行确定性检查或运行提示进行模型评估的检查。
 
@@ -57,13 +53,9 @@
 
 设置目标会立即启动一个回合，条件本身作为指令。你不需要发送单独的提示。当目标活跃时，`◎ /goal active` 指示器显示目标已运行多长时间。
 
-目标不会改变权限。在默认权限模式下，Claude 在进行工具调用前仍会询问，这些工具调用是你的设置不允许的，例如上面的测试命令。要让目标回合无人值守地运行，请将 `/goal` 与[自动模式](/docs/zh-CN/auto-mode-config)配对。
+目标不会改变你的权限模式。要让目标回合无人值守地运行，请在[自动模式](/docs/zh-CN/auto-mode-config)中运行 `/goal`。在[手动模式](/docs/zh-CN/permission-modes)中，Claude 在进行工具调用前仍会询问，这些工具调用是你的设置不允许的，例如上面的测试命令。
 
-每个回合后，评估器返回一个简短的原因，解释条件是否满足。最近的原因出现在状态视图和记录中，所以你可以看到 Claude 接下来要朝着什么工作。
-
-<Note>
-  目标会一直运行，直到条件满足或你运行 `/goal clear`。运行不带参数的 `/goal` 可以查看到目前为止花费的回合和令牌。
-</Note>
+当目标活跃时，记录显示评估器返回的每个判决，你可以按 Ctrl+O 查看其背后的原因。状态视图也显示最近的原因，所以你可以看到 Claude 接下来要朝着什么工作。
 
 <h3 id="write-an-effective-condition">
   编写有效的条件
@@ -99,6 +91,8 @@
 * 当前令牌支出
 * 评估器最近的原因
 
+回合计数和最近的原因在第一次评估运行后出现。
+
 如果没有活跃的目标，但在会话早期实现了一个目标，状态显示已实现的条件及其持续时间、回合计数和令牌支出。
 
 <h3 id="clear-a-goal">
@@ -111,13 +105,17 @@
 /goal clear
 ```
 
+Claude 打印 `Goal cleared:` 后跟条件以确认，或如果没有活跃的目标则打印 `No goal set`。
+
 `stop`、`off`、`reset`、`none` 和 `cancel` 被接受为 `clear` 的别名。运行 `/clear` 启动新对话也会移除任何活跃的目标。
 
 <h3 id="resume-with-an-active-goal">
   使用活跃目标恢复
 </h3>
 
-当会话结束时仍然活跃的目标会在你使用 `--resume` 或 `--continue` 恢复该会话时恢复。条件会保留，但回合计数、计时器和令牌支出基线在恢复时都会重置。已经实现或清除的目标不会恢复。
+当你恢复会话时，Claude Code 会恢复在会话结束时仍然活跃的目标。Claude Code 在每个恢复路由上恢复它：`--continue`、`--resume` 带有会话 ID、名称或[记录文件路径](/docs/zh-CN/sessions#resume-a-session)，以及[会话选择器](/docs/zh-CN/sessions#use-the-session-picker)。在 v2.1.239 之前，Claude Code 在除了 `claude --resume` 选择器之外的每个路由上恢复目标。
+
+Claude Code 保留条件但重置回合计数、计时器和令牌支出基线。它不会恢复已经实现或清除的目标。
 
 <h3 id="run-non-interactively">
   非交互式运行
@@ -129,7 +127,7 @@
 claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"
 ```
 
-使用默认文本输出时，在条件满足之前不会打印任何内容，所以运行许多回合的目标可能看起来卡住了。添加 `--output-format stream-json --verbose` 以在循环运行时发出每条消息。
+使用默认文本输出时，在运行结束前不会打印任何内容，所以运行许多回合的目标可能看起来卡住了。添加 `--output-format stream-json --verbose` 以在循环运行时发出每条消息。
 
 使用 Ctrl+C 中断进程以在条件满足之前停止非交互式目标。
 
@@ -137,7 +135,68 @@ claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"
   评估如何工作
 </h2>
 
-`/goal` 是会话范围的[基于提示的 Stop hook](/docs/zh-CN/hooks#prompt-based-hooks)的包装器。每次 Claude 完成一个回合时，条件和到目前为止的对话都会发送到你配置的[小型快速模型](/docs/zh-CN/model-config)，默认为 Haiku。模型返回一个是或否的决定和一个简短的原因。"否"告诉 Claude 继续工作，并包括原因作为下一个回合的指导。"是"清除目标并在记录中记录一个已实现的条目。
+`/goal` 是会话范围的[基于提示的 Stop hook](/docs/zh-CN/hooks#prompt-based-hooks)的包装器。每次 Claude 完成一个回合时，Claude Code 会将条件和到目前为止的对话发送到你配置的[小型快速模型](/docs/zh-CN/model-config)，默认为 Claude API 上的 Haiku；在第三方提供商上，请查看你的[提供商页面](/docs/zh-CN/third-party-integrations)了解该平台的默认值。该模型返回三个判决之一，每个都带有简短的原因：
+
+* **尚未满足**：Claude 继续工作，并将原因作为下一个回合的指导。
+* **已满足**：Claude Code 清除目标并在记录中记录一个已实现的条目。
+* **不可能**：评估器判断该条件永远无法满足。Claude Code 清除目标并在记录中记录一个失败的条目以及原因。你不需要自己清除它。
+
+如果 Claude 持续回答评估器而没有取得进展（连续多个回合没有工具使用），Claude Code 会停止循环，打印警告，并将控制权返回给你，目标仍然设置。评估在你的下一个提示后恢复。[hooks 指南](/docs/zh-CN/hooks-guide#stop-hook-hits-the-block-cap)解释了底层机制。
+
+<h3 id="when-a-turn-fails">
+  当一个回合失败时
+</h3>
+
+当一个回合失败时，如果错误是你必须修复的错误，Claude Code 会清除目标。在任何其他错误之后，目标保持设置。
+
+<h4 id="errors-you-have-to-fix-clear-the-goal">
+  你必须修复的错误会清除目标
+</h4>
+
+如果一个回合因为一个在你修复之前不会清除的错误而失败，Claude Code 会清除目标并打印一个警告，说明原因。警告以 `Goal cleared after an unrecoverable error` 开头，以 `Run /goal again to continue` 结尾。修复原因，然后使用 `/goal <condition>` [再次设置目标](#set-a-goal)。四种失败会清除目标：
+
+* 身份验证失败，当 Claude Code 管理自己的凭证时。当主机为你管理凭证时，例如桌面应用或[云会话](/docs/zh-CN/claude-code-on-the-web)，Claude Code 会保持目标活跃，因为主机会自动恢复访问权限。
+* 信用余额耗尽
+* 一个[自动压缩](/docs/zh-CN/model-config#set-the-auto-compact-window)无法清除的上下文溢出
+* 一个不可用的模型
+
+<h4 id="other-errors-retry-or-pause-the-goal">
+  其他错误重试或暂停目标
+</h4>
+
+在任何其他失败之后，目标保持设置。在 Claude Code v2.1.269 或更高版本的交互式会话中，Claude Code 也会打印一行说明原因，并自动重试或等待你：
+
+* **重试**：在倾向于自行清除的失败之后，例如服务器过载或连接断开，一个以 `Goal still active` 开头的通知显示下一次尝试之前的等待时间。在三次自动重试之后，目标会暂停。
+* **暂停**：在重试只会重复的失败之后，例如 API 速率限制、claude.ai [使用限制](/docs/zh-CN/errors#youve-hit-your-session-limit)或结束回合的 hook，一个以 `Goal paused` 开头的通知说明原因。如果会话[在使用限制重置时等待自动继续](/docs/zh-CN/interactive-mode#wait-for-a-usage-limit-to-reset)，Claude 会在那时恢复朝着目标的工作。
+
+随时发送消息以立即开始下一个回合。要关闭自动重试，请将 [`CLAUDE_CODE_GOAL_CHECKIN_MINUTES`](/docs/zh-CN/env-vars) 设置为 `0`，这也会关闭[检查](#background-work-defers-evaluation)。
+
+<h3 id="background-work-defers-evaluation">
+  后台工作延迟评估
+</h3>
+
+如果一个子代理或后台 shell 命令在回合结束时仍在运行，Claude Code 会跳过该回合的评估。它在下一个没有后台工作运行的回合结束时进行评估。当后台工作完成时，Claude Code 会将结果作为新回合传递给 Claude，所以你不必提示。
+
+一旦后台工作让目标等待了 30 分钟，就应该进行检查。在检查中，Claude Code 列出正在运行的任务，并要求 Claude 读取其输出，如果它们在进行中则继续等待，并修复或停止任何卡住的任务。在第一次检查之后，Claude Code 在每次后续检查之前等待两倍的时间，最多是第一个间隔的四倍：使用默认值，第一次检查后 1 小时，然后每 2 小时。Claude Code 以两种方式之一传递应该进行的检查，包括第一个：
+
+* **当回合结束时**：Claude Code 在下一个工作仍在运行的回合结束时传递检查。在非交互式会话中，例如使用 `-p` 启动的会话，这是 Claude Code 传递检查的唯一方式。
+* **当会话空闲时**：在交互式会话中，Claude Code 也会自己启动一个回合来传递检查，而不是等待你的下一个提示。如果后台工作已停止而没有报告结果，Claude Code 会要求 Claude 继续朝着目标工作。Claude Code 在你的提示之间每个目标最多启动三个空闲检查。在第三个空闲检查中，Claude Code 会说空闲检查已暂停，直到你发送另一个提示。在 v2.1.246 之前，空闲检查是无上限的。空闲检查需要 Claude Code v2.1.236 或更高版本。
+
+在 v2.1.239 之前，只有空闲检查以这种方式退避；在回合结束时传递的检查在第一个间隔重复。
+
+要更改第一个间隔，请设置 [`CLAUDE_CODE_GOAL_CHECKIN_MINUTES`](/docs/zh-CN/env-vars)。Claude Code 使用你的值代替 30 分钟间隔，并相应地缩放后续间隔。将其设置为 `0` 以关闭检查和[自动重试](#other-errors-retry-or-pause-the-goal)。
+
+检查需要 Claude Code v2.1.234 或更高版本。
+
+<h3 id="evaluation-model-and-cost">
+  评估模型和成本
+</h3>
+
+要在不同的模型上进行评估，请设置 [`ANTHROPIC_DEFAULT_HAIKU_MODEL`](/docs/zh-CN/model-config#environment-variables)。
+
+<Warning>
+  Claude Code 在使用小型快速模型的任何地方都会读取 `ANTHROPIC_DEFAULT_HAIKU_MODEL`，不仅仅是用于 `/goal` 评估。当你设置它时，Claude Code 也会将 [`haiku` 别名](/docs/zh-CN/model-config#model-aliases)解析为该模型，并在其上运行[后台功能](/docs/zh-CN/costs#background-token-usage)，例如对话摘要。
+</Warning>
 
 评估器在你的会话配置的任何提供商上运行。它不调用工具，所以它只能判断 Claude 已经在对话中呈现的内容。
 
@@ -149,7 +208,7 @@ claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"
   要求
 </h2>
 
-`/goal` 仅在你已接受信任对话框的工作区中运行，因为评估器是 hooks 系统的一部分。当在任何设置级别设置了 [`disableAllHooks`](/docs/zh-CN/hooks#disable-or-remove-hooks) 时，或当在托管设置中设置了 [`allowManagedHooksOnly`](/docs/zh-CN/settings#hook-configuration) 时，`/goal` 也不可用。在每种情况下，命令会告诉你原因，而不是默默地什么都不做。
+Claude Code 在与 [设置文件中的 hooks 相同的工作区信任规则](/docs/zh-CN/permissions#what-runs-before-you-trust-a-folder)下提供 `/goal`，因为评估器是 hooks 系统的一部分。当 [`disableAllHooks`](/docs/zh-CN/hooks#disable-or-remove-hooks) 为 `true`（在应用设置优先级后）或当在托管设置中设置了 [`allowManagedHooksOnly`](/docs/zh-CN/settings-reference#allowmanagedhooksonly) 时，`/goal` 也不可用。在每种情况下，该命令会告诉你原因，而不是默默地什么都不做。
 
 <h2 id="see-also">
   另请参阅

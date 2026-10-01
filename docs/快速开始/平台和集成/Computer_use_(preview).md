@@ -36,7 +36,7 @@ Claude 有多种方式与应用或服务交互。Computer use 是最广泛和最
 * 如果任务是浏览器工作且您已设置 [Claude in Chrome](/docs/zh-CN/chrome)，Claude 会使用它。
 * 如果以上都不适用，Claude 会使用 computer use。
 
-屏幕控制保留用于其他工具无法到达的事物：原生应用、模拟器和没有 API 的工具。
+屏幕控制保留用于其他工具无法到达的事物：原生应用、模拟器（如 iOS Simulator）和没有 API 的工具。
 
 <h2 id="enable-computer-use">
   启用 computer use
@@ -90,13 +90,15 @@ Computer use 作为称为 `computer-use` 的内置 MCP server 可用。默认情
 
 具有广泛影响的应用在提示中显示额外警告，以便您知道批准它们授予什么：
 
-| 警告           | 适用于                                    |
-| :----------- | :------------------------------------- |
+| 警告 | 适用于 |
+| :- | :- |
 | 等同于 shell 访问 | Terminal、iTerm、VS Code、Warp 和其他终端和 IDE |
-| 可以读取或写入任何文件  | Finder                                 |
-| 可以更改系统设置     | System Settings                        |
+| 可以读取或写入任何文件 | Finder |
+| 可以更改系统设置 | System Settings |
 
 这些应用不被阻止。警告让您决定任务是否值得那个级别的访问。
+
+批准 Finder 以让 Claude 点击桌面、Dock 或 Finder 窗口。
 
 Claude 的控制级别也因应用类别而异：浏览器和交易平台是仅查看的，终端和 IDE 是仅点击的，其他所有内容都获得完全控制。有关完整的分层细分，请参阅 [Desktop 中的应用权限](/docs/zh-CN/desktop#app-permissions)。
 
@@ -110,7 +112,7 @@ Claude 的控制级别也因应用类别而异：浏览器和交易平台是仅�
   一次一个会话
 </h3>
 
-Computer use 从第一个 computer use 操作开始持有机器范围的锁，直到执行该操作的会话退出。从 v2.1.195 开始，完成任务不会释放锁；只有退出会话才会释放锁。如果另一个 Claude Code 会话已在使用您的计算机，新的尝试会失败并显示一条消息，告诉您哪个会话持有锁。首先退出该会话。
+一次只有一个会话可以使用您的计算机。会话在其第一个计算机使用操作时获取锁，并在会话退出时释放它，而不是在任务完成时释放。第二个会话的计算机使用会失败并显示一条错误消息，说明哪个会话持有该锁。首先退出该会话。
 
 <h3 id="apps-are-hidden-while-claude-works">
   Claude 工作时应用被隐藏
@@ -132,7 +134,7 @@ Claude Code 在将每个屏幕截图发送到模型之前会缩小它。您不�
   随时停止
 </h3>
 
-当 Claude 获取锁时，会出现 macOS 通知："Claude is using your computer · press Esc to stop"。在任何地方按 `Esc` 立即中止当前操作，或在终端中按 `Ctrl+C`。无论哪种方式，Claude 都会停止、取消隐藏您的应用，并将控制权返回给您。会话保持 [computer use 锁](#one-session-at-a-time)，直到它退出。
+Claude 在每个轮次中首次使用您的计算机时，会出现 macOS 通知："Claude is using your computer · press Esc to stop"。在任何地方按 `Esc` 立即中止当前操作，或在终端中按 `Ctrl+C`。无论哪种方式，Claude 都会停止、取消隐藏您的应用，并将控制权返回给您。会话保持 [computer use 锁](#one-session-at-a-time)，直到它退出。
 
 当 Claude 完成时，会出现第二个通知。
 
@@ -195,7 +197,7 @@ Claude 调整窗口大小、捕获损坏的状态，并读取相关的样式表�
 并告诉我是否有任何屏幕加载时间超过一秒。
 ```
 
-Claude 以您使用鼠标的方式控制模拟器。
+Claude 以您使用鼠标的方式控制模拟器。此流程适用于 CLI；在 Desktop 应用中，相同的请求会打开 [iOS Simulator 窗格](/docs/zh-CN/desktop-ios-simulator)，而不是屏幕控制。
 
 <h2 id="differences-from-the-desktop-app">
   与 Desktop 应用的差异
@@ -203,13 +205,13 @@ Claude 以您使用鼠标的方式控制模拟器。
 
 CLI 和 Desktop 表面共享相同的 computer use 引擎，有一些差异：
 
-| 功能          | Desktop                                          | CLI                         |
-| :---------- | :----------------------------------------------- | :-------------------------- |
-| 平台          | macOS 和 Windows                                  | 仅 macOS                     |
-| 启用          | **Settings > General** 中的切换（在 **Desktop app** 下） | 在 `/mcp` 中启用 `computer-use` |
-| 拒绝应用列表      | 在设置中可配置                                          | 尚不可用                        |
-| 自动取消隐藏切换    | 可选                                               | 始终开启                        |
-| Dispatch 集成 | Dispatch 生成的会话可以使用 computer use                  | 不适用                         |
+| 功能 | Desktop | CLI |
+| :- | :- | :- |
+| 平台 | macOS 和 Windows | 仅 macOS |
+| 启用 | **Settings > General** 中的切换（在 **Desktop app** 下） | 在 `/mcp` 中启用 `computer-use` |
+| 拒绝应用列表 | 在设置中可配置 | 尚不可用 |
+| 自动取消隐藏切换 | 可选 | 始终开启 |
+| Dispatch 集成 | Dispatch 生成的会话可以使用 computer use | 不适用 |
 
 <h2 id="troubleshooting">
   故障排除

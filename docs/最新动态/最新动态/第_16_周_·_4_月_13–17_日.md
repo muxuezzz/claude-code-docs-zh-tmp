@@ -7,7 +7,7 @@
 > Claude Opus 4.7 配备新的 xhigh 努力级别、Claude Code 网页版上的 Routines、移动推送通知在 Claude 需要您时 ping 您的手机、显示限制驱动因素的 /usage 分解，以及替代捆绑 JavaScript 的原生二进制文件。
 
 <div className="digest-meta">
-  <span>发布版本 <a href="/docs/docs/en/changelog#2-1-105">v2.1.105 → v2.1.113</a></span>
+  <span>发布版本 <a href="/docs/en/changelog#2-1-105">v2.1.105 → v2.1.113</a></span>
   <span>5 项功能 · 4 月 13–17 日</span>
 </div>
 
@@ -26,7 +26,7 @@
   > /effort xhigh
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/model-config#adjust-effort-level">模型配置：努力级别</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/model-config#adjust-effort-level">模型配置：努力级别</a>
 </div>
 
 <div className="digest-feature">
@@ -47,7 +47,7 @@
   > /schedule daily PR review at 9am
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/routines">Routines 指南</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/routines">Routines 指南</a>
 </div>
 
 <div className="digest-feature">
@@ -68,7 +68,7 @@
   > /usage
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/commands">命令参考</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/commands">命令参考</a>
 </div>
 
 <div className="digest-feature">
@@ -77,7 +77,7 @@
     <span className="digest-feature-pill">mobile</span>
   </div>
 
-  <p className="digest-feature-lede">连接了 <a href="/docs/zh-CN/docs/remote-control">Remote Control</a>，Claude 可以在长任务完成或需要决定继续时向您的手机发送推送通知。在 <code>/config</code> 中使用"Claude 决定时推送"打开它，或在您的提示中请求一个。当您启动长代理运行并想离开终端时很有用。</p>
+  <p className="digest-feature-lede">连接了 <a href="/docs/zh-CN/remote-control">Remote Control</a>，Claude 可以在长任务完成或需要决定继续时向您的手机发送推送通知。在 <code>/config</code> 中使用"Claude 决定时推送"打开它，或在您的提示中请求一个。当您启动长代理运行并想离开终端时很有用。</p>
 
   <Frame>
     <video autoPlay muted loop playsInline className="w-full" src="https://mintcdn.com/claude-code/uII1TETOZxBUZ3lB/images/whats-new/push-notifications.mp4?fit=max&auto=format&n=uII1TETOZxBUZ3lB&q=85&s=c91a967139596500cbdb581a53822ac1" data-path="images/whats-new/push-notifications.mp4" />
@@ -89,7 +89,7 @@
   > notify me when the tests pass
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/remote-control#mobile-push-notifications">Remote Control：移动推送通知</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/remote-control#mobile-push-notifications">Remote Control：移动推送通知</a>
 </div>
 
 <div className="digest-feature">
@@ -107,16 +107,16 @@
   claude --version
   ```
 
-  <a className="digest-feature-link" href="/docs/zh-CN/docs/setup">设置指南</a>
+  <a className="digest-feature-link" href="/docs/zh-CN/setup">设置指南</a>
 </div>
 
 <div className="digest-wins">
   <p className="digest-wins-title">其他亮点</p>
 
   <div className="digest-wins-grid">
-    <div>新的 <a href="/docs/zh-CN/docs/ultrareview"><code>/ultrareview</code></a>：使用并行多代理分析和对抗性批评通过在云中进行全面代码审查。不带参数运行它来审查您当前的分支，或 <code>/ultrareview \<PR#></code> 来审查特定 PR</div>
-    <div><a href="/docs/zh-CN/docs/permission-modes#eliminate-prompts-with-auto-mode">自动模式</a>现在可供 Max 订阅者在 Opus 4.7 上使用，<code>--enable-auto-mode</code> 标志不再需要</div>
-    <div><a href="/docs/zh-CN/docs/interactive-mode#session-recap">会话回顾</a>显示您离开时发生的一行摘要；按需运行 <code>/recap</code> 或从 <code>/config</code> 关闭它</div>
+    <div>新的 <a href="/docs/zh-CN/ultrareview"><code>/ultrareview</code></a>：使用并行多代理分析和对抗性批评通过在云中进行全面代码审查。不带参数运行它来审查您当前的分支，或 <code>/ultrareview \<PR#></code> 来审查特定 PR</div>
+    <div><a href="/docs/zh-CN/permission-modes#eliminate-prompts-with-auto-mode">自动模式</a>现在可供 Max 订阅者在 Opus 4.7 上使用，<code>--enable-auto-mode</code> 标志不再需要</div>
+    <div><a href="/docs/zh-CN/interactive-mode#session-recap">会话回顾</a>显示您离开时发生的一行摘要；按需运行 <code>/recap</code> 或从 <code>/config</code> 关闭它</div>
     <div>新的 <code>/tui</code> 命令和 <code>tui</code> 设置在对话中间切换经典和无闪烁渲染；焦点视图从 <code>Ctrl+O</code> 移至其自己的 <code>/focus</code> 命令</div>
     <div>插件可以通过顶级 <code>monitors</code> 清单键提供后台监视器，在会话启动或技能调用时自动启用</div>
     <div><code>/theme</code> 中的"自动（匹配终端）"选项遵循您的终端的深色/浅色模式</div>

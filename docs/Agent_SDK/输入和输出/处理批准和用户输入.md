@@ -12,7 +12,7 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 
 对于澄清问题，Claude 生成问题和选项。您的角色是向用户呈现这些问题，并返回他们的选择。您不能向此流程添加自己的问题；如果您需要自己询问用户某些内容，请在应用程序逻辑中单独进行。
 
-回调可以无限期地保持待处理状态。执行保持暂停状态，直到您的回调返回，SDK 仅在查询本身被取消时才取消等待。如果用户可能需要比您的进程能够合理保持运行的时间更长的时间来响应，请返回 [`defer` hook 决定](/docs/zh-CN/hooks#defer-a-tool-call-for-later)，它允许进程退出并稍后从持久化会话恢复。
+回调可以无限期地保持待处理状态。执行保持暂停状态，直到您的回调返回。如果用户可能需要比您的进程能够合理保持运行的时间更长的时间来响应，请注册一个 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)，它返回 [`defer` 决定](/docs/zh-CN/hooks#defer-a-tool-call-for-later)，而不是在回调中等待，以便进程可以退出并稍后从持久化会话恢复。
 
 本指南向您展示如何检测每种类型的请求并做出适当的响应。
 
@@ -24,6 +24,9 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 
 <CodeGroup>
   ```python Python theme={null}
+  from claude_agent_sdk import ClaudeAgentOptions
+
+
   async def handle_tool_request(tool_name, input_data, context):
       # 提示用户并返回允许或拒绝
       ...
@@ -48,9 +51,9 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 2. **Claude 提出问题**：Claude 调用 `AskUserQuestion` 工具。检查 `tool_name == "AskUserQuestion"` 以不同方式处理它。如果您指定 `tools` 数组，请包含 `AskUserQuestion` 以使其工作。有关详细信息，请参阅[处理澄清问题](#handle-clarifying-questions)。
 
 <Warning>
-  **回调永远不会对自动批准的工具触发。** [权限评估流程](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)中任何较早的批准、允许规则或 `acceptEdits` 或 `bypassPermissions` 等模式会在咨询 `canUseTool` 之前解决调用。如果您在 `allowed_tools` 中列出一个工具，除非询问规则或 `plan` 模式将调用路由回提示，否则该工具的 `canUseTool` 检查永远不会运行。对于必须应用于每个工具调用的逻辑，请使用 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)，它在流程的其余部分之前执行，可以允许、拒绝或修改请求。
+  **回调永远不会对自动批准的工具触发。** [权限评估流程](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)中任何较早的批准、允许规则或 `acceptEdits` 或 `bypassPermissions` 等模式会在咨询 `canUseTool` 之前解决调用。如果您在 `allowed_tools` 中列出一个工具，仅当[评估流程](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)将调用路由回提示（例如询问规则或 `plan` 模式）时，该工具的 `canUseTool` 检查才会运行。对于必须应用于每个工具调用的逻辑，请使用 [`PreToolUse` hook](/docs/zh-CN/agent-sdk/hooks)，它在流程的其余部分之前执行，可以允许、拒绝或修改请求。
 
-  `AskUserQuestion`、标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具以及连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools)即使在允许规则匹配时也会到达回调。在 `dontAsk` 模式下，这些调用会被拒绝，而不会调用回调。
+  允许规则不会预先批准[任何模式都不会自动批准的操作](/docs/zh-CN/permission-modes#actions-no-mode-auto-approves)；有关其中哪些到达回调以及在 `dontAsk` 和 `auto` 模式下发生的情况，请参阅[权限如何评估](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)。
 </Warning>
 
 您还可以使用 [`PermissionRequest` hook](/docs/zh-CN/agent-sdk/hooks#available-hooks) 在 Claude 等待批准时发送外部通知（Slack、电子邮件、推送）。
@@ -59,22 +62,24 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
   处理工具批准请求
 </h2>
 
-一旦您在查询选项中传递了 `canUseTool` 回调，当 Claude 想要使用不被自动批准的工具时，它就会触发。您的回调接收三个参数：
+一旦您在查询选项中传递了 `canUseTool` 回调，当 Claude 想要使用不被权限流中较早步骤批准的工具时，它就会触发。在某些配置中，例如 `dontAsk` 模式，Claude Code 不会调用它；[权限如何被评估](/docs/zh-CN/agent-sdk/permissions#how-permissions-are-evaluated)的最后一步列出了它们并说明了调用会发生什么。
 
-| 参数                                  | 描述                                                                                                                                                                                                                      |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `toolName`                          | Claude 想要使用的工具的名称（例如 `"Bash"`、`"Write"`、`"Edit"`）                                                                                                                                                                       |
-| `input`                             | Claude 传递给工具的参数。内容因工具而异。                                                                                                                                                                                                |
+您的回调接收三个参数：
+
+| 参数 | 描述 |
+| - | - |
+| `toolName` | Claude 想要使用的工具的名称（例如 `"Bash"`、`"Write"`、`"Edit"`） |
+| `input` | Claude 传递给工具的参数。内容因工具而异。 |
 | `options` (TS) / `context` (Python) | 附加上下文，包括可选的 `suggestions`（建议的 `PermissionUpdate` 条目以避免重新提示）和取消信号。在 TypeScript 中，`signal` 是 `AbortSignal`；在 Python 中，信号字段保留供将来使用。有关 Python，请参阅 [`ToolPermissionContext`](/docs/zh-CN/agent-sdk/python#toolpermissioncontext)。 |
 
 `input` 对象包含工具特定的参数。常见示例：
 
-| 工具      | 输入字段                                  |
-| ------- | ------------------------------------- |
-| `Bash`  | `command`、`description`、`timeout`     |
-| `Write` | `file_path`、`content`                 |
-| `Edit`  | `file_path`、`old_string`、`new_string` |
-| `Read`  | `file_path`、`offset`、`limit`          |
+| 工具 | 输入字段 |
+| - | - |
+| `Bash` | `command`、`description`、`timeout` |
+| `Write` | `file_path`、`content` |
+| `Edit` | `file_path`、`old_string`、`new_string` |
+| `Read` | `file_path`、`offset`、`limit` |
 
 有关完整的输入架构，请参阅 SDK 参考：[Python](/docs/zh-CN/agent-sdk/python#tool-input%2Foutput-types) | [TypeScript](/docs/zh-CN/agent-sdk/typescript#tool-input-types)。
 
@@ -199,10 +204,6 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
   ```
 </CodeGroup>
 
-<Note>
-  在 Python 中，`can_use_tool` 需要[流模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)。当您通过 `query(prompt=generator)` 或 `ClaudeSDKClient.connect(prompt=async_iterable)` 传递有限的消息流时，SDK 会在最后一条消息后关闭输入流，在权限回调被调用之前，除非已注册的 hook 或进程内 MCP 服务器保持其打开。上面的示例使用返回 `{"continue_": True}` 的 `PreToolUse` hook 保持其打开。不带提示连接并通过 `ClaudeSDKClient.query()` 发送消息会自动保持流打开，不需要 hook。
-</Note>
-
 此示例使用 y/n 流，其中除 `y` 之外的任何输入都被视为拒绝。在实践中，您可能会构建一个更丰富的 UI，让用户修改请求、提供反馈或完全重定向 Claude。有关所有响应方式，请参阅[响应工具请求](#respond-to-tool-requests)。
 
 <h3 id="respond-to-tool-requests">
@@ -211,34 +212,14 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 
 您的回调返回两种响应类型之一：
 
-| 响应     | Python                                     | TypeScript                            |
-| ------ | ------------------------------------------ | ------------------------------------- |
+| 响应 | Python | TypeScript |
+| - | - | - |
 | **允许** | `PermissionResultAllow(updated_input=...)` | `{ behavior: "allow", updatedInput }` |
-| **拒绝** | `PermissionResultDeny(message=...)`        | `{ behavior: "deny", message }`       |
+| **拒绝** | `PermissionResultDeny(message=...)` | `{ behavior: "deny", message }` |
 
 允许时，工具使用 Claude 请求的输入运行，除非您返回修改的输入，TypeScript 中的 `updatedInput` 或 Python 中的 `updated_input`。在 v2.1.207 之前，Claude Code 拒绝了省略 `updatedInput` 的允许结果，并以验证错误拒绝了工具调用。
 
 拒绝时，提供说明原因的消息。Claude 会看到此消息并可能调整其方法。
-
-<CodeGroup>
-  ```python Python theme={null}
-  from claude_agent_sdk.types import PermissionResultAllow, PermissionResultDeny
-
-  # 允许工具执行
-  return PermissionResultAllow(updated_input=input_data)
-
-  # 阻止工具
-  return PermissionResultDeny(message="User rejected this action")
-  ```
-
-  ```typescript TypeScript theme={null}
-  // 允许工具执行
-  return { behavior: "allow", updatedInput: input };
-
-  // 阻止工具
-  return { behavior: "deny", message: "User rejected this action" };
-  ```
-</CodeGroup>
 
 除了允许或拒绝之外，您还可以修改工具的输入或提供帮助 Claude 调整其方法的上下文：
 
@@ -248,6 +229,8 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 * **拒绝**：阻止工具并告诉 Claude 原因
 * **建议替代方案**：阻止但指导 Claude 朝向用户想要的方向
 * **完全重定向**：使用[流输入](/docs/zh-CN/agent-sdk/streaming-vs-single-mode)向 Claude 发送全新指令
+
+以下代码片段中的 `ask_user` 和 `askUser` 帮助程序代表您应用程序自己的提示 UI。
 
 <Tabs>
   <Tab title="批准">
@@ -312,6 +295,8 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 
   <Tab title="批准并记住">
     用户批准并且不想再被询问此类调用。第三个回调参数携带 `suggestions`，一个现成的 [`PermissionUpdate`](/docs/zh-CN/agent-sdk/typescript#permissionupdate) 条目数组。在 `updatedPermissions` 中回显其中一个以应用它。带有 `localSettings` 目标的建议会将规则写入 `.claude/settings.local.json`，以便将来的会话跳过匹配调用的提示。
+
+    在 TypeScript 中，跳过选项携带 [`suppressAlwaysAllowRule: true`](/docs/zh-CN/agent-sdk/typescript#canusetool) 的请求的始终允许选择。该提示需要 Agent SDK v0.3.268 或更高版本，Python `context` 不携带它。
 
     Python 示例需要 `claude-agent-sdk` 0.1.80 或更高版本。
 
@@ -529,10 +514,10 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
   <Step title="将答案返回给 Claude">
     将 `answers` 对象构建为记录，其中每个键是 `question` 文本，每个值是所选选项的 `label`：
 
-    | 来自问题对象                                                | 用作 |
-    | ----------------------------------------------------- | -- |
-    | `question` 字段（例如 `"How should I format the output?"`） | 键  |
-    | 所选选项的 `label` 字段（例如 `"Summary"`）                      | 值  |
+    | 来自问题对象 | 用作 |
+    | - | - |
+    | `question` 字段（例如 `"How should I format the output?"`） | 键 |
+    | 所选选项的 `label` 字段（例如 `"Summary"`） | 值 |
 
     对于多选问题，传递标签数组或用 `", "` 连接它们。如果您[支持自由文本输入](#support-free-text-input)，使用用户的自定义文本作为值。
 
@@ -571,12 +556,12 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 
 输入包含 Claude 在 `questions` 数组中生成的问题。每个问题都有这些字段：
 
-| 字段            | 描述                                                                                                    |
-| ------------- | ----------------------------------------------------------------------------------------------------- |
-| `question`    | 要显示的完整问题文本                                                                                            |
-| `header`      | 问题的短标签（最多 12 个字符）                                                                                     |
-| `options`     | 2-4 个选择的数组，每个都有 `label` 和 `description`。TypeScript：可选 `preview`（请参阅[下文](#option-previews-typescript)） |
-| `multiSelect` | 如果为 `true`，用户可以选择多个选项                                                                                 |
+| 字段 | 描述 |
+| - | - |
+| `question` | 要显示的完整问题文本 |
+| `header` | 问题的短标签（最多 12 个字符） |
+| `options` | 2-4 个选择的数组，每个都有 `label` 和 `description`。TypeScript：可选 `preview`。请参阅[选项预览](#option-previews-typescript)。 |
+| `multiSelect` | 如果为 `true`，用户可以选择多个选项 |
 
 您的回调接收的结构：
 
@@ -602,11 +587,11 @@ Claude 在两种情况下请求用户输入：当它需要**使用工具的权�
 
 `toolConfig.askUserQuestion.previewFormat` 向每个选项添加 `preview` 字段，以便您的应用可以在标签旁显示视觉模型。没有此设置，Claude 不会生成预览，该字段不存在。
 
-| `previewFormat` | `preview` 包含                                                       |
-| :-------------- | :----------------------------------------------------------------- |
-| 未设置（默认）         | 字段不存在。Claude 不会生成预览。                                               |
-| `"markdown"`    | ASCII 艺术和围栏代码块                                                     |
-| `"html"`        | 样式的 `<div>` 片段（SDK 在您的回调运行前拒绝 `<script>`、`<style>` 和 `<!DOCTYPE>`） |
+| `previewFormat` | `preview` 包含 |
+| :- | :- |
+| 未设置（默认） | 字段不存在。Claude 不会生成预览。 |
+| `"markdown"` | ASCII 艺术和围栏代码块 |
+| `"html"` | 样式的 `<div>` 片段（SDK 在您的回调运行前拒绝 `<script>`、`<style>` 和 `<!DOCTYPE>`） |
 
 该格式适用于会话中的所有问题。Claude 在视觉比较有帮助的选项上包含 `preview`（布局选择、配色方案），并在不会的地方省略它（是/否确认、仅文本选择）。在呈现前检查 `undefined`。
 
@@ -645,15 +630,15 @@ for await (const message of query({
 
 返回 `answers` 对象，将每个问题的 `question` 字段映射到所选选项的 `label`：
 
-| 字段          | 描述                        |
-| ----------- | ------------------------- |
-| `questions` | 传递原始问题数组（工具处理需要）          |
-| `answers`   | 对象，其中键是问题文本，值是所选标签        |
-| `response`  | 可选的自由格式回复，用户输入的而不是回答结构化问题 |
+| 字段 | 描述 |
+| - | - |
+| `questions` | 传递原始问题数组（工具处理需要） |
+| `answers` | 对象，其中键是问题文本，值是所选标签 |
+| `response` | 可选的自由格式回复，用户输入的而不是回答结构化问题 |
 
 对于多选问题，传递标签数组或用 `", "` 连接它们。对于按问题的自由文本，例如"其他"选项，将用户的文本放在 `answers[question]` 中，如[支持自由文本输入](#support-free-text-input)中所示。仅当您的 UI 让用户关闭问题卡并输入不是任何特定问题答案的一般回复时，才设置 `response`。当设置 `response` 时，Claude 会收到"用户回复：…"而不是按问题答案列表。
 
-```json theme={null}
+```jsonc theme={null}
 {
   "questions": [
     // ...

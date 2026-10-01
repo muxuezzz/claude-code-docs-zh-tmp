@@ -40,6 +40,8 @@
     ```bash theme={null}
     cd /path/to/project 
     ```
+
+    将 `/path/to/project` 替换为您项目的路径。
   </Step>
 
   <Step title="启动 Claude Code">
@@ -49,21 +51,21 @@
   </Step>
 
   <Step title="请求高级概览">
-    ```text theme={null}
+    ```text wrap theme={null}
     give me an overview of this codebase
     ```
   </Step>
 
   <Step title="深入了解特定组件">
-    ```text theme={null}
+    ```text wrap theme={null}
     explain the main architecture patterns used here
     ```
 
-    ```text theme={null}
+    ```text wrap theme={null}
     what are the key data models?
     ```
 
-    ```text theme={null}
+    ```text wrap theme={null}
     how is authentication handled?
     ```
   </Step>
@@ -85,19 +87,19 @@
 
 <Steps>
   <Step title="要求 Claude 查找相关文件">
-    ```text theme={null}
+    ```text wrap theme={null}
     find the files that handle user authentication
     ```
   </Step>
 
   <Step title="获取有关组件如何交互的上下文">
-    ```text theme={null}
+    ```text wrap theme={null}
     how do these authentication files work together?
     ```
   </Step>
 
   <Step title="理解执行流程">
-    ```text theme={null}
+    ```text wrap theme={null}
     trace the login process from front-end to database
     ```
   </Step>
@@ -108,7 +110,7 @@
 
   * 明确说明您要查找的内容
   * 使用项目中的领域语言
-  * 为您的语言安装[代码智能插件](/docs/zh-CN/discover-plugins#code-intelligence)，以便 Claude 能够精确地进行"转到定义"和"查找引用"导航
+  * 为您的语言安装 [code intelligence plugin](/docs/zh-CN/plugins/code-intelligence)，以便 Claude 能够精确地进行"转到定义"和"查找引用"导航
 </Tip>
 
 ***
@@ -121,19 +123,19 @@
 
 <Steps>
   <Step title="与 Claude 分享错误">
-    ```text theme={null}
+    ```text wrap theme={null}
     I'm seeing an error when I run npm test
     ```
   </Step>
 
   <Step title="请求修复建议">
-    ```text theme={null}
+    ```text wrap theme={null}
     suggest a few ways to fix the @ts-ignore in user.ts
     ```
   </Step>
 
   <Step title="应用修复">
-    ```text theme={null}
+    ```text wrap theme={null}
     update user.ts to add the null check you suggested
     ```
   </Step>
@@ -155,27 +157,29 @@
 
 假设您需要更新旧代码以使用现代模式和实践。
 
+有关将整个代码库迁移到新语言的信息，请参阅博客上的 [Anthropic 如何使用 Claude Code 运行大规模代码迁移](https://claude.com/blog/ai-code-migration)。
+
 <Steps>
   <Step title="识别用于重构的遗留代码">
-    ```text theme={null}
+    ```text wrap theme={null}
     find deprecated API usage in our codebase
     ```
   </Step>
 
   <Step title="获取重构建议">
-    ```text theme={null}
+    ```text wrap theme={null}
     suggest how to refactor utils.js to use modern JavaScript features
     ```
   </Step>
 
   <Step title="安全地应用更改">
-    ```text theme={null}
+    ```text wrap theme={null}
     refactor utils.js to use ES2024 features while maintaining the same behavior
     ```
   </Step>
 
   <Step title="验证重构">
-    ```text theme={null}
+    ```text wrap theme={null}
     run tests for the refactored code
     ```
   </Step>
@@ -199,25 +203,25 @@
 
 <Steps>
   <Step title="识别未测试的代码">
-    ```text theme={null}
+    ```text wrap theme={null}
     find functions in NotificationsService.swift that are not covered by tests
     ```
   </Step>
 
   <Step title="生成测试脚手架">
-    ```text theme={null}
+    ```text wrap theme={null}
     add tests for the notification service
     ```
   </Step>
 
   <Step title="添加有意义的测试用例">
-    ```text theme={null}
+    ```text wrap theme={null}
     add test cases for edge conditions in the notification service
     ```
   </Step>
 
   <Step title="运行并验证测试">
-    ```text theme={null}
+    ```text wrap theme={null}
     run the new tests and fix any failures
     ```
   </Step>
@@ -237,25 +241,25 @@ Claude 可以生成遵循您项目现有模式和约定的测试。请求测试�
 
 <Steps>
   <Step title="总结您的更改">
-    ```text theme={null}
+    ```text wrap theme={null}
     summarize the changes I've made to the authentication module
     ```
   </Step>
 
   <Step title="生成拉取请求">
-    ```text theme={null}
+    ```text wrap theme={null}
     create a pr
     ```
   </Step>
 
   <Step title="审查和细化">
-    ```text theme={null}
+    ```text wrap theme={null}
     enhance the PR description with more context about the security improvements
     ```
   </Step>
 </Steps>
 
-当您使用 `gh pr create` 创建 PR 时，会话会自动链接到该 PR。要稍后返回它，请运行 `claude --from-pr 123`，将 123 替换为 PR 编号，或将 PR URL 粘贴到[`/resume` 选择器](/docs/zh-CN/sessions#use-the-session-picker)搜索中。
+要稍后找到会话，请运行 `claude --from-pr 1234`，将 1234 替换为您自己的 PR 编号，这会打开会话选择器，筛选链接到该 PR 的会话，或将 PR URL 粘贴到 [`/resume` 选择器](/docs/zh-CN/sessions#use-the-session-picker) 搜索中。当 Claude 使用 `gh pr create` 或 `glab mr create` 创建拉取请求时，Claude Code 会将会话链接到 PR，以及当 Claude [处理现有 PR](/docs/zh-CN/agent-view#pull-request-status) 时。
 
 <Tip>
   在提交前审查 Claude 生成的 PR，并要求 Claude 突出显示潜在的风险或注意事项。
@@ -269,25 +273,25 @@ Claude 可以生成遵循您项目现有模式和约定的测试。请求测试�
 
 <Steps>
   <Step title="识别未记录的代码">
-    ```text theme={null}
+    ```text wrap theme={null}
     find functions without proper JSDoc comments in the auth module
     ```
   </Step>
 
   <Step title="生成文档">
-    ```text theme={null}
+    ```text wrap theme={null}
     add JSDoc comments to the undocumented functions in auth.js
     ```
   </Step>
 
   <Step title="审查和增强">
-    ```text theme={null}
+    ```text wrap theme={null}
     improve the generated documentation with more context and examples
     ```
   </Step>
 
   <Step title="验证文档">
-    ```text theme={null}
+    ```text wrap theme={null}
     check if the documentation follows our project standards
     ```
   </Step>
@@ -324,40 +328,40 @@ Claude Code 可以在任何目录中工作。在笔记库、文档文件夹或�
     您可以使用以下任何方法：
 
     1. 将图像拖放到 Claude Code 窗口中
-    2. 复制图像并使用 Ctrl+V 将其粘贴到 CLI 中。在 macOS 上，Cmd+V 也适用于 iTerm2。
-    3. 向 Claude 提供图像路径。例如，"Analyze this image: /path/to/your/image.png"
+    2. 复制图像并使用 `Ctrl+V` 将其粘贴到 CLI 中，或在 [Windows 和 WSL 上使用 `Alt+V`](/docs/zh-CN/interactive-mode#general-controls)
+    3. 向 Claude 提供图像路径，例如"Analyze this image: /path/to/your/image.png"
   </Step>
 
   <Step title="要求 Claude 分析图像">
-    ```text theme={null}
+    ```text wrap theme={null}
     What does this image show?
     ```
 
-    ```text theme={null}
+    ```text wrap theme={null}
     Describe the UI elements in this screenshot
     ```
 
-    ```text theme={null}
+    ```text wrap theme={null}
     Are there any problematic elements in this diagram?
     ```
   </Step>
 
   <Step title="使用图像获取上下文">
-    ```text theme={null}
+    ```text wrap theme={null}
     Here's a screenshot of the error. What's causing it?
     ```
 
-    ```text theme={null}
+    ```text wrap theme={null}
     This is our current database schema. How should we modify it for the new feature?
     ```
   </Step>
 
   <Step title="从视觉内容获取代码建议">
-    ```text theme={null}
+    ```text wrap theme={null}
     Generate CSS to match this design mockup
     ```
 
-    ```text theme={null}
+    ```text wrap theme={null}
     What HTML structure would recreate this component?
     ```
   </Step>
@@ -383,7 +387,7 @@ Claude Code 可以在任何目录中工作。在笔记库、文档文件夹或�
 
 <Steps>
   <Step title="引用单个文件">
-    ```text theme={null}
+    ```text wrap theme={null}
     Explain the logic in @src/utils/auth.js
     ```
 
@@ -391,15 +395,13 @@ Claude Code 可以在任何目录中工作。在笔记库、文档文件夹或�
   </Step>
 
   <Step title="引用目录">
-    ```text theme={null}
+    ```text wrap theme={null}
     What's the structure of @src/components?
     ```
-
-    这提供了带有文件信息的目录列表。
   </Step>
 
   <Step title="引用 MCP 资源">
-    ```text theme={null}
+    ```text wrap theme={null}
     Show me the data from @github:repos/owner/repo/issues
     ```
 
@@ -411,6 +413,7 @@ Claude Code 可以在任何目录中工作。在笔记库、文档文件夹或�
   提示：
 
   * 文件路径可以是相对的或绝对的
+  * 键入 `@` 打开路径建议菜单，然后按 Enter 或 Tab 接受突出显示的路径，再按 Enter 发送消息
   * @ 文件引用在文件的目录和父目录中添加 `CLAUDE.md` 到上下文
   * 目录引用显示文件列表，而不是内容
   * 您可以在单个消息中引用多个文件（例如，"@file1.js and @file2.js"）
@@ -426,12 +429,12 @@ Claude Code 可以在任何目录中工作。在笔记库、文档文件夹或�
 
 根据您希望任务运行的位置选择调度选项：
 
-| 选项                                       | 运行位置              | 最适合                                                                                                               |
-| :--------------------------------------- | :---------------- | :---------------------------------------------------------------------------------------------------------------- |
-| [Routines](/docs/zh-CN/routines)              | Anthropic 管理的基础设施 | 即使您的计算机关闭也应该运行的任务。也可以在 API 调用或 GitHub 事件上触发，除了计划。在 [claude.ai/code/routines](https://claude.ai/code/routines) 配置。 |
-| [桌面计划任务](/docs/zh-CN/desktop-scheduled-tasks) | 您的机器，通过桌面应用       | 需要直接访问本地文件、工具或未提交更改的任务。                                                                                           |
-| [GitHub Actions](/docs/zh-CN/github-actions)  | 您的 CI 管道          | 与存储库事件（如打开的 PR）相关的任务，或应该与工作流配置一起存在的 cron 计划。                                                                      |
-| [`/loop`](/docs/zh-CN/scheduled-tasks)        | 当前 CLI 会话         | 会话打开时的快速轮询。任务在您开始新对话时停止；`--resume` 和 `--continue` 恢复未过期的任务。                                                       |
+| 选项 | 运行位置 | 最适合 |
+| :- | :- | :- |
+| [Routines](/docs/zh-CN/routines) | 云端，默认由 Anthropic 管理 | 即使您的计算机关闭也应该运行的任务。也可以在 API 调用或 GitHub 事件上触发，除了计划。在 [claude.ai/code/routines](https://claude.ai/code/routines) 配置。 |
+| [桌面计划任务](/docs/zh-CN/desktop-scheduled-tasks) | 您的机器，通过桌面应用 | 需要直接访问本地文件、工具或未提交更改的任务。 |
+| [GitHub Actions](/docs/zh-CN/github-actions) | 您的 CI 管道 | 与存储库事件（如打开的 PR）相关的任务，或应该与工作流配置一起存在的 cron 计划。 |
+| [`/loop`](/docs/zh-CN/scheduled-tasks) | 当前 CLI 会话 | 会话打开时的快速轮询。`--resume` 和 `--continue` 恢复未过期的固定间隔循环。 |
 
 <Tip>
   为计划任务编写提示时，明确说明成功是什么样的以及如何处理结果。任务自主运行，所以它不能提出澄清问题。例如："审查标记为 `needs-review` 的开放 PR，对任何问题留下内联评论，并在 `#eng-reviews` Slack 频道中发布摘要。"
@@ -449,27 +452,27 @@ Claude 内置访问其文档，可以回答关于其自身功能和限制的问�
   示例问题
 </h4>
 
-```text theme={null}
+```text wrap theme={null}
 can Claude Code create pull requests?
 ```
 
-```text theme={null}
+```text wrap theme={null}
 how does Claude Code handle permissions?
 ```
 
-```text theme={null}
+```text wrap theme={null}
 what skills are available?
 ```
 
-```text theme={null}
+```text wrap theme={null}
 how do I use MCP with Claude Code?
 ```
 
-```text theme={null}
+```text wrap theme={null}
 how do I configure Claude Code for Amazon Bedrock?
 ```
 
-```text theme={null}
+```text wrap theme={null}
 what are the limitations of Claude Code?
 ```
 
@@ -503,25 +506,25 @@ claude --continue
   使用 worktrees 运行并行会话
 </h2>
 
-在一个终端中处理功能，同时 Claude 在另一个终端中修复错误，而不会编辑冲突。每个 worktree 是其自己分支上的单独检出。
+在一个终端中处理功能，同时 Claude 在另一个终端中修复错误，而不会编辑冲突。每个 [git worktree](https://git-scm.com/docs/git-worktree) 是其自己分支上的单独检出，从现有提交创建，因此存储库首先需要至少一个提交。
 
 ```bash theme={null}
 claude --worktree feature-auth
 ```
 
-在第二个终端中使用不同的名称运行相同的命令以启动隔离的并行会话。有关清理、`.worktreeinclude` 和非 git VCS 支持，请参阅 [Worktrees](/docs/zh-CN/worktrees)。要从一个屏幕而不是单独的终端监视并行会话，请参阅[后台代理](/docs/zh-CN/agent-view)。
+在第二个终端中使用不同的名称运行相同的命令以启动隔离的并行会话。在没有提交的存储库中，该命令失败并显示 `Failed to resolve base branch "HEAD": git rev-parse failed`。有关清理、`.worktreeinclude` 和非 git VCS 支持，请参阅 [Worktrees](/docs/zh-CN/worktrees)。要从一个屏幕而不是单独的终端监视并行会话，请参阅[后台代理](/docs/zh-CN/agent-view)。
 
 <h2 id="plan-before-editing">
   编辑前规划
 </h2>
 
-对于您想在接触磁盘前审查的更改，切换到 plan mode。Claude 读取文件并提出计划，但在您批准前不进行任何编辑。
+对于您想在接触磁盘前审查的更改，切换到 plan mode。Claude 读取文件并提出计划，但在您批准前不进行任何编辑。状态栏在 plan mode 激活时显示 `⏸ plan mode on`。
 
 ```bash theme={null}
 claude --permission-mode plan
 ```
 
-您也可以在会话中按 `Shift+Tab` 切换到 plan mode。有关批准流程和在文本编辑器中编辑计划，请参阅 [Plan mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode)。
+您也可以在会话中按 `Shift+Tab` 直到状态栏显示 `⏸ plan mode on` 来切换到 plan mode。有关批准流程和在文本编辑器中编辑计划，请参阅 [Plan mode](/docs/zh-CN/permission-modes#analyze-before-you-edit-with-plan-mode)。
 
 <h2 id="delegate-research-to-subagents">
   将研究委派给 subagents
@@ -529,7 +532,7 @@ claude --permission-mode plan
 
 探索大型代码库会用文件读取填充您的上下文。委派探索，以便只有发现结果返回。
 
-```text theme={null}
+```text wrap theme={null}
 use a subagent to investigate how our auth system handles token refresh
 ```
 

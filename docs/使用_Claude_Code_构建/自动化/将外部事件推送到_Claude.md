@@ -42,9 +42,12 @@ Channel 是一个 MCP 服务器，它将事件推送到您运行中的 Claude Co
         /plugin install telegram@claude-plugins-official
         ```
 
-        如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
+        如果安装失败，请匹配 Claude Code 报告的消息：
 
-        安装后，运行 `/reload-plugins` 来激活插件的配置命令。
+        * `Marketplace "claude-plugins-official" not found`：使用 `/plugin marketplace add anthropics/claude-plugins-official` 添加市场，然后重试安装。
+        * 插件[在市场中找不到](/docs/zh-CN/plugins/install#install-a-plugin)：检查插件名称。
+
+        当安装要求选择安装范围时，选择用户范围选项，以便插件在所有项目中可用。检查安装摘要：如果它报告 `Run /reload-plugins to activate.`，请参阅[在不重启的情况下应用插件更改](/docs/zh-CN/plugins/cli-reference#reload-plugins)以使插件的配置命令可用。
       </Step>
 
       <Step title="配置您的令牌">
@@ -117,9 +120,12 @@ Channel 是一个 MCP 服务器，它将事件推送到您运行中的 Claude Co
         /plugin install discord@claude-plugins-official
         ```
 
-        如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
+        如果安装失败，请匹配 Claude Code 报告的消息：
 
-        安装后，运行 `/reload-plugins` 来激活插件的配置命令。
+        * `Marketplace "claude-plugins-official" not found`：使用 `/plugin marketplace add anthropics/claude-plugins-official` 添加市场，然后重试安装。
+        * 插件[在市场中找不到](/docs/zh-CN/plugins/install#install-a-plugin)：检查插件名称。
+
+        当安装要求选择安装范围时，选择用户范围选项，以便插件在所有项目中可用。检查安装摘要：如果它报告 `Run /reload-plugins to activate.`，请参阅[在不重启的情况下应用插件更改](/docs/zh-CN/plugins/cli-reference#reload-plugins)以使插件的配置命令可用。
       </Step>
 
       <Step title="配置您的令牌">
@@ -179,7 +185,12 @@ Channel 是一个 MCP 服务器，它将事件推送到您运行中的 Claude Co
         /plugin install imessage@claude-plugins-official
         ```
 
-        如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
+        如果安装失败，请匹配 Claude Code 报告的消息：
+
+        * `Marketplace "claude-plugins-official" not found`：使用 `/plugin marketplace add anthropics/claude-plugins-official` 添加市场，然后重试安装。
+        * 插件[在市场中找不到](/docs/zh-CN/plugins/install#install-a-plugin)：检查插件名称。
+
+        当安装要求选择安装范围时，选择用户范围选项，以便插件在所有项目中可用。如果安装摘要报告 `Run /reload-plugins to activate.`，您可以在此跳过，因为下一步中的重启会拾取插件。
       </Step>
 
       <Step title="重启并启用 channels">
@@ -209,8 +220,6 @@ Channel 是一个 MCP 服务器，它将事件推送到您运行中的 Claude Co
   </Tab>
 </Tabs>
 
-您也可以[构建您自己的 channel](/docs/zh-CN/channels-reference)，用于尚未有插件的系统。
-
 <h2 id="quickstart">
   快速入门
 </h2>
@@ -233,7 +242,14 @@ Fakechat 是一个官方支持的演示 channel，在 localhost 上运行聊天 
     /plugin install fakechat@claude-plugins-official
     ```
 
-    如果 Claude Code 报告在任何市场中都找不到该插件，您的市场可能缺失或已过期。运行 `/plugin marketplace update claude-plugins-official` 来刷新它，或者如果您之前没有添加过，运行 `/plugin marketplace add anthropics/claude-plugins-official`。然后重试安装。
+    如果安装失败，请匹配 Claude Code 报告的消息：
+
+    * `Marketplace "claude-plugins-official" not found`：使用 `/plugin marketplace add anthropics/claude-plugins-official` 添加市场，然后重试安装。
+    * 插件[在市场中找不到](/docs/zh-CN/plugins/install#install-a-plugin)：检查插件名称。
+
+    当安装要求安装范围时，选择用户范围选项，以便插件在您的所有项目中可用。
+
+    如果安装摘要报告 `Run /reload-plugins to activate.`，您不需要在此处采取行动，因为下一步中的重启会选择该插件。
   </Step>
 
   <Step title="重启并启用 channel">
@@ -243,7 +259,7 @@ Fakechat 是一个官方支持的演示 channel，在 localhost 上运行聊天 
     claude --channels plugin:fakechat@claude-plugins-official
     ```
 
-    fakechat 服务器会自动启动。
+    fakechat 服务器会自动启动。启动屏幕显示一个 channels 通知，说明来自 `plugin:fakechat@claude-plugins-official` 的消息直接注入此会话。如果插件未安装或不在批准的允许列表中，问题名称下方会出现警告行。
 
     <Tip>
       您可以将多个插件传递给 `--channels`，用空格分隔。
@@ -254,14 +270,14 @@ Fakechat 是一个官方支持的演示 channel，在 localhost 上运行聊天 
     在 [http://localhost:8787](http://localhost:8787) 打开 fakechat UI 并输入消息：
 
     ```text theme={null}
-    hey, what's in my working directory?
+    what's in my working directory?
     ```
 
-    消息作为 `<channel source="fakechat">` 事件到达您的 Claude Code 会话。Claude 读取它，完成工作，并调用 fakechat 的 `reply` 工具。答案显示在聊天 UI 中。
+    消息到达您的 Claude Code 会话。终端将其显示为入站 channel 行，如 `← fakechat · web: what's in my working directory?`，而模型将其接收为 `<channel source="plugin:fakechat:fakechat">` 事件，使用插件的作用域服务器名称。Claude 读取它，完成工作，并调用 fakechat 的 `reply` 工具。如果 Claude Code 要求第一次回复的权限，请批准。答案显示在聊天 UI 中。
   </Step>
 </Steps>
 
-如果 Claude 在您离开终端时遇到权限提示，会话会暂停，直到您响应。声明[权限中继功能](/docs/zh-CN/channels-reference#relay-permission-prompts)的 Channel 服务器可以将这些提示转发给您，以便您可以远程批准或拒绝。对于无人值守使用，[`--dangerously-skip-permissions`](/docs/zh-CN/permission-modes#skip-all-checks-with-bypasspermissions-mode) 完全绕过提示，但仅在您信任的环境中使用。显式询问规则、连接器工具[您的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 和标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具仍然会提示。
+如果 Claude 在您离开终端时遇到权限提示，会话会暂停，直到您响应。声明[权限中继功能](/docs/zh-CN/channels-reference#relay-permission-prompts)的 Channel 服务器可以将这些提示转发给您，以便您可以远程批准或拒绝。对于无人值守使用，[`--dangerously-skip-permissions`](/docs/zh-CN/permission-modes#skip-all-checks-with-bypasspermissions-mode) 绕过大多数提示，但仅在您信任的环境中使用。即使这样，[任何模式都不会自动批准的操作](/docs/zh-CN/permission-modes#actions-no-mode-auto-approves)仍然适用。
 
 当您使用 `-p` 以非交互模式运行 channels 时，需要终端输入的工具（如多选问题和 Plan Mode 批准）被禁用，以便会话永远不会因等待输入而停滞。
 
@@ -292,15 +308,15 @@ iMessage 的工作方式不同：给自己发短信会自动绕过门禁，您�
 
 管理员通过两个[托管设置](/docs/zh-CN/settings)控制可用性，用户无法覆盖。默认值取决于您如何进行身份验证：
 
-* **claude.ai Team 和 Enterprise**：channels 被阻止，直到管理员启用它们。
+* **claude.ai Team 和 Enterprise**：channels 被阻止，直到所有者[启用它们](#enable-channels-for-your-organization)。
 * **Anthropic 控制台与 API 密钥身份验证**：channels 默认被允许。仅当您的组织部署托管设置时才需要此设置。
 
 在所有情况下，在用户使用 `--channels` 为会话选择加入之前，没有 channel 会运行。
 
-| 设置                      | 目的                                                                                                                                          | 未配置时                                                                                               |
-| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------- |
-| `channelsEnabled`       | 主开关。必须为 `true` 才能让任何 channel 传递消息。通过 [claude.ai 管理员控制台](https://claude.ai/admin-settings/claude-code)切换或直接在托管设置中设置。关闭时阻止所有 channels，包括开发标志。 | claude.ai Team 和 Enterprise：channels 被阻止。控制台：channels 被允许，除非您的组织部署托管设置，在这种情况下 channels 被阻止，直到设置此密钥 |
-| `allowedChannelPlugins` | 启用 channels 后哪些插件可以注册。设置时替换 Anthropic 维护的列表。仅在 `channelsEnabled` 为 `true` 时适用。                                                              | 应用 Anthropic 默认列表                                                                                  |
+| 设置 | 目的 | 未配置时 |
+| :- | :- | :- |
+| `channelsEnabled` | 主开关。必须为 `true` 才能让任何 channel 传递消息。阻止所有 channels，包括开发标志（关闭时）。请参阅[为您的组织启用 channels](#enable-channels-for-your-organization)。 | claude.ai Team 和 Enterprise：channels 被阻止。控制台：channels 被允许，除非您的组织部署托管设置，在这种情况下 channels 被阻止，直到设置此密钥 |
+| `allowedChannelPlugins` | 启用 channels 后哪些插件可以注册。设置时替换 Anthropic 维护的列表。 | 应用 Anthropic 默认列表 |
 
 没有组织的 Pro 和 Max 用户完全跳过这些检查：channels 可用，用户使用 `--channels` 按会话选择加入。
 
@@ -308,7 +324,7 @@ iMessage 的工作方式不同：给自己发短信会自动绕过门禁，您�
   为您的组织启用 channels
 </h3>
 
-管理员可以从 [**claude.ai → 管理员设置 → Claude Code → Channels**](https://claude.ai/admin-settings/claude-code) 启用 channels，或通过在托管设置中将 `channelsEnabled` 设置为 `true`。
+可以从 [**claude.ai → 管理员设置 → Claude Code → Channels**](https://claude.ai/admin-settings/claude-code) 为您的组织启用 channels（需要所有者角色），或通过在托管设置中将 `channelsEnabled` 设置为 `true`。
 
 启用后，您组织中的用户可以使用 `--channels` 将 channel 服务器选择加入到各个会话中。如果设置被禁用或未设置，MCP 服务器仍会连接，其工具可以工作，但 channel 消息不会到达。启动警告会告诉用户让管理员启用该设置。
 
@@ -329,9 +345,9 @@ iMessage 的工作方式不同：给自己发短信会自动绕过门禁，您�
 }
 ```
 
-设置 `allowedChannelPlugins` 时，它完全替换 Anthropic 允许列表：只有列出的插件可以注册。保持未设置以回退到默认 Anthropic 允许列表。如果设置空数组，您会阻止所有 channel 插件从允许列表中，但 `--dangerously-load-development-channels` 仍可以为本地测试绕过该阻止。要完全阻止 channels，包括开发标志，请改为保持 `channelsEnabled` 未设置。
+如果您设置空数组，您会阻止所有 channel 插件从允许列表中，但 `--dangerously-load-development-channels` 仍可以为本地测试绕过该阻止。要完全阻止 channels，包括开发标志，请改为保持 `channelsEnabled` 未设置。
 
-此设置需要 `channelsEnabled: true`。如果用户将不在您列表中的插件传递给 `--channels`，Claude Code 会正常启动，但 channel 不会注册，启动通知会解释该插件不在组织的批准列表中。
+此设置需要 `channelsEnabled: true`。如果用户将不在您列表中的插件传递给 `--channels`，Claude Code 会正常启动，但 channel 不会注册，启动通知会解释该插件不在组织的批准列表中。如果您在 v2 MCP 客户端运行时将 `MCP_PROTOCOL_NEGOTIATION` 设置为 `auto`，channel 也可能无法注册，因为 Claude Code [不会注册协商协议修订版本 2026-07-28 的 channel 服务器](/docs/zh-CN/mcp#push-messages-with-channels)。
 
 <h2 id="research-preview">
   研究预览
@@ -339,9 +355,11 @@ iMessage 的工作方式不同：给自己发短信会自动绕过门禁，您�
 
 Channels 是一个研究预览功能。可用性正在逐步推出，`--channels` 标志语法和协议契约可能会根据反馈而改变。
 
+在预览期间，`--channels` 和 `--dangerously-load-development-channels` 都不会出现在 `claude --help` 中。这些标志即使未列出也能正常工作。
+
 在预览期间，`--channels` 仅接受来自 Anthropic 维护的允许列表的插件，或来自您组织的允许列表（如果管理员已设置 [`allowedChannelPlugins`](#restrict-which-channel-plugins-can-run)）。[claude-plugins-official](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins) 中的 channel 插件是默认批准的集合。如果您传递不在有效允许列表中的内容，Claude Code 会正常启动，但 channel 不会注册，启动通知会告诉您原因。
 
-要测试您正在构建的 channel，请使用 `--dangerously-load-development-channels`。有关测试您构建的自定义 channels 的信息，请参阅[在研究预览期间测试](/docs/zh-CN/channels-reference#test-during-the-research-preview)。
+要测试您正在构建的 channel，请将其以 `plugin:<name>@<marketplace>` 或 `server:<name>` 的形式传递给 `--dangerously-load-development-channels`。有关测试您构建的自定义 channels 的信息，请参阅[在研究预览期间测试](/docs/zh-CN/channels-reference#test-during-the-research-preview)。
 
 在 [Claude Code GitHub 存储库](https://github.com/anthropics/claude-code/issues)上报告问题或反馈。
 
@@ -351,12 +369,12 @@ Channels 是一个研究预览功能。可用性正在逐步推出，`--channels
 
 几个 Claude Code 功能连接到终端外的系统，每个都适合不同类型的工作：
 
-| 功能                                                | 它做什么                                 | 适合                    |
-| ------------------------------------------------- | ------------------------------------ | --------------------- |
-| [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) | 在新的云沙箱中运行任务，从 GitHub 克隆              | 委派您稍后检查的自包含异步工作       |
-| [Slack 中的 Claude](/docs/zh-CN/slack)                   | 从频道或线程中的 `@Claude` 提及生成网络会话          | 直接从团队对话上下文启动任务        |
-| 标准 [MCP 服务器](/docs/zh-CN/mcp)                          | Claude 在任务期间查询它；没有任何内容被推送到会话         | 给 Claude 按需访问以读取或查询系统 |
-| [远程控制](/docs/zh-CN/remote-control)                     | 您从 claude.ai 或 Claude 移动应用程序驱动您的本地会话 | 在离开您的办公桌时指导进行中的会话     |
+| 功能 | 它做什么 | 适合 |
+| - | - | - |
+| [网络上的 Claude Code](/docs/zh-CN/claude-code-on-the-web) | 在新的云沙箱中运行任务，从 GitHub 克隆 | 委派您稍后检查的自包含异步工作 |
+| [Slack 中的 Claude](/docs/zh-CN/slack) | 从频道或线程中的 `@Claude` 提及生成网络会话 | 直接从团队对话上下文启动任务 |
+| 标准 [MCP 服务器](/docs/zh-CN/mcp) | Claude 在任务期间查询它；没有任何内容被推送到会话 | 给 Claude 按需访问以读取或查询系统 |
+| [远程控制](/docs/zh-CN/remote-control) | 您从 claude.ai 或 Claude 移动应用程序驱动您的本地会话 | 在离开您的办公桌时指导进行中的会话 |
 
 Channels 通过将来自非 Claude 源的事件推送到您已经运行的本地会话中，填补了该列表中的空白。
 

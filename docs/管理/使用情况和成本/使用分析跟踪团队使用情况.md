@@ -8,10 +8,10 @@
 
 Claude Code 提供分析仪表板，帮助组织了解开发者使用模式、跟踪贡献指标，并衡量 Claude Code 对工程速度的影响。访问您计划的仪表板：
 
-| 计划                            | 仪表板 URL                                                                    | 包含内容                           | 了解更多                                            |
-| ----------------------------- | -------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
+| 计划 | 仪表板 URL | 包含内容 | 了解更多 |
+| - | - | - | - |
 | Claude for Teams / Enterprise | [claude.ai/analytics/claude-code](https://claude.ai/analytics/claude-code) | 使用指标、带 GitHub 集成的贡献指标、排行榜、数据导出 | [详情](#access-analytics-for-team-and-enterprise) |
-| API (Claude Console)          | [platform.claude.com/claude-code](https://platform.claude.com/claude-code) | 使用指标、支出跟踪、团队洞察                 | [详情](#access-analytics-for-api-customers)       |
+| API (Claude Console) | [platform.claude.com/claude-code](https://platform.claude.com/claude-code) | 使用指标、支出跟踪、团队洞察 | [详情](#access-analytics-for-api-customers) |
 
 <h2 id="access-analytics-for-team-and-enterprise">
   访问 Team 和 Enterprise 分析
@@ -138,12 +138,6 @@ Team 和 Enterprise 仪表板包括：
 </h3>
 
 启用贡献指标后，Claude Code 会分析已合并的拉取请求，以确定哪些代码是使用 Claude Code 协助编写的。这是通过将 Claude Code 会话活动与每个 PR 中的代码进行匹配来完成的。
-
-<h4 id="tagging-criteria">
-  标记标准
-</h4>
-
-如果 PR 包含在 Claude Code 会话期间编写的至少一行代码，则将其标记为"带 Claude Code"。系统使用保守匹配：仅计算有高度信心涉及 Claude Code 的代码。
 
 <h4 id="attribution-process">
   归属过程
