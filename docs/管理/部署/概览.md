@@ -227,13 +227,13 @@ export const ContactSalesCard = ({surface}) => {
   投资文档和内存
 </h3>
 
-我们强烈建议投资文档，以便 Claude Code 理解您的代码库。组织可以在多个级别部署 CLAUDE.md 文件。请参阅[CLAUDE.md 文件可以存放的位置](/docs/zh-CN/memory#choose-where-to-put-claude-md-files)和[如何部署组织范围的 CLAUDE.md](/docs/zh-CN/memory#deploy-organization-wide-claude-md)。
+投资文档，以便 Claude Code 理解您的代码库。组织可以在多个级别部署 CLAUDE.md 文件。请参阅[CLAUDE.md 文件可以存放的位置](/docs/zh-CN/memory#choose-where-to-put-claude-md-files)和[如何部署组织范围的 CLAUDE.md](/docs/zh-CN/memory#deploy-organization-wide-claude-md)。
 
 <h3 id="simplify-deployment">
   简化部署
 </h3>
 
-如果您有自定义开发环境，我们发现创建一种"一键"安装 Claude Code 的方式是在组织中增加采用率的关键。
+如果您有自定义开发环境，创建一种"一键"安装 Claude Code 的方式是在组织中增加采用率的关键。
 
 <h3 id="start-with-guided-usage">
   从引导式使用开始
@@ -259,7 +259,7 @@ export const ContactSalesCard = ({surface}) => {
   利用 MCP 进行集成
 </h3>
 
-MCP 是为 Claude Code 提供更多信息的好方法，例如连接到票证管理系统或错误日志。我们建议一个中央团队配置 MCP servers 并将 `.mcp.json` 配置检入代码库，以便所有用户受益。[了解更多](/docs/zh-CN/mcp)。
+MCP 是为 Claude Code 提供更多信息的好方法，例如连接到票证管理系统或错误日志。让一个中央团队配置 MCP 服务器并将 `.mcp.json` 配置检入代码库，以便所有用户受益。[了解更多](/docs/zh-CN/mcp)。
 
 <h2 id="next-steps">
   后续步骤

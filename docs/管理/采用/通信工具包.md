@@ -46,7 +46,7 @@
 
     团队，
 
-    从今天开始，您可以访问 Claude Code，这是一个在您的终端中运行、读取您的实际代码库并端到端处理真实任务的 AI 编码代理：调试、重构、测试、PR。它不是自动完成，也不是聊天窗口。它编辑文件、运行您的命令，并在任何有风险的事情之前请求许可。
+    从今天开始，您可以访问 Claude Code，这是一个在您的终端中运行、读取您的实际代码库并端到端处理真实任务的 AI 编码 Agent：调试、重构、测试、PR。它不是自动完成，也不是聊天窗口。它会编辑文件并运行您的命令。
 
     在两分钟内开始运行：
 
@@ -60,9 +60,9 @@
 
       - "文件 [file] 中的测试不稳定。找出原因并修复它"
       - "向我介绍 [module] 如何处理 [X]"
-      - "查看我的工作差异并告诉我在我推送之前什么是有风险的"
+      - "查看我当前工作的 diff，并在我推送之前告诉我有哪些风险"
 
-    您的代码去哪里了：Claude Code 在您的终端中运行，直接与 Anthropic 的 API 通信，循环中没有第三方服务器。它在编辑文件或运行命令之前请求许可。根据我们的企业协议，Anthropic 不使用您的代码或提示来训练其模型。
+    您的代码去哪里了：Claude Code 在您的终端中运行，直接与 Anthropic 的 API 通信。在我们的 Team 或 Enterprise 计划下，Anthropic 不会使用您的代码或提示词来训练其模型。
     详情：https://code.claude.com/docs/en/data-usage
           https://code.claude.com/docs/en/security
 
@@ -70,7 +70,7 @@
 
     - [名称]
 
-    附注：更喜欢您的编辑器？有一个 VS Code 扩展和一个 JetBrains 插件。相同的代理，不需要终端。
+    附注：更喜欢您的编辑器？有一个 VS Code 扩展和一个 JetBrains 插件。相同的 Agent，不需要终端。
     ```
   </Tab>
 
@@ -78,16 +78,16 @@
     ```markdown theme={null}
     🚀 *Claude Code 现已为 [团队] 推出*
 
-    AI 编码代理，在您的终端中运行，读取您的仓库，完成真实工作：
-    错误、重构、测试、PR。在触及任何东西之前请求许可。
+    AI 编码 Agent，在您的终端中运行，读取您的仓库，完成真实工作：
+    错误、重构、测试、PR。
 
     `curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` → `claude`
 
     *首先尝试的事情* → 运行 `/init`，然后："文件 [file] 中的测试不稳定，
     找出原因并修复它。"
 
-    🔒 在您的终端中运行，仅与 Anthropic 的 API 通信。根据我们的
-    企业计划，您的代码和提示不用于训练模型。
+    🔒 在您的终端中运行，直接与 Anthropic 的 API 通信。在我们的 Team 或
+    Enterprise 计划下，您的代码和提示词不会用于训练模型。
     数据使用 → https://code.claude.com/docs/en/data-usage
 
     📚 快速入门 · VS Code · 免费 1 小时课程
@@ -163,7 +163,7 @@
 
 [继续标准公告中的"在两分钟内开始运行"]
 
-试点的一个额外事项：在您的第一个多文件更改时，按 Shift+Tab 直到您看到"plan"。Claude 将在触及任何文件之前准确说明它打算做什么。这是校准您应该信任多少的最快方式。
+试点的一个额外事项：在您的第一个多文件更改时，按 Shift+Tab 直到您看到"plan"。Claude 将在不编辑您源代码的情况下列出它打算做什么。这是校准您应该信任多少的最快方式。
 ```
 
 <h3 id="champion-recruitment-dm">
@@ -271,11 +271,11 @@ Claude Code 在与 Claude 应用相同的模型上运行，您可以在会话中
 ```markdown theme={null}
 🛡️ *技巧：一个按键在"看但不要触及"和"就做吧"之间*
 
-有时您希望 Claude 在每次编辑之前请求许可。有时您只是希望它发货。您不应该永远选择一个。
+有时您希望 Claude 在每次编辑之前先询问。有时您只是希望它直接交付。您不应该永远只选择一种。
 
-*Shift+Tab* 循环通过 Claude 获得多少自由度：*Manual*（`default` 设置值）在文件编辑和大多数 shell 命令之前请求，*acceptEdits* 让文件编辑和常见文件系统命令流通，同时仍在其他 shell 命令之前检查，*plan* 在触及任何东西之前为您的批准提议更改。Plan 模式是信任构建者，所以对于任何触及多个文件的东西，从那里开始。
+*Shift+Tab* 循环切换 Claude 无需询问即可执行的操作范围：*Manual*（`default` 设置值）在文件编辑和大多数 shell 命令之前询问，*acceptEdits* 让文件编辑和常见文件系统命令直接通过，同时仍在其他 shell 命令之前检查，*plan* 进行研究并提出更改建议，而不编辑您的源代码。计划模式是建立信任的方式，所以对于任何触及多个文件的工作，从那里开始。
 
-*现在尝试：* 在您的下一个重构上，按 Shift+Tab 直到您看到"plan"，然后描述更改。您将在单个文件移动之前获得完整的提议。
+*现在尝试：* 在您的下一个重构上，按 Shift+Tab 直到您看到"plan"，然后描述更改。您将获得一份完整的提议供您审查。
 
 📖 Permission modes → https://code.claude.com/docs/zh-CN/permissions
 ```
@@ -406,7 +406,7 @@ Skills 被捆绑并作为插件共享。`/plugin` 浏览可用的内容并在一
 您团队中的某个人会问"等等，我的代码去哪里了？"
 这是您可以粘贴的简短版本。
 
-权限优先设计。每个文件编辑、shell 命令和外部调用都由您的批准门控。CLI 在您的终端中运行，直接与 Anthropic 的 API 通信，没有第三方服务器，并支持 shell 命令的可选操作系统级沙箱。在 Team 或 Enterprise 计划上，Anthropic 不使用您的代码或提示来训练其模型。
+权限模式决定 Claude 无需先询问您即可执行哪些操作。CLI 在您的终端中运行，直接与 Anthropic 的 API 通信，并支持对 shell 命令进行可选的操作系统级沙箱隔离。在 Team 或 Enterprise 计划上，Anthropic 不使用您的代码或提示词来训练其模型。
 
 *现在尝试：* 保存这两个链接以备下次问题出现。它们回答了大多数安全审查问题。
 
@@ -445,8 +445,8 @@ Skills 被捆绑并作为插件共享。`/plugin` 浏览可用的内容并在一
 | - | - |
 | "它在 VS Code 中工作吗？" | 是的。有一个 VS Code 扩展和一个 JetBrains 插件，具有相同的功能，嵌入在您的编辑器中。[VS Code →](/docs/zh-CN/vs-code) |
 | "我必须先配置什么吗？" | 不。安装，然后在任何仓库中运行 `claude`。运行一次 `/init`，您就设置好了。[快速入门 →](/docs/zh-CN/quickstart) |
-| "我的代码去哪里了？" | CLI 在您的终端中运行，并将上下文发送到 Anthropic 的 API 进行推理，没有第三方服务器。在 Team 或 Enterprise 计划上，您的代码和提示不用于训练模型。[数据使用 →](/docs/zh-CN/data-usage) |
-| "它能看到我的整个仓库吗？" | 它读取您给它访问权限的内容。您工作目录内的文件读取不提示；权限提示门控编辑、非只读 shell 命令和该目录外的文件工具读取。一组内置的只读 shell 命令（如 `ls` 和 `cat`）无需提示即可运行；使用[沙箱 `denyRead` 规则](/docs/zh-CN/sandboxing#filesystem-isolation)限制它。[权限 →](/docs/zh-CN/permissions) |
+| "我的代码去哪里了？" | CLI 在您的终端中运行，并将上下文发送到 Anthropic 的 API 进行推理。在 Team 或 Enterprise 计划上，您的代码和提示词不会用于训练模型。[数据使用 →](/docs/zh-CN/data-usage) |
+| "它能看到我的整个仓库吗？" | 它读取您授予其访问权限的内容。您工作目录内的文件读取不会弹出提示。[权限 →](/docs/zh-CN/permissions) |
 | "这与 Copilot 有什么不同？" | Copilot 自动完成行。Claude Code 是一个读取文件、运行命令和进行多文件编辑的代理。[概述 →](/docs/zh-CN/overview) |
 | "我应该首先尝试什么？" | 您一直在推迟的错误，因为它很乏味。"文件 \[file] 中的测试不稳定，找出原因。" [快速入门 →](/docs/zh-CN/quickstart) |
 

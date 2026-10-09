@@ -193,6 +193,8 @@ claude --dangerously-load-development-channels plugin:yourplugin@yourmarketplace
 claude --dangerously-load-development-channels server:webhook
 ```
 
+请在交互式会话中使用开发标志，以便 Claude Code 能够显示确认提示。如果您在非交互模式下通过 `-p` 或通过 Agent SDK 传递该标志，Claude Code 会忽略该标志，频道也不会注册。
+
 绕过是按条目的。将此标志与 `--channels` 结合不会将绕过扩展到 `--channels` 条目。在研究预览期间，您的频道不在批准的允许列表上，因此在您构建和测试时它保持在开发标志上。
 
 <Note>

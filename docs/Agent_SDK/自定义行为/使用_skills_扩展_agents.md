@@ -8,7 +8,7 @@
 
 Agent Skills 通过专业能力扩展 Claude，Claude 会在相关时自动调用这些能力。Skills 被打包为 `SKILL.md` 文件，包含说明、描述和可选的支持资源。本页还涵盖了 [Agent SDK 会话中的命令](#commands-in-agent-sdk-sessions)。
 
-有关 skills 的全面信息，包括优势、架构和编写指南，请参阅 [Agent Skills 概述](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)。
+有关 skill 的更多信息，包括优势、架构和编写指南，请参阅 [Agent Skills 概述](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)。
 
 <h2 id="how-skills-work-with-the-agent-sdk">
   Skills 如何与 Agent SDK 配合使用
@@ -271,7 +271,7 @@ Available commands: ["clear", "compact", "context", "usage", "code-review", "ver
 </CodeGroup>
 
 <Note>
-  `compact_boundary` 消息仅在压缩运行时到达。没有什么可总结的，`/compact` 会报告原因而不是引发。运行仍以 `success` 结果结束，没有 `compact_boundary` 消息，结果文本携带原因，例如在单个短交换后 `Not enough messages to compact.`。新的单次 `query()` 调用以空上下文开始，因此在具有先前轮次的会话中使用此模式，例如在 [流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode) 中或恢复会话时。
+  `compact_boundary` 消息仅在压缩运行时到达。当继续的会话有消息但 `/compact` 无法总结任何内容时，运行仍以 `success` 结果结束而不是错误，并且没有 `compact_boundary` 消息到达。结果文本随后会携带原因，例如当会话仅包含提示但尚未收到 Claude 的回复时 `Not enough messages to compact.`。新的单次 `query()` 调用以空上下文开始，因此在具有先前轮次的会话中使用此模式，例如在 [流式输入模式](/docs/zh-CN/agent-sdk/streaming-vs-single-mode) 中或恢复会话时。
 </Note>
 
 <h3 id="reset-context-with-/clear">
@@ -378,7 +378,7 @@ skill 的名称也出现在 init 消息的 `slash_commands` 数组中。
 </h2>
 
 <Note>
-  对于项目和个人 skills，Claude Code 在 SDK 会话中应用 [`allowed-tools`](/docs/zh-CN/skills#pre-approve-tools-for-a-skill) frontmatter 字段。你也可以通过查询配置中的 `allowedTools` 选项（Python 中的 `allowed_tools`）为这些 skills 预先批准工具。从 claude.ai [同步的 skills](/docs/zh-CN/skills#how-claude-code-handles-the-frontmatter-of-a-synced-skill) 遵循它们自己的 frontmatter 规则。
+  在 SDK 会话中，您可以通过 skill 的 [`allowed-tools`](/docs/zh-CN/skills#pre-approve-tools-for-a-skill) frontmatter，或通过查询配置中的 `allowedTools` 选项（Python 中的 `allowed_tools`），为项目或个人 skill 预先批准工具。如果您的组织在托管设置中设置了 [`allowManagedPermissionRulesOnly`](/docs/zh-CN/settings-reference#allowmanagedpermissionrulesonly)，Claude Code 会忽略这两者。[从 claude.ai 同步的](/docs/zh-CN/skills#how-claude-code-handles-the-frontmatter-of-a-synced-skill) skill 遵循其自身的 frontmatter 规则。
 </Note>
 
 Skills 使用会话的工具运行。下面的示例使用 `allowedTools`（Python 中的 `allowed_tools`）预先批准 `Read`、`Grep` 和 `Glob`，因此 Claude 可以在运行 [security-check skill](#create-and-dispatch-your-first-skill) 时检查文件，而无需停止以获得批准：

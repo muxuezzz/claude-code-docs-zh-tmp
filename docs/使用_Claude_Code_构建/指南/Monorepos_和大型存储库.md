@@ -68,7 +68,7 @@ monorepo/
 
 | 从以下位置启动 | 文件访问 | 启动时加载的 CLAUDE.md | 使用场景 |
 | :- | :- | :- | :- |
-| 存储库根目录 | 每个文件 | 仅根目录；当 Claude 在那里读取时，子目录文件按需加载 | 任务跨越多个包或子系统 |
+| 仓库根目录 | 每个文件 | 仅根目录；子目录文件按需加载 | 任务跨越多个包或子系统 |
 | 子目录 | 仅该子树，直到你授予更多权限 | 该目录的加上每个祖先的 | 工作范围限于一个包或子系统 |
 
 `.claude/settings.json` 中的项目设置不像 CLAUDE.md 文件那样从父目录继承。关于会话读取哪个目录的 `.claude/settings.json`，请参阅 [Claude Code 查找每个文件的位置](/docs/zh-CN/settings#where-claude-code-looks-for-each-file)。
@@ -81,7 +81,7 @@ monorepo/
 
 在大型代码库中，存储库根目录的单个 CLAUDE.md 往往要么增长到覆盖每个子系统的约定，在与当前任务无关的指令上浪费上下文，要么保持太通用而无用。将指令分散在按目录的文件中意味着 Claude 加载存储库范围的规则加上仅你正在处理的代码的约定。
 
-Claude Code 在启动时从你的工作目录和每个父目录加载每个 [CLAUDE.md](/docs/zh-CN/memory) 文件，然后当它在那里读取文件时按需加载每个子目录的文件。根文件设置存储库范围的规则，每个子目录添加自己的规则。
+Claude Code 在启动时从您的工作目录和每个父目录加载每个 [CLAUDE.md](/docs/zh-CN/memory) 文件，然后[按需](/docs/zh-CN/memory#how-claude-md-files-load)加载每个子目录的文件。根文件设置仓库范围的规则，每个子目录添加自己的规则。
 
 常见的分割是两个级别：
 
@@ -124,7 +124,7 @@ Claude Code 在启动时从你的工作目录和每个父目录加载每个 [CLA
 
 | 方法 | 文件位置 | 加载时间 | 使用场景 |
 | :- | :- | :- | :- |
-| 按目录 `CLAUDE.md` | 在目录内，与其代码一起 | 从该目录启动时在启动时，或当 Claude 在那里读取文件时按需 | 目录所有者维护自己的约定；指令与代码一起版本化 |
+| 按目录 `CLAUDE.md` | 在目录内，与其代码一起 | 从该目录启动时在启动时加载，或按需加载 | 目录所有者维护自己的约定；指令与代码一起版本化 |
 | `.claude/rules/` 中的路径范围规则 | 存储库根目录的中央 `.claude/` | 当 Claude 处理与规则的 `paths:` glob 匹配的文件时 | 你想要一个地方的所有约定，或相同的规则适用于许多分散的路径 |
 
 有关也涵盖 skills 的比较，请参阅[比较相似功能](/docs/zh-CN/features-overview#compare-similar-features)。
@@ -133,7 +133,7 @@ Claude Code 在启动时从你的工作目录和每个父目录加载每个 [CLA
   排除不相关的 CLAUDE.md 文件
 </h3>
 
-当你从存储库根目录启动 Claude 时，每个子目录的 CLAUDE.md 在 Claude 读取该目录中的文件时立即加载。`claudeMdExcludes` 设置按路径或 glob 模式跳过特定文件，以便它们永远不会加载。
+当您从仓库根目录启动 Claude 时，每个子目录的 CLAUDE.md 都可能在会话期间[按需加载](/docs/zh-CN/memory#how-claude-md-files-load)。`claudeMdExcludes` 设置按路径或 glob 模式跳过特定文件，以便它们永远不会加载。
 
 对你从不处理的目录使用此功能，例如其他团队的包、遗留代码或供应商子树。排除列表是静态的，不是按任务的开关。要今天专注于一个包，明天专注于另一个包，[从该包的目录启动 Claude](#choose-where-to-start-claude) 而不是编辑排除。
 
@@ -204,7 +204,7 @@ Claude 的内容搜索默认尊重 `.gitignore`，所以已列在其中的路径
 
 在大型代码库中，查找符号的定义或使用位置可能需要许多文件读取和 grep 调用。[代码智能插件](/docs/zh-CN/plugins/code-intelligence)将 Claude 连接到语言服务器，以便它可以跳转到定义、查找引用和直接显示类型错误，而不是扫描树。
 
-官方市场有 TypeScript、Python、Go、Rust 和其他常见语言的插件。在 Claude Code 会话内运行下面的命令来安装 TypeScript 插件：
+官方市场有 TypeScript、Python、Go、Rust 和其他常见语言的插件。在 VS Code 扩展或桌面应用中，请按照[安装插件](/docs/zh-CN/plugins/install#install-a-plugin)进行安装。在终端中，运行 `claude` 启动 Claude Code，然后在其输入框中输入以下内容来安装 TypeScript 插件：
 
 ```shell theme={null}
 /plugin install typescript-lsp@claude-plugins-official
@@ -290,7 +290,7 @@ Sparse checkout 需要 git 在存在 sparse worktree 时在存储库的共享 `.
 
 当你从子目录启动 Claude 时，或当任务跨越多个检出时，本部分适用。如果你在单个大型树中从存储库根目录启动，Claude 已经可以访问每个文件，你可以跳过此部分。
 
-当你从 `packages/api/` 启动 Claude 时，它可以读取和写入该目录内的文件。如果任务需要跨包更改，例如更新 `api` 和 `web` 都导入的共享类型，你需要授予对同级目录的访问权限。相同的机制授予对单独检出的存储库的访问权限。
+当您从 `packages/api/` 启动 Claude 时，它可以读取和写入该目录内的文件。如果任务需要跨包更改，例如更新 `api` 和 `web` 都导入的共享类型，您需要授予对同级目录的访问权限。相同的机制也可授予对单独检出的仓库的访问权限。
 
 `.claude/settings.json` 中的 `additionalDirectories` 设置给 Claude 访问工作目录外的目录。下面的示例授予对两个同级包的访问权限：
 

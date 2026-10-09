@@ -92,7 +92,7 @@ Claude Code 包含多个安全功能来解决常见问题。有关完整详情�
   Sandbox 运行时
 </h3>
 
-对于无需容器的轻量级隔离，[sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) 在操作系统级别强制执行文件系统和网络限制。
+对于无需容器的轻量级隔离，[sandbox-runtime](https://github.com/anthropics/sandbox-runtime) 在操作系统级别强制执行文件系统和网络限制。
 
 主要优势是简单性：不需要 Docker 配置、容器镜像或网络设置。代理和文件系统限制是内置的。
 
@@ -164,7 +164,7 @@ docker run \
 
 使用 `--network none`，容器根本没有网络接口。代理到达外部世界的唯一方式是通过挂载的 Unix 套接字，该套接字连接到在主机上运行的代理。此代理可以强制执行域允许列表、注入凭证并记录所有流量。
 
-这与 [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) 使用的架构相同。即使代理通过提示注入被破坏，它也无法将数据泄露到任意服务器。它只能通过代理进行通信，代理控制哪些域可以访问。有关更多详情，请参阅 [Claude Code 沙箱博客文章](https://www.anthropic.com/engineering/claude-code-sandboxing)。
+这与 [sandbox-runtime](https://github.com/anthropics/sandbox-runtime) 使用的架构相同。即使 Agent 通过提示词注入被破坏，它也无法将数据泄露到任意服务器。它只能通过代理进行通信，代理控制哪些域可以访问。有关更多详情，请参阅 [Claude Code 沙箱隔离博客文章](https://www.anthropic.com/engineering/claude-code-sandboxing)。
 
 **额外加固选项：**
 
@@ -317,7 +317,7 @@ Claude Code 和 Agent SDK 尊重这些标准环境变量，通过代理路由所
 
 这种方法处理任何基于 HTTP 的服务，而无需编写自定义工具，但增加了围绕证书管理的复杂性。
 
-请注意，并非所有程序都尊重 `HTTP_PROXY`/`HTTPS_PROXY`。大多数工具（curl、pip、npm、git）都尊重，但有些可能绕过这些变量并直接连接。例如，Node.js `fetch()` 默认忽略这些变量；在 Node 24+ 中，您可以设置 `NODE_USE_ENV_PROXY=1` 来启用支持。为了全面覆盖，您可以使用 [proxychains](https://github.com/haad/proxychains) 来拦截网络调用，或配置 iptables 将出站流量重定向到透明代理。
+请注意，并非所有程序都遵循 `HTTP_PROXY`/`HTTPS_PROXY`。大多数工具（curl、pip、npm、git）都遵循，但有些可能绕过这些变量并直接连接。例如，Node.js `fetch()` 默认忽略这些变量；在 Node 24+ 中，您可以设置 `NODE_USE_ENV_PROXY=1` 来启用支持。为了覆盖忽略这些变量的工具，您可以使用 [proxychains](https://github.com/haad/proxychains) 来拦截网络调用，或配置 iptables 将出站流量重定向到透明代理。
 
 <Info>
   **透明代理**在网络级别拦截流量，因此客户端不需要配置为使用它。常规代理要求客户端显式连接并使用 HTTP CONNECT 或 SOCKS。透明代理（如 Squid 或透明模式下的 mitmproxy）可以处理原始重定向的 TCP 连接。
@@ -385,7 +385,7 @@ docker run \
 * [Claude Code 安全文档](/docs/zh-CN/security)
 * [托管 Agent SDK](/docs/zh-CN/agent-sdk/hosting)
 * [处理权限](/docs/zh-CN/agent-sdk/permissions)
-* [Sandbox 运行时](https://github.com/anthropic-experimental/sandbox-runtime)
+* [沙箱运行时](https://github.com/anthropics/sandbox-runtime)
 * [AI 代理的致命三角](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)
 * [OWASP 大型语言模型应用程序前 10 名](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 * [Docker 安全最佳实践](https://docs.docker.com/engine/security/)

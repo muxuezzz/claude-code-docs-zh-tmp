@@ -210,7 +210,7 @@ export VERTEX_REGION_CLAUDE_HAIKU_4_5=us-east5
 export VERTEX_REGION_CLAUDE_4_6_SONNET=europe-west1
 ```
 
-大多数模型版本都有对应的 `VERTEX_REGION_CLAUDE_*` 变量。有关完整列表，请参阅[环境变量参考](/docs/zh-CN/env-vars)。检查 [Google Cloud 的 Agent Platform Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 以确定哪些模型支持全局端点与仅区域端点。
+大多数模型版本都有对应的 `VERTEX_REGION_CLAUDE_*` 变量。有关完整列表，请参阅[环境变量参考](/docs/zh-CN/env-vars#variables)。检查 [Google Cloud 的 Agent Platform Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 以确定哪些模型支持全局端点与仅区域端点。
 
 如果区域值的形状不像区域或位置名称，Claude Code 会将其视为未设置。例如，Claude Code 将包含斜杠、点或空格的值视为未设置。Claude Code 为每个变量回退到不同的源：
 
@@ -295,6 +295,23 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 
 当这些检查发现您的项目无法调用的模型时，Claude Code 会在这台机器上记住该拒绝长达一天，并在此期间启动时跳过记住的模型，而不再询问 Agent Platform。Claude Code 会在距离上次检查已过十分钟后，再次检查当前默认模型的记住拒绝，因此管理员重新启用的默认值会恢复。要关闭此内存，请设置 [`CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY=1`](/docs/zh-CN/env-vars)。
 
+<h3 id="when-your-organization-enforces-a-model-allowlist">
+  当您的组织强制执行模型允许列表时
+</h3>
+
+如果您在托管设置中设置了 [`enforceAvailableModels`](/docs/zh-CN/model-config#enforce-the-allowlist-for-the-default-model)，启动模型检查将仅使用您的 `availableModels` 列表允许的模型。这需要 Claude Code v2.1.287 或更高版本。没有 `enforceAvailableModels` 的列表不会限制这些检查。
+
+这些检查会将每个条目与它们将发送到 Agent Platform 的模型 ID 进行比较，因此请使用这些 ID 编写列表。此示例允许 Opus 4.8 和 Sonnet 4.5：
+
+```json theme={null}
+{
+  "availableModels": ["claude-opus-4-8", "claude-sonnet-4-5@20250929"],
+  "enforceAvailableModels": true
+}
+```
+
+有关别名、版本前缀和 `modelOverrides` 条目，请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
+
 <h3 id="when-a-model-is-disabled-mid-session">
   当模型在会话中途被禁用时
 </h3>
@@ -325,9 +342,11 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
   1M token context window
 </h2>
 
-Claude Sonnet 5、Opus 4.6 及更高版本以及 Sonnet 4.6 在 Google Cloud 的 Agent Platform 上支持 [1M token context window](https://platform.claude.com/docs/zh-CN/build-with-claude/context-windows#context-window-sizes-by-model)。Sonnet 5 始终以 1M 窗口运行，没有 `[1m]` 变体可选择。对于其他模型，当您选择 1M 模型变体时，Claude Code 会自动启用扩展 context window。
+Fable 模型、Sonnet 5 及更高版本以及 Opus 4.7 及更高版本在 Google Cloud 的 Agent Platform 上默认以 [1M token 上下文窗口](https://platform.claude.com/docs/zh-CN/build-with-claude/context-windows#context-window-sizes-by-model)运行，无需 `[1m]` 后缀。如需改为保留 200K 窗口，请设置 [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](/docs/zh-CN/model-config#turn-off-1m-context)。
 
-[设置向导](#sign-in-with-agent-platform)在固定模型时提供 1M context 选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。有关详细信息，请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)，包括如何在不更改固定的情况下使用 1M 窗口。
+Opus 4.6 和 Sonnet 4.6 在您选择其 `[1m]` 变体时可使用 1M 窗口。[设置向导](#sign-in-with-agent-platform)在固定模型时提供 1M 上下文选项。如需改为为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。有关详细信息，请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)，包括如何在不更改固定的情况下使用 1M 窗口。
+
+在 v2.1.287 之前，Fable 模型以及 Opus 4.7 及更高版本在 Google Cloud 的 Agent Platform 上默认以 200K 窗口运行，并通过 `[1m]` 后缀使用 1M 窗口。
 
 <h2 id="troubleshooting">
   故障排除
@@ -349,7 +368,7 @@ Claude Sonnet 5、Opus 4.6 及更高版本以及 Sonnet 4.6 在 Google Cloud 的
 * 验证该模型在您指定的位置可用。某些模型仅在 `global` 或多区域位置（如 `eu` 和 `us`）上提供，而不是在特定区域
 * 如果使用 `CLOUD_ML_REGION=global`，请检查您的模型是否在 [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 中的"支持的功能"下支持全局端点。对于不支持全局端点的模型，请执行以下任一操作：
   * 通过 `ANTHROPIC_MODEL` 或 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 指定支持的模型，或
-  * 使用 `VERTEX_REGION_<MODEL_NAME>` 环境变量设置区域或多区域位置
+  * 使用该模型对应的 `VERTEX_REGION_CLAUDE_*` 变量设置区域或多区域位置，这些变量列于[环境变量参考](/docs/zh-CN/env-vars#variables)中
 
 如果您遇到 429 错误：
 

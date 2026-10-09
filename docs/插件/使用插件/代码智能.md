@@ -52,7 +52,7 @@
   </Step>
 
   <Step title="安装插件">
-    要安装在步骤 1 表格中为您的语言列出的插件，请在 Claude Code 会话中运行 `/plugin install`，将 `typescript-lsp` 替换为该插件的名称：
+    在 VS Code 扩展或桌面应用中，请按照[安装插件](/docs/zh-CN/plugins/install#install-a-plugin)操作，而不是执行此步骤。在终端中，运行 `claude` 启动 Claude Code，然后在其输入框中输入以下内容，将 `typescript-lsp` 替换为步骤 1 表格中为您的语言列出的插件：
 
     ```
     /plugin install typescript-lsp@claude-plugins-official

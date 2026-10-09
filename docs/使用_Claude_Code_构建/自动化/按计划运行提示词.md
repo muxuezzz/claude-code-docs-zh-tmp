@@ -84,7 +84,7 @@ Claude Code 提供三种方式来安排定期或一次性工作：
 <span id="loop-provider-differences" />
 
 <Note>
-  动态选择的间隔和[内置维护提示词](#run-the-built-in-maintenance-prompt)在每个提供商上都有效，并且[特性标志获取](/docs/zh-CN/env-vars#features-that-need-feature-flag-fetching)已关闭。在 Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上，或关闭获取时，两者都需要 Claude Code v2.1.248 或更高版本。在这些情况下，在早期版本上，没有间隔的提示词在固定的 10 分钟计划上运行，没有提示词的 `/loop` 会打印使用消息。
+  动态选择的间隔和[内置维护提示词](#run-the-built-in-maintenance-prompt)在每个提供商上都有效，并且[特性标志获取](/docs/zh-CN/env-vars#features-that-need-feature-flag-fetching)已关闭。在 Amazon Bedrock、Claude Platform on AWS、Google Cloud 的 Agent Platform 和 Microsoft Foundry 上，或关闭获取时，两者都需要 Claude Code v2.1.248 或更高版本。
 </Note>
 
 <h3 id="run-the-built-in-maintenance-prompt">

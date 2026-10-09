@@ -126,7 +126,7 @@ CLAUDE.md 在项目中的所有会话中持久存在，通过 git 与你的团�
 
 输出样式是一个 markdown 文件，包含用于元数据的 [frontmatter](/docs/zh-CN/output-styles#frontmatter)，后跟提示内容。将其保存到 `~/.claude/output-styles/` 以获得在每个项目中可用的用户级样式，或保存到你的存储库中的 `.claude/output-styles/` 以获得可以提交并与你的团队共享的项目级样式。
 
-自定义输出样式会排除 `claude_code` 预设的软件工程指令，并使用你自己的。要保留它们并在其上分层你的指令，请在 frontmatter 中设置 `keep-coding-instructions: true`。这些指令仅在 Claude Code 的完整系统提示中，因此该设置在较短系统提示的会话中无效，你可以使用 [`CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT`](/docs/zh-CN/env-vars#variables) 固定打开或关闭。当你的代理仍在进行软件工程工作时保留它们。当你完全替换角色时排除它们。
+自定义输出样式会省略 `claude_code` 预设的软件工程指令，转而使用您自己的指令。要保留这些指令并在其上叠加您的指令，请在 frontmatter 中设置 `keep-coding-instructions: true`。这些指令仅存在于 Claude Code 的完整系统提示词中，因此在使用较短系统提示词的会话中，该设置不起作用；将 [`CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT`](/docs/zh-CN/env-vars#variables) 设置为 `0` 即可在任何模型上选择完整提示词。当您的 Agent 仍在执行软件工程工作时，请保留它们。当您要完全替换角色时，请省略它们。
 
 下面的示例定义了一个代码审查角色，它保留编码指令，因为审查代码仍然受益于 Claude Code 的安全和代码质量指导。将其保存为 `~/.claude/output-styles/code-reviewer.md` 以使其在项目中可用：
 
@@ -547,7 +547,7 @@ SDK 消息流不包括系统提醒，因此读取您的代码接收的消息不�
 | **管理** | 在文件系统上 | CLI + 文件 | 在代码中 | 在代码中 |
 | **默认工具** | 保留 | 保留 | 保留 | 丢失（除非包含） |
 | **内置安全** | 维护 | 维护 | 维护 | 必须添加 |
-| **自定义级别** | 仅添加 | 替换或扩展默认 | 仅添加 | 完全控制 |
+| **自定义级别** | 仅添加 | 添加；可省略编码指令 | 仅添加 | 完全控制 |
 | **版本控制** | 与项目一起 | 是 | 与代码一起 | 与代码一起 |
 | **范围** | 项目特定 | 用户或项目 | 代码会话 | 代码会话 |
 

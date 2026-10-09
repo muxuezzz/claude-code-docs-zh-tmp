@@ -43,7 +43,7 @@ Anthropic 为 Claude Code 发布了三个通用插件市场：[官方](https://g
   `anthropics/claude-code` 中的演示市场
 </h3>
 
-如果教程或较旧的说明告诉你运行 `/plugin marketplace add anthropics/claude-code`，这会添加演示市场，名为 `claude-code-plugins`。这不是官方市场，Claude Code 已经为你添加了。
+如果教程或较旧的说明告诉你运行 `/plugin marketplace add anthropics/claude-code`，这会添加演示市场，名为 `claude-code-plugins`。它不是官方市场。
 
 演示市场的大多数插件也在官方市场中以相同的名称存在。例如，`code-review`、`feature-dev`、`commit-commands` 和 `security-guidance` 都在两者中。从 `claude-plugins-official` 安装这些，这样你就不会安装两个副本。
 
@@ -51,7 +51,7 @@ Anthropic 为 Claude Code 发布了三个通用插件市场：[官方](https://g
   在官方市场中查找插件
 </h2>
 
-官方市场 `claude-plugins-official` 是 Claude Code 为你添加的市场。它列出的大部分内容来自合作伙伴和其他作者，而不是来自 Anthropic：工具供应商发布连接 Claude Code 到其服务的插件，Anthropic 维护一个较小的自己的插件集，例如 `commit-commands`、`code-review`、`feature-dev` 和[语言服务器插件](/docs/zh-CN/plugins/code-intelligence)。目录经常变化，所以此页面不列出它。
+默认情况下，Claude Code 为你添加了官方市场 `claude-plugins-official`。它列出的大部分内容来自合作伙伴和其他作者，而不是来自 Anthropic：工具供应商发布连接 Claude Code 到其服务的插件，Anthropic 维护一个较小的自己的插件集，例如 `commit-commands`、`code-review`、`feature-dev` 和[语言服务器插件](/docs/zh-CN/plugins/code-intelligence)。目录经常变化，所以此页面不列出它。
 
 要查看其中的内容，请在 Claude Code 会话中使用 `/plugin` 的 **Discover** 选项卡（你可以搜索），或在网络上浏览 [Claude Marketplace](https://claude.com/marketplace/plugins)。
 
@@ -61,12 +61,12 @@ Anthropic 为 Claude Code 发布了三个通用插件市场：[官方](https://g
 
 你可以在 Claude Code、网络或 GitHub 上搜索 Anthropic 的市场中的插件：
 
-* **在 Claude Code 中，通过浏览**：在交互式会话中运行 `/plugin`。其 **Discover** 选项卡列出了你添加的市场中的插件。
-* **在 Claude Code 中，按名称**：在会话中运行 `/plugin install <name>`，它会在你添加的市场中查找该名称。如果插件在其中一个中，其详细信息会在 `/plugin` 面板中打开，在你选择[安装范围](/docs/zh-CN/plugins/install#install-a-plugin)并在那里确认之前，不会安装任何内容。如果不在，你会看到 `Plugin "<name>" not found in any marketplace`。
+* **在 Claude Code 中，通过浏览**：在交互式会话中运行 `/plugin`。其 **Discover** 选项卡列出了你的市场中的插件。
+* **在 Claude Code 中，按名称**：在会话中运行 `/plugin install <name>`，它会在你的市场中查找该名称。如果插件在其中一个中，其详细信息会在 `/plugin` 面板中打开，在你选择[安装范围](/docs/zh-CN/plugins/install#install-a-plugin)并在那里确认之前，不会安装任何内容。如果不在，你会看到 `Plugin "<name>" not found in any marketplace`。
 * **在网络上**：在 [Claude Marketplace](https://claude.com/marketplace/plugins) 上搜索完整目录，它显示安装计数并标记一些插件为 **Anthropic verified**。
 * **在 GitHub 上**：打开市场存储库中的 `.claude-plugin/marketplace.json`，例如 [`anthropics/claude-plugins-official`](https://github.com/anthropics/claude-plugins-official)。该文件就是目录本身。
 
-Anthropic 的目录与这些市场分开。该目录是 claude.ai 上的目录，`/plugin` 不会列出它。你从 claude.ai 上的目录添加的插件通过[账户同步](/docs/zh-CN/plugins/loading#synced-plugins)到达 Claude Code。要在那里列出你自己的插件，请参阅[提交到 Anthropic 的目录](/docs/zh-CN/plugins/publish#submit-to-anthropics-directory)。
+Anthropic 的目录与这些市场分开。该目录是 claude.ai 上的目录。你从 claude.ai 上的目录添加的插件通过[账户同步](/docs/zh-CN/plugins/loading#synced-plugins)到达 Claude Code。要在那里列出你自己的插件，请参阅[提交到 Anthropic 的目录](/docs/zh-CN/plugins/publish#submit-to-anthropics-directory)。
 
 要从桌面应用或脚本安装，或查看云会话加载的内容，请参阅[安装插件](/docs/zh-CN/plugins/install)。
 

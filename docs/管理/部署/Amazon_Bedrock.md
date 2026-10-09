@@ -136,15 +136,33 @@ export const ContactSalesCard = ({surface}) => {
   2. 配置 AWS 凭证
 </h3>
 
-Claude Code 使用默认 AWS SDK 凭证链。使用以下方法之一设置您的凭证：
+Claude Code 使用默认 AWS SDK 凭据链。如果机器已经向该链提供凭据，例如 Amazon EC2 实例配置文件或 Amazon ECS 任务凭据，请直接跳到[第 3 步](#3-configure-claude-code)。
 
-**选项 A：AWS CLI 配置**
+AWS [不建议在开发专用软件或处理真实数据时使用 IAM 用户的访问密钥](https://docs.aws.amazon.com/cli/latest/userguide/cli-authentication-user.html)。使用以下方法之一设置您的凭据：
+
+* [`aws configure`](#use-aws-configure)：将 IAM 用户的访问密钥保存到 `~/.aws` 目录中的配置文件
+* [访问密钥环境变量](#export-an-access-key)：仅在当前 shell 中设置访问密钥，或带会话令牌的临时凭据
+* [SSO 配置文件](#use-an-sso-profile)：在浏览器中通过 IAM Identity Center 登录并获取临时凭据。如果您通过 IAM Identity Center 访问 AWS 账户，请使用此方法。
+* [AWS 管理控制台凭据](#use-aws-management-console-credentials)：在浏览器中使用您的 AWS 管理控制台凭据登录并获取临时凭据。如果您以根用户、IAM 用户身份或通过 IAM 联合身份访问 AWS 账户，AWS [推荐此方法](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html)。
+* [Amazon Bedrock API 密钥](#use-an-amazon-bedrock-api-key)：使用仅适用于 Amazon Bedrock 的持有者令牌进行身份验证，而不是使用 AWS 凭据
+
+<h4 id="use-aws-configure">
+  使用 `aws configure`
+</h4>
+
+运行 `aws configure`，并在提示时输入您的访问密钥 ID、秘密访问密钥和默认区域：
 
 ```bash theme={null}
 aws configure
 ```
 
-**选项 B：环境变量（访问密钥）**
+AWS CLI 会将密钥保存到 `~/.aws/credentials` 中的 `default` 配置文件，凭据链会从那里读取它。
+
+<h4 id="export-an-access-key">
+  导出访问密钥
+</h4>
+
+将您的访问密钥导出为环境变量。`AWS_SESSION_TOKEN` 仅在使用临时凭据时需要，因此如果您的访问密钥属于 IAM 用户，请省略该行：
 
 ```bash theme={null}
 export AWS_ACCESS_KEY_ID=your-access-key-id
@@ -152,9 +170,11 @@ export AWS_SECRET_ACCESS_KEY=your-secret-access-key
 export AWS_SESSION_TOKEN=your-session-token
 ```
 
-**选项 C：环境变量（SSO 配置文件）**
+<h4 id="use-an-sso-profile">
+  使用 SSO 配置文件
+</h4>
 
-在运行这些命令之前，将 `your-profile-name` 替换为您的 AWS 配置文件的名称。
+如果您还没有配置文件，请使用 `aws configure sso` 创建一个。然后登录 IAM Identity Center 并设置 `AWS_PROFILE`，使凭据链使用该配置文件。在运行这些命令之前，将 `your-profile-name` 替换为您的 AWS 配置文件的名称。
 
 ```bash theme={null}
 aws sso login --profile=your-profile-name
@@ -164,21 +184,36 @@ export AWS_PROFILE=your-profile-name
 
 Claude Code 从配置文件的 `sso_region` 命名的 IAM Identity Center 区域请求角色凭证，这不需要与您运行 Amazon Bedrock 的区域匹配。在 v2.1.207 中，Amazon Bedrock 区域覆盖了 `sso_region`，因此 IAM Identity Center 实例在不同区域的配置文件无法使用 `Session token not found or invalid` 错误进行身份验证。
 
-**选项 D：AWS 管理控制台凭证**
+<h4 id="use-aws-management-console-credentials">
+  使用 AWS 管理控制台凭据
+</h4>
+
+`aws login` 命令需要 AWS CLI 2.32.0 或更高版本。有关您的身份所需的 IAM 策略，请参阅 [AWS 关于 `aws login` 的说明](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html)。
+
+运行以下命令，在浏览器中使用您的 AWS 管理控制台凭据登录：
 
 ```bash theme={null}
 aws login
 ```
 
-[了解更多](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html)关于 `aws login`。
+会话最长有效 12 小时，之后需要再次运行 `aws login`。
 
-**选项 E：Amazon Bedrock API 密钥**
+<h4 id="use-an-amazon-bedrock-api-key">
+  使用 Amazon Bedrock API 密钥
+</h4>
+
+Amazon Bedrock API 密钥是一种持有者令牌，可代替 AWS 凭据对您的请求进行身份验证。AWS 提供[两种类型的密钥](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html)：
+
+* **短期密钥**：最长有效 12 小时。对于生产环境，AWS 更推荐使用短期密钥而非长期密钥。
+* **长期密钥**：在您设置的到期日期之前一直有效。AWS 仅建议将其用于探索。
+
+将密钥导出为 `AWS_BEARER_TOKEN_BEDROCK`：
 
 ```bash theme={null}
 export AWS_BEARER_TOKEN_BEDROCK=your-bedrock-api-key
 ```
 
-Amazon Bedrock API 密钥提供了一种更简单的身份验证方法，无需完整的 AWS 凭证。[了解更多关于 Amazon Bedrock API 密钥](https://aws.amazon.com/blogs/machine-learning/accelerate-ai-development-with-amazon-bedrock-api-keys/)。
+设置 `AWS_BEARER_TOKEN_BEDROCK` 后，Claude Code 会使用该密钥进行身份验证，并且不会解析凭据链，即使存在其他 AWS 凭据也是如此。[了解更多关于 Amazon Bedrock API 密钥](https://aws.amazon.com/blogs/machine-learning/accelerate-ai-development-with-amazon-bedrock-api-keys/)。
 
 <h4 id="credential-caching-and-resolution-timeout">
   凭证缓存和解析超时
@@ -186,9 +221,9 @@ Amazon Bedrock API 密钥提供了一种更简单的身份验证方法，无需�
 
 Claude Code 解析 AWS 默认凭证提供程序链一次，并将解析的凭证保存在内存中。它重复使用这些凭证，直到它们过期前五分钟，或在没有过期时间时使用一小时，因此 SSO 支持的配置文件大约每个凭证生命周期从 IAM Identity Center 请求一次凭证。来自 API 的凭证错误会清除缓存，重试会解析新凭证。需要 Claude Code v2.1.207 或更高版本。
 
-缓存涵盖上述所有凭证选项，除了 Amazon Bedrock API 密钥，它不使用提供程序链。要在每个请求上解析链，请改为设置 [`CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1`](/docs/zh-CN/env-vars)。
+缓存涵盖此步骤开头列出的所有凭据方法，但 Amazon Bedrock API 密钥除外，它不使用提供程序链。要在每个请求上解析链，请改为设置 [`CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1`](/docs/zh-CN/env-vars)。
 
-链的每次解析在 60 秒后超时。如果链中的某个步骤停滞，例如等待无法接收的输入的 `credential_process` 帮助程序，请求会失败并显示 [`AWS default-chain credential resolve timed out`](/docs/zh-CN/errors#aws-default-chain-credential-resolve-timed-out)。如果您的链运行合法需要更长时间的交互式登录，例如通过 `aws-vault` 等包装器进行基于浏览器的 SSO 和 MFA，请使用 [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](/docs/zh-CN/env-vars) 以毫秒为单位提高限制。在 v2.1.207 之前，停滞的凭证解析会使请求无限期等待。
+填充缓存的解析在 60 秒后超时。如果链中的某个步骤停滞，例如等待无法接收的输入的 `credential_process` 帮助程序，请求会失败并显示 [`AWS default-chain credential resolve timed out`](/docs/zh-CN/errors#aws-default-chain-credential-resolve-timed-out)。如果您的链运行合法需要更长时间的交互式登录，例如通过 `aws-vault` 等包装器进行基于浏览器的 SSO 和 MFA，请使用 [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](/docs/zh-CN/env-vars) 以毫秒为单位提高限制。设置 `CLAUDE_CODE_SKIP_AWS_CRED_CACHE=1` 后，每个 API 请求解析链时不受此限制。
 
 除了使用 Amazon Bedrock API 密钥进行身份验证外，[设置向导](#sign-in-with-bedrock)对它在验证您的凭证时进行的每个 AWS 调用以及每个模型检查之前的凭证查找应用相同的限制。在凭证验证期间，超过限制的检查会失败并显示 [`Timed out after 60s waiting for AWS`](/docs/zh-CN/errors#bedrock-setup-verification-timed-out-waiting-for-aws)。
 
@@ -386,6 +421,23 @@ export ANTHROPIC_MODEL='arn:aws:bedrock:us-east-2:your-account-id:application-in
 
 当这些检查发现您的账户无法调用的模型时，Claude Code 会在这台机器上记住该拒绝长达一天，在此期间启动时会跳过记住的模型，而不再询问 Amazon Bedrock。Claude Code 会在距离上次检查已过十分钟后再次检查当前默认模型的记住拒绝，因此您的管理员重新启用的默认模型会恢复。要关闭此内存功能，请设置 [`CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY=1`](/docs/zh-CN/env-vars)。
 
+<h3 id="when-your-organization-enforces-a-model-allowlist">
+  当您的组织强制执行模型允许列表时
+</h3>
+
+如果您在托管设置中设置了 [`enforceAvailableModels`](/docs/zh-CN/model-config#enforce-the-allowlist-for-the-default-model)，启动模型检查将仅使用您的 `availableModels` 列表允许的模型。这适用于 Amazon Bedrock Invoke API，并且需要 Claude Code v2.1.287 或更高版本。未设置 `enforceAvailableModels` 的列表不会限制这些检查。
+
+检查会将每个条目与其将要发送的推理配置文件 ID（包括其[区域前缀](#cross-region-inference-profile-prefixes)）进行比较，因此请使用这些 ID 编写列表。此示例为模型解析为 `us.` 配置文件的部署允许 Opus 4.8 和 Sonnet 4.5：
+
+```json theme={null}
+{
+  "availableModels": ["us.anthropic.claude-opus-4-8", "us.anthropic.claude-sonnet-4-5-20250929-v1:0"],
+  "enforceAvailableModels": true
+}
+```
+
+有关别名、版本前缀和 `modelOverrides` 条目，请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
+
 <h3 id="when-a-model-is-disabled-mid-session">
   当模型在会话中被禁用时
 </h3>
@@ -492,9 +544,11 @@ Claude Code 不会重写您自己配置的 Amazon Bedrock 推理配置文件 ID 
   1M 令牌上下文窗口
 </h2>
 
-Claude Sonnet 5、Opus 4.6 及更高版本，以及 Sonnet 4.6 在 Amazon Bedrock 上支持 [1M 令牌上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)。Sonnet 5 在 Invoke API 和 [Mantle 端点](#use-the-mantle-endpoint)上始终以 1M 窗口运行，没有 `[1m]` 变体可选择。对于 Invoke API 上的其他模型，当您选择 1M 模型变体时，Claude Code 会自动启用扩展上下文窗口。
+Fable 模型、Sonnet 5 及更高版本，以及 Opus 4.7 及更高版本在 Amazon Bedrock 上默认以 [1M token 上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)运行，Invoke API 和 [Mantle 端点](#use-the-mantle-endpoint)均是如此，无需 `[1m]` 后缀。当 [`modelOverrides`](#map-each-model-version-to-an-inference-profile) 条目将其模型映射到应用程序推理配置文件 ARN 时，该 ARN 将获得 1M 窗口。如需改为保留 200K 窗口，请设置 [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](/docs/zh-CN/model-config#turn-off-1m-context)。
 
-[设置向导](#sign-in-with-bedrock)在固定模型时提供 1M 上下文选项。要为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解详情，包括如何在不更改固定的情况下使用 1M 窗口。
+在 Invoke API 上，当您选择 Opus 4.6 和 Sonnet 4.6 的 `[1m]` 变体时，它们将使用 1M 窗口。[设置向导](#sign-in-with-bedrock)在固定模型时提供 1M 上下文选项。如需改为为手动固定的模型启用它，请在模型 ID 后附加 `[1m]`。请参阅[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)了解详情，包括如何在不更改固定的情况下使用 1M 窗口。
+
+在 v2.1.287 之前，Fable 模型以及 Opus 4.7 及更高版本在 Invoke API 上默认以 200K 窗口运行，需通过 `[1m]` 后缀才能在其上使用 1M 窗口。
 
 <h2 id="service-tiers">
   服务层级
@@ -525,6 +579,8 @@ Claude Code 在每个请求上将此作为 `X-Amzn-Bedrock-Service-Tier` 标头�
 ```
 
 如果您的组织通过 [Claude apps gateway](/docs/zh-CN/claude-apps-gateway) 策略传递 guardrail 标头，它们将被视为[需要批准的设置](/docs/zh-CN/server-managed-settings#environment-variables-and-the-approval-dialog)。
+
+当 guardrail 在中途阻止响应时，已流式传输的文本会保留，并且回复将以 guardrail 上为被阻止响应配置的消息结尾。
 
 <h2 id="use-the-mantle-endpoint">
   使用 Mantle 端点
@@ -580,7 +636,7 @@ export CLAUDE_CODE_USE_MANTLE=1
 }
 ```
 
-带有 `anthropic.` 前缀的条目被添加为自定义选择器选项并路由到 Mantle。将 `anthropic.claude-haiku-4-5` 替换为您的账户被授予的模型 ID。请参阅[限制模型选择](/docs/zh-CN/model-config#restrict-model-selection)了解 `availableModels` 如何与其他模型设置交互。
+带有 `anthropic.` 前缀的条目被添加为自定义选择器选项，其中与 Mantle 格式匹配的条目被路由到 Mantle。将 `anthropic.claude-haiku-4-5` 替换为您的账户被授予的模型 ID。请参阅[限制模型选择](/docs/zh-CN/model-config#restrict-model-selection)了解 `availableModels` 如何与其他模型设置交互。
 
 当两个提供商都处于活动状态时，`/status` 显示 `Amazon Bedrock + Amazon Bedrock (Mantle)`。
 
@@ -617,7 +673,9 @@ export ANTHROPIC_BEDROCK_MANTLE_BASE_URL=https://your-gateway.example.com
   使用 SSO 和企业代理的身份验证循环
 </h3>
 
-如果在使用 AWS SSO 时浏览器标签页反复生成，请从您的[设置文件](/docs/zh-CN/settings)中删除 `awsAuthRefresh` 设置。这可能发生在企业 VPN 或 TLS 检查代理中断 SSO 浏览器流时。Claude Code 将中断的连接视为身份验证失败，重新运行 `awsAuthRefresh`，并无限循环。
+如果在使用 AWS SSO 时浏览器登录标签页不断打开，请从您的[设置文件](/docs/zh-CN/settings)中删除 `awsAuthRefresh` 设置。
+
+当企业 VPN 或 TLS 检查代理中断 SSO 浏览器流程时，可能会出现此循环。Claude Code 将中断的连接视为身份验证失败。当后续请求发现凭据仍处于过期状态时，Claude Code 会重新运行 `awsAuthRefresh`，从而打开另一个标签页。
 
 如果您的网络环境干扰自动基于浏览器的 SSO 流，请在启动 Claude Code 之前手动使用 `aws sso login`，而不是依赖 `awsAuthRefresh`。
 
@@ -660,7 +718,7 @@ Claude Code 使用 Amazon Bedrock [Invoke API](https://docs.aws.amazon.com/bedro
 
 Amazon Bedrock 以二进制事件流格式流式传输 `InvokeModelWithResponseStream` 响应，标头为 `Content-Type: application/vnd.amazon.eventstream`。Claude Code 和 Amazon Bedrock 之间的网关或代理必须转发响应正文及其标头，包括 `Content-Type`，就像 Amazon Bedrock 发送的那样。
 
-如果网关将 `Content-Type` 重写为另一个值，Claude Code 会拒绝响应，错误以 `Bedrock streaming response has content-type` 开头，命名它收到的值。常见的重写是 `text/event-stream`，来自将流重新发出为服务器发送事件的集成。
+如果网关将 `Content-Type` 重写为另一个值，Claude Code 会拒绝响应，错误以 `Bedrock streaming response has content-type` 开头，命名它收到的值。常见的重写是 `text/event-stream`，来自将流重新发出为服务器发送事件的集成。有关错误消息中提到的 `CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD` 变量，请参阅 [Bedrock streaming response has an unexpected content-type](/docs/zh-CN/errors#bedrock-streaming-response-has-an-unexpected-content-type)。
 
 如果网关删除或清空标头，Claude Code 会假设正文是 Amazon Bedrock 的事件流并对其进行解码，因此网关未修改地通过的正文会继续流式传输。
 

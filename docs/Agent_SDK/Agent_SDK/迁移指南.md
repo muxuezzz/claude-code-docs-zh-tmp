@@ -10,7 +10,7 @@
   概述
 </h2>
 
-Claude Code SDK 已更名为 **Claude Agent SDK**，其文档已重新组织。这一变化反映了该 SDK 在构建 AI 代理方面的更广泛功能，不仅限于编码任务。
+Claude Code SDK 已更名为 **Claude Agent SDK**，其文档已重新组织。这一变化反映了该 SDK 在构建 AI Agent 方面的更广泛功能，不仅限于编码任务。
 
 从 OpenAI Agents SDK 迁移？[OpenAI Agents SDK 迁移指南](https://platform.claude.com/cookbook/claude-agent-sdk-04-migrating-from-openai-agents-sdk)通过一个完整的示例将每个原语映射到 Claude Agent SDK。
 

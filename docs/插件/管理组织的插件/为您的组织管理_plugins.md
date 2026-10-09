@@ -187,7 +187,7 @@ Anthropic 的官方市场 `claude-plugins-official` 当 `enabledPlugins` 将其�
 
 两个列表的执行位置取决于您在哪里设置它们：
 
-* **claude.ai 管理控制台**：Claude Code 在[读取服务器托管设置](/docs/zh-CN/managed-settings#where-and-when-a-policy-applies)的会话中执行两个列表。claude.ai 也在您组织中的任何人从 git 存储库在 claude.ai 上添加新市场时检查它们，或从 Claude Desktop 应用外其 Code 选项卡的**自定义**中检查。这涵盖成员为自己的账户添加的市场和在[**组织设置 > 插件**](https://claude.ai/admin-settings/plugins)下为整个组织添加的市场。claude.ai 拒绝允许列表不允许或阻止列表命名的存储库。它不重新检查在您设置列表之前在任一位置添加的市场，也不检查上传的插件。
+* **claude.ai 管理控制台**：Claude Code 在[读取服务器托管设置](/docs/zh-CN/managed-settings#where-and-when-a-policy-applies)的会话中执行两个列表。claude.ai 也在您组织中的任何人从 git 存储库在 claude.ai 上添加新市场，或从 Claude Desktop 应用中 Code 选项卡之外的**自定义**添加新市场时检查它们。这涵盖成员为自己的账户添加的市场和在[**组织设置 > 插件**](https://claude.ai/admin-settings/plugins)下为整个组织添加的市场。claude.ai 拒绝允许列表不允许或阻止列表命名的存储库。它不重新检查在您设置列表之前在任一位置添加的市场，也不检查上传的插件。
 * **托管设置文件、OS 级策略或其他托管源**：Claude Code 在读取该源的地方执行两个列表。claude.ai 不读取它。
 
 虽然设置了任何允许列表，或阻止列表命名除[`skills-dir`](#blocklist-with-blockedmarketplaces)之外的任何源，Claude Code 找不到的市场的插件不加载。`/plugin` 为其显示策略错误而不是未找到错误。常见情况是市场的陈旧 `enabledPlugins` 条目，没有人注册。
@@ -212,12 +212,14 @@ Anthropic 的官方市场 `claude-plugins-official` 当 `enabledPlugins` 将其�
 | `pluginTrustMessage` | 将您的文本附加到 `/plugin` 在插件安装之前显示的信任警告 | 不改变警告自己的文本 |
 | `allowedChannelPlugins` | 替换允许推送频道消息的默认插件列表。需要 `channelsEnabled: true` | 请参阅[限制哪些频道插件可以运行](/docs/zh-CN/channels#restrict-which-channel-plugins-can-run) |
 | [`CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL=1`](/docs/zh-CN/env-vars) | 停止交互式终端会话自动注册官方市场 | 不删除已注册的市场。允许列表和阻止列表在没有它的情况下门控相同的自动注册。在设置它的情况下启动一次的机器在您取消设置它后不会恢复自动注册 |
+| [`allowManagedModsOnly`](/docs/zh-CN/plugins/mods/admin#stop-user-installed-mods-from-loading) | 阻止每个不[算作您组织所有](/docs/zh-CN/plugins/mods/admin#install-your-organizations-mods)的已安装 [mod](/docs/zh-CN/plugins/mods/overview) 运行其 hook | 不停止包含 mod 的插件安装。为此，使用此表中的市场键 |
 
-表中的每个键都是托管设置，除了 `enabledPlugins`、`syncClaudeAiPlugins` 和 `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`：
+表中的每个键都是托管设置，除了 `enabledPlugins`、`syncClaudeAiPlugins`、`CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL` 和 `allowManagedModsOnly`：
 
 * **`enabledPlugins`**：您可以在任何范围内设置它，托管设置锁定它。
 * **`syncClaudeAiPlugins`**：每个用户也可以在自己的用户或本地设置中设置它。请参阅其[设置参考中的范围](/docs/zh-CN/settings-reference#syncclaudeaiplugins)。
 * **`CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`**：这是一个环境变量，您通过[关闭整个车队的更新](#turn-updates-off-for-the-whole-fleet)下显示的托管 `env` 块交付。
+* **`allowManagedModsOnly`**：这是一个内置插件上的选项，您在托管设置中的 `pluginConfigs` 下设置。请参阅[停止用户安装的 mods 从加载](/docs/zh-CN/plugins/mods/admin#stop-user-installed-mods-from-loading)。
 
 此处的每个设置键在[设置参考](/docs/zh-CN/settings-reference)中都有条目。
 
@@ -457,5 +459,6 @@ OpenTelemetry 事件和 Analytics API 告诉您您的车队安装和运行什么
 * [市场参考](/docs/zh-CN/plugins/marketplace-reference#marketplace-sources)：`extraKnownMarketplaces`、`strictKnownMarketplaces` 和 `blockedMarketplaces` 接受的 `source` 值
 * [托管和维护市场](/docs/zh-CN/plugins/host-marketplace)：运行您的策略指向的市场
 * [插件安全和信任](/docs/zh-CN/plugins/security)：插件可以在机器上做什么以及在安装前如何审查一个
+* [管理您的组织的 mods](/docs/zh-CN/plugins/mods/admin)：关闭或限制 mods，在 Claude Code 内运行 JavaScript 的插件
 * [服务器托管设置](/docs/zh-CN/server-managed-settings)：从 claude.ai 管理控制台交付这些键
 * [插件故障排除](/docs/zh-CN/plugins/troubleshooting#blocked-by-your-organization)：策略阻止用户时看到的消息

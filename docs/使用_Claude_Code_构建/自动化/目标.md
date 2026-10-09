@@ -6,7 +6,7 @@
 
 > 使用 /goal 设置完成条件，Claude 会持续工作直到条件满足、模型判断其不可能实现或需要修复的错误清除目标。
 
-`/goal` 命令设置一个完成条件，Claude 会在没有你逐步提示的情况下持续朝着这个目标工作。每个回合后，一个小型快速模型会检查条件是否满足。如果模型判断条件尚未满足，Claude 会开始另一个回合，而不是将控制权返回给你。一旦条件满足、模型判断条件不可能满足或回合因[需要修复的错误](#errors-you-have-to-fix-clear-the-goal)失败时，目标会自动清除。
+`/goal` 命令设置一个完成条件，Claude 会在无需您逐步提示的情况下持续朝着这个目标工作。每个轮次后，模型会检查条件是否满足。如果模型判断条件尚未满足，Claude 会开始另一个轮次，而不是将控制权返回给您。一旦条件满足、模型判断条件不可能满足或轮次因[需要修复的错误](#errors-you-have-to-fix-clear-the-goal)失败时，目标会自动清除。
 
 对于具有可验证的最终状态的实质性工作，使用目标：
 
@@ -135,7 +135,7 @@ claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"
   评估如何工作
 </h2>
 
-`/goal` 是会话范围的[基于提示的 Stop hook](/docs/zh-CN/hooks#prompt-based-hooks)的包装器。每次 Claude 完成一个回合时，Claude Code 会将条件和到目前为止的对话发送到你配置的[小型快速模型](/docs/zh-CN/model-config)，默认为 Claude API 上的 Haiku；在第三方提供商上，请查看你的[提供商页面](/docs/zh-CN/third-party-integrations)了解该平台的默认值。该模型返回三个判决之一，每个都带有简短的原因：
+`/goal` 是会话范围的[基于提示词的 Stop hook](/docs/zh-CN/hooks#prompt-based-hooks)的包装器。每次 Claude 完成一个轮次时，Claude Code 会将条件和到目前为止的对话发送到您配置的[小型快速模型](/docs/zh-CN/model-config)。该模型返回三个判决之一，每个都带有简短的原因：
 
 * **尚未满足**：Claude 继续工作，并将原因作为下一个回合的指导。
 * **已满足**：Claude Code 清除目标并在记录中记录一个已实现的条目。

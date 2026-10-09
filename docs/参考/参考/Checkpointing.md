@@ -35,7 +35,7 @@ Claude Code 跟踪其文件编辑工具所做的所有更改：
   如果提示输入包含文本，双 `Esc` 会清除它而不是打开菜单。清除的文本会保存到您的输入历史记录中，因此在您完成回溯菜单后，按 `Up` 可以调用它。
 </Note>
 
-回溯菜单列出了您在会话期间发送的每个提示，除了 [在回合中途发送的消息](#messages-sent-mid-turn-not-checkpointed)。选择您想要操作的点，然后选择一个操作：
+回溯菜单列出了您在会话期间发送的提示词。选择您想要操作的点，然后选择一个操作：
 
 * **恢复代码和对话**：将代码和对话都恢复到该点
 * **恢复对话**：回溯到该消息，同时保持当前代码
@@ -114,9 +114,9 @@ Checkpointing 仅跟踪在当前会话中编辑过的文件。您在 Claude Code
   中途发送的消息未检查点
 </h3>
 
-当您在 Claude 工作时[排队的消息](/docs/zh-CN/interactive-mode#queue-messages-while-claude-works)在运行的回合中到达 Claude 时，它会加入该回合而不是开始新的回合。该消息会出现在对话中，但 Claude Code 不会为其创建检查点，回溯菜单也不会列出它。Claude Code 作为其自己的回合发送的排队消息会照常获得检查点，包括当多个排队消息[共享该回合](/docs/zh-CN/interactive-mode#when-claude-code-sends-what-you-queued)时。
+当您在 Claude 工作时[排队的消息](/docs/zh-CN/interactive-mode#queue-messages-while-claude-works)在运行的轮次中到达 Claude 时，它会加入该轮次而不是开始新的轮次。该消息会出现在对话中，但 Claude Code 不会为其创建检查点。Claude Code 作为新轮次的一部分发送的排队消息会照常获得检查点，包括当多个排队消息[共享该轮次](/docs/zh-CN/interactive-mode#when-claude-code-sends-what-you-queued)时。
 
-要删除此类消息或撤销 Claude 在其后所做的编辑，请回溯到启动该回合的提示。这会回溯整个回合，包括 Claude 在您的消息到达之前所做的工作。
+要撤销 Claude 在此类消息之后所做的编辑，请回溯到启动该轮次的提示词。这会回溯整个轮次，包括 Claude 在您的消息到达之前所做的工作。
 
 <h3 id="symlinked-and-hard-linked-paths-not-restored">
   符号链接和硬链接路径未恢复

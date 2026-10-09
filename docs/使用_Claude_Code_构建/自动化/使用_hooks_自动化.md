@@ -65,21 +65,17 @@ Hooks 是用户定义的 shell 命令。Claude Code 在其生命周期中的特�
     }
     ```
 
-    你也可以通过在 CLI 中描述你想要的内容来要求 Claude 为你编写 hook。
+    您也可以通过在 CLI 中描述您想要的内容来要求 Claude 为您编写 hook。
   </Step>
 
   <Step title="验证配置">
-    输入 `/hooks` 打开 hooks 浏览器。你将看到所有可用 hook 事件的列表，每个配置了 hooks 的事件旁边都有一个计数。选择 `Notification` 以确认你的新 hook 出现在列表中。选择 hook 会显示其详细信息：事件、匹配器、类型、源文件和命令。
+    在 Claude Code 输入框中输入 `/hooks` 以打开 hook 浏览器。您的新 hook 会出现在 `Notification` 下的列表中。
   </Step>
 
   <Step title="测试 hook">
-    按 `Esc` 返回 CLI。按 `Shift+Tab` 直到状态栏显示 `⏸ manual mode on`，要求 Claude 做需要权限的事情，然后切换离开终端。你应该会收到桌面通知。
+    按 `Esc` 返回 CLI。按 `Shift+Tab` 直到状态栏显示 `⏸ manual mode on`，要求 Claude 做需要权限的事情，然后切换离开终端。您应该会收到桌面通知。
   </Step>
 </Steps>
-
-<Tip>
-  `/hooks` 菜单是只读的。要添加、修改或删除 hooks，请直接编辑你的设置 JSON 或要求 Claude 进行更改。
-</Tip>
 
 <h2 id="what-you-can-automate">
   你可以自动化什么
@@ -97,7 +93,9 @@ Hooks 让你在 Claude Code 生命周期中的关键点运行代码：编辑后�
 
 每当 Claude 完成工作并需要你的输入时获得桌面通知，这样你可以切换到其他任务而无需检查终端。
 
-此 hook 使用 `Notification` 事件，当 Claude 等待输入或权限时触发。请参阅[每个通知类型何时触发](/docs/zh-CN/hooks#notification)以了解确切的时间。下面的每个选项卡使用平台的原生通知命令。将其添加到 `~/.claude/settings.json`：
+此 hook 使用 `Notification` 事件，Claude Code 会在 Claude 等待输入或权限时触发该事件。请参阅[每个通知类型何时触发](/docs/zh-CN/hooks#notification)以了解确切的时间。
+
+下面的每个选项卡使用平台的原生通知命令。将其添加到 `~/.claude/settings.json`：
 
 <Tabs>
   <Tab title="macOS">
@@ -120,7 +118,9 @@ Hooks 让你在 Claude Code 生命周期中的关键点运行代码：编辑后�
     ```
 
     <Accordion title="如果没有通知出现">
-      `osascript` 通过内置的 Script Editor 应用程序路由通知。如果 Script Editor 没有通知权限，命令会静默失败，macOS 不会提示你授予它。在 Terminal 中运行一次以使 Script Editor 出现在你的通知设置中：
+      `osascript` 通过内置的 Script Editor 应用程序路由通知。如果 Script Editor 没有通知权限，命令会静默失败，macOS 也不会提示您授予该权限。
+
+      在 Terminal 中运行一次以下命令，使 Script Editor 出现在您的通知设置中：
 
       ```bash theme={null}
       osascript -e 'display notification "test"'
@@ -180,7 +180,9 @@ Hooks 让你在 Claude Code 生命周期中的关键点运行代码：编辑后�
     ```
 
     <Accordion title="如果没有对话框出现">
-      此命令打开一个对话框而不是屏幕角落的通知，因此对话框可能会在你的终端窗口后面打开。首先在 PowerShell 中直接测试该命令。如果你在 WSL 中运行 Claude Code，`powershell.exe` 必须通过 Windows 互操作在你的 `PATH` 上可用。
+      此命令打开一个对话框而不是屏幕角落的通知，因此对话框可能会在您的终端窗口后面打开。首先在 PowerShell 中直接测试该命令。
+
+      如果您在 WSL 中运行 Claude Code，`powershell.exe` 必须通过 Windows 互操作在您的 `PATH` 上可用。
     </Accordion>
   </Tab>
 </Tabs>
@@ -204,15 +206,13 @@ Hooks 让你在 Claude Code 生命周期中的关键点运行代码：编辑后�
 
 Claude Code 在终端和通过 Agent SDK 回答权限请求的 Claude Desktop、VS Code 扩展和其他主机中对 `permission_prompt` 的时间不同。请参阅[每个通知类型何时触发](/docs/zh-CN/hooks#notification)以了解两种时间。
 
-`agent_needs_input` 和 `agent_completed` 匹配器需要 Claude Code v2.1.198 或更高版本。
-
 `quota_auto_resume_fired`、`quota_auto_resume_stale` 和 `quota_auto_resume_disabled` 匹配器需要 Claude Code v2.1.234 或更高版本。
 
 在终端会话中，沙箱命令的网络请求的 `permission_prompt` 需要 Claude Code v2.1.246 或更高版本。
 
 队友的终端设置问题的 `agent_needs_input` 需要 Claude Code v2.1.248 或更高版本。
 
-输入 `/hooks` 并选择 `Notification` 以确认 hook 已注册。有关完整的事件架构，请参阅 [Notification 参考](/docs/zh-CN/hooks#notification)。
+在 Claude Code 输入框中输入 `/hooks`，并确认该 hook 出现在 `Notification` 下。
 
 <h3 id="auto-format-code-after-edits">
   编辑后自动格式化代码
@@ -503,7 +503,7 @@ Claude Code 在其生命周期中的特定点触发 hook 事件。当事件触�
 | :- | :- |
 | `SessionStart` | 当会话开始或恢复时 |
 | `Setup` | 当你使用 `--init-only` 启动 Claude Code，或在 `-p` 模式下使用 `--init` 或 `--maintenance` 时。用于 CI 或脚本中的一次性准备 |
-| `UserPromptSubmit` | 当你提交提示词时，在 Claude 处理之前 |
+| `UserPromptSubmit` | 当提交提示词时，在 Claude 处理之前。对于 [Claude Code 自行发起的轮次](/docs/zh-CN/hooks#userpromptsubmit)也会触发 |
 | `UserPromptExpansion` | 当用户输入的命令扩展为提示词时，在到达 Claude 之前。可以阻止扩展 |
 | `PreToolUse` | 在工具调用执行之前。可以阻止它 |
 | `PermissionRequest` | 当工具调用需要权限决策时 |
@@ -526,7 +526,7 @@ Claude Code 在其生命周期中的特定点触发 hook 事件。当事件触�
 | `DirectoryAdded` | 当工作目录在会话中期通过 `/add-dir` 或 SDK `register_repo_root` 控制请求添加时 |
 | `FileChanged` | 当监视的文件在磁盘上更改时。`matcher` 字段指定要监视的文件名 |
 | `WorktreeCreate` | 当通过 `--worktree`、`isolation: "worktree"` 创建工作树时，或用于后台会话。替换默认的 git 行为 |
-| `WorktreeRemove` | 当在会话退出时、子代理完成时或删除后台会话时移除工作树 |
+| `WorktreeRemove` | 当由 `WorktreeCreate` hook 创建的 worktree 正在被移除时 |
 | `PreCompact` | 在上下文压缩之前 |
 | `PostCompact` | 在上下文压缩完成后 |
 | `PreModelSwitch` | 在 Claude Code 应用你或客户端请求的模型切换之前。可以阻止切换 |
@@ -1002,9 +1002,7 @@ HTTP hooks 在你想要 web 服务器、云函数或外部服务处理 hook 逻�
   * `agent`：60 秒。
   * [`SessionEnd`](/docs/zh-CN/hooks#sessionend) 任何类型的 hooks 共享 1.5 秒的预算。如果你的设置为每个 hook 设置了更长的 `timeout`，Claude Code 会将预算提高到匹配，最多 60 秒。
 * `PostToolUse` hooks 无法撤销操作，因为工具已经执行。
-* `PermissionRequest` hooks 在 Claude Code 即将要求你获得权限时触发。
-  * 在带 `-p` 标志的[非交互模式](/docs/zh-CN/headless)中，该提示仅在 Agent SDK 的 [`canUseTool` 回调](/docs/zh-CN/agent-sdk/permissions)提供时存在。在纯 `-p` 运行或使用 `--permission-prompt-tool` 时，改为使用 `PreToolUse` hooks 进行自动化权限决策。
-  * 后台子代理无法在非交互模式中显示提示。Claude Code 仍然为其工具调用运行 hooks，如果没有 hook 返回决策，它会拒绝该调用。在交互式会话中，后台子代理提示会显示在你的主会话中，hooks 照常触发。
+* [`PermissionRequest`](/docs/zh-CN/hooks#permissionrequest) hook 在 Claude Code 即将向您请求权限时触发，或在它原本会自动拒绝无法显示提示的调用时触发。在带 `-p` 标志的[非交互模式](/docs/zh-CN/headless)中，它们在 [`dontAsk` 模式](/docs/zh-CN/permission-modes#allow-only-pre-approved-tools-with-dontask-mode)之外仍会运行，而没有 hook 做出决策且无其他方式可以应答的调用会被拒绝。
 * `Stop` hooks 在 Claude 完成响应时触发，而不仅仅在任务完成时。它们不在用户中断时触发。API 错误触发 [StopFailure](/docs/zh-CN/hooks#stopfailure) 代替。
 * 当多个 `PreToolUse` hooks 返回 [`updatedInput`](/docs/zh-CN/hooks#pretooluse) 来重写工具的参数时，最后完成的获胜。由于 hooks 并行运行，顺序是非确定性的。避免有多个 hook 修改同一工具的输入。
 
@@ -1014,7 +1012,9 @@ HTTP hooks 在你想要 web 服务器、云函数或外部服务处理 hook 逻�
 
 `PreToolUse` hooks 在任何权限模式检查之前触发，在每个[权限模式](/docs/zh-CN/permission-modes)中，包括 `dontAsk`。返回 `permissionDecision: "deny"` 的 hook 会阻止工具，即使在 `bypassPermissions` 模式或使用 `--dangerously-skip-permissions` 时也是如此。这让你强制执行用户无法通过更改其权限模式来绕过的策略。
 
-反面不成立：返回 `"allow"` 的 hook 不会绕过来自设置的拒绝规则，它也无法抑制标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具的提示或[你的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具在该设置到达 Claude Code 的会话中的提示。Hooks 可以收紧限制，但不能放松它们超过权限规则允许的范围。
+反面不成立：返回 `"allow"` 的 hook 不会绕过来自设置的拒绝规则，它也无法抑制标记为 [`requiresUserInteraction`](/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具的提示或[你的组织设置为 `ask`](/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具在该设置到达 Claude Code 的会话中的提示。Hooks 在设置文件和插件的 `hooks/hooks.json` 中可以收紧限制，但不能放松它们超过权限规则允许的范围。
+
+您安装的处理 `tool.check` 的 [mod](/docs/zh-CN/plugins/mods/overview) 可以批准被您的 `PreToolUse` hook 阻止的调用，除非该 hook 位于托管设置中。[使用 hooks 扩展权限](/docs/zh-CN/permissions#extend-permissions-with-hooks)列出了哪些规则优先于 mod。
 
 <h3 id="hook-not-firing">
   Hook 未触发
@@ -1053,6 +1053,7 @@ Hook 已配置但从不执行。
 * 文件编辑通常会自动拾取。如果几秒钟后它们还没有出现，文件监视器可能错过了更改：重新启动你的会话以强制重新加载。
 * 验证你的 JSON 有效：不允许尾随逗号和注释
 * 确认设置文件在正确的位置：`.claude/settings.json` 用于项目 hooks，`~/.claude/settings.json` 用于全局 hooks
+* 如果菜单显示 `Only hooks from managed settings run here`，说明您的组织设置了 [`allowManagedHooksOnly`](/docs/zh-CN/settings-reference#allowmanagedhooksonly)。您的用户、项目和本地设置文件中的 hook 不会运行，也不会列出
 
 <h3 id="stop-hook-hits-the-block-cap">
   Stop hook 达到阻止上限
@@ -1060,7 +1061,7 @@ Hook 已配置但从不执行。
 
 Claude 继续工作而不是停止，然后以警告结束该轮，表示 Stop hook 连续阻止了太多次。
 
-Claude Code 在 Stop hook 连续阻止 8 次而没有进展后会覆盖它。你的 hook 脚本需要检查它是否已经触发了继续。从 JSON 输入中解析 `stop_hook_active` 字段，如果为 `true` 则提前退出：
+当 Stop hook 连续阻止 8 次、且期间 Claude 没有进行任何工具调用时，Claude Code 会覆盖该 hook。您的 hook 脚本需要检查它是否已经触发过继续。从 JSON 输入中解析 `stop_hook_active` 字段，如果为 `true` 则提前退出：
 
 ```bash theme={null}
 #!/bin/bash

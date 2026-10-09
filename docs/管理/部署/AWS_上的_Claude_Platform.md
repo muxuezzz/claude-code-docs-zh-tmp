@@ -217,9 +217,14 @@ Claude Code 通过 Anthropic 的功能标志服务启用的客户端功能默认
   1. 配置 AWS 凭证
 </h3>
 
-Claude Code 支持两种 AWS 上的 Claude Platform 身份验证方法。选择适合您的团队如何管理访问的方法。
+Claude Code 支持两种 AWS 上的 Claude Platform 身份验证方法。请根据您的团队管理访问的方式选择合适的方法：
 
-**选项 A：使用 SigV4 的 AWS 凭证**
+* [使用 SigV4 的 AWS 凭据](#use-aws-credentials-with-sigv4)：以 IAM 主体身份进行身份验证，凭据来自标准 AWS 凭据链
+* [工作区 API 密钥](#use-a-workspace-api-key)：使用您在 AWS Console 中生成的长期有效密钥进行身份验证
+
+<h4 id="use-aws-credentials-with-sigv4">
+  使用 SigV4 的 AWS 凭据
+</h4>
 
 Claude Code 使用标准 AWS 凭证链使用 SigV4 对请求进行签名：环境变量、`~/.aws/credentials` 中的共享凭证、IAM 角色、AWS SSO 会话以及 AWS SDK 支持的任何其他来源。
 
@@ -232,7 +237,7 @@ export AWS_PROFILE=my-profile
 
 对于 CI 和自动化，为运行程序提供具有调用 Anthropic 服务权限的 IAM 角色，并设置 `AWS_REGION`。凭证链会自动获取该角色。
 
-如果您的 SSO 凭证在会话中途过期，请配置 [`awsAuthRefresh`](/docs/zh-CN/amazon-bedrock#advanced-credential-configuration)，以便 Claude Code 重新运行您的登录命令并重试，而不是失败。AWS 上的 Claude Platform 上的自动刷新需要 Claude Code v2.1.198 或更高版本；较早的版本会停止并提示运行 `/login`，这无法刷新 AWS 凭证。将命令添加到您的[设置文件](/docs/zh-CN/settings)，例如 `~/.claude/settings.json`：
+如果您的 SSO 凭据在会话中途过期，请配置 [`awsAuthRefresh`](/docs/zh-CN/amazon-bedrock#advanced-credential-configuration)，以便 Claude Code 重新运行您的登录命令并重试，而不是失败。将命令添加到您的[设置文件](/docs/zh-CN/settings)，例如 `~/.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -244,7 +249,9 @@ Claude Code 在启动时如果无法验证您现有的 AWS 凭证，也会运行
 
 配置了 `awsAuthRefresh` 后，运行 `/login`，选择 **3rd-party platform**，然后在 **Using 3rd-party platforms** 下选择 **Claude Platform on AWS · refresh credentials**。Claude Code 运行配置的命令并重新读取您的 AWS 凭证，无需重启。
 
-**选项 B：工作区 API 密钥**
+<h4 id="use-a-workspace-api-key">
+  使用工作区 API 密钥
+</h4>
 
 工作区 API 密钥是一个长期有效的密钥，当您不想管理联合 AWS 凭证时很有用。在 AWS Console 中的 **Claude Platform on AWS → API keys** 下生成一个，并将其设置为 `ANTHROPIC_AWS_API_KEY`：
 

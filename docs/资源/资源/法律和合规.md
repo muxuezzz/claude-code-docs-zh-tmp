@@ -46,7 +46,12 @@ Claude Code 仍然受 Anthropic 的标准条款管制（请参阅上面的许可
   医疗保健合规（BAA）
 </h3>
 
-如果客户与 Anthropic 签订了业务关联协议（BAA），并为相关组织启用了[零数据保留（ZDR）](/docs/zh-CN/zero-data-retention)，该 BAA 将扩展到客户通过 Claude Code 的 API 流量。
+如果客户与 Anthropic 签订了业务关联协议（BAA），该 BAA 将在以下两种配置中扩展到 Claude Code，具体取决于您的组织可用的选项：
+
+* **HIPAA 配置**：Claude Code CLI 或 Claude Desktop 中的 Code 标签页，与 Claude for Enterprise 账户配合使用。组织必须已启用 HIPAA，并已将 HIPAA 配置应用于 Claude Code（本地模式）和 Cowork（本地模式）。请参阅[为符合 HIPAA 要求的组织设置 Claude Code（本地模式）](/docs/zh-CN/hipaa-setup)。
+* **零数据保留**：为相关组织启用了[零数据保留（ZDR）](/docs/zh-CN/zero-data-retention)的 Claude Code。ZDR 并非对所有组织都可用。
+
+在 HIPAA 配置下，云端会话、Remote Control、Claude 移动应用中的 Claude Code，以及通过第三方云提供商或网关路由的 Claude Code 均不在涵盖范围内。请查阅[实施指南](https://trust.anthropic.com/resources?s=l1wrssd9hsbi4gak0tp5a6\&name=%5Banthropic%5D-hipaa-ready-offering-implementation-guide)，了解符合条件的服务的完整列表。
 
 <h2 id="usage-policy">
   使用政策

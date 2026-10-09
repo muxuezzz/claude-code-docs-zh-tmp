@@ -130,7 +130,7 @@
     有关详细信息，请参阅 [Amazon Bedrock](/docs/zh-CN/amazon-bedrock)、[Claude Platform on AWS](/docs/zh-CN/claude-platform-on-aws)、[Google Cloud 的 Agent Platform](/docs/zh-CN/google-vertex-ai) 或 [Microsoft Foundry](/docs/zh-CN/microsoft-foundry) 的设置指南。
 
     <Note>
-      除非事先获得批准，否则 Anthropic 不允许第三方开发者提供 claude.ai 登录或对其产品的速率限制，包括基于 Claude Agent SDK 构建的代理。请改用本文档中描述的 API 密钥身份验证方法。
+      除非事先获得批准，否则 Anthropic 不允许第三方开发者为其产品（包括基于 Claude Agent SDK 构建的 Agent）提供 claude.ai 登录或速率限制。请改用本文档中描述的 API 密钥身份验证方法。
     </Note>
   </Step>
 </Steps>

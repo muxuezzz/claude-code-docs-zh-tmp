@@ -80,6 +80,11 @@ Claude Code 设计用于大多数开发环境，但在处理大型代码库时�
 3. 将大文件工作移到 [subagent](/docs/zh-CN/sub-agents)，以便它在单独的上下文窗口中运行
 4. 如果早期对话不再需要，运行 `/clear`
 
+如果在 `/clear` 之后错误再次出现，请运行 [`/context`](/docs/zh-CN/debug-your-config) 并将 `Messages` 行与其上方的行进行比较：
+
+* **`Messages` 是最大的行**：新对话中的文件或工具输出正在重新填满窗口，因此请再次执行步骤 1 到 3
+* **其他行加起来更大**：会话启动时加载的内容留下的工作空间太少，因此请[精简启动时加载的内容](/docs/zh-CN/errors#prompt-is-too-long)
+
 <h3 id="command-hangs-or-freezes">
   命令挂起或冻结
 </h3>

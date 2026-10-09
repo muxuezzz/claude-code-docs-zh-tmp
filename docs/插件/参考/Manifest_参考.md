@@ -142,10 +142,16 @@ claude plugin validate ./my-plugin
 | `license` | String | SPDX 标识符，如 `MIT` 或 `Apache-2.0` |
 | `keywords` | Array of strings | 发现标签 |
 | [`metadata`](#metadata) | Object | 用于您自己数据的自由形式对象。Claude Code 不读取它 |
+| [`icon`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的图标。Claude Code 不读取它 |
+| [`documentationUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的文档链接。Claude Code 不读取它 |
+| [`supportUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的支持链接。Claude Code 不读取它 |
+| [`privacyPolicyUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的隐私政策链接。Claude Code 不读取它 |
+| [`termsOfServiceUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的服务条款链接。Claude Code 不读取它 |
 | [`defaultEnabled`](#defaultenabled) | Boolean | 当用户未设置时 plugin 是否在启用时启动。默认为 `true` |
 | [`dependencies`](#dependencies) | Array of strings or objects | 必须为此 plugin 启用的 plugin |
 | [`settings`](#settings) | Object | Claude Code 在 plugin 启用时应用的设置。仅 `agent` 和 `subagentStatusLine` 生效 |
 | [`userConfig`](#user-configuration) | Object | Claude Code 在 plugin 启用时提示用户输入的值 |
+| `types` | Path | 声明 [mod](/docs/zh-CN/plugins/mods/reference#files) 的 `$.state` 值和 `$` 名词的 `.d.ts` 文件 |
 | [`channels`](#channels) | Array of objects | plugin 提供的消息频道，每个绑定到其 MCP 服务器之一 |
 | `skills` | Path, or array of paths | 要扫描的目录以查找 skills，每个目录是 `<name>/SKILL.md` 文件夹或直接包含 `SKILL.md` 的一个文件夹。`"."` 命名 plugin 根目录。添加到默认 `skills/` 扫描 |
 | [`commands`](#commands) | Path, array of paths, or object | 平面 `.md` 命令文件、它们的目录或命令名称到 `source` 或 `content` 的对象映射。替换默认 `commands/` 扫描 |
@@ -170,6 +176,17 @@ plugin 标识符。它必须非空，没有空格、`@`、`:`、路径分隔符�
 
 Claude Code 在其下命名空间每个组件，因此 plugin `deploy-tools` 中的 agent `reviewer` 显示为 `deploy-tools:reviewer`。
 
+`claude plugin validate` 还检查该名称是否通过作为 Anthropic 自己的 plugin 之一。检查忽略大小写并将任何分隔符的运行视为一个：
+
+| 名称 | 结果 |
+| :- | :- |
+| 以 `claude-`、`anthropic-`、`anthropics-` 或 `cc-plugin-` 开头 | 错误 |
+| 是 `claude`、`anthropic`、`anthropics`、`claude-code` 或 `claude-mods` | 错误 |
+| 将 `official` 放在 `claude` 或 `anthropic` 旁边，例如 `official-claude-tools` | 错误 |
+| 在其他任何地方有 `claude`、`anthropic` 或 `anthropics` 作为整个单词，例如 `mcp-for-claude` | 警告 |
+
+错误读作 `Plugin name "<name>" is reserved: it passes as one of Anthropic's own`，警告读作 `Plugin name "<name>" reads as one of Anthropic's own`。`claude plugin init` 和 `claude plugin tag` 拒绝引发错误的名称。仅这些命令检查名称。Claude Code 仍然安装和加载其名称被拒绝的 plugin。
+
 <h3 id="displayname">
   `displayName`
 </h3>
@@ -182,13 +199,23 @@ Claude Code 在其下命名空间每个组件，因此 plugin `deploy-tools` 中
   `version`
 </h3>
 
-版本字符串，不针对 semver 检查。设置它会将 plugin 固定到该版本，直到您更改它；参见[版本和更新](/docs/zh-CN/plugins/loading#versions-and-updates)。具有[`command` 源](/docs/zh-CN/plugins/marketplace-reference)的 plugin、来自[托管在 claude.ai 上的 marketplace](/docs/zh-CN/plugins/install#add-from-claude-ai) 的 plugin 以及从作为本地目录添加的 marketplace [就地加载](/docs/zh-CN/plugins/loading#find-plugins-on-disk)的 plugin 不由此字段固定。
+版本字符串，不针对 semver 检查。设置它会将插件固定到该版本，直到您更改它；参见[版本和更新](/docs/zh-CN/plugins/loading#versions-and-updates)。具有[`command` 源](/docs/zh-CN/plugins/marketplace-reference)的插件、来自[托管在 claude.ai 上的市场](/docs/zh-CN/plugins/install#add-from-claude-ai)的插件以及从通过本地路径添加的市场[就地加载](/docs/zh-CN/plugins/loading#find-plugins-on-disk)的插件不由此字段固定。
 
 <h3 id="metadata">
   `metadata`
 </h3>
 
 用于您自己数据的自由形式对象，例如目录或权利字段。Claude Code 不读取它。需要 Claude Code v2.1.222 或更高版本。
+
+<h3 id="directory-listing-fields">
+  目录列表字段
+</h3>
+
+当您[提交插件](/docs/zh-CN/plugins/publish#submit-to-anthropics-directory)时，Anthropic 的目录会从 `plugin.json` 中读取 `icon`、`documentationUrl`、`supportUrl`、`privacyPolicyUrl` 和 `termsOfServiceUrl` 字段，用于您插件的列表。Claude Code 在加载时忽略它们。请仅在 `plugin.json` 中设置它们。在[市场条目](#marketplace-entries-and-the-manifest)中，`claude plugin validate` 会将它们逐一报告为未知字段。
+
+将 `icon` 设置为插件内图像文件的路径，例如 `./logo.png`，并将四个 URL 字段分别设置为 `https://` URL。
+
+在 Claude Code v2.1.281 或更高版本上，`claude plugin validate` 接受这些字段且不发出警告。更早的版本会为每个字段打印一条 `Unknown field` 警告，因此在这些版本上使用 `--strict` 运行会失败。
 
 <h3 id="defaultenabled">
   `defaultEnabled`
@@ -264,7 +291,9 @@ Claude Code 在 plugin 启用时应用的设置。仅 `agent` 和 `subagentStatu
 
 `hooks` 采用 `.json` 文件路径、与 [`settings.json` 中的 `hooks`](/docs/zh-CN/hooks#configuration)相同形状的内联 hooks 对象，或混合两者的数组。有关 hook 事件和处理程序字段，参见[hooks 参考](/docs/zh-CN/hooks#hook-events)。
 
-Claude Code 在该文件存在时将您声明的内容与 `hooks/hooks.json` 合并。
+hooks 文件将事件映射包装在顶层 `"hooks"` 键中，即 [`hooks/hooks.json`](/docs/zh-CN/plugins/components#hooks) 使用的形状。仅包含事件映射而没有该包装的文件无法加载。内联对象就是事件映射本身，没有包装。
+
+Claude Code 在该文件存在时将您声明的内容与 `hooks/hooks.json` 合并。此数组加载一个 hooks 文件并声明一个内联 `PostToolUse` hook：
 
 ```json theme={null}
 {
@@ -281,6 +310,23 @@ Claude Code 在该文件存在时将您声明的内容与 `hooks/hooks.json` 合
       ]
     }
   ]
+}
+```
+
+该数组指定的文件在其自身的事件映射外带有 `"hooks"` 包装：
+
+```json config/extra-hooks.json theme={null}
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/check-command.sh" }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -325,6 +371,7 @@ Claude Code 首先加载 plugin 根目录处的 `.lsp.json`，然后按顺序加
 | `workspaceFolder` | No | 服务器的工作区文件夹路径 |
 | `startupTimeout` | No | 等待启动的毫秒数，正整数 |
 | `shutdownTimeout` | No | 等待正常关闭的毫秒数，正整数。当超时时间过去时，Claude Code 终止服务器进程。未设置时，不适用超时 |
+| `requestTimeout` | No | 等待服务器响应请求的毫秒数，正整数。默认为 `60000`，因此服务器始终未响应的请求会在 60 秒后失败。需要 v2.1.288 或更高版本 |
 | `restartOnCrash` | No | 服务器崩溃后是否重新启动。默认为 `true`。设置为 `false` 以使崩溃的服务器停止而不是重新启动 |
 | `maxRestarts` | No | 放弃前的重新启动尝试，零或更多 |
 | `diagnostics` | No | 编辑后是否将诊断推送到上下文。默认为 `true` |
@@ -387,6 +434,8 @@ manifest 中的每个组件路径相对于 plugin 根目录，必须以 `./` 开
 
 * **`skills`**：也接受 `"."`。`"."` 和 `"./"` 都表示 plugin 根目录。在 v2.1.221 之前，`"."` 验证失败，因此当 plugin 必须在较早版本上加载时使用 `"./"`
 * **`mcpServers`**：也接受 `https://` 包 URL
+
+`experimental.evals` 不是组件路径，因此本节中的规则不适用于它，而是由 `claude plugin eval` 在运行时检查该值。它指定插件根目录下的一个目录，例如 `"quality/evals"`，可以带或不带 `./` 前缀。如果是数组，则仅使用第一个条目。有关该值接受的内容以及值不可用时会发生什么，请参阅[使用不同的 eval 目录](/docs/zh-CN/plugin-evals#use-a-different-eval-directory)。
 
 <h3 id="containment-and-existence">
   包含和存在
@@ -681,7 +730,7 @@ plugin 根目录处的 `CLAUDE.md` 不作为上下文加载，`claude plugin val
   Marketplace 条目和 manifest
 </h2>
 
-[marketplace 条目](/docs/zh-CN/plugins/marketplace-reference)接受此页面上的每个字段以及[其自己的字段](/docs/zh-CN/plugins/marketplace-reference#plugin-entries)，包括 `strict`。
+[市场条目](/docs/zh-CN/plugins/marketplace-reference)接受[其自己的字段](/docs/zh-CN/plugins/marketplace-reference#plugin-entries)（包括 `strict`），以及此页面上除[目录列表字段](#directory-listing-fields)之外的每个字段。
 
 `strict` 字段决定条目是否可以向具有自己 `plugin.json` 的 plugin 添加组件。它默认为 `true`。
 

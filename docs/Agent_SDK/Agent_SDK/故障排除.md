@@ -13,7 +13,7 @@
 | 症状 | 转到 |
 | :- | :- |
 | 找不到 Skills、skill 未被使用、`Invalid skill name` 错误 | [Skills 故障排除](/docs/zh-CN/agent-sdk/skills#troubleshooting) |
-| MCP 服务器显示 `failed` 状态、工具未被调用、连接超时、工具输出超过最大允许令牌数 | [MCP 故障排除](/docs/zh-CN/agent-sdk/mcp#troubleshooting) |
+| MCP 服务器显示 `failed` 状态、工具未被调用、SDK MCP 服务器中缺少某个工具、连接超时、工具输出超过允许的最大 token 数 | [MCP 故障排除](/docs/zh-CN/agent-sdk/mcp#troubleshooting) |
 | Plugin 未加载、plugin skills 未出现 | [Plugins 故障排除](/docs/zh-CN/agent-sdk/plugins#troubleshooting) |
 | Claude 未委派给子代理、基于文件系统的代理未加载 | [Subagents 故障排除](/docs/zh-CN/agent-sdk/subagents#troubleshooting) |
 | Checkpointing 选项未被识别、没有 UUID 的用户消息、`No file checkpoint found`、`File rewinding is not enabled`、`ProcessTransport is not ready for writing` | [文件 checkpointing 故障排除](/docs/zh-CN/agent-sdk/file-checkpointing#troubleshooting) |

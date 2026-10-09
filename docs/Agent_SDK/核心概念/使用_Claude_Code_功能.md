@@ -118,7 +118,7 @@ Agent SDK 建立在与 Claude Code 相同的基础之上，这意味着您的 SD
 | 项目（根） | `<cwd>/CLAUDE.md` 或 `<cwd>/.claude/CLAUDE.md` | `settingSources` 包含 `"project"` |
 | 项目规则 | `<cwd>/.claude/rules/*.md` 和 `.claude/rules/*.md` 在每个父目录中 | `settingSources` 包含 `"project"` |
 | 项目（父目录） | `cwd` 上方目录中的 `CLAUDE.md` 文件 | `settingSources` 包含 `"project"`，在会话开始时加载 |
-| 项目（子目录） | `cwd` 子目录中的 `CLAUDE.md` 文件 | `settingSources` 包含 `"project"`，当代理读取该子树中的文件时按需加载 |
+| 项目（子目录） | `cwd` 子目录中的 `CLAUDE.md` 文件 | `settingSources` 包含 `"project"`，[按需](/docs/zh-CN/memory#how-claude-md-files-load)加载 |
 | 本地 | `<cwd>/CLAUDE.local.md` 和 `CLAUDE.local.md` 在每个父目录中 | `settingSources` 包含 `"local"` |
 | 用户 | `~/.claude/CLAUDE.md` | `settingSources` 包含 `"user"` |
 | 用户规则 | `~/.claude/rules/*.md` | `settingSources` 包含 `"user"` |
