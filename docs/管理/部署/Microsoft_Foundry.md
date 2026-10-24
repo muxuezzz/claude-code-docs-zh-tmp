@@ -6,81 +6,12 @@
 
 > 了解如何通过 Microsoft Foundry 配置 Claude Code，包括设置、配置和故障排除。
 
-export const ContactSalesCard = ({surface}) => {
-  const utm = content => `utm_source=claude_code&utm_medium=docs&utm_content=${surface}_${content}`;
-  const iconArrowRight = (size = 13) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>;
-  const STYLES = `
-.cc-cs {
-  --cs-slate: #141413;
-  --cs-clay: #d97757;
-  --cs-clay-deep: #c6613f;
-  --cs-gray-000: #ffffff;
-  --cs-gray-700: #3d3d3a;
-  --cs-border-default: rgba(31, 30, 29, 0.15);
-  font-family: inherit;
-}
-.dark .cc-cs {
-  --cs-slate: #f0eee6;
-  --cs-gray-000: #262624;
-  --cs-gray-700: #bfbdb4;
-  --cs-border-default: rgba(240, 238, 230, 0.14);
-}
-.cc-cs-card {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 14px 16px; margin: 0;
-  background: var(--cs-gray-000); border: 0.5px solid var(--cs-border-default);
-  border-radius: 8px; flex-wrap: wrap;
-}
-.cc-cs-text { font-size: 13px; color: var(--cs-gray-700); line-height: 1.5; flex: 1; min-width: 240px; }
-.cc-cs-text strong { font-weight: 550; color: var(--cs-slate); }
-.cc-cs-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.cc-cs-btn-clay {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--cs-clay-deep); color: #fff; border: none;
-  border-radius: 8px; padding: 8px 14px;
-  font-size: 13px; font-weight: 500;
-  transition: background-color 0.15s; white-space: nowrap;
-}
-.cc-cs-btn-clay:hover { background: var(--cs-clay); }
-.cc-cs-btn-ghost {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: transparent; color: var(--cs-gray-700);
-  border: 0.5px solid var(--cs-border-default);
-  border-radius: 8px; padding: 8px 14px;
-  font-size: 13px; font-weight: 500;
-}
-.cc-cs-btn-ghost:hover { background: rgba(0, 0, 0, 0.04); }
-.dark .cc-cs-btn-ghost:hover { background: rgba(255, 255, 255, 0.04); }
-@media (max-width: 720px) {
-  .cc-cs-actions { width: 100%; }
-}
-`;
-  return <div className="cc-cs not-prose">
-      <style>{STYLES}</style>
-      <div className="cc-cs-card">
-        <div className="cc-cs-text">
-          <strong>Deploying Claude Code across your organization?</strong> Talk to sales about enterprise plans, SSO, and centralized billing.
-        </div>
-        <div className="cc-cs-actions">
-          <a href={`https://claude.com/pricing?${utm('view_plans')}#plans-business`} className="cc-cs-btn-ghost">
-            View plans
-          </a>
-          <a href={`https://claude.com/contact-sales?${utm('contact_sales')}`} className="cc-cs-btn-clay">
-            Contact sales {iconArrowRight()}
-          </a>
-        </div>
-      </div>
-    </div>;
-};
+**Deploying Claude Code across your organization?** Talk to sales about enterprise plans, SSO, and centralized billing.
 
-<ContactSalesCard surface="foundry" />
+View plans
+Contact sales
 
-<h2 id="prerequisites">
-  前置条件
-</h2>
+## 前置条件
 
 在使用 Microsoft Foundry 配置 Claude Code 之前，请确保您拥有：
 
@@ -88,17 +19,13 @@ export const ContactSalesCard = ({surface}) => {
 * 创建 Microsoft Foundry 资源和部署的 RBAC 权限
 * 已安装并配置 Azure CLI（可选 - 仅在您没有其他获取凭证机制时需要）
 
-<Note>
-  如果您要将 Claude Code 部署给多个用户，请[固定您的模型版本](#4-pin-model-versions)以防止在 Anthropic 发布新模型时出现破损。
-</Note>
+> [!NOTE]
+>
+> 如果您要将 Claude Code 部署给多个用户，请[固定您的模型版本](#4-pin-model-versions)以防止在 Anthropic 发布新模型时出现破损。
 
-<h2 id="setup">
-  设置
-</h2>
+## 设置
 
-<h3 id="1-provision-microsoft-foundry-resource">
-  1. 配置 Microsoft Foundry 资源
-</h3>
+### 配置 Microsoft Foundry 资源
 
 首先，在 Azure 中创建 Claude 资源：
 
@@ -112,9 +39,7 @@ export const ContactSalesCard = ({surface}) => {
 
    配置部署时，您还需要选择其[托管选项](https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options)，这决定了推理是在 Azure 上运行还是在 Anthropic 基础设施上运行。
 
-<h3 id="2-configure-azure-credentials">
-  2) 配置 Azure 凭据
-</h3>
+### 配置 Azure 凭据
 
 Claude Code 支持三种 Microsoft Foundry 身份验证方法。选择最适合您安全要求的方法：
 
@@ -122,13 +47,11 @@ Claude Code 支持三种 Microsoft Foundry 身份验证方法。选择最适合�
 * [Microsoft Entra ID](#use-microsoft-entra-id)：Claude Code 通过 Azure SDK 默认凭据链获取令牌，例如从 `az login` 会话中获取，因此无需存储 API 密钥
 * [Bearer 令牌](#use-a-bearer-token)：由另一个进程获取 Microsoft Entra ID 访问令牌，然后您通过 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 传入
 
-<Note>
-  使用 Microsoft Foundry 时，`/logout` 命令不可用，因为身份验证通过 Azure 凭据处理。
-</Note>
+> [!NOTE]
+>
+> 使用 Microsoft Foundry 时，`/logout` 命令不可用，因为身份验证通过 Azure 凭据处理。
 
-<h4 id="use-an-api-key">
-  使用 API 密钥
-</h4>
+#### 使用 API 密钥
 
 从 Microsoft Foundry 门户复制密钥，然后将其设置为环境变量：
 
@@ -141,9 +64,7 @@ Claude Code 支持三种 Microsoft Foundry 身份验证方法。选择最适合�
 export ANTHROPIC_FOUNDRY_API_KEY=your-azure-api-key
 ```
 
-<h4 id="use-microsoft-entra-id">
-  使用 Microsoft Entra ID
-</h4>
+#### 使用 Microsoft Entra ID
 
 不要设置 `ANTHROPIC_FOUNDRY_API_KEY` 和 `ANTHROPIC_FOUNDRY_AUTH_TOKEN`。这样 Claude Code 就会使用 Azure SDK [默认凭据链](https://learn.microsoft.com/en-us/azure/developer/javascript/sdk/authentication/credential-chains#defaultazurecredential-overview)。
 这支持多种方法来验证本地和远程工作负载。
@@ -156,11 +77,9 @@ az login
 
 有关您的身份所需的角色，请参阅 [Azure RBAC 配置](#azure-rbac-configuration)。
 
-<h4 id="use-a-bearer-token">
-  使用 Bearer 令牌
-</h4>
+#### 使用 Bearer 令牌
 
-Claude Code 在每个请求中将 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 的值作为 `Authorization: Bearer` 标头发送。当另一个进程（例如主机应用程序或登录脚本）已经为您获取了访问令牌时，请使用此选项。需要 Claude Code v2.1.203 或更高版本。
+Claude Code 在每个请求中将 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 的值作为 `Authorization: Bearer` 标头发送。当另一个进程（例如主机应用程序或登录脚本）已经为您获取了访问令牌时，请使用此选项。
 
 将变量设置为 Microsoft Entra ID 为您的资源颁发的 Bearer 令牌：
 
@@ -170,9 +89,7 @@ export ANTHROPIC_FOUNDRY_AUTH_TOKEN=your-entra-access-token
 
 `ANTHROPIC_FOUNDRY_AUTH_TOKEN` 优先于 `ANTHROPIC_FOUNDRY_API_KEY` 和默认凭据链。
 
-<h3 id="3-configure-claude-code">
-  3. 配置 Claude Code
-</h3>
+### 配置 Claude Code
 
 设置以下环境变量以启用 Microsoft Foundry：
 
@@ -186,15 +103,13 @@ export ANTHROPIC_FOUNDRY_RESOURCE={resource}
 # export ANTHROPIC_FOUNDRY_BASE_URL=https://{resource}.services.ai.azure.com/anthropic
 ```
 
-将 `ANTHROPIC_FOUNDRY_RESOURCE` 仅设置为资源名称，例如 `my-resource`。如果设置为 URL 或主机名，Claude Code 会在您发送消息时[拒绝该值](/docs/zh-CN/errors#anthropic-foundry-resource-must-be-a-foundry-resource-name)。
+将 `ANTHROPIC_FOUNDRY_RESOURCE` 仅设置为资源名称，例如 `my-resource`。如果设置为 URL 或主机名，Claude Code 会在您发送消息时[拒绝该值](https://code.claude.com/docs/zh-CN/errors.md#anthropic-foundry-resource-must-be-a-foundry-resource-name)。
 
-<h3 id="4-pin-model-versions">
-  4. 固定模型版本
-</h3>
+### 固定模型版本
 
-<Warning>
-  为每个部署固定特定的模型版本。如果不固定版本，模型别名（如 `sonnet` 和 `opus`）会解析为 Claude Code 为 Microsoft Foundry 内置的默认值，这可能滞后于最新版本，并且可能在您的账户中尚不可用。Microsoft Foundry 没有启动模型检查，因此当默认值不可用时请求会失败。创建 Azure 部署时，请选择特定的模型版本而不是"自动更新到最新版本"。
-</Warning>
+> [!WARNING]
+>
+> 为每个部署固定特定的模型版本。如果不固定版本，模型别名（如 `sonnet` 和 `opus`）会解析为 Claude Code 为 Microsoft Foundry 内置的默认值，这可能滞后于最新版本，并且可能在您的账户中尚不可用。Microsoft Foundry 没有启动模型检查，因此当默认值不可用时请求会失败。创建 Azure 部署时，请选择特定的模型版本而不是"自动更新到最新版本"。
 
 设置模型变量以匹配您在第 1 步中创建的部署名称。
 
@@ -208,19 +123,17 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5'
 
 后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Microsoft Foundry 上，Claude Code 默认使用主模型，因为并非每个账户都有 Haiku 部署。要为后台任务使用 Haiku，请将 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 设置为您账户中可用的 Haiku 部署，如上所示。
 
-有关当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。有关完整的环境变量列表，请参阅[模型配置](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)。
+有关当前和旧版模型 ID，请参阅[模型概览](https://platform.claude.com/docs/en/about-claude/models/overview)。有关完整的环境变量列表，请参阅[模型配置](https://code.claude.com/docs/zh-CN/model-config.md#pin-models-for-third-party-deployments)。
 
-[提示缓存](/docs/zh-CN/prompt-caching)会自动启用。要请求 1 小时的缓存 TTL 而不是 5 分钟的默认值，请设置以下变量；具有 1 小时 TTL 的缓存写入按更高的费率计费：
+[提示缓存](https://code.claude.com/docs/zh-CN/prompt-caching.md)会自动启用。要请求 1 小时的缓存 TTL 而不是 5 分钟的默认值，请设置以下变量；具有 1 小时 TTL 的缓存写入按更高的费率计费：
 
 ```bash theme={null}
 export ENABLE_PROMPT_CACHING_1H=1
 ```
 
-要为您的主对话和 Claude Code 在其外部进行的请求设置不同的 TTL，请[自己选择 TTL](/docs/zh-CN/prompt-caching#choose-the-ttl-yourself)。
+要为您的主对话和 Claude Code 在其外部进行的请求设置不同的 TTL，请[自己选择 TTL](https://code.claude.com/docs/zh-CN/prompt-caching.md#choose-the-ttl-yourself)。
 
-<h3 id="5-run-claude-code">
-  5. 运行 Claude Code
-</h3>
+### 运行 Claude Code
 
 设置环境变量后，从您的项目目录启动 Claude Code：
 
@@ -232,9 +145,7 @@ Claude Code 从环境中读取 `CLAUDE_CODE_USE_FOUNDRY` 和其他 Microsoft Fou
 
 要验证您的设置，请在 Claude Code 中运行 `/status`。API 提供商行显示 `Microsoft Foundry`，以及您配置的资源名称或基础 URL。
 
-<h2 id="azure-rbac-configuration">
-  Azure RBAC 配置
-</h2>
+## Azure RBAC 配置
 
 `Azure AI User` 和 `Cognitive Services User` 默认角色包括调用 Claude 模型所需的所有权限。
 
@@ -254,11 +165,9 @@ Claude Code 从环境中读取 `CLAUDE_CODE_USE_FOUNDRY` 和其他 Microsoft Fou
 
 有关详情，请参阅 [Microsoft Foundry RBAC 文档](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/rbac-azure-ai-foundry)。
 
-<h2 id="1m-token-context-window">
-  1M token 上下文窗口
-</h2>
+## 1M token 上下文窗口
 
-在 Microsoft Foundry 上，当 Claude Code 能够识别您的部署所服务的模型时，Fable 模型、Sonnet 5 及更高版本以及 Opus 4.7 及更高版本默认使用 [1M token 上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)，无需添加 `[1m]` 后缀。Claude Code 从模型变量中的部署名称读取模型。请使用模型 ID 命名每个部署，例如 `claude-opus-4-8`，或者使用 [`modelOverrides`](/docs/zh-CN/model-config#override-model-ids-per-version) 将模型映射到您的部署名称。对于无法匹配到模型的部署名称，Claude Code 会假定使用 200K 窗口，除非您[声明其他窗口大小](/docs/zh-CN/model-config#correct-the-window-for-a-gateway-or-custom-model-id)。
+在 Microsoft Foundry 上，当 Claude Code 能够识别您的部署所服务的模型时，Fable 模型、Sonnet 5 及更高版本以及 Opus 4.7 及更高版本默认使用 [1M token 上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model)，无需添加 `[1m]` 后缀。Claude Code 从模型变量中的部署名称读取模型。请使用模型 ID 命名每个部署，例如 `claude-opus-4-8`，或者使用 [`modelOverrides`](https://code.claude.com/docs/zh-CN/model-config#override-model-ids-per-version) 将模型映射到您的部署名称。对于无法匹配到模型的部署名称，Claude Code 会假定使用 200K 窗口，除非您[声明其他窗口大小](https://code.claude.com/docs/zh-CN/model-config.md#correct-the-window-for-a-gateway-or-custom-model-id)。
 
 以下 `settings.json` 条目告知 Claude Code，名为 `team-opus-prod` 的部署服务于 Opus 4.8：
 
@@ -270,13 +179,11 @@ Claude Code 从环境中读取 `CLAUDE_CODE_USE_FOUNDRY` 和其他 Microsoft Fou
 }
 ```
 
-如需改为保持 200K 窗口，请设置 [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](/docs/zh-CN/model-config#turn-off-1m-context)。
+如需改为保持 200K 窗口，请设置 [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/zh-CN/model-config#turn-off-1m-context)。
 
-当您在 `ANTHROPIC_DEFAULT_OPUS_MODEL` 或 `ANTHROPIC_DEFAULT_SONNET_MODEL` 中的部署名称后附加 `[1m]` 时，Opus 4.6 和 Sonnet 4.6 可使用 1M 窗口，如[为第三方部署固定模型](/docs/zh-CN/model-config#pin-models-for-third-party-deployments)中所述。在 v2.1.287 之前，Fable 模型以及 Opus 4.7 及更高版本在 Microsoft Foundry 上同样需要该后缀，否则默认使用 200K 窗口。
+当您在 `ANTHROPIC_DEFAULT_OPUS_MODEL` 或 `ANTHROPIC_DEFAULT_SONNET_MODEL` 中的部署名称后附加 `[1m]` 时，Opus 4.6 和 Sonnet 4.6 可使用 1M 窗口，如[为第三方部署固定模型](https://code.claude.com/docs/zh-CN/model-config.md#pin-models-for-third-party-deployments)中所述。在 v2.1.287 之前，Fable 模型以及 Opus 4.7 及更高版本在 Microsoft Foundry 上同样需要该后缀，否则默认使用 200K 窗口。
 
-<h2 id="troubleshooting">
-  故障排除
-</h2>
+## 故障排除
 
 如果您收到错误"Failed to get token from azureADTokenProvider: ChainedTokenCredential authentication failed"：
 
@@ -286,9 +193,7 @@ Claude Code 从环境中读取 `CLAUDE_CODE_USE_FOUNDRY` 和其他 Microsoft Fou
 
 * 检查 `ANTHROPIC_FOUNDRY_RESOURCE` 是否设置为您的实际资源名称，而不是占位符。Claude Code 从此值构建端点 URL，因此不正确的名称会指向不存在的主机。
 
-<h2 id="additional-resources">
-  其他资源
-</h2>
+## 其他资源
 
 * [Microsoft Foundry 文档](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-azure-ai-foundry)
 * [Microsoft Foundry 模型](https://ai.azure.com/explore/models)

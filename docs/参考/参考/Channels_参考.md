@@ -6,9 +6,9 @@
 
 > 构建一个 MCP 服务器，将 webhooks、警报和聊天消息推送到 Claude Code 会话中。频道合约的参考：能力声明、通知事件、回复工具、发送者门控和权限中继。
 
-<Note>
-  Channels 处于[研究预览](/docs/zh-CN/channels#research-preview)阶段。Team 和 Enterprise 组织必须[明确启用它们](/docs/zh-CN/channels#enterprise-controls)。
-</Note>
+> [!NOTE]
+>
+> Channels 处于[研究预览](https://code.claude.com/docs/zh-CN/channels.md#research-preview)阶段。Team 和 Enterprise 组织必须[明确启用它们](https://code.claude.com/docs/zh-CN/channels.md#enterprise-controls)。
 
 Channel 是一个 MCP 服务器，它将事件推送到 Claude Code 会话中，以便 Claude 可以对终端外发生的事情做出反应。
 
@@ -25,24 +25,18 @@ Channel 是一个 MCP 服务器，它将事件推送到 Claude Code 会话中，
 * [门控入站消息](#gate-inbound-messages)：发送者检查以防止提示注入
 * [中继权限提示](#relay-permission-prompts)：将工具批准提示转发到远程频道
 
-要使用现有频道而不是构建一个，请参阅 [Channels](/docs/zh-CN/channels)。Telegram、Discord、iMessage 和 fakechat 包含在研究预览中。
+要使用现有频道而不是构建一个，请参阅 [Channels](https://code.claude.com/docs/zh-CN/channels.md)。Telegram、Discord、iMessage 和 fakechat 包含在研究预览中。
 
-<h2 id="overview">
-  概述
-</h2>
+## 概述
 
 Channel 是一个在与 Claude Code 相同的机器上运行的 [MCP](https://modelcontextprotocol.io) 服务器。Claude Code 将其作为子进程生成并通过 stdio 进行通信。您的频道服务器是外部系统和 Claude Code 会话之间的桥梁：
 
 * **聊天平台**（Telegram、Discord）：您的插件在本地运行并轮询平台的 API 以获取新消息。当有人向您的机器人发送 DM 时，插件接收消息并将其转发给 Claude。无需公开 URL。
 * **Webhooks**（CI、监控）：您的服务器在本地 HTTP 端口上侦听。外部系统 POST 到该端口，您的服务器将有效负载推送到 Claude。
 
-<img src="https://mintcdn.com/claude-code/9FG0ZKj9uKYiHmbi/images/channel-architecture.svg?fit=max&auto=format&n=9FG0ZKj9uKYiHmbi&q=85&s=9a037b7da80184ae49015c0256b21a1f" className="dark:hidden" alt="架构图显示外部系统连接到您的本地频道服务器，该服务器通过 stdio 与 Claude Code 通信" width="600" height="220" data-path="images/channel-architecture.svg" />
+![架构图显示外部系统连接到您的本地频道服务器，该服务器通过 stdio 与 Claude Code 通信](https://mintcdn.com/claude-code/9FG0ZKj9uKYiHmbi/images/channel-architecture.svg?fit=max\&auto=format\&n=9FG0ZKj9uKYiHmbi\&q=85\&s=9a037b7da80184ae49015c0256b21a1f)
 
-<img src="https://mintcdn.com/claude-code/_xqph1dUOslCOwsj/images/channel-architecture-dark.svg?fit=max&auto=format&n=_xqph1dUOslCOwsj&q=85&s=ae1e494440806a6a5d74a1279e22e162" className="hidden dark:block" alt="架构图显示外部系统连接到您的本地频道服务器，该服务器通过 stdio 与 Claude Code 通信" width="600" height="220" data-path="images/channel-architecture-dark.svg" />
-
-<h2 id="what-you-need">
-  您需要什么
-</h2>
+## 您需要什么
 
 唯一的硬性要求是 [`@modelcontextprotocol/sdk`](https://www.npmjs.com/package/@modelcontextprotocol/sdk) 包和 Node.js 兼容的运行时。[Bun](https://bun.sh)、[Node](https://nodejs.org) 和 [Deno](https://deno.com) 都可以工作。研究预览中的预构建插件使用 Bun，但您的频道不一定要使用。
 
@@ -54,136 +48,130 @@ Channel 是一个在与 Claude Code 相同的机器上运行的 [MCP](https://mo
 
 [服务器选项](#server-options)和[通知格式](#notification-format)部分详细介绍了每一项。有关完整演练，请参阅[示例：构建 webhook 接收器](#example-build-a-webhook-receiver)。
 
-在研究预览期间，自定义频道不在[批准的允许列表](/docs/zh-CN/channels#supported-channels)上。使用 `--dangerously-load-development-channels` 在本地测试。有关详细信息，请参阅[在研究预览期间测试](#test-during-the-research-preview)。
+在研究预览期间，自定义频道不在[批准的允许列表](https://code.claude.com/docs/zh-CN/channels.md#supported-channels)上。使用 `--dangerously-load-development-channels` 在本地测试。有关详细信息，请参阅[在研究预览期间测试](#test-during-the-research-preview)。
 
-<h2 id="example-build-a-webhook-receiver">
-  示例：构建 webhook 接收器
-</h2>
+## 示例：构建 webhook 接收器
 
 本演练构建一个单文件服务器，该服务器侦听 HTTP 请求并将其转发到您的 Claude Code 会话中。最后，任何可以发送 HTTP POST 的东西，如 CI 管道、监控警报或 `curl` 命令，都可以将事件推送到 Claude。
 
 此示例使用 [Bun](https://bun.sh) 作为运行时，用于其内置的 HTTP 服务器和 TypeScript 支持。您可以改用 [Node](https://nodejs.org) 或 [Deno](https://deno.com)；唯一的要求是 [MCP SDK](https://www.npmjs.com/package/@modelcontextprotocol/sdk)。
 
-<Steps>
-  <Step title="创建项目">
-    [permission relay](#relay-permission-prompts) 示例直接导入 `zod`，因此它与 MCP SDK 一起安装。创建一个新目录并安装两者：
+**1. 创建项目**
 
-    ```bash theme={null}
-    mkdir webhook-channel && cd webhook-channel
-    bun add @modelcontextprotocol/sdk zod
-    ```
-  </Step>
+[permission relay](#relay-permission-prompts) 示例直接导入 `zod`，因此它与 MCP SDK 一起安装。创建一个新目录并安装两者：
 
-  <Step title="编写频道服务器">
-    创建一个名为 `webhook.ts` 的文件。这是您的整个频道服务器：它通过 stdio 连接到 Claude Code，并在端口 8788 上侦听 HTTP POST。当请求到达时，它将主体作为频道事件推送到 Claude。
+```bash theme={null}
+mkdir webhook-channel && cd webhook-channel
+bun add @modelcontextprotocol/sdk zod
+```
 
-    ```ts title="webhook.ts" theme={null}
-    #!/usr/bin/env bun
-    import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-    import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+**2. 编写频道服务器**
 
-    // 创建 MCP 服务器并将其声明为频道
-    const mcp = new Server(
-      { name: 'webhook', version: '0.0.1' },
-      {
-        // 这个键使其成为频道 — Claude Code 为其注册侦听器
-        capabilities: { experimental: { 'claude/channel': {} } },
-        // Claude Code 在服务器连接时将其传递给 Claude 作为上下文，以便它知道如何处理这些事件
-        instructions: 'Events from the webhook channel arrive as <channel source="webhook" ...>. They are one-way: read them and act, no reply expected.',
-      },
-    )
+创建一个名为 `webhook.ts` 的文件。这是您的整个频道服务器：它通过 stdio 连接到 Claude Code，并在端口 8788 上侦听 HTTP POST。当请求到达时，它将主体作为频道事件推送到 Claude。
 
-    // 通过 stdio 连接到 Claude Code（Claude Code 生成此进程）
-    await mcp.connect(new StdioServerTransport())
+```ts title="webhook.ts" theme={null}
+#!/usr/bin/env bun
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
-    // 启动一个 HTTP 服务器，将每个 POST 转发给 Claude
-    Bun.serve({
-      port: 8788,  // 任何开放端口都可以
-      // 仅限本地主机：此机器外的任何东西都无法 POST
-      hostname: '127.0.0.1',
-      async fetch(req) {
-        const body = await req.text()
-        await mcp.notification({
-          method: 'notifications/claude/channel',
-          params: {
-            content: body,  // 成为 <channel> 标签的主体
-            // 每个键都成为标签属性，例如 <channel path="/" method="POST">
-            meta: { path: new URL(req.url).pathname, method: req.method },
-          },
-        })
-        return new Response('ok')
+// 创建 MCP 服务器并将其声明为频道
+const mcp = new Server(
+  { name: 'webhook', version: '0.0.1' },
+  {
+    // 这个键使其成为频道 — Claude Code 为其注册侦听器
+    capabilities: { experimental: { 'claude/channel': {} } },
+    // Claude Code 在服务器连接时将其传递给 Claude 作为上下文，以便它知道如何处理这些事件
+    instructions: 'Events from the webhook channel arrive as <channel source="webhook" ...>. They are one-way: read them and act, no reply expected.',
+  },
+)
+
+// 通过 stdio 连接到 Claude Code（Claude Code 生成此进程）
+await mcp.connect(new StdioServerTransport())
+
+// 启动一个 HTTP 服务器，将每个 POST 转发给 Claude
+Bun.serve({
+  port: 8788,  // 任何开放端口都可以
+  // 仅限本地主机：此机器外的任何东西都无法 POST
+  hostname: '127.0.0.1',
+  async fetch(req) {
+    const body = await req.text()
+    await mcp.notification({
+      method: 'notifications/claude/channel',
+      params: {
+        content: body,  // 成为 <channel> 标签的主体
+        // 每个键都成为标签属性，例如 <channel path="/" method="POST">
+        meta: { path: new URL(req.url).pathname, method: req.method },
       },
     })
-    ```
+    return new Response('ok')
+  },
+})
+```
 
-    该文件按顺序配置服务器、连接和启动 HTTP 侦听器：
+该文件按顺序配置服务器、连接和启动 HTTP 侦听器：
 
-    * **服务器配置**：使用 `claude/channel` 在其能力中创建 MCP 服务器，这是告诉 Claude Code 这是一个频道的原因。Claude Code 在服务器连接时将 [`instructions`](#server-options) 字符串传递给 Claude 作为上下文：告诉 Claude 期望什么事件、是否回复以及如果应该回复，如何路由回复。
-    * **Stdio 连接**：通过 stdin/stdout 连接到 Claude Code。这对任何 [MCP 服务器](https://modelcontextprotocol.io/docs/concepts/transports#standard-io) 都是标准的。
-    * **HTTP 侦听器**：在端口 8788 上启动本地 Web 服务器。每个 POST 主体都通过 `mcp.notification()` 作为频道事件转发给 Claude。`content` 成为事件主体，每个 `meta` 条目成为 `<channel>` 标签上的属性。侦听器需要访问 `mcp` 实例，因此它在同一进程中运行。对于更大的项目，您可以将其拆分为单独的模块。
-  </Step>
+* **服务器配置**：使用 `claude/channel` 在其能力中创建 MCP 服务器，这是告诉 Claude Code 这是一个频道的原因。Claude Code 在服务器连接时将 [`instructions`](#server-options) 字符串传递给 Claude 作为上下文：告诉 Claude 期望什么事件、是否回复以及如果应该回复，如何路由回复。
+* **Stdio 连接**：通过 stdin/stdout 连接到 Claude Code。这对任何 [MCP 服务器](https://modelcontextprotocol.io/docs/concepts/transports#standard-io) 都是标准的。
+* **HTTP 侦听器**：在端口 8788 上启动本地 Web 服务器。每个 POST 主体都通过 `mcp.notification()` 作为频道事件转发给 Claude。`content` 成为事件主体，每个 `meta` 条目成为 `<channel>` 标签上的属性。侦听器需要访问 `mcp` 实例，因此它在同一进程中运行。对于更大的项目，您可以将其拆分为单独的模块。
 
-  <Step title="向 Claude Code 注册您的服务器">
-    将服务器添加到您的 MCP 配置中，以便 Claude Code 知道如何启动它。对于同一目录中的项目级 `.mcp.json`，使用相对路径。对于 `~/.claude.json` 中的用户级配置，使用完整的绝对路径，以便可以从任何项目找到服务器：
+**3. 向 Claude Code 注册您的服务器**
 
-    ```json title=".mcp.json" theme={null}
-    {
-      "mcpServers": {
-        "webhook": { "command": "bun", "args": ["./webhook.ts"] }
-      }
-    }
-    ```
+将服务器添加到您的 MCP 配置中，以便 Claude Code 知道如何启动它。对于同一目录中的项目级 `.mcp.json`，使用相对路径。对于 `~/.claude.json` 中的用户级配置，使用完整的绝对路径，以便可以从任何项目找到服务器：
 
-    Claude Code 在启动时读取您的 MCP 配置并将每个服务器作为子进程生成。
-  </Step>
+```json title=".mcp.json" theme={null}
+{
+  "mcpServers": {
+    "webhook": { "command": "bun", "args": ["./webhook.ts"] }
+  }
+}
+```
 
-  <Step title="测试它">
-    在研究预览期间，自定义频道不在允许列表上，因此使用开发标志启动 Claude Code：
+Claude Code 在启动时读取您的 MCP 配置并将每个服务器作为子进程生成。
 
-    ```bash theme={null}
-    claude --dangerously-load-development-channels server:webhook
-    ```
+**4. 测试它**
 
-    Claude Code 首先显示一个全屏警告对话框，列出您正在加载的开发频道。选择**我正在使用此进行本地开发**继续，或选择**退出**退出。
+在研究预览期间，自定义频道不在允许列表上，因此使用开发标志启动 Claude Code：
 
-    第一次在此项目中启动会话时，Claude Code 在使用来自 `.mcp.json` 的新服务器之前也会要求同意。对话框报告"在此项目中找到新的 MCP 服务器：webhook"。选择**使用此 MCP 服务器**继续。
+```bash theme={null}
+claude --dangerously-load-development-channels server:webhook
+```
 
-    接受后，Claude Code 将您的 `webhook.ts` 作为子进程生成，HTTP 侦听器自动在您配置的端口上启动（此示例中为 8788）。您不需要自己运行服务器。
+Claude Code 首先显示一个全屏警告对话框，列出您正在加载的开发频道。选择**我正在使用此进行本地开发**继续，或选择**退出**退出。
 
-    启动横幅下方的暗淡通知确认频道已注册：`Channels (experimental) messages from server:webhook inject directly in this session · restart without --dangerously-load-development-channels to stop`。
+第一次在此项目中启动会话时，Claude Code 在使用来自 `.mcp.json` 的新服务器之前也会要求同意。对话框报告"在此项目中找到新的 MCP 服务器：webhook"。选择**使用此 MCP 服务器**继续。
 
-    如果您看到"被组织政策阻止"，您的组织管理员需要[启用频道](/docs/zh-CN/channels#enterprise-controls)。
+接受后，Claude Code 将您的 `webhook.ts` 作为子进程生成，HTTP 侦听器自动在您配置的端口上启动（此示例中为 8788）。您不需要自己运行服务器。
 
-    在单独的终端中，通过向您的服务器发送带有消息的 HTTP POST 来模拟 webhook。此示例向端口 8788 发送 CI 失败警报（或您配置的任何端口）：
+启动横幅下方的暗淡通知确认频道已注册：`Channels (experimental) messages from server:webhook inject directly in this session · restart without --dangerously-load-development-channels to stop`。
 
-    ```bash theme={null}
-    curl -X POST localhost:8788 -d "build failed on main: https://ci.example.com/run/1234"
-    ```
+如果您看到"被组织政策阻止"，您的组织管理员需要[启用频道](https://code.claude.com/docs/zh-CN/channels.md#enterprise-controls)。
 
-    有效负载作为 `<channel>` 标签到达 Claude 的上下文中：
+在单独的终端中，通过向您的服务器发送带有消息的 HTTP POST 来模拟 webhook。此示例向端口 8788 发送 CI 失败警报（或您配置的任何端口）：
 
-    ```text theme={null}
-    <channel source="webhook" path="/" method="POST">
-    build failed on main: https://ci.example.com/run/1234
-    </channel>
-    ```
+```bash theme={null}
+curl -X POST localhost:8788 -d "build failed on main: https://ci.example.com/run/1234"
+```
 
-    您的终端将事件呈现为单行摘要 `← webhook: build failed on main: https://ci.example.com/run/1234`，而不是原始标签。然后您会看到 Claude 开始响应：读取文件、运行命令或消息要求的任何操作。这是一个单向频道，因此 Claude 在您的会话中行动，但不会通过 webhook 发送任何内容回复。要添加回复，请参阅[公开回复工具](#expose-a-reply-tool)。
+有效负载作为 `<channel>` 标签到达 Claude 的上下文中：
 
-    如果事件没有到达，诊断取决于 `curl` 返回的内容：
+```text theme={null}
+<channel source="webhook" path="/" method="POST">
+build failed on main: https://ci.example.com/run/1234
+</channel>
+```
 
-    * **`curl` 成功但没有任何内容到达 Claude**：在您的会话中运行 `/mcp` 以检查服务器的状态。`failed` 状态通常意味着您的服务器文件中存在依赖项或导入错误。要查看 stderr 跟踪，请使用 `claude --debug --dangerously-load-development-channels server:webhook` 重新启动，并检查 `~/.claude/debug/<session-id>.txt` 处的调试日志。
-    * **`curl` 失败，显示"connection refused"**：端口要么尚未绑定，要么来自较早运行的陈旧进程正在占用它。`lsof -i :<port>` 显示正在侦听的内容；在重新启动会话之前 `kill` 陈旧进程。
-  </Step>
-</Steps>
+您的终端将事件呈现为单行摘要 `← webhook: build failed on main: https://ci.example.com/run/1234`，而不是原始标签。然后您会看到 Claude 开始响应：读取文件、运行命令或消息要求的任何操作。这是一个单向频道，因此 Claude 在您的会话中行动，但不会通过 webhook 发送任何内容回复。要添加回复，请参阅[公开回复工具](#expose-a-reply-tool)。
+
+如果事件没有到达，诊断取决于 `curl` 返回的内容：
+
+* **`curl` 成功但没有任何内容到达 Claude**：在您的会话中运行 `/mcp` 以检查服务器的状态。`failed` 状态通常意味着您的服务器文件中存在依赖项或导入错误。要查看 stderr 跟踪，请使用 `claude --debug --dangerously-load-development-channels server:webhook` 重新启动，并检查 `~/.claude/debug/<session-id>.txt` 处的调试日志。
+* **`curl` 失败，显示"connection refused"**：端口要么尚未绑定，要么来自较早运行的陈旧进程正在占用它。`lsof -i :<port>` 显示正在侦听的内容；在重新启动会话之前 `kill` 陈旧进程。
 
 [fakechat 服务器](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/fakechat)使用 Web UI、文件附件和用于双向聊天的回复工具扩展此模式。
 
-<h2 id="test-during-the-research-preview">
-  在研究预览期间测试
-</h2>
+## 在研究预览期间测试
 
-在研究预览期间，每个频道都必须在[批准的允许列表](/docs/zh-CN/channels#research-preview)上才能注册。开发标志在确认提示后绕过特定条目的允许列表。此示例显示两种条目类型：
+在研究预览期间，每个频道都必须在[批准的允许列表](https://code.claude.com/docs/zh-CN/channels.md#research-preview)上才能注册。开发标志在确认提示后绕过特定条目的允许列表。此示例显示两种条目类型：
 
 ```bash theme={null}
 # 测试您正在开发的插件
@@ -197,13 +185,11 @@ claude --dangerously-load-development-channels server:webhook
 
 绕过是按条目的。将此标志与 `--channels` 结合不会将绕过扩展到 `--channels` 条目。在研究预览期间，您的频道不在批准的允许列表上，因此在您构建和测试时它保持在开发标志上。
 
-<Note>
-  此标志仅跳过允许列表。`channelsEnabled` 组织政策仍然适用。不要使用它来运行来自不受信任来源的频道。
-</Note>
+> [!NOTE]
+>
+> 此标志仅跳过允许列表。`channelsEnabled` 组织政策仍然适用。不要使用它来运行来自不受信任来源的频道。
 
-<h2 id="server-options">
-  服务器选项
-</h2>
+## 服务器选项
 
 频道在 [`Server`](https://modelcontextprotocol.io/docs/learn/server-concepts) 构造函数中设置这些选项。`instructions` 和 `capabilities.tools` 字段是[标准 MCP](https://modelcontextprotocol.io/docs/learn/server-concepts)；`capabilities.experimental['claude/channel']` 和 `capabilities.experimental['claude/channel/permission']` 是频道特定的添加：
 
@@ -232,9 +218,7 @@ const mcp = new Server(
 )
 ```
 
-<h2 id="notification-format">
-  通知格式
-</h2>
+## 通知格式
 
 您的服务器使用两个参数发出 `notifications/claude/channel`：
 
@@ -269,9 +253,7 @@ Claude Code 不确认通知。`mcp.notification()` 上的 `await` 在消息写�
 
 事件排队进入会话并按顺序处理。如果在 Claude 忙碌时有多个通知到达，它们会在下一个轮次一起传递，Claude 将它们作为一个组处理。要并发处理独立事件流，请运行单独的会话。
 
-<h2 id="expose-a-reply-tool">
-  公开回复工具
-</h2>
+## 公开回复工具
 
 如果您的频道是双向的，如聊天桥接而不是警报转发器，请公开一个标准 [MCP 工具](https://modelcontextprotocol.io/docs/concepts/tools)，Claude 可以调用它来发送消息回复。关于工具注册的任何内容都不是频道特定的。回复工具有三个组件：
 
@@ -281,64 +263,62 @@ Claude Code 不确认通知。`mcp.notification()` 上的 `await` 在消息写�
 
 要将这些添加到上面的[webhook 接收器](#example-build-a-webhook-receiver)：
 
-<Steps>
-  <Step title="启用工具发现">
-    在您的 `Server` 构造函数中的 `webhook.ts` 中，将 `tools: {}` 添加到能力中，以便 Claude Code 知道您的服务器提供工具：
+**1. 启用工具发现**
 
-    ```ts theme={null}
-    capabilities: {
-      experimental: { 'claude/channel': {} },
-      tools: {},  // 启用工具发现
+在您的 `Server` 构造函数中的 `webhook.ts` 中，将 `tools: {}` 添加到能力中，以便 Claude Code 知道您的服务器提供工具：
+
+```ts theme={null}
+capabilities: {
+  experimental: { 'claude/channel': {} },
+  tools: {},  // 启用工具发现
+},
+```
+
+**2. 注册回复工具**
+
+将以下内容添加到 `webhook.ts`。`import` 与您的其他导入一起位于文件顶部；两个处理程序位于 `Server` 构造函数和 `mcp.connect()` 之间。这注册了一个 `reply` 工具，Claude 可以使用 `chat_id` 和 `text` 调用它：
+
+```ts theme={null}
+// 在 webhook.ts 顶部添加此导入
+import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js'
+
+// Claude 在启动时查询此项以发现您的服务器提供什么工具
+mcp.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [{
+    name: 'reply',
+    description: 'Send a message back over this channel',
+    // inputSchema 告诉 Claude 要传递什么参数
+    inputSchema: {
+      type: 'object',
+      properties: {
+        chat_id: { type: 'string', description: 'The conversation to reply in' },
+        text: { type: 'string', description: 'The message to send' },
+      },
+      required: ['chat_id', 'text'],
     },
-    ```
-  </Step>
+  }],
+}))
 
-  <Step title="注册回复工具">
-    将以下内容添加到 `webhook.ts`。`import` 与您的其他导入一起位于文件顶部；两个处理程序位于 `Server` 构造函数和 `mcp.connect()` 之间。这注册了一个 `reply` 工具，Claude 可以使用 `chat_id` 和 `text` 调用它：
+// Claude 想要调用工具时调用此项
+mcp.setRequestHandler(CallToolRequestSchema, async req => {
+  if (req.params.name === 'reply') {
+    const { chat_id, text } = req.params.arguments as { chat_id: string; text: string }
+    // send() 是您的出站：POST 到您的聊天平台，或用于本地
+    // 测试下面完整示例中显示的 SSE 广播。
+    send(`Reply to ${chat_id}: ${text}`)
+    return { content: [{ type: 'text', text: 'sent' }] }
+  }
+  throw new Error(`unknown tool: ${req.params.name}`)
+})
+```
 
-    ```ts theme={null}
-    // 在 webhook.ts 顶部添加此导入
-    import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js'
+**3. 更新说明**
 
-    // Claude 在启动时查询此项以发现您的服务器提供什么工具
-    mcp.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [{
-        name: 'reply',
-        description: 'Send a message back over this channel',
-        // inputSchema 告诉 Claude 要传递什么参数
-        inputSchema: {
-          type: 'object',
-          properties: {
-            chat_id: { type: 'string', description: 'The conversation to reply in' },
-            text: { type: 'string', description: 'The message to send' },
-          },
-          required: ['chat_id', 'text'],
-        },
-      }],
-    }))
+更新您的 `Server` 构造函数中的 `instructions` 字符串，以便 Claude 知道通过工具将回复路由回去。此示例告诉 Claude 从入站标签传递 `chat_id`：
 
-    // Claude 想要调用工具时调用此项
-    mcp.setRequestHandler(CallToolRequestSchema, async req => {
-      if (req.params.name === 'reply') {
-        const { chat_id, text } = req.params.arguments as { chat_id: string; text: string }
-        // send() 是您的出站：POST 到您的聊天平台，或用于本地
-        // 测试下面完整示例中显示的 SSE 广播。
-        send(`Reply to ${chat_id}: ${text}`)
-        return { content: [{ type: 'text', text: 'sent' }] }
-      }
-      throw new Error(`unknown tool: ${req.params.name}`)
-    })
-    ```
-  </Step>
-
-  <Step title="更新说明">
-    更新您的 `Server` 构造函数中的 `instructions` 字符串，以便 Claude 知道通过工具将回复路由回去。此示例告诉 Claude 从入站标签传递 `chat_id`：
-
-    ```ts theme={null}
-    instructions: 'Messages arrive as <channel source="webhook" chat_id="...">. Reply with the reply tool, passing the chat_id from the tag.'
-    ```
-  </Step>
-</Steps>
+```ts theme={null}
+instructions: 'Messages arrive as <channel source="webhook" chat_id="...">. Reply with the reply tool, passing the chat_id from the tag.'
+```
 
 这是完整的 `webhook.ts`，具有双向支持。出站回复通过 `GET /events` 使用 [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (SSE) 流式传输，因此 `curl -N localhost:8788/events` 可以实时观看它们；入站聊天到达 `POST /`：
 
@@ -433,9 +413,7 @@ Bun.serve({
 
 [fakechat 服务器](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/fakechat)显示了一个更完整的示例，具有文件附件和消息编辑。
 
-<h2 id="gate-inbound-messages">
-  门控入站消息
-</h2>
+## 门控入站消息
 
 未门控的频道是提示注入向量。任何可以到达您的端点的人都可以在 Claude 前面放置文本。侦听聊天平台或公共端点的频道需要在发出任何内容之前进行真正的发送者检查。
 
@@ -453,21 +431,17 @@ await mcp.notification({ ... })
 
 根据发送者的身份而不是聊天或房间身份进行门控：示例中的 `message.from.id`，而不是 `message.chat.id`。在群组聊天中，这些不同，根据房间进行门控会让已列入允许列表的群组中的任何人向会话注入消息。
 
-[Telegram](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram) 和 [Discord](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord) 频道以相同的方式在发送者允许列表上进行门控。它们通过[配对](/docs/zh-CN/channels#security)引导列表。有关完整配对流程，请参阅任一实现。[iMessage](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage) 频道采用不同的方法：它在启动时从 Messages 数据库检测用户自己的地址，并自动让它们通过，其他发送者通过句柄添加。
+[Telegram](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram) 和 [Discord](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord) 频道以相同的方式在发送者允许列表上进行门控。它们通过[配对](https://code.claude.com/docs/zh-CN/channels.md#security)引导列表。有关完整配对流程，请参阅任一实现。[iMessage](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage) 频道采用不同的方法：它在启动时从 Messages 数据库检测用户自己的地址，并自动让它们通过，其他发送者通过句柄添加。
 
-<h2 id="relay-permission-prompts">
-  中继权限提示
-</h2>
+## 中继权限提示
 
 当 Claude 调用需要批准的工具时，本地终端对话打开，会话等待。双向频道可以选择加入以在并行接收相同的提示，并将其中继到您的另一台设备。两者都保持活动：您可以在终端或手机上回答，Claude Code 应用先到达的任何答案并关闭另一个。
 
 中继涵盖工具使用批准，如 `Bash`、`Write` 和 `Edit`。项目信任和 MCP 服务器同意对话不中继；这些仅在本地终端中出现。
 
-Claude Code v2.1.234 及更高版本仅向其为会话注册为频道的服务器发送权限请求，因此中继位于与[会话选择加入和组织控制](/docs/zh-CN/channels#security)相同的后面。中继还要求您使用 `--channels` 或开发标志选择加入服务器，并要求服务器声明权限能力。
+Claude Code v2.1.234 及更高版本仅向其为会话注册为频道的服务器发送权限请求，因此中继位于与[会话选择加入和组织控制](https://code.claude.com/docs/zh-CN/channels.md#security)相同的后面。中继还要求您使用 `--channels` 或开发标志选择加入服务器，并要求服务器声明权限能力。
 
-<h3 id="how-relay-works">
-  中继如何工作
-</h3>
+### 中继如何工作
 
 当权限提示打开时，中继循环有四个步骤：
 
@@ -478,13 +452,9 @@ Claude Code v2.1.234 及更高版本仅向其为会话注册为频道的服务�
 
 本地终端对话在所有这一切中保持打开。如果终端上的某人在远程判决到达之前回答，该答案将被应用，待处理的远程请求将被删除。
 
-<img src="https://mintcdn.com/claude-code/9FG0ZKj9uKYiHmbi/images/channel-permission-relay.svg?fit=max&auto=format&n=9FG0ZKj9uKYiHmbi&q=85&s=97d57f128f0da55f105ab1e3a7e10240" className="dark:hidden" alt="序列图：Claude Code 向频道服务器发送 permission_request 通知，服务器格式化并将提示发送到聊天应用，人类使用判决回复，服务器将该回复解析为权限通知回到 Claude Code" width="600" height="230" data-path="images/channel-permission-relay.svg" />
+![序列图：Claude Code 向频道服务器发送 permission\_request 通知，服务器格式化并将提示发送到聊天应用，人类使用判决回复，服务器将该回复解析为权限通知回到 Claude Code](https://mintcdn.com/claude-code/9FG0ZKj9uKYiHmbi/images/channel-permission-relay.svg?fit=max\&auto=format\&n=9FG0ZKj9uKYiHmbi\&q=85\&s=97d57f128f0da55f105ab1e3a7e10240)
 
-<img src="https://mintcdn.com/claude-code/_xqph1dUOslCOwsj/images/channel-permission-relay-dark.svg?fit=max&auto=format&n=_xqph1dUOslCOwsj&q=85&s=368c8d9119a9a9cff5d826d806724842" className="hidden dark:block" alt="序列图：Claude Code 向频道服务器发送 permission_request 通知，服务器格式化并将提示发送到聊天应用，人类使用判决回复，服务器将该回复解析为权限通知回到 Claude Code" width="600" height="230" data-path="images/channel-permission-relay-dark.svg" />
-
-<h3 id="permission-request-fields">
-  权限请求字段
-</h3>
+### 权限请求字段
 
 来自 Claude Code 的出站通知是 `notifications/claude/channel/permission_request`。与[频道通知](#notification-format)一样，传输是标准 MCP，但方法和架构是 Claude Code 扩展。`params` 对象有四个字符串字段，您的服务器将其格式化为出站提示：
 
@@ -493,7 +463,7 @@ Claude Code v2.1.234 及更高版本仅向其为会话注册为频道的服务�
 | `request_id` | 从 `a`-`z` 中抽取的五个小写字母，不包括 `l`，因此在手机上输入时永远不会读作 `1` 或 `I`。将其包含在您的出站提示中，以便可以在回复中回显。Claude Code 仅接受携带其发出的 ID 的判决。本地终端对话不显示此 ID，因此您的出站处理程序是了解它的唯一方式。 |
 | `tool_name` | Claude 想要使用的工具的名称，例如 `Bash` 或 `Write`。 |
 | `description` | 此特定工具调用执行的操作的人类可读摘要，永远不是命令本身。对于 Bash 调用，这是 Claude 对命令的描述；当模型不给出描述时，该字段是常数 `Run shell command`，不包含任何命令详情。在有空间时呈现 `input_preview`。 |
-| `input_preview` | 工具的参数作为 JSON 形状的显示文本，按顶级字段键入。对于 Bash，这是命令；对于 Write，是文件路径和内容。如果您只有一行消息的空间，请从您的提示中省略它。您的服务器决定显示什么。 |
+| `input_preview` | 工具的参数作为 JSON 形状的显示文本，以各顶级字段为键。对于 Bash，这是命令；对于 Write，是文件路径和内容。如果您只有一行消息的空间，请从您的提示中省略它。您的服务器决定显示什么。 |
 
 Claude Code v2.1.211 或更高版本的客户端在中继前清理 `description` 和 `input_preview`。期望您收到的文本中有三个变化：
 
@@ -515,9 +485,7 @@ Claude Code v2.1.234 或更高版本的客户端也在 `description` 和 `input_
 
 您的服务器发送回的判决是 `notifications/claude/channel/permission`，有两个字段：`request_id` 回显上面的 ID，`behavior` 设置为 `'allow'` 或 `'deny'`。允许让工具调用继续；拒绝拒绝它。两个判决都不影响未来的调用。
 
-<h3 id="add-relay-to-a-chat-bridge">
-  向聊天桥接添加中继
-</h3>
+### 向聊天桥接添加中继
 
 向双向频道添加权限中继需要三个组件：
 
@@ -529,100 +497,96 @@ Claude Code v2.1.234 或更高版本的客户端也在 `description` 和 `input_
 
 要将这些添加到在[公开回复工具](#expose-a-reply-tool)中组装的双向聊天桥接：
 
-<Steps>
-  <Step title="声明权限能力">
-    在您的 `Server` 构造函数中，在 `experimental` 下的 `claude/channel` 旁边添加 `claude/channel/permission: {}`：
+**1. 声明权限能力**
 
-    ```ts theme={null}
-    capabilities: {
-      experimental: {
-        'claude/channel': {},
-        'claude/channel/permission': {},  // 选择加入权限中继
+在您的 `Server` 构造函数中，在 `experimental` 下的 `claude/channel` 旁边添加 `claude/channel/permission: {}`：
+
+```ts theme={null}
+capabilities: {
+  experimental: {
+    'claude/channel': {},
+    'claude/channel/permission': {},  // 选择加入权限中继
+  },
+  tools: {},
+},
+```
+
+**2. 处理传入请求**
+
+在您的 `Server` 构造函数和 `mcp.connect()` 之间注册一个通知处理程序。当权限对话打开时，Claude Code 使用[四个请求字段](#permission-request-fields)调用它。您的处理程序为您的平台格式化提示，并包括使用 ID 回复的说明：
+
+```ts theme={null}
+import { z } from 'zod'
+
+// setNotificationHandler 通过 z.literal 在方法字段上路由，
+// 所以这个架构既是验证器又是调度键
+const PermissionRequestSchema = z.object({
+  method: z.literal('notifications/claude/channel/permission_request'),
+  params: z.object({
+    request_id: z.string(),     // 五个小写字母，在您的提示中逐字包含
+    tool_name: z.string(),      // 例如 "Bash"、"Write"
+    description: z.string(),    // 此调用的摘要。视为不受信任。
+    input_preview: z.string(),  // 工具参数作为 JSON 形状的文本。视为不受信任。
+  }),
+})
+
+mcp.setNotificationHandler(PermissionRequestSchema, async ({ params }) => {
+  // send() 是您的出站：POST 到您的聊天平台，或用于本地
+  // 测试下面完整示例中显示的 SSE 广播。
+  send(
+    `Claude wants to run ${params.tool_name}: ${params.description}\n` +
+    // input_preview 携带实际参数；在有空间时呈现它：对于 Bash，描述
+    // 单独可能只是"Run shell command"，零命令详情
+    `${params.input_preview}\n\n` +
+    // 说明中的 ID 是您的入站处理程序在步骤 3 中解析的内容
+    `Reply "yes ${params.request_id}" or "no ${params.request_id}"`,
+  )
+})
+```
+
+**3. 在您的入站处理程序中拦截判决**
+
+您的入站处理程序是接收来自您的平台的消息的循环或回调：与您[根据发送者进行门控](#gate-inbound-messages)和发出 `notifications/claude/channel` 以将聊天转发给 Claude 的地方相同。在聊天转发调用之前添加一个检查，识别判决格式并改为发出权限通知。
+
+正则表达式匹配 Claude Code 生成的 ID 格式：五个字母，永远不是 `l`。`/i` 标志容忍手机自动更正将回复大写；在将其发送回之前将捕获的 ID 小写。
+
+```ts theme={null}
+// 匹配 "y abcde"、"yes abcde"、"n abcde"、"no abcde"
+// [a-km-z] 是 Claude Code 使用的 ID 字母表（小写，跳过 'l'）
+// /i 容忍手机自动更正；在发送前小写捕获
+const PERMISSION_REPLY_RE = /^\s*(y|yes|n|no)\s+([a-km-z]{5})\s*$/i
+
+async function onInbound(message: PlatformMessage) {
+  if (!allowed.has(message.from.id)) return  // 首先根据发送者进行门控
+
+  const m = PERMISSION_REPLY_RE.exec(message.text)
+  if (m) {
+    // m[1] 是判决词，m[2] 是请求 ID
+    // 将判决通知发出回 Claude Code，而不是聊天
+    await mcp.notification({
+      method: 'notifications/claude/channel/permission',
+      params: {
+        request_id: m[2].toLowerCase(),  // 在自动更正大写的情况下规范化
+        behavior: m[1].toLowerCase().startsWith('y') ? 'allow' : 'deny',
       },
-      tools: {},
-    },
-    ```
-  </Step>
-
-  <Step title="处理传入请求">
-    在您的 `Server` 构造函数和 `mcp.connect()` 之间注册一个通知处理程序。当权限对话打开时，Claude Code 使用[四个请求字段](#permission-request-fields)调用它。您的处理程序为您的平台格式化提示，并包括使用 ID 回复的说明：
-
-    ```ts theme={null}
-    import { z } from 'zod'
-
-    // setNotificationHandler 通过 z.literal 在方法字段上路由，
-    // 所以这个架构既是验证器又是调度键
-    const PermissionRequestSchema = z.object({
-      method: z.literal('notifications/claude/channel/permission_request'),
-      params: z.object({
-        request_id: z.string(),     // 五个小写字母，在您的提示中逐字包含
-        tool_name: z.string(),      // 例如 "Bash"、"Write"
-        description: z.string(),    // 此调用的摘要。视为不受信任。
-        input_preview: z.string(),  // 工具参数作为 JSON 形状的文本。视为不受信任。
-      }),
     })
+    return  // 作为判决处理，不要也转发为聊天
+  }
 
-    mcp.setNotificationHandler(PermissionRequestSchema, async ({ params }) => {
-      // send() 是您的出站：POST 到您的聊天平台，或用于本地
-      // 测试下面完整示例中显示的 SSE 广播。
-      send(
-        `Claude wants to run ${params.tool_name}: ${params.description}\n` +
-        // input_preview 携带实际参数；在有空间时呈现它：对于 Bash，描述
-        // 单独可能只是"Run shell command"，零命令详情
-        `${params.input_preview}\n\n` +
-        // 说明中的 ID 是您的入站处理程序在步骤 3 中解析的内容
-        `Reply "yes ${params.request_id}" or "no ${params.request_id}"`,
-      )
-    })
-    ```
-  </Step>
-
-  <Step title="在您的入站处理程序中拦截判决">
-    您的入站处理程序是接收来自您的平台的消息的循环或回调：与您[根据发送者进行门控](#gate-inbound-messages)和发出 `notifications/claude/channel` 以将聊天转发给 Claude 的地方相同。在聊天转发调用之前添加一个检查，识别判决格式并改为发出权限通知。
-
-    正则表达式匹配 Claude Code 生成的 ID 格式：五个字母，永远不是 `l`。`/i` 标志容忍手机自动更正将回复大写；在将其发送回之前将捕获的 ID 小写。
-
-    ```ts theme={null}
-    // 匹配 "y abcde"、"yes abcde"、"n abcde"、"no abcde"
-    // [a-km-z] 是 Claude Code 使用的 ID 字母表（小写，跳过 'l'）
-    // /i 容忍手机自动更正；在发送前小写捕获
-    const PERMISSION_REPLY_RE = /^\s*(y|yes|n|no)\s+([a-km-z]{5})\s*$/i
-
-    async function onInbound(message: PlatformMessage) {
-      if (!allowed.has(message.from.id)) return  // 首先根据发送者进行门控
-
-      const m = PERMISSION_REPLY_RE.exec(message.text)
-      if (m) {
-        // m[1] 是判决词，m[2] 是请求 ID
-        // 将判决通知发出回 Claude Code，而不是聊天
-        await mcp.notification({
-          method: 'notifications/claude/channel/permission',
-          params: {
-            request_id: m[2].toLowerCase(),  // 在自动更正大写的情况下规范化
-            behavior: m[1].toLowerCase().startsWith('y') ? 'allow' : 'deny',
-          },
-        })
-        return  // 作为判决处理，不要也转发为聊天
-      }
-
-      // 不匹配判决格式：落入正常聊天路径
-      await mcp.notification({
-        method: 'notifications/claude/channel',
-        params: { content: message.text, meta: { chat_id: String(message.chat.id) } },
-      })
-    }
-    ```
-  </Step>
-</Steps>
+  // 不匹配判决格式：落入正常聊天路径
+  await mcp.notification({
+    method: 'notifications/claude/channel',
+    params: { content: message.text, meta: { chat_id: String(message.chat.id) } },
+  })
+}
+```
 
 不完全匹配预期格式的远程回复以两种方式之一失败，在两种情况下对话都保持打开：
 
 * **不同格式**：您的入站处理程序的正则表达式无法匹配，因此 `approve it` 或 `yes` 之类的文本（没有 ID）会作为正常消息落入 Claude。
 * **正确格式，错误的 ID**：您的服务器发出判决，但 Claude Code 找不到具有该 ID 的开放请求并静默删除它。
 
-<h3 id="full-example">
-  完整示例
-</h3>
+### 完整示例
 
 下面组装的 `webhook.ts` 结合了本页的所有三个扩展：回复工具、发送者门控和权限中继。如果您从这里开始，您还需要初始演练中的[项目设置和 `.mcp.json` 条目](#example-build-a-webhook-receiver)。
 
@@ -801,21 +765,17 @@ curl -d "yes <id>" -H "X-Sender: dev" localhost:8788
 * **出站路径**：`reply` 工具处理程序是 Claude 为会话响应调用的；`PermissionRequestSchema` 通知处理程序是当权限对话打开时 Claude Code 调用的。两者都调用 `send()` 通过 `/events` 广播，但它们由系统的不同部分触发。
 * **HTTP 处理程序**：`GET /events` 保持 SSE 流打开，以便 curl 可以实时观看出站；`POST` 是入站，根据 `X-Sender` 标头进行门控。`yes <id>` 或 `no <id>` 主体作为判决通知进入 Claude Code，永远不会到达 Claude；其他任何东西都作为频道事件转发给 Claude。
 
-<h2 id="package-as-a-plugin">
-  打包为插件
-</h2>
+## 打包为插件
 
-要使您的频道可安装和可共享，请将其包装在[插件](/docs/zh-CN/plugins/overview)中并将其发布到[市场](/docs/zh-CN/plugins/overview)。用户使用 `/plugin install` 安装它，然后使用 `--channels plugin:<name>@<marketplace>` 按会话启用它。
+要使您的频道可安装和可共享，请将其包装在[插件](https://code.claude.com/docs/zh-CN/plugins/overview.md)中并将其发布到[市场](https://code.claude.com/docs/zh-CN/plugins/overview.md)。用户使用 `/plugin install` 安装它，然后使用 `--channels plugin:<name>@<marketplace>` 按会话启用它。
 
-发布到您自己的市场的频道仍然需要 `--dangerously-load-development-channels` 来运行，因为它不在[批准的允许列表](/docs/zh-CN/channels#supported-channels)上。默认允许列表是 `claude-plugins-official` 中的频道插件。社区市场不在频道允许列表上。
+发布到您自己的市场的频道仍然需要 `--dangerously-load-development-channels` 来运行，因为它不在[批准的允许列表](https://code.claude.com/docs/zh-CN/channels.md#supported-channels)上。默认允许列表是 `claude-plugins-official` 中的频道插件。社区市场不在频道允许列表上。
 
-如果您正在与 Anthropic 合作伙伴联系合作，请与他们联系以协调官方市场列表。在 Team 和 Enterprise 计划上，管理员可以改为将您的插件包含在组织自己的 [`allowedChannelPlugins`](/docs/zh-CN/channels#restrict-which-channel-plugins-can-run) 列表中，该列表替换默认的 Anthropic 允许列表。
+如果您正在与 Anthropic 合作伙伴联系合作，请与他们联系以协调官方市场列表。在 Team 和 Enterprise 计划上，管理员可以改为将您的插件包含在组织自己的 [`allowedChannelPlugins`](https://code.claude.com/docs/zh-CN/channels#restrict-which-channel-plugins-can-run) 列表中，该列表替换默认的 Anthropic 允许列表。
 
-<h2 id="see-also">
-  另请参阅
-</h2>
+## 另请参阅
 
-* [Channels](/docs/zh-CN/channels) 安装和使用 Telegram、Discord、iMessage 或 fakechat 演示，以及为 Team 或 Enterprise 组织启用频道
+* [Channels](https://code.claude.com/docs/zh-CN/channels.md) 安装和使用 Telegram、Discord、iMessage 或 fakechat 演示，以及为 Team 或 Enterprise 组织启用频道
 * [工作频道实现](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins)用于具有配对流、回复工具和文件附件的完整服务器代码
-* [MCP](/docs/zh-CN/mcp) 用于频道服务器实现的基础协议
-* [Plugins](/docs/zh-CN/plugins/overview) 打包您的频道，以便用户可以使用 `/plugin install` 安装它
+* [MCP](https://code.claude.com/docs/zh-CN/mcp.md) 用于频道服务器实现的基础协议
+* [Plugins](https://code.claude.com/docs/zh-CN/plugins/overview.md) 打包您的频道，以便用户可以使用 `/plugin install` 安装它

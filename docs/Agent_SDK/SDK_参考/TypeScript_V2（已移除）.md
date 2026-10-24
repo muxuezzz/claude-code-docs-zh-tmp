@@ -6,11 +6,11 @@
 
 > 已移除的 V2 TypeScript Agent SDK session API 参考，具有用于多轮对话的基于会话的 send/stream 模式。
 
-<Warning>
-  V2 session API 不再受支持。TypeScript Agent SDK 0.3.142 移除了 `unstable_v2_createSession`、`unstable_v2_resumeSession`、`unstable_v2_prompt` 以及 `SDKSession` 和 `SDKSessionOptions` 类型。
-
-  要迁移，请使用 [`query()` API](/docs/zh-CN/agent-sdk/typescript) 和它接受的 [session 选项](/docs/zh-CN/agent-sdk/sessions)。为多轮对话传递 `AsyncIterable<SDKUserMessage>`，或使用 `options.resume` 继续已保存的会话。如果您在 Agent SDK 0.2.x 或更早版本上维护代码，此页面保留供参考。
-</Warning>
+> [!WARNING]
+>
+> V2 session API 不再受支持。TypeScript Agent SDK 0.3.142 移除了 `unstable_v2_createSession`、`unstable_v2_resumeSession`、`unstable_v2_prompt` 以及 `SDKSession` 和 `SDKSessionOptions` 类型。
+>
+> 要迁移，请使用 [`query()` API](https://code.claude.com/docs/zh-CN/agent-sdk/typescript) 和它接受的 [session 选项](https://code.claude.com/docs/zh-CN/agent-sdk/sessions.md)。为多轮对话传递 `AsyncIterable<SDKUserMessage>`，或使用 `options.resume` 继续已保存的会话。如果您在 Agent SDK 0.2.x 或更早版本上维护代码，此页面保留供参考。
 
 V2 是一个实验性的 session API，消除了对异步生成器和 yield 协调的需求。与其在各轮之间管理生成器状态，每一轮都是一个单独的 `send()`/`stream()` 周期。API 表面简化为三个概念：
 
@@ -18,9 +18,7 @@ V2 是一个实验性的 session API，消除了对异步生成器和 yield 协�
 * `session.send()`：发送消息
 * `session.stream()`：获取响应
 
-<h2 id="installation">
-  安装
-</h2>
+## 安装
 
 Agent SDK 0.2.x 是包含 V2 interface 的最后一个版本。包版本从 0.2.x 直接跳到 0.3.142，因此上面的移除版本和下面的安装固定版本描述的是同一个边界。要安装最后一个 V2 兼容版本，请固定主版本号和次版本号：
 
@@ -28,17 +26,13 @@ Agent SDK 0.2.x 是包含 V2 interface 的最后一个版本。包版本从 0.2.
 npm install @anthropic-ai/claude-agent-sdk@0.2
 ```
 
-<Note>
-  SDK 为您的平台捆绑了一个本地 Claude Code 二进制文件作为可选依赖项，因此大多数安装无需单独安装 Claude Code。请参阅[快速入门的安装说明](/docs/zh-CN/agent-sdk/quickstart)了解需要单独安装的情况。
-</Note>
+> [!NOTE]
+>
+> SDK 为您的平台捆绑了一个本地 Claude Code 二进制文件作为可选依赖项，因此大多数安装无需单独安装 Claude Code。请参阅[快速入门的安装说明](https://code.claude.com/docs/zh-CN/agent-sdk/quickstart.md)了解需要单独安装的情况。
 
-<h2 id="quick-start">
-  快速开始
-</h2>
+## 快速开始
 
-<h3 id="one-shot-prompt">
-  单次提示
-</h3>
+### 单次提示
 
 对于不需要维护会话的简单单轮查询，使用 `unstable_v2_prompt()`。此示例发送一个数学问题并记录答案：
 
@@ -72,9 +66,7 @@ if (result.subtype === "success") {
   ```
 </details>
 
-<h3 id="basic-session">
-  基本会话
-</h3>
+### 基本会话
 
 对于超出单个提示的交互，创建一个会话。V2 将发送和流式传输分为不同的步骤：
 
@@ -130,9 +122,7 @@ for await (const msg of session.stream()) {
   ```
 </details>
 
-<h3 id="multi-turn-conversation">
-  多轮对话
-</h3>
+### 多轮对话
 
 会话在多个交换中保持上下文。要继续对话，请在同一会话上再次调用 `send()`。Claude 会记住之前的轮次。
 
@@ -211,9 +201,7 @@ for await (const msg of session.stream()) {
   ```
 </details>
 
-<h3 id="session-resume">
-  会话恢复
-</h3>
+### 会话恢复
 
 如果您有来自之前交互的会话 ID，您可以稍后恢复它。这对于长时间运行的工作流或当您需要在应用程序重新启动时保持对话时很有用。
 
@@ -313,9 +301,7 @@ for await (const msg of resumedSession.stream()) {
   ```
 </details>
 
-<h3 id="cleanup">
-  清理
-</h3>
+### 清理
 
 会话可以手动关闭或使用 [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management)（TypeScript 5.2+ 功能用于自动资源清理）自动关闭。如果您使用的是较旧的 TypeScript 版本或遇到兼容性问题，请改用手动清理。
 
@@ -344,13 +330,9 @@ const session = unstable_v2_createSession({
 session.close();
 ```
 
-<h2 id="api-reference">
-  API 参考
-</h2>
+## API 参考
 
-<h3 id="unstable_v2_createsession">
-  `unstable_v2_createSession()`
-</h3>
+### `unstable_v2_createSession()`
 
 为多轮对话创建新会话。
 
@@ -361,9 +343,7 @@ function unstable_v2_createSession(options: {
 }): SDKSession;
 ```
 
-<h3 id="unstable_v2_resumesession">
-  `unstable_v2_resumeSession()`
-</h3>
+### `unstable_v2_resumeSession()`
 
 按 ID 恢复现有会话。
 
@@ -377,9 +357,7 @@ function unstable_v2_resumeSession(
 ): SDKSession;
 ```
 
-<h3 id="unstable_v2_prompt">
-  `unstable_v2_prompt()`
-</h3>
+### `unstable_v2_prompt()`
 
 用于单轮查询的单次便利函数。
 
@@ -393,9 +371,7 @@ function unstable_v2_prompt(
 ): Promise<SDKResultMessage>;
 ```
 
-<h3 id="sdksession-interface">
-  SDKSession interface
-</h3>
+### SDKSession interface
 
 ```typescript theme={null}
 interface SDKSession {
@@ -406,19 +382,15 @@ interface SDKSession {
 }
 ```
 
-<h2 id="feature-availability">
-  功能可用性
-</h2>
+## 功能可用性
 
-V2 session API 不支持所有 V1 功能。以下功能需要使用 [V1 SDK](/docs/zh-CN/agent-sdk/typescript)：
+V2 session API 不支持所有 V1 功能。以下功能需要使用 [V1 SDK](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md)：
 
 * 会话分叉（`forkSession` 选项）
 * 某些高级流式输入模式
 
-<h2 id="see-also">
-  另请参阅
-</h2>
+## 另请参阅
 
-* [TypeScript SDK 参考（V1）](/docs/zh-CN/agent-sdk/typescript) - 完整的 V1 SDK 文档
-* [SDK 概述](/docs/zh-CN/agent-sdk/overview) - 常规 SDK 概念
+* [TypeScript SDK 参考（V1）](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md) - 完整的 V1 SDK 文档
+* [SDK 概述](https://code.claude.com/docs/zh-CN/agent-sdk/overview.md) - 常规 SDK 概念
 * [GitHub 上的 V2 示例](https://github.com/anthropics/claude-agent-sdk-demos/tree/main/hello-world-v2) - 工作代码示例
