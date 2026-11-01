@@ -31,7 +31,7 @@
 
 > [!TIP]
 >
-> 有关在任何存储库中保持上下文较小的工作流技术，例如[在子代理中运行探索](https://code.claude.com/docs/zh-CN/best-practices.md#use-subagents-for-investigation)以使文件读取不会进入主对话，请参阅 [Claude Code 的最佳实践](https://code.claude.com/docs/zh-CN/best-practices.md)。要向组织中的每个开发者推出基线配置，请参阅[为你的组织设置 Claude Code](https://code.claude.com/docs/zh-CN/admin-setup.md)。
+> 有关在任何仓库中保持上下文较小的工作流技术，请参阅 [Claude Code 的最佳实践](https://code.claude.com/docs/zh-CN/best-practices.md)。一个例子是[在子代理中运行探索](https://code.claude.com/docs/zh-CN/best-practices.md#know-what-subagents-cost)，以使文件读取不会进入主对话。要向组织中的每个开发者推出基线配置，请参阅[为您的组织设置 Claude Code](https://code.claude.com/docs/zh-CN/admin-setup.md)。
 
 ### 示例 monorepo
 
@@ -158,7 +158,9 @@ Claude 的内容搜索默认尊重 `.gitignore`，所以已列在其中的路径
 拒绝规则可以覆盖在存储库中工作的每个人、仅你自己或机器上的每个会话，具体取决于你将它们放在哪个设置文件中：
 
 * **在存储库中工作的每个人**：将规则提交到 `.claude/settings.json`，位于存储库根目录（如果你从那里启动 Claude），或位于每个包的 `.claude/`（如果你从子目录启动）。与本页面的其他项目设置一样，该文件不会从父目录继承。
-* **仅你自己**：使用位于存储库根目录的 `.claude/settings.local.json`，它在存储库内的每个 CLI 会话中加载，无论启动目录如何，除了 Claude Code [不使用存储库根目录](https://code.claude.com/docs/zh-CN/settings.md#where-claude-code-looks-for-each-file)的情况，例如在 Windows 上。相对模式（如示例中的 `Read(./**/vendor/**/*)`）仍然[锚定在会话的当前工作目录](https://code.claude.com/docs/zh-CN/permissions.md#read-and-edit)而不是存储库根目录，所以如果你从子目录启动会话，请在此文件中将规则写为 `//` 绝对路径，例如 `Read(//absolute/path/to/repo/**/vendor/**/*)`。在 v2.1.211 之前，`.claude/settings.local.json` 也仅从启动目录加载。
+* **仅您自己**：使用位于仓库根目录的 `.claude/settings.local.json`。它在仓库内的每个 CLI 会话中加载，无论启动目录如何，除了 Claude Code [不使用仓库根目录](https://code.claude.com/docs/zh-CN/settings.md#where-claude-code-looks-for-each-file)的情况，例如在 Windows 上。
+
+  相对模式（如示例中的 `Read(./**/vendor/**/*)`）仍然[锚定在会话的当前工作目录](https://code.claude.com/docs/zh-CN/permissions.md#read-and-edit)而不是仓库根目录。如果您从子目录启动会话，请在此文件中将规则写为 `//` 绝对路径，例如 `Read(//absolute/path/to/repo/**/vendor/**/*)`。
 * **每个人，在每个会话中强制执行**：在[托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md)中设置规则，用户和项目设置无法覆盖。
 
 下面的示例阻止构建工件和供应商 SDK。其目录模式以 `/**/*` 而不是 `/**` 结尾，以便每个规则覆盖目录内的所有内容，但不覆盖目录本身。Claude 仍然可以列出这些目录或进入它们，例如使用 `ls dist` 或 `cd build`。
@@ -306,7 +308,7 @@ CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../shared
 
 ## 添加按目录 skills
 
-任何子目录都可以定义[skills](https://code.claude.com/docs/zh-CN/skills.md)范围限于其自己的堆栈。skill 在 Claude 确定其相关时按需加载，所以 API 特定的工具在前端工作期间不会消耗上下文。
+任何子目录都可以定义范围限于其自己技术栈的 [skill](https://code.claude.com/docs/zh-CN/skills.md)。skill 在 Claude 确定其相关时按需加载。
 
 Skills 位于目录内的 `.claude/skills/` 下。将它们与该区域的代码一起提交，以便克隆存储库的任何人都能获得它们。在 monorepo 中，这可以是每个包一套 skills。在大型单树代码库中，它是每个子系统一套，例如 `src/db/.claude/skills/`。
 
@@ -347,7 +349,7 @@ description: API 包的测试模式。在 packages/api/ 中编写或修改测试
 - 在 `src/__tests__/mocks/` 中模拟外部服务
 ```
 
-不同的子目录以相同的方式保存不同的 skills：`packages/web/.claude/skills/component-patterns/` 描述前端的组件约定而不是测试。当 Claude 处理 `packages/api/` 中的文件时，它加载 api-testing skill。当它在 `packages/web/` 中工作时，它加载 component-patterns 代替。在另一个的任务期间，两个目录的 skills 都不加载。
+不同的子目录以相同的方式保存不同的 skill：`packages/web/.claude/skills/component-patterns/` 描述前端的组件约定而不是测试。当 Claude 处理 `packages/api/` 中的文件时，它加载 api-testing skill。当它在 `packages/web/` 中工作时，它加载 component-patterns。
 
 您也可以按文件模式而不是按放置位置来限定 skill 的范围。[`paths` frontmatter 字段](https://code.claude.com/docs/zh-CN/skills#frontmatter-reference)采用 glob 模式，Claude 仅在处理匹配文件时自动加载 skill。对于位于仓库根目录的 `.claude/skills/` 中但仅适用于某些文件的 skill，可使用此功能，例如限定于 `**/migrations/**` 的数据库迁移 skill。
 
@@ -376,7 +378,7 @@ description: API 包的测试模式。在 packages/api/ 中编写或修改测试
 将约定和参考内容从始终加载的 CLAUDE.md 移出到按需加载的机制中：
 
 * [Skills](https://code.claude.com/docs/zh-CN/skills.md)：Claude 仅在与任务相关时加载的参考材料
-* [Plugins](https://code.claude.com/docs/zh-CN/plugins/overview.md)：平台团队集中拥有的 skills、hooks 和命令的版本化包
+* [插件](https://code.claude.com/docs/zh-CN/plugins/overview.md)：由 skill、hook 和命令组成的版本化包，由平台团队集中拥有，并可[通过托管设置为所有人安装](https://code.claude.com/docs/zh-CN/plugins/org.md#pre-install-and-require-plugins)
 * [MCP servers](https://code.claude.com/docs/zh-CN/mcp.md)：如果你的组织已经在存储库上运行代码搜索或 RAG 索引，将其公开为 MCP 工具，以便 Claude 查询它而不是直接读取文件
 
 有关平台团队如何集中强制这些的信息，请参阅[服务器管理或端点管理的设置](https://code.claude.com/docs/zh-CN/server-managed-settings.md#choose-between-server-managed-and-endpoint-managed-settings)。
@@ -465,7 +467,7 @@ monorepo/
 两种技术帮助保持跨包更改的一致性：
 
 * **在一个会话中给 Claude 整个更改**：将共享编辑及其调用站点一起交付保持每个编辑背后的决策一致，而不是按包重新推导它们
-* **在编辑前计划**：[先计划](https://code.claude.com/docs/zh-CN/best-practices.md#explore-first-then-plan-then-code)在 [plan mode](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode) 中，Claude 将计划写入文件。长的跨包会话[在进行中压缩其上下文](https://code.claude.com/docs/zh-CN/context-window.md#what-survives-compaction)。Claude Code 在每次压缩后重新注入计划文件，所以计划在对话历史可能不会的地方幸存
+* **在编辑前计划**：先在[计划模式](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode)中进行计划，Claude 会将计划写入文件。长的跨包会话会在进行过程中[压缩其上下文](https://code.claude.com/docs/zh-CN/context-window.md#what-survives-compaction)。Claude Code 在每次压缩后重新注入计划文件，因此即使对话历史可能无法保留，计划也能保留下来
 
 ## 后续步骤
 

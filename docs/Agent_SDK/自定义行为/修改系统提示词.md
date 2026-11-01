@@ -425,7 +425,8 @@ The application adds system reminders to this conversation. Treat them as contex
 
 将 `includeGitInstructions` 设置为 `false` 可排除内置的提交和 Pull Request 说明；这些说明是 Bash 工具描述的一部分，即使使用自定义 `systemPrompt` 也会传达给 Claude。不过，在使用最小默认设置、自定义 `systemPrompt` 或带有自身提示词的自定义主线程 Agent 时，会话启动时不会包含 git 状态快照。
 
-如果您设置 `CLAUDE_CODE_DISABLE_ATTACHMENTS`，Claude Code 也会将 `@` 文件提及作为纯文本发送，而不是将其展开为文件内容。可用子代理列表和后台任务通知仍然会到达。如果只想阻止 `@` 文件提及被展开，请改为设置 [`CLAUDE_CODE_DISABLE_FILE_MENTIONS=1`](https://code.claude.com/docs/zh-CN/env-vars#variables)（需要 Claude Code v2.1.299 或更高版本）。这样 Claude 会收到所提及的路径，以及一条提示其使用文件工具读取这些路径的说明。
+* 如果您设置 `CLAUDE_CODE_DISABLE_ATTACHMENTS`，Claude Code 也会将 `@` 文件提及作为纯文本发送，而不是将其展开为文件内容。可用子代理列表和后台任务通知仍然会到达。
+* 如果只想阻止 `@` 文件提及被展开，请改为设置 [`CLAUDE_CODE_DISABLE_FILE_MENTIONS=1`](https://code.claude.com/docs/zh-CN/env-vars#variables)（需要 Claude Code v2.1.299 或更高版本）。这样 Claude 会收到所提及的路径，以及一条提示其使用文件工具读取这些路径的说明，并且您的 `PreToolUse` hook 会将每次文件读取视为一次工具调用。
 
 以下示例适用于在 `append` 中携带自己提交规则的代理。它将两个 `attribution` 键都设置为空字符串以删除预告片和页脚，并关闭 `includeGitInstructions`，以便 Claude Code 自己的提交工作流说明不会与您的说明竞争：
 

@@ -42,7 +42,7 @@ Claude Code 包含一组捆绑技能，例如 `/doctor`、`/code-review`、`/bat
 * **扩展**：未使用的 skill、MCP 服务器和插件与其上下文成本的对比，以及缓慢的 [hook](https://code.claude.com/docs/zh-CN/hooks.md)
 * **`CLAUDE.md` 文件**：与已签入文件重复的本地 `CLAUDE.md` 文件、已签入的 [Claude 可以从代码库推导出的 `CLAUDE.md` 内容](https://code.claude.com/docs/zh-CN/memory#my-claude-md-is-too-large)，以及其余始终加载的指导内容，Claude 会提议将其迁移到按需加载的 skill 和嵌套 `CLAUDE.md` 文件中
 * **权限**：提议将[自动模式](https://code.claude.com/docs/zh-CN/permissions.md#permission-modes)设为您的默认权限模式，并[预先批准](https://code.claude.com/docs/zh-CN/permissions.md)您经常拒绝的只读命令
-* **用量**：在 Pro、Max、Team 或 Enterprise 套餐上，检查 [`/usage` 建议的更改](https://code.claude.com/docs/zh-CN/costs#plan-usage-breakdown)以降低您的套餐用量，基于过去 7 天的数据衡量。Claude 会提议它自己可以进行的更改，并将其余部分作为建议报告，例如供您运行的命令。用量检查需要 Claude Code v2.1.305 或更高版本，并且在 [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md) 已连接时，`/doctor` 会跳过该检查。
+* **用量**：在 Pro、Max、Ultra、Team 或 Enterprise 套餐上，检查 [`/usage` 建议的更改](https://code.claude.com/docs/zh-CN/costs#plan-usage-breakdown)以降低您的套餐用量，基于过去 7 天的数据衡量。Claude 会提议它自己可以进行的更改，并将其余部分作为建议报告，例如供您运行的命令。用量检查需要 Claude Code v2.1.305 或更高版本，并且在 [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md) 已连接时，`/doctor` 会跳过该检查。
 
 如需在不启动会话的情况下进行只读安装诊断，请改为在终端中运行 `claude doctor`。
 
@@ -83,7 +83,7 @@ Claude 仅在它引导运行出错时编辑记录的文件，例如失败的命�
 | 子命令 | 作用 | 最低版本 |
 | :- | :- | :- |
 | `migrate` | 将您现有的 Claude API 代码更新到更新的模型 | 早于 v2.1.221 |
-| `upgrade` | 跨主要版本移动您的项目的 Anthropic SDK 依赖项，目前是 Python `anthropic` 包从 0.x 到 1.x | v2.1.236 或更高版本 |
+| `upgrade` | 将您项目的 Anthropic SDK 升级到新的主要版本，并针对其破坏性变更更新您的代码 | v2.1.236 或更高版本 |
 | `api-version` | 针对更新的 [API 版本](https://platform.claude.com/docs/en/api/versioning)更新您的 Claude API 代码，然后将您的请求切换到该版本 | v2.1.307 或更高版本 |
 | `managed-agents-onboard` | 逐步完成创建新的托管代理 | 早于 v2.1.221 |
 | `managed-agents-onboard <url>` | 构建该 URL 所指页面描述的 Managed Agent，例如 [Managed Agents 文档](https://platform.claude.com/docs/en/managed-agents/overview)中的某个页面 | v2.1.290 或更高版本 |
@@ -371,7 +371,7 @@ Deploy the application:
 3. Push to the deployment target
 ```
 
-请保持正文本身简洁。skill 加载后，其内容会[在各轮次之间保留在上下文中](#skill-content-lifecycle)，因此每一行都是重复的 token 开销。说明要做什么，而不是叙述如何做或为什么做，并采用与 [CLAUDE.md 内容](https://code.claude.com/docs/zh-CN/best-practices.md#write-an-effective-claude-md)相同的简洁性标准。
+请保持正文本身简洁。skill 加载后，其内容会[在各轮次之间保留在上下文中](#skill-content-lifecycle)，因此每一行都是重复的 token 开销。说明要做什么，而不是叙述如何做或为什么做，并采用与 [CLAUDE.md 内容](https://code.claude.com/docs/zh-CN/best-practices.md#keep-claude-md-short)相同的简洁性标准。
 
 ### Frontmatter 参考
 
@@ -388,16 +388,14 @@ allowed-tools: Read Grep
 Your skill instructions here...
 ```
 
-所有字段都是可选的。仅建议设置 `description`，以便 Claude 知道何时使用该 skill。字段名必须与表格完全一致，包括连字符：Claude Code 会忽略无法识别的字段，且不会报告错误。
+所有字段都是可选的。仅建议设置 `description`，以便 Claude 知道何时使用该 skill。字段名必须与表格完全一致，包括连字符：Claude Code 会忽略无法识别的字段，且不会报告错误。除 `true` 和 `false` 外，布尔字段还接受任意大小写的 `yes`、`no`、`on`、`off`、`1` 和 `0`。
 
 仅当开头的 `---` 位于文件第一行时，Claude Code 才会读取 frontmatter。否则，它会将整个文件（包括 `---` 标记）视为 skill 内容。如果标记之间的 YAML 无法解析，skill 仍会加载，但不会设置任何字段；请参阅 [Skill 未触发](#skill-not-triggering)以查找并修复错误。
-
-除 `true` 和 `false` 外，布尔字段还接受任意大小写的 `yes`、`no`、`on`、`off`、`1` 和 `0`。在 v2.1.218 之前，Claude Code 仅识别 `true` 和 `false`。
 
 | 字段 | 必需 | 描述 |
 | :- | :- | :- |
 | `name` | 否 | 在 `/` 菜单中显示的命令名称。默认为目录名称。有关该字段如何与您为调用 skill 而输入的名称交互，请参阅 [skill 如何获得其命令名称](#how-a-skill-gets-its-command-name)。 |
-| `description` | 建议 | skill 的功能以及何时使用它。Claude 据此决定何时应用该 skill。如果省略，则使用 markdown 内容的第一个非空行。请将关键用例放在最前面：为减少上下文占用，`description` 和 `when_to_use` 的合并文本在 skill 列表中会被截断为 1,536 个字符。 |
+| `description` | 建议 | skill 的功能以及何时使用它。Claude 据此决定何时应用该 skill。如果省略，则使用 markdown 内容的第一个非空行。请将关键用例放在最前面：为减少上下文占用，`description` 和 `when_to_use` 的合并文本在 skill 列表中会被截断为 1,536 个字符。文本中的尖括号会[显示为 `&lt;` 和 `&gt;`](#angle-brackets-in-a-skill-description)。 |
 | `when_to_use` | 否 | 关于 Claude 何时应调用该 skill 的附加上下文，例如触发短语或示例请求。在 skill 列表中附加到 `description` 之后，并计入 1,536 个字符的上限。 |
 | `argument-hint` | 否 | 自动补全期间显示的提示，用于指示预期的参数。示例：`[issue-number]` 或 `[filename] [format]`。 |
 | `arguments` | 否 | 用于 skill 内容中 [`$name` 替换](#available-string-substitutions)的命名位置参数。接受以空格分隔的字符串或 YAML 列表。名称按顺序映射到参数位置。 |
@@ -406,10 +404,10 @@ Your skill instructions here...
 | `allowed-tools` | 否 | 在调用此 skill 的轮次中，Claude 无需请求权限即可使用的工具。当您发送下一条消息时，该授予即被清除。接受以空格或逗号分隔的字符串，或 YAML 列表。请参阅[为 skill 预先批准工具](#pre-approve-tools-for-a-skill)。 |
 | `disallowed-tools` | 否 | 在此 skill 处于活动状态时，从 Claude 可用工具池中移除的工具。适用于永远不应调用某些工具的自主 skill，例如对后台循环禁用 `AskUserQuestion`。接受以空格或逗号分隔的字符串，或 YAML 列表。当您发送下一条消息时，该限制即被清除。与拒绝规则一样，只要还有其他工具存在，该字段就无法移除 [`EndConversation`](https://code.claude.com/docs/zh-CN/tools-reference#endconversation-tool-behavior)。 |
 | `model` | 否 | 此 skill 处于活动状态时使用的模型。该覆盖适用于当前轮次的剩余部分，且不会保存到设置中。当您发送下一个提示词时，会话模型即恢复。接受与 [`/model`](https://code.claude.com/docs/zh-CN/model-config) 相同的值，或使用 `inherit` 保留当前活动的模型。被组织的 [`availableModels`](https://code.claude.com/docs/zh-CN/model-config#restrict-model-selection) 允许列表排除的值不会被使用，会话将保留其当前模型。在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)下，以及在[分类器审查命令时的计划模式](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode)下，自动模式不支持的模型同样不会被使用，会话将保留其当前模型。使用 `context: fork` 时，该值改为设置[分叉子代理的模型](#run-skills-in-a-subagent)，被排除的值遵循[与子代理模型覆盖相同的规则](https://code.claude.com/docs/zh-CN/model-config.md#restrict-model-selection)。 |
-| `effort` | 否 | 此 skill 处于活动状态时的 [effort 级别](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level)。覆盖会话的 effort 级别。省略该字段时，级别由 [effort 解析顺序](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level)决定。选项：`low`、`medium`、`high`、`xhigh`、`max`；可用级别取决于模型。 |
+| `effort` | 否 | 当前轮次剩余部分的 [effort 级别](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level)。覆盖会话的 effort 级别，但不会覆盖 [`CLAUDE_CODE_EFFORT_LEVEL`](https://code.claude.com/docs/zh-CN/env-vars#variables) 环境变量。使用 `context: fork` 时，该值改为设置分叉子代理的 effort 级别。省略该字段时，级别由 [effort 解析顺序](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level)决定。选项：`low`、`medium`、`high`、`xhigh`、`max`；可用级别取决于模型。 |
 | `context` | 否 | 设置为 `fork` 可在分叉的子代理上下文中运行。请参阅[在子代理中运行 skill](#run-skills-in-a-subagent)。 |
 | `agent` | 否 | 设置 `context: fork` 时使用的子代理类型。 |
-| `background` | 否 | 仅在使用 `context: fork` 时适用。设置为 `false` 可在调用该 skill 的轮次中等待分叉子代理的结果，而不是[在后台运行它](#run-skills-in-a-subagent)。默认值：`true`。需要 Claude Code v2.1.218 或更高版本。 |
+| `background` | 否 | 仅在使用 `context: fork` 时适用。设置为 `false` 可在调用该 skill 的轮次中等待分叉子代理的结果，而不是[在后台运行它](#run-skills-in-a-subagent)。默认值：`true`。 |
 | `hooks` | 否 | Claude Code 在调用该 skill 时注册并在会话剩余时间内持续运行的 hook。有关配置格式、`once` 选项以及 [skill hook 的限制](https://code.claude.com/docs/zh-CN/hooks.md#limits-on-skill-hooks)，请参阅 [skill 和 Agent 中的 hook](https://code.claude.com/docs/zh-CN/hooks.md#hooks-in-skills-and-agents)。 |
 | `paths` | 否 | 限制此 skill 何时激活的 Glob 模式。接受以逗号分隔的字符串或 YAML 列表。设置后，仅当处理与这些模式匹配的文件时，Claude 才会自动加载该 skill。模式相对于 Claude 的当前工作目录，该目录之外的文件不会匹配。使用与[特定路径规则](https://code.claude.com/docs/zh-CN/memory.md#path-specific-rules)相同的 glob 格式。 |
 | `shell` | 否 | 此 skill 中 `` !`command` `` 和 ` ```! ` 块使用的 shell。接受 `bash`（默认）或 `powershell`。当 [PowerShell 工具](https://code.claude.com/docs/zh-CN/tools-reference.md#powershell-tool)启用时，设置 `powershell` 会通过 PowerShell 运行内联 shell 命令：在没有 Git Bash 的 Windows 上默认启用，对于 claude.ai 和 Console 账户在有 Git Bash 时默认启用，而在 Amazon Bedrock、Google Cloud 的 Agent Platform 和 Microsoft Foundry 会话中以及在 macOS、Linux 和 WSL 上需要设置 `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`。将其设置为 `0` 可关闭该工具。 |
@@ -780,9 +778,9 @@ PowerShell 工具对它运行的命令应用相同的超时、后台化和输出
 
 使用默认的 `bash` shell，将 `|| true` 附加到任何你期望退出非零的其他命令。一个在发现问题时退出 1 的检查脚本就是一个例子。
 
-#### 注入命令中的控制字符
+#### 未运行任何 shell 命令时
 
-`No shell command in <name> was run` 表示该文件中的某个 `!` 命令包含制表符或换行符以外的原始控制字符，因此其中所有命令都不会运行。请参阅[如何查找并删除该字符](https://code.claude.com/docs/zh-CN/errors.md#no-shell-command-was-run)。
+`No shell command in <name> was run` 表示其中某个 shell 命令包含该工具不接受的字符。要查找并删除该字符，请参阅[错误参考](https://code.claude.com/docs/zh-CN/errors.md#no-shell-command-was-run)。
 
 #### 注入命令的权限检查
 
@@ -800,7 +798,7 @@ PowerShell 工具对它运行的命令应用相同的超时、后台化和输出
 >
 > 尽管名称如此，具有 `context: fork` 的技能不会在[当前对话的分叉](https://code.claude.com/docs/zh-CN/sub-agents.md#fork-the-current-conversation)中运行，这会将你迄今为止讨论的所有内容交给子代理。当任务依赖于该历史时，分叉对话而不是使用 `context: fork`。
 
-分叉的子代理在[后台](https://code.claude.com/docs/zh-CN/sub-agents.md#run-subagents-in-foreground-or-background)运行：你继续工作，而它运行，其结果在完成时到达你的对话。在 frontmatter 中设置 `background: false` 以改为在调用技能的轮次中等待结果。在 v2.1.218 之前，分叉的技能总是阻止轮次直到它们完成。
+分叉的子代理在[后台](https://code.claude.com/docs/zh-CN/sub-agents.md#run-subagents-in-foreground-or-background)运行：它运行期间您可以继续工作，完成后其结果会出现在您的对话中。在 frontmatter 中设置 `background: false`，即可改为在调用 skill 的轮次中等待结果。
 
 Claude Code 也会等待结果，即使技能没有设置 `background: false`，在这些情况下：
 
@@ -1230,6 +1228,13 @@ Claude Code 将 skill 名称和描述的列表加载到上下文中，以便 Cla
 `/context` 中的 Skills 行报告应用预算后列表的大小，因此它与模型接收的内容相匹配。在 v2.1.196 之前，该行计算每个描述的完整文本，可能显示的值比配置的预算大几倍。
 
 要提高预算，设置 [`skillListingBudgetFraction`](https://code.claude.com/docs/zh-CN/settings-reference#skilllistingbudgetfraction) 设置（例如 `0.02` = 2%）或 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 环境变量为固定字符数。要为其他 skills 释放预算，在 [`skillOverrides`](#override-skill-visibility-from-settings) 中将低优先级条目设置为 `"name-only"`，以便它们在没有描述的情况下列出。你也可以在源处修剪 `description` 和 `when_to_use` 文本：将关键用例放在首位，因为每个条目的组合文本被限制在 1,536 个字符，无论预算如何。该上限可通过 [`skillListingMaxDescChars`](https://code.claude.com/docs/zh-CN/settings-reference#skilllistingmaxdescchars) 配置。
+
+### Skill 描述中的尖括号显示为 `&lt;` 和 `&gt;`
+
+Claude Code 会将 `description` 和 `when_to_use` 字段中的 `<` 和 `>` 显示为 `&lt;` 和 `&gt;`。要显示诸如 `<branch>` 之类的占位符，请使用方括号或 [`argument-hint`](#frontmatter-reference)：
+
+* **方括号**：将 `<branch>` 替换为 `[branch]`，它会按输入原样显示
+* **`argument-hint`**：将占位符移到新的 `argument-hint: <branch>` 行中。它会显示在命令名称之后。如果您还将该 skill 上传到 claude.ai 或 Skills API，请先[检查那里是否接受 `argument-hint`](#using-skill-frontmatter-outside-claude-code)。
 
 ### 个人 skills 消失了
 

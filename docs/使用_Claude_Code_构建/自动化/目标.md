@@ -168,7 +168,7 @@ claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"
 
 > [!WARNING]
 >
-> Claude Code 在使用小型快速模型的任何地方都会读取 `ANTHROPIC_DEFAULT_HAIKU_MODEL`，不仅仅是用于 `/goal` 评估。当你设置它时，Claude Code 也会将 [`haiku` 别名](https://code.claude.com/docs/zh-CN/model-config#model-aliases)解析为该模型，并在其上运行[后台功能](https://code.claude.com/docs/zh-CN/costs.md#background-token-usage)，例如对话摘要。
+> Claude Code 在使用小型快速模型的任何地方都会读取 `ANTHROPIC_DEFAULT_HAIKU_MODEL`，不仅仅是用于 `/goal` 评估。当您设置它时，Claude Code 也会将 [`haiku` 别名](https://code.claude.com/docs/zh-CN/model-config#model-aliases)解析为该模型，并在其上运行会话标题生成和其他一些后台任务。
 
 评估器在你的会话配置的任何提供商上运行。它不调用工具，所以它只能判断 Claude 已经在对话中呈现的内容。
 

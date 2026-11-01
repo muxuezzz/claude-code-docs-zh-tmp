@@ -33,64 +33,64 @@
 
 将此用作您的标准组织范围推出消息。它涵盖了 Claude Code 是什么，提供了两分钟的安装路径，为读者提供了一个具体的任务来尝试，并在任何人必须询问之前回答了"我的代码去哪里了？"。
 
-**电子邮件**
+> [tab] 电子邮件
+>
+> ```text theme={null}
+> 主题：Claude Code 现已为 [工程部门 / 您的团队] 推出
+>
+> 团队，
+>
+> 从今天开始，您可以访问 Claude Code，这是一个在您的终端中运行、读取您的实际代码库并端到端处理真实任务的 AI 编码 Agent：调试、重构、测试、PR。它不是自动完成，也不是聊天窗口。它会编辑文件并运行您的命令。
+>
+> 在两分钟内开始运行：
+>
+>     curl -fsSL https://claude.ai/install.sh | bash
+>     cd <your-repo>
+>     claude
+>
+> 然后运行 /init 一次。Claude 读取您的项目并写入一个 CLAUDE.md，其中包含您的构建命令和约定，因此您不再需要重新解释基础知识。
+>
+> 然后在您已经在的仓库上尝试以下其中之一：
+>
+>   - "文件 [file] 中的测试不稳定。找出原因并修复它"
+>   - "向我介绍 [module] 如何处理 [X]"
+>   - "查看我当前工作的 diff，并在我推送之前告诉我有哪些风险"
+>
+> 您的代码去哪里了：Claude Code 在您的终端中运行，直接与 Anthropic 的 API 通信。在我们的 Team 或 Enterprise 计划下，Anthropic 不会使用您的代码或提示词来训练其模型。
+> 详情：https://code.claude.com/docs/en/data-usage
+>       https://code.claude.com/docs/en/security
+>
+> 有问题去哪里：#claude-code。[所有者名称] 本周在关注它。
+>
+> - [名称]
+>
+> 附注：更喜欢您的编辑器？有一个 VS Code 扩展和一个 JetBrains 插件。相同的 Agent，不需要终端。
+> ```
 
-```text theme={null}
-主题：Claude Code 现已为 [工程部门 / 您的团队] 推出
-
-团队，
-
-从今天开始，您可以访问 Claude Code，这是一个在您的终端中运行、读取您的实际代码库并端到端处理真实任务的 AI 编码 Agent：调试、重构、测试、PR。它不是自动完成，也不是聊天窗口。它会编辑文件并运行您的命令。
-
-在两分钟内开始运行：
-
-    curl -fsSL https://claude.ai/install.sh | bash
-    cd <your-repo>
-    claude
-
-然后运行 /init 一次。Claude 读取您的项目并写入一个 CLAUDE.md，其中包含您的构建命令和约定，因此您不再需要重新解释基础知识。
-
-然后在您已经在的仓库上尝试以下其中之一：
-
-  - "文件 [file] 中的测试不稳定。找出原因并修复它"
-  - "向我介绍 [module] 如何处理 [X]"
-  - "查看我当前工作的 diff，并在我推送之前告诉我有哪些风险"
-
-您的代码去哪里了：Claude Code 在您的终端中运行，直接与 Anthropic 的 API 通信。在我们的 Team 或 Enterprise 计划下，Anthropic 不会使用您的代码或提示词来训练其模型。
-详情：https://code.claude.com/docs/en/data-usage
-      https://code.claude.com/docs/en/security
-
-有问题去哪里：#claude-code。[所有者名称] 本周在关注它。
-
-- [名称]
-
-附注：更喜欢您的编辑器？有一个 VS Code 扩展和一个 JetBrains 插件。相同的 Agent，不需要终端。
-```
-
-**Slack 或 Teams**
-
-```markdown theme={null}
-🚀 *Claude Code 现已为 [团队] 推出*
-
-AI 编码 Agent，在您的终端中运行，读取您的仓库，完成真实工作：
-错误、重构、测试、PR。
-
-`curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` → `claude`
-
-*首先尝试的事情* → 运行 `/init`，然后："文件 [file] 中的测试不稳定，
-找出原因并修复它。"
-
-🔒 在您的终端中运行，直接与 Anthropic 的 API 通信。在我们的 Team 或
-Enterprise 计划下，您的代码和提示词不会用于训练模型。
-数据使用 → https://code.claude.com/docs/en/data-usage
-
-📚 快速入门 · VS Code · 免费 1 小时课程
-   https://code.claude.com/docs/en/quickstart
-   https://code.claude.com/docs/en/vs-code
-   https://academy.claude.com/courses/claude-code-in-action
-
-问题 → 此线程。[所有者] 在处理。
-```
+> [tab] Slack 或 Teams
+>
+> ```markdown theme={null}
+> 🚀 *Claude Code 现已为 [团队] 推出*
+>
+> AI 编码 Agent，在您的终端中运行，读取您的仓库，完成真实工作：
+> 错误、重构、测试、PR。
+>
+> `curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` → `claude`
+>
+> *首先尝试的事情* → 运行 `/init`，然后："文件 [file] 中的测试不稳定，
+> 找出原因并修复它。"
+>
+> 🔒 在您的终端中运行，直接与 Anthropic 的 API 通信。在我们的 Team 或
+> Enterprise 计划下，您的代码和提示词不会用于训练模型。
+> 数据使用 → https://code.claude.com/docs/en/data-usage
+>
+> 📚 快速入门 · VS Code · 免费 1 小时课程
+>    https://code.claude.com/docs/en/quickstart
+>    https://code.claude.com/docs/en/vs-code
+>    https://academy.claude.com/courses/claude-code-in-action
+>
+> 问题 → 此线程。[所有者] 在处理。
+> ```
 
 ### 执行赞助商变体
 
@@ -98,41 +98,41 @@ Enterprise 计划下，您的代码和提示词不会用于训练模型。
 
 此版本故意精简为一个要求：安装它并在一个真实任务上运行它。高管的工作是让要求落地；标准公告和 `#claude-code` 处理方式。
 
-**电子邮件**
+> [tab] 电子邮件
+>
+> ```text theme={null}
+> 主题：我希望每位工程师本周尝试的一件事
+>
+> 团队，
+>
+> 我们已为所有工程部门启用了 Claude Code。这是一个直接在您的终端中工作、在您的实际代码库上工作的 AI 代理，已经使用它的团队的早期结果足够强劲，我希望每个人本周都使用它。
+>
+> 我要求十分钟：
+>
+>     curl -fsSL https://claude.ai/install.sh | bash
+>     cd <your-repo>
+>     claude
+>
+> 然后给它一个真实的任务：您一直在推迟的错误，或"向我介绍 [module] 如何工作"。
+>
+> 这就是全部要求。[所有者名称] 和团队在 #claude-code 中处理您遇到的任何问题。
+>
+> - [执行官名称]
+>   [职位]
+> ```
 
-```text theme={null}
-主题：我希望每位工程师本周尝试的一件事
-
-团队，
-
-我们已为所有工程部门启用了 Claude Code。这是一个直接在您的终端中工作、在您的实际代码库上工作的 AI 代理，已经使用它的团队的早期结果足够强劲，我希望每个人本周都使用它。
-
-我要求十分钟：
-
-    curl -fsSL https://claude.ai/install.sh | bash
-    cd <your-repo>
-    claude
-
-然后给它一个真实的任务：您一直在推迟的错误，或"向我介绍 [module] 如何工作"。
-
-这就是全部要求。[所有者名称] 和团队在 #claude-code 中处理您遇到的任何问题。
-
-- [执行官名称]
-  [职位]
-```
-
-**Slack 或 Teams**
-
-```markdown theme={null}
-📣 *来自 [执行官名称]：本周尝试的一件事*
-
-我们已为所有工程部门启用了 *Claude Code*。早期结果足够强劲，我要求每个人本周在真实工作上给它十分钟。
-
-`curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` →
-`claude` → 给它一个真实的任务。
-
-就这样。问题 → #claude-code。
-```
+> [tab] Slack 或 Teams
+>
+> ```markdown theme={null}
+> 📣 *来自 [执行官名称]：本周尝试的一件事*
+>
+> 我们已为所有工程部门启用了 *Claude Code*。早期结果足够强劲，我要求每个人本周在真实工作上给它十分钟。
+>
+> `curl -fsSL https://claude.ai/install.sh | bash` → `cd your-repo` →
+> `claude` → 给它一个真实的任务。
+>
+> 就这样。问题 → #claude-code。
+> ```
 
 ### 试点组变体
 

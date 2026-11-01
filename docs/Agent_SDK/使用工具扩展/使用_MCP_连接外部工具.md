@@ -386,109 +386,109 @@ options = ClaudeAgentOptions(
 
 使用 `env` 字段将 API 密钥、令牌和其他凭证传递给 MCP 服务器：
 
-**In code**
+> [tab] In code
+>
+> ```typescript TypeScript hidelines={1,-1} theme={null}
+> const _ = {
+>   options: {
+>     mcpServers: {
+>       "api-server": {
+>         command: "npx",
+>         args: ["-y", "@your-org/api-mcp-server"],
+>         env: {
+>           API_KEY: process.env.API_KEY
+>         }
+>       }
+>     },
+>     allowedTools: ["mcp__api-server__*"]
+>   }
+> };
+> ```
+>
+> ```python Python theme={null}
+> options = ClaudeAgentOptions(
+>     mcp_servers={
+>         "api-server": {
+>             "command": "npx",
+>             "args": ["-y", "@your-org/api-mcp-server"],
+>             "env": {"API_KEY": os.environ["API_KEY"]},
+>         }
+>     },
+>     allowed_tools=["mcp__api-server__*"],
+> )
+> ```
 
-```typescript TypeScript hidelines={1,-1} theme={null}
-const _ = {
-  options: {
-    mcpServers: {
-      "api-server": {
-        command: "npx",
-        args: ["-y", "@your-org/api-mcp-server"],
-        env: {
-          API_KEY: process.env.API_KEY
-        }
-      }
-    },
-    allowedTools: ["mcp__api-server__*"]
-  }
-};
-```
-
-```python Python theme={null}
-options = ClaudeAgentOptions(
-    mcp_servers={
-        "api-server": {
-            "command": "npx",
-            "args": ["-y", "@your-org/api-mcp-server"],
-            "env": {"API_KEY": os.environ["API_KEY"]},
-        }
-    },
-    allowed_tools=["mcp__api-server__*"],
-)
-```
-
-**.mcp.json**
-
-```json theme={null}
-{
-  "mcpServers": {
-    "api-server": {
-      "command": "npx",
-      "args": ["-y", "@your-org/api-mcp-server"],
-      "env": {
-        "API_KEY": "${API_KEY}"
-      }
-    }
-  }
-}
-```
-
-`${API_KEY}` 语法在运行时展开环境变量。
+> [tab] .mcp.json
+>
+> ```json theme={null}
+> {
+>   "mcpServers": {
+>     "api-server": {
+>       "command": "npx",
+>       "args": ["-y", "@your-org/api-mcp-server"],
+>       "env": {
+>         "API_KEY": "${API_KEY}"
+>       }
+>     }
+>   }
+> }
+> ```
+>
+> `${API_KEY}` 语法在运行时展开环境变量。
 
 ### 远程服务器的 HTTP 头
 
 对于 HTTP 和 SSE 服务器，直接在服务器配置中传递身份验证头：
 
-**In code**
+> [tab] In code
+>
+> ```typescript TypeScript hidelines={1,-1} theme={null}
+> const _ = {
+>   options: {
+>     mcpServers: {
+>       "secure-api": {
+>         type: "http",
+>         url: "https://api.example.com/mcp",
+>         headers: {
+>           Authorization: `Bearer ${process.env.API_TOKEN}`
+>         }
+>       }
+>     },
+>     allowedTools: ["mcp__secure-api__*"]
+>   }
+> };
+> ```
+>
+> ```python Python theme={null}
+> options = ClaudeAgentOptions(
+>     mcp_servers={
+>         "secure-api": {
+>             "type": "http",
+>             "url": "https://api.example.com/mcp",
+>             "headers": {"Authorization": f"Bearer {os.environ['API_TOKEN']}"},
+>         }
+>     },
+>     allowed_tools=["mcp__secure-api__*"],
+> )
+> ```
 
-```typescript TypeScript hidelines={1,-1} theme={null}
-const _ = {
-  options: {
-    mcpServers: {
-      "secure-api": {
-        type: "http",
-        url: "https://api.example.com/mcp",
-        headers: {
-          Authorization: `Bearer ${process.env.API_TOKEN}`
-        }
-      }
-    },
-    allowedTools: ["mcp__secure-api__*"]
-  }
-};
-```
-
-```python Python theme={null}
-options = ClaudeAgentOptions(
-    mcp_servers={
-        "secure-api": {
-            "type": "http",
-            "url": "https://api.example.com/mcp",
-            "headers": {"Authorization": f"Bearer {os.environ['API_TOKEN']}"},
-        }
-    },
-    allowed_tools=["mcp__secure-api__*"],
-)
-```
-
-**.mcp.json**
-
-```json theme={null}
-{
-  "mcpServers": {
-    "secure-api": {
-      "type": "http",
-      "url": "https://api.example.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${API_TOKEN}"
-      }
-    }
-  }
-}
-```
-
-`${API_TOKEN}` 语法在运行时展开环境变量。
+> [tab] .mcp.json
+>
+> ```json theme={null}
+> {
+>   "mcpServers": {
+>     "secure-api": {
+>       "type": "http",
+>       "url": "https://api.example.com/mcp",
+>       "headers": {
+>         "Authorization": "Bearer ${API_TOKEN}"
+>       }
+>     }
+>   }
+> }
+> ```
+>
+> `${API_TOKEN}` 语法在运行时展开环境变量。
 
 有关使用头进行身份验证的远程服务器的完整工作示例，请参阅[从存储库列出问题](#list-issues-from-a-repository)。
 

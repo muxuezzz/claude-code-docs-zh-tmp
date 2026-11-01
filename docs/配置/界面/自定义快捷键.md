@@ -678,11 +678,11 @@ Claude Code 在 `ctrl+x` 前缀上按上下文绑定以下默认和弦：
 
 ## Vim 模式交互
 
-启用 vim 模式（通过 `/config` → 编辑器模式）时，快捷键和 vim 模式独立运行：
+当您通过 `/config` 中的编辑器模式设置启用 vim 模式时，快捷键和 vim 模式独立运行：
 
-* **Vim 模式**在文本输入级别处理输入（光标移动、模式、动作）
-* **快捷键**在组件级别处理操作（切换待办事项、提交等）
-* vim 模式中的 Escape 键从 INSERT 切换到 NORMAL 模式；它不触发 `chat:cancel`
+* **Vim 模式**在文本输入级别处理输入：光标移动、模式和动作
+* **快捷键**在组件级别处理操作，例如切换待办事项或提交消息
+* 在 vim 模式下，Escape 键会将 INSERT 模式切换为 NORMAL 模式，而不会触发 `chat:cancel`
 * 大多数 Ctrl+key 快捷键通过 vim 模式传递到快捷键系统
 * Vim 键不能通过快捷键文件重新映射。要映射两键 INSERT 模式序列（如 `jj`）到 Escape，请使用 [`vimInsertModeRemaps`](https://code.claude.com/docs/zh-CN/interactive-mode#remap-insert-mode-key-sequences) 设置
 * 在 vim NORMAL 模式中，`?` 显示帮助菜单（vim 行为）

@@ -236,7 +236,6 @@ claude -p "Write a poem" --output-format stream-json --verbose --include-partial
 
 如果流中缺少其中某些消息，请将您的 Claude Code 版本与以下最低版本进行对照：
 
-* **在每个嵌套深度转发**：v2.1.219 或更高版本
 * **Claude 从主对话使用 Skill 工具启动的 forked skill**：其 `tool_use` 和 `tool_result` 块需要 v2.1.86 或更高版本，其第一条 `user` 消息以及文本和思考块需要 v2.1.265 或更高版本
 * **forked skill 生成的子代理的消息，以及在子代理或另一个 forked skill 内启动的 forked skill 的消息**：v2.1.275 或更高版本
 * **通过将 `/<skill-name>` 作为提示词传递而启动的 forked skill 的消息**：v2.1.287 或更高版本
@@ -285,9 +284,11 @@ Claude Code 在启动时验证每个 `--mcp-config` 条目并跳过验证失败�
 | 字段 | 类型 | 描述 |
 | - | - | - |
 | `mcp_servers` | 数组 | 会话中的 MCP 服务器，每个都有 `name` 和 `status` |
-| `mcp_server_errors` | 数组 | 被配置验证跳过的 `--mcp-config` 条目，每个都有 `name`、`type` 和 `message`。`type` 是跳过类别，例如 `unknown_type`、`url_missing_type`、`invalid_config` 或 `reserved_name`；将您不认识的值视为通用跳过。受影响的服务器不会出现在 `mcp_servers` 中。当没有错误时，该键被省略，因此 CI 门可以在数组非空时失败。需要 Claude Code v2.1.219 或更高版本 |
+| `mcp_server_errors` | 数组 | 被配置验证跳过的 `--mcp-config` 条目，每个都有 `name`、`type` 和 `message`。`type` 是跳过类别，例如 `unknown_type`、`url_missing_type`、`invalid_config` 或 `reserved_name`；将您不认识的值视为通用跳过。受影响的服务器不会出现在 `mcp_servers` 中。当没有错误时，该键被省略，因此 CI 门可以在数组非空时失败 |
 
-当您在终端中手动运行命令时，Claude Code 也会向 stderr 打印启动警告，例如 `Warning: 1 MCP server skipped due to invalid config:`，后跟每个跳过条目的原因。当您重定向 stderr 或当 CI 运行器或 SDK 主机等程序捕获它时，Claude Code 不打印警告，仅在 `mcp_server_errors` 字段中报告跳过的条目。警告需要 Claude Code v2.1.219 或更高版本。
+当您在终端中手动运行命令时，Claude Code 也会向 stderr 打印启动警告，例如 `Warning: 1 MCP server skipped due to invalid config:`，后跟每个跳过条目的原因。
+
+当您重定向 stderr，或当 CI 运行器或 SDK 主机等程序捕获它时，Claude Code 不打印警告。它仅在 `mcp_server_errors` 字段中报告跳过的条目。
 
 #### 跟踪插件安装
 

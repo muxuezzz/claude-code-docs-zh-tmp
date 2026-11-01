@@ -171,7 +171,7 @@ Claude Code 存储库发布了一个 [example dev container](https://code.claude
 
 个别开发人员可以选择本页面上的任何沙箱方法。组织可以强制实施什么，以及使用哪些工具，取决于该方法：
 
-* **Built-in Bash sandbox**：Claude Code 强制实施的唯一方法。通过 [managed settings](https://code.claude.com/docs/zh-CN/managed-settings.md#delivery-mechanisms) 传递 `sandbox` 设置密钥，可以是由您的 MDM 管理的文件，也可以通过 Claude.ai 上的 [server-managed settings](https://code.claude.com/docs/zh-CN/server-managed-settings.md)。有关要部署的密钥以及如何防止开发人员扩大策略，请参阅 [Enforce sandboxing with managed settings](https://code.claude.com/docs/zh-CN/sandboxing.md#enforce-sandboxing-with-managed-settings)。
+* **Built-in Bash sandbox**：Claude Code 强制实施的唯一方法。通过 [managed settings](https://code.claude.com/docs/zh-CN/managed-settings.md#delivery-mechanisms) 传递 `sandbox` 设置键，可以是由您的 MDM 管理的文件，也可以通过 Claude.ai 上的 [server-managed settings](https://code.claude.com/docs/zh-CN/server-managed-settings.md)。有关要部署的键以及如何防止开发人员扩大策略，请参阅 [Enforce sandboxing with managed settings](https://code.claude.com/docs/zh-CN/sandboxing.md#enforce-sandboxing-with-managed-settings)。
 * **Dev containers**：将 [example dev container](https://code.claude.com/docs/zh-CN/devcontainer.md) 提交到您的存储库以在团队中标准化环境。这是一个约定而不是强制边界，因为 Claude Code 不需要容器。如果开发人员不应该能够在其外部运行 Claude Code，请使用您组织的设备管理或软件允许列表工具强制实施。
 * **Custom containers and VMs**：通过批准的镜像分发 Claude Code，并使用您组织的设备管理或软件允许列表工具防止在其外部安装。
 
@@ -181,6 +181,6 @@ Claude Code 存储库发布了一个 [example dev container](https://code.claude
 
 * [Sandboxing](https://code.claude.com/docs/zh-CN/sandboxing.md)：配置内置沙箱化 Bash 工具
 * [Dev container](https://code.claude.com/docs/zh-CN/devcontainer.md)：预配置的 Docker 开发容器
-* [Security](https://code.claude.com/docs/zh-CN/security.md)：完整的 Claude Code 安全模型
-* [Secure deployment](https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md)：Agent SDK 应用程序的隔离指导
-* [Settings](https://code.claude.com/docs/zh-CN/settings-reference.md#sandbox-settings)：所有沙箱配置密钥，包括托管设置传递
+* [安全性](https://code.claude.com/docs/zh-CN/security.md)：完整的 Claude Code 安全模型
+* [安全部署](https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md)：Agent SDK 应用程序的隔离指导
+* [设置](https://code.claude.com/docs/zh-CN/settings-reference.md#sandbox-settings)：所有沙箱配置键，包括托管设置传递

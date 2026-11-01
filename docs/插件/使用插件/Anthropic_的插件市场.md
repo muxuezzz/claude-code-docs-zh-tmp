@@ -4,11 +4,11 @@
 
 # Anthropic 的插件市场
 
-> Anthropic 官方、社区和演示插件市场的 Claude Code：它们的名称、存储库、如何添加每个市场，以及在哪里浏览它们的插件。
+> Anthropic 为 Claude Code 提供的官方和社区插件市场：它们的名称、仓库、如何添加每个市场，以及在哪里浏览它们的插件。
 
-Anthropic 为 Claude Code 发布了三个通用插件市场：[官方](https://github.com/anthropics/claude-plugins-official)、[社区](https://github.com/anthropics/claude-plugins-community)和[演示](https://github.com/anthropics/claude-code)。每个都是其自己的 GitHub 存储库中的插件目录。当你在 Claude Code 会话中从其中一个安装插件时，你在 `@` 后面输入市场的名称，如 `/plugin install commit-commands@claude-plugins-official`。
+Anthropic 为 Claude Code 发布了两个通用插件市场：[官方](https://github.com/anthropics/claude-plugins-official)和[社区](https://github.com/anthropics/claude-plugins-community)。每个都是其自己的 GitHub 仓库中的插件目录。当您在 Claude Code 会话中从其中一个安装插件时，需要在 `@` 后面输入市场的名称，如 `/plugin install commit-commands@claude-plugins-official`。
 
-使用此页面来区分这三个市场，并找到检查官方市场是否包含给定插件的位置。
+使用此页面来区分这两个市场，并找到检查官方市场是否包含给定插件的位置。
 
 > [!NOTE]
 >
@@ -19,29 +19,36 @@ Anthropic 为 Claude Code 发布了三个通用插件市场：[官方](https://g
 
 转到你需要的页面部分：
 
-* 要按存储库、市场名称和获取方式来区分这三个市场，请参阅 [Anthropic 的插件市场](#anthropic%E2%80%99s-marketplaces)。
+* 要按仓库、市场名称和获取方式来区分这两个市场，请参阅 [Anthropic 的插件市场](#anthropic’s-marketplaces)。
 * 要在官方市场中查找插件，请参阅[在官方市场中查找插件](#find-plugins-in-the-official-marketplace)。
 
 ## Anthropic 的插件市场
 
-市场是一个插件目录，由存储库在其 `.claude-plugin/marketplace.json` 文件中定义。官方、社区和演示市场各自来自自己的 GitHub 存储库。Anthropic 还发布主题特定的市场，例如 `anthropics/skills` 和 `anthropics/knowledge-work-plugins`，你可以在 Claude Code 会话中使用 `/plugin marketplace add <owner>/<repo>` 添加。
+市场是一个插件目录，由仓库在其 `.claude-plugin/marketplace.json` 文件中定义。官方市场和社区市场各自来自自己的 GitHub 仓库。Anthropic 还发布主题特定的市场，例如 `anthropics/skills` 和 `anthropics/knowledge-work-plugins`，您可以在 Claude Code 会话中使用 `/plugin marketplace add <owner>/<repo>` 添加。
 
 此表给出了每个市场的存储库和市场名称，这是你从该市场安装插件时在 `@` 后面输入的内容。社区市场的名称是 `claude-community`，而不是其存储库名称。
 
-| | 官方 | 社区 | 演示 |
-| :- | :- | :- | :- |
-| 存储库 | [`anthropics/claude-plugins-official`](https://github.com/anthropics/claude-plugins-official) | [`anthropics/claude-plugins-community`](https://github.com/anthropics/claude-plugins-community) | [`anthropics/claude-code`](https://github.com/anthropics/claude-code/tree/main/plugins) |
-| 市场名称 | `claude-plugins-official` | `claude-community` | `claude-code-plugins` |
-| 其中包含的内容 | Anthropic 维护的插件，加上来自合作伙伴和其他作者的插件 | 第三方插件，由其作者提交给 Anthropic | 一小组示例插件，展示插件可以包含的内容 |
-| 获取方式 | Claude Code 在你首次启动交互式终端会话时添加它，除非[托管策略](https://code.claude.com/docs/zh-CN/plugins/org.md#allow-the-official-marketplace-and-your-own)或 `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL` 阻止它。如果缺少，请参阅[市场 `claude-plugins-official` 未找到](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#marketplace-claude-plugins-official-not-found) | 你在 Claude Code 会话中使用 `/plugin marketplace add anthropics/claude-plugins-community` 添加它 | 你在 Claude Code 会话中使用 `/plugin marketplace add anthropics/claude-code` 添加它 |
+| | 官方 | 社区 |
+| :- | :- | :- |
+| 仓库 | [`anthropics/claude-plugins-official`](https://github.com/anthropics/claude-plugins-official) | [`anthropics/claude-plugins-community`](https://github.com/anthropics/claude-plugins-community) |
+| 市场名称 | `claude-plugins-official` | `claude-community` |
+| 其中包含的内容 | Anthropic 维护的插件，加上来自合作伙伴和其他作者的插件 | 第三方插件，由其作者提交给 Anthropic |
+| 获取方式 | Claude Code 在您首次启动交互式终端会话时添加它，除非[托管策略](https://code.claude.com/docs/zh-CN/plugins/org.md#allow-the-official-marketplace-and-your-own)或 `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL` 阻止它。如果缺少，请参阅[市场 `claude-plugins-official` 未找到](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#marketplace-claude-plugins-official-not-found) | 您在 Claude Code 会话中使用 `/plugin marketplace add anthropics/claude-plugins-community` 添加它 |
 
 如果你编写了插件并希望其他人安装它，请参阅[发布插件](https://code.claude.com/docs/zh-CN/plugins/publish.md)，其中涵盖了你自己的市场和提交到 Anthropic 的目录。
 
-### `anthropics/claude-code` 中的演示市场
+### 已弃用的 `claude-code-plugins` 市场
 
-如果教程或较旧的说明告诉你运行 `/plugin marketplace add anthropics/claude-code`，这会添加演示市场，名为 `claude-code-plugins`。它不是官方市场。
+> [!WARNING]
+>
+> `anthropics/claude-code` 中的 `claude-code-plugins` 市场已弃用。要添加插件，请在 shell 中运行 `claude plugin install <plugin>@claude-plugins-official`，并跳过任何运行 `/plugin marketplace add anthropics/claude-code` 的教程步骤。
 
-演示市场的大多数插件也在官方市场中以相同的名称存在。例如，`code-review`、`feature-dev`、`commit-commands` 和 `security-guidance` 都在两者中。从 `claude-plugins-official` 安装这些，这样你就不会安装两个副本。
+除非您安装了下面两个插件之一，否则可以保持您的 `claude-code-plugins` 插件和该市场不变。它们会从 `claude-plugins-official` 仓库进行更新。
+
+* **`ralph-wiggum`**：此插件现在名为 `ralph-loop`，其命令以 `/ralph-loop:` 开头。如果这些命令不可用，请在 shell 中运行 `claude plugin install ralph-loop@claude-plugins-official`。
+* **`claude-opus-4-5-migration`**：此插件已停用，请在 shell 中运行 `claude plugin uninstall claude-opus-4-5-migration@claude-code-plugins` 将其移除。
+
+如果有任何其他插件停止工作，请参阅[插件已安装但无法工作](https://code.claude.com/docs/zh-CN/plugins/troubleshooting.md#plugin-installed-but-not-working)。
 
 ## 在官方市场中查找插件
 
@@ -62,12 +69,9 @@ Anthropic 的目录与这些市场分开。该目录是 claude.ai 上的目录�
 
 要从桌面应用或脚本安装，或查看云会话加载的内容，请参阅[安装插件](https://code.claude.com/docs/zh-CN/plugins/install.md)。
 
-### 添加社区或演示市场
+### 添加社区市场
 
-社区和演示市场在你在 Claude Code 会话中添加它们之前不会注册：
-
-* **社区**：运行 `/plugin marketplace add anthropics/claude-plugins-community`，然后使用 `@claude-community` 后缀安装。
-* **演示**：运行 `/plugin marketplace add anthropics/claude-code`，然后使用 `@claude-code-plugins` 后缀安装。
+社区市场在您添加之前不会注册。在 Claude Code 会话中运行 `/plugin marketplace add anthropics/claude-plugins-community`，然后使用 `@claude-community` 后缀安装。
 
 如果 `claude-plugins-official` 不在 `/plugin` 的 **Marketplaces** 选项卡上，用 `/plugin marketplace add anthropics/claude-plugins-official` 以相同的方式添加它。
 

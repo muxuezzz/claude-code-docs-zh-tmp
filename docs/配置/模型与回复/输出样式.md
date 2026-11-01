@@ -97,7 +97,7 @@ Claude 然后停止并等待。在 `TODO(human)` 注释处编写你的代码，�
   该命令也适用于[非交互模式](https://code.claude.com/docs/zh-CN/headless.md)和 Agent SDK 会话，以及来自移动应用或网页的[远程控制](https://code.claude.com/docs/zh-CN/remote-control.md#limitations)，其中你只能列出和选择[内置样式](#built-in-output-styles)。需要 Claude Code v2.1.269 或更高版本。
 * **Terminal 菜单**：运行 `/config` 并选择**输出样式**从菜单中选择一种样式。
 * **VS Code extension**：使用 `/` 打开[命令菜单](https://code.claude.com/docs/zh-CN/vs-code.md#use-the-prompt-box)并选择**输出样式**来选择一种样式，包括你的自定义样式。需要 Claude Code v2.1.257 或更高版本。
-* **Desktop app**：在设置文件中设置 `outputStyle` 字段，例如 `.claude/settings.local.json`，这是终端菜单写入的文件。当你在那里运行 `/config` 时，Claude Code [打开**设置 > Claude Code**](https://code.claude.com/docs/zh-CN/desktop.md#what%E2%80%99s-not-available-in-desktop)而不是菜单。
+* **桌面应用**：在设置文件中设置 `outputStyle` 字段，例如 `.claude/settings.local.json`，这是终端菜单写入的文件。当您在桌面应用中运行 `/config` 时，Claude Code 会[打开**设置 > Code** 或**设置 > Claude Code**](https://code.claude.com/docs/zh-CN/desktop.md#what’s-not-available-in-desktop)，而不是菜单。
 
 要在不使用菜单的情况下设置样式，直接编辑设置文件中的 `outputStyle` 字段：
 

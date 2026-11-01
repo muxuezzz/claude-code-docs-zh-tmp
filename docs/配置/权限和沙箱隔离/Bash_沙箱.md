@@ -119,17 +119,17 @@ claude --settings '{"sandbox": {"enabled": true, "allowUnsandboxedCommands": fal
 
 使用您的发行版的包管理器安装它们：
 
-**Ubuntu/Debian**
+> [tab] Ubuntu/Debian
+>
+> ```bash theme={null}
+> sudo apt-get install bubblewrap socat
+> ```
 
-```bash theme={null}
-sudo apt-get install bubblewrap socat
-```
-
-**Fedora**
-
-```bash theme={null}
-sudo dnf install bubblewrap socat
-```
+> [tab] Fedora
+>
+> ```bash theme={null}
+> sudo dnf install bubblewrap socat
+> ```
 
 当缺少依赖时，`/sandbox` 中的 Dependencies 选项卡会列出您的平台缺少 `ripgrep`、`bubblewrap`、`socat` 和 seccomp 过滤器中的哪些。如果在安装并重启 Claude Code 后没有看到该选项卡，则说明所有依赖都已就绪。
 
@@ -137,7 +137,7 @@ Ripgrep 已随原生 Claude Code 二进制文件捆绑提供。seccomp 过滤器
 
 当缺少必需的依赖时，在安装之前 Dependencies 选项卡是唯一显示的选项卡。当仅缺少可选的 seccomp 过滤器时，Dependencies 选项卡会与其他选项卡一起显示。依赖检查在启动时运行，因此安装软件包后请重启 Claude Code，以便 `/sandbox` 检测到它们。
 
-> **Ubuntu 24.04 及更高版本：允许 bubblewrap 创建用户命名空间**
+> [accordion] Ubuntu 24.04 及更高版本：允许 bubblewrap 创建用户命名空间
 >
 > 在 Ubuntu 24.04 及更高版本上，默认的 AppArmor 策略会阻止 bubblewrap 创建其隔离所需的用户命名空间。
 >
@@ -161,7 +161,7 @@ Ripgrep 已随原生 Claude Code 二进制文件捆绑提供。seccomp 过滤器
 > sudo systemctl reload apparmor
 > ```
 
-> **WSL2 注意事项**
+> [accordion] WSL2 注意事项
 >
 > 在 PowerShell 中使用 `wsl -l -v` 检查您的 WSL 版本。如果看到 `Sandboxing requires WSL2`，则说明您的发行版运行的是 WSL1。请将其升级到 WSL2，或在不使用沙箱隔离的情况下运行 Claude Code。
 >
@@ -222,6 +222,8 @@ Claude Code 提供两种沙箱模式。在这两种模式下，沙箱都会强�
 * **匹配的允许规则**：如果诸如 `Bash(curl *)` 之类的允许规则与命令匹配，它也会批准重试，因此该命令会在沙箱外运行且不提示
 * **针对该参数的询问规则**：为 `Bash(dangerouslyDisableSandbox:true)` 添加[询问规则](https://code.claude.com/docs/zh-CN/permissions.md#match-by-input-parameter)，即可在 Bash 重试时收到提示。在自动模式和 `bypassPermissions` 模式下您也会收到提示，并且该规则优先于匹配的允许规则
 * **[`permissions.blockReadsOutsideWorkingDirectories`](https://code.claude.com/docs/zh-CN/settings-reference#permissions-blockreadsoutsideworkingdirectories)**：[任何模式都不会自动批准的操作](https://code.claude.com/docs/zh-CN/permission-modes.md#actions-no-mode-auto-approves)介绍了在启用该设置时会提示的重试
+
+当命令因 [`Sandbox is required` 消息](#commands-refused-with-sandbox-is-required)而被拒绝时，Claude Code 会忽略 `dangerouslyDisableSandbox` 参数，并同样拒绝该重试。
 
 #### 使用严格沙箱模式关闭重试
 
@@ -318,6 +320,7 @@ Claude Code 会将您的条目与每次 Bash 和 Monitor 调用进行比对。�
 * **调用中的每条命令都必须匹配**：`npm ci && docker compose build` 会保持在沙箱中，除非有另一个条目覆盖 `npm ci`
 * **Claude Code 匹配的是调用的文本**：在内部调用 `docker` 的脚本或 `make` 目标不会匹配，`/usr/local/bin/docker` 也不会匹配
 * **某些调用会保持在沙箱中**：重定向到文件、`cd` 或诸如 `$(...)` 的命令替换会使整个调用保持在沙箱中。[参考条目](https://code.claude.com/docs/zh-CN/settings-reference.md#sandbox-excludedcommands)列出了更多会保持在沙箱中的调用
+* **`git clone` 需要使用相对路径**：如果克隆指定了绝对路径、以 `~` 开头的路径或包含 `..` 段的路径，您的条目不会覆盖该克隆。如果克隆可以放在您的工作目录内，请让 Claude 使用不含 `..` 段的相对路径，例如 `vendor/lib`
 * **条目的保存位置可能很重要**：当沙箱为[管理员强制要求](#repository-settings-under-an-admin-required-sandbox)时，Claude Code 会忽略 `.claude/settings.json` 和 `.claude/settings.local.json` 中的条目
 
 被排除的命令会经过常规的权限流程：
@@ -352,7 +355,7 @@ Claude Code 会将您的条目与每次 Bash 和 Monitor 调用进行比对。�
 
 沙箱有两个相互独立的层：[文件系统隔离](#filesystem-isolation)控制沙箱命令可以读写哪些路径，[网络隔离](#network-isolation)控制它们可以访问哪些域名。关闭文件系统层后，沙箱命令将获得对主机文件系统不受限制的读写访问权限，而其网络出站流量仍限于您允许的域名。当您使用沙箱的目的是控制命令连接到哪里，而不是控制它们写入什么时，请关闭该层。
 
-`sandbox.filesystem.disabled` 默认为 `false`。需要 Claude Code v2.1.216 或更高版本。
+`sandbox.filesystem.disabled` 默认为 `false`。
 
 > [!WARNING]
 >
@@ -537,7 +540,7 @@ AWS 请求携带基于请求内容的 SigV4 签名，因此请同时对 `AWS_ACC
 
 * **在您的工作目录及其上级目录中**：`.claude` 设置文件，`.claude/skills`、`.claude/agents`、`.claude/commands` 和 `.claude/hooks` 目录，`.mcp.json`，以及 Claude Code 自行运行的文件，例如 `.claude/workflows` 和 `.claude/scheduled_tasks.json`
 * **仅在您的工作目录中**：shell 启动文件（例如 `.bashrc` 和 `.zshrc`）、`.gitconfig`、`.vscode` 和 `.idea` 目录，以及 `.git` 内的 `hooks` 和 `config`
-* **会将您的工作目录变成裸 git 仓库的文件**：顶层的 `HEAD`、`objects` 和 `refs`，以及当旁边存在 `HEAD` 时，该处已有的 `config` 和 `hooks` 条目。即使没有 `HEAD`，名为 `config` 的文件也会被拒绝。在 Linux 和 WSL2 上，如果沙箱化命令运行期间出现顶层 `HEAD` 文件或 `objects`、`refs` 目录，沙箱会将其删除
+* **会将您的工作目录变成裸 git 仓库的文件**：顶层的 `HEAD`、`objects` 和 `refs`，以及当旁边存在 `HEAD` 文件或符号链接时，该处已有的 `config` 和 `hooks` 条目。即使没有 `HEAD`，名为 `config` 的文件也会被拒绝。[之后出现的 `HEAD`、`objects` 或 `refs` 可能会被删除](#when-the-sandbox-deletes-head-objects-or-refs)。在 Linux 和 WSL2 上，沙箱化命令可以在其不存在的位置创建一个。
 * **在 `~/.claude` 或 `CLAUDE_CONFIG_DIR` 所指向的目录中**：其中的大部分内容，以及 `~/.claude.json` 和 `.credentials.json` 凭据存储
 
 如果会话期间在受保护设置文件的路径上出现符号链接，沙箱还会从下一条命令开始拒绝写入该符号链接所指向的文件。
@@ -552,9 +555,17 @@ AWS 请求携带基于请求内容的 SigV4 签名，因此请同时对 `AWS_ACC
 
 如果 `git merge` 或 `git checkout` 在这些路径之一上因 `unable to unlink old` 而失败，请参阅[git 命令因 `unable to unlink old` 而失败](#a-git-command-fails-with-unable-to-unlink-old)。
 
+#### 沙箱何时删除 `HEAD`、`objects` 或 `refs`
+
+沙箱化命令结束后，工作目录中较新的顶层 `HEAD`、`objects` 或 `refs` 条目会被删除，除非它是包含内容的文件夹。"较新"是指沙箱上次构建其配置时该条目并不存在：即会话开始时，或在 [`/cd`](https://code.claude.com/docs/zh-CN/commands) 等更改之后。
+
+如果沙箱上次构建其配置时存在 `HEAD` 文件或符号链接，那么较新的包含内容的 `objects` 或 `refs` 文件夹也会连同其内容一起被删除。要保留某个文件夹，请参阅[命令执行后名为 `objects` 或 `refs` 的文件夹消失](#a-folder-named-objects-or-refs-disappears-after-a-command)。
+
 #### 经过符号链接的被拒绝路径
 
 在 macOS 上，当被拒绝的路径经过符号链接时（例如 `~/.claude` 是一个指向 dotfiles 仓库的链接），沙箱也会拒绝该路径的真实位置。这涵盖沙箱自身的拒绝，以及您按字面写出的 `denyWrite` 和 `denyRead` 条目。
+
+对于包含 `*`、`?` 或 `[` 的 `denyWrite` 条目，当这些字符中第一个出现之前的某个文件夹是符号链接时，同样适用。例如，`~/.claude/*.json` 在 `~/.claude` 的真实位置下也会被拒绝。
 
 ### 网络隔离
 
@@ -881,15 +892,28 @@ Claude Code 会忽略在其他任何位置设置的端口。在 v2.1.285 之前�
 
 失败后，Claude 可能会[提议在沙箱外重新运行该命令](#the-unsandboxed-retry-escape-hatch)。批准该重试，或在另一个终端中自行运行该 git 命令。如果您已将 `allowUnsandboxedCommands` 设置为 `false`，Claude 无法提供重试，因此请自行运行该命令。
 
+### 名为 `objects` 或 `refs` 的文件夹在命令执行后消失
+
+会话期间出现的顶层 `objects` 或 `refs` 文件夹可能会[在沙箱化命令结束后被删除](#when-the-sandbox-deletes-head-objects-or-refs)。无论它是由命令、Claude 还是您创建的，都是如此。要保留某个文件夹，请在其中放入一些内容。如果会话期间顶层曾存在 `HEAD` 文件或符号链接，请将其移走，然后重新启动在该位置打开的每个 Claude Code 会话。
+
+在 v2.1.307 之前，即使文件夹中有内容且不存在 `HEAD`，该文件夹也会被删除。如果您使用的是更早的版本，请[更新 Claude Code](https://code.claude.com/docs/zh-CN/setup.md#update-claude-code)。
+
 ### Bubblewrap 在容器内启动失败
 
 在无特权容器中，[bubblewrap](#os-level-enforcement) 无法挂载新的 `/proc` 文件系统，因此沙箱化命令会因 `bwrap` 错误（如 `Can't mount proc on /newroot/proc: Operation not permitted`）而失败。将 [`enableWeakerNestedSandbox`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-enableweakernestedsandbox) 设置为 `true`，以便沙箱改为绑定挂载容器现有的 `/proc`。仅当外部容器已提供您需要的隔离边界时才使用此设置，因为该设置会向沙箱化命令公开进程信息，而新的 `/proc` 挂载会隐藏这些信息。
 
 ### 0 字节只读文件出现在 `.claude` 设置路径中，且"是的，不要再问"无法保存
 
-在 Linux 和 WSL2 上，沙箱化命令运行期间，沙箱通过在尚不存在的文件位置创建 0 字节只读占位符来保持对该文件的写入拒绝。沙箱随后会移除占位符。如果会话在清理运行之前被终止，例如通过 SIGKILL，占位符就会残留下来。后续会话每次启动时都会再次将这些占位符以只读方式绑定，因此在占位符所在的位置，设置写入（如保存权限选择）会失败。
+在 Linux 和 WSL2 上，沙箱化命令运行期间，沙箱通过在尚不存在的文件位置创建 0 字节只读占位符来保持对该文件的写入拒绝。沙箱随后会移除占位符。
 
-在终端中运行 `claude doctor` 以列出残留的占位符文件。[`Sandbox mask files left behind at write-deny paths`](https://code.claude.com/docs/zh-CN/errors#stale-sandbox-mask-files-left-by-a-killed-session) 警告会列出其中部分文件的名称，并统计其余文件的数量。在该项目中没有其他 Claude Code 会话运行时，使用 `rm` 删除每个文件。在 v2.1.257 之前，Claude Code 会留下相同的占位符而不对其进行标记。
+在以下情况下，占位符会残留下来：
+
+* 会话在清理运行之前被终止，例如通过 SIGKILL
+* 会话在沙箱化命令仍在运行时退出，例如后台命令
+
+后续会话每次启动时都会再次将这些占位符以只读方式绑定，因此在占位符所在的位置，设置写入（如保存权限选择）会失败。
+
+在终端中运行 `claude doctor` 以列出残留的占位符文件。[`Sandbox mask files left behind at write-deny paths`](https://code.claude.com/docs/zh-CN/errors#stale-sandbox-mask-files-left-by-a-killed-session) 警告会列出其中部分文件的名称，并统计其余文件的数量。在该项目中没有其他 Claude Code 会话运行时，使用 `rm` 删除每个文件。在 v2.1.257 之前，会话被终止时 Claude Code 会留下相同的占位符，而不对其进行标记。
 
 ### 启用沙箱时通过 SSH 使用 `git` 失败
 
@@ -987,6 +1011,21 @@ git remote set-url origin https://git.example.com/example-org/example-repo.git
 不带端口的 IP 地址条目会让沙箱化命令能够访问在该地址上监听的所有服务。
 
 在 v2.1.284 之前，代理会连接到允许的主机名所解析到的任何地址。
+
+### 命令因 `Sandbox is required` 被拒绝
+
+如果您通过 [`sandbox.failIfUnavailable`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-failifunavailable) 要求使用沙箱，而沙箱在 Claude Code 启动后以下列方式之一失败，则 Claude 运行的每条沙箱化命令都会被拒绝，并显示相应的消息。会话会继续运行，被拒绝的命令不会在沙箱外运行：
+
+* **`Sandbox is required but failed to initialize: <reason>`**：Claude Code 已启动，但沙箱随后初始化失败。请执行消息中给出的步骤：`Restart to retry.` 或 `Fix the sandbox settings to retry`。
+* **`Sandbox is required (sandbox.failIfUnavailable) and stopped being available in this session: <reason>`**：在 Linux 或 WSL2 上，沙箱已启动，但 Claude Code 随后发现缺少某个依赖项。请修复原因中指出的问题，例如[安装缺失的依赖项](#set-up-linux-and-wsl2)，然后重新启动 Claude Code。
+
+被排除的命令和您自行输入的命令会继续运行，且 Claude 无法在沙箱外重试被拒绝的命令：
+
+* **被排除的命令**：匹配 [`excludedCommands`](#run-commands-outside-the-sandbox-with-excludedcommands) 条目的命令会继续在沙箱外运行。当其中某条命令写入您工作目录之外的 [`filesystem.allowWrite`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-filesystem-allowwrite) 路径时，该写入会经过常规权限流程。在[管理员强制要求的沙箱](#repository-settings-under-an-admin-required-sandbox)下，Claude Code 会忽略来自仓库设置的条目
+* **您在 [`!` shell 模式提示符](https://code.claude.com/docs/zh-CN/interactive-mode#shell-mode-with-prefix)处输入的命令**：继续在沙箱外运行。在[后台会话](https://code.claude.com/docs/zh-CN/agent-view.md)中，它们也会被拒绝
+* **在沙箱外重试**：Claude Code 会忽略[在沙箱外重试](#the-unsandboxed-retry-escape-hatch)的 `dangerouslyDisableSandbox` 参数
+
+在设置了 `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` 的 Linux 会话中，每条命令都在沙箱中运行，因此被排除的命令和您输入的命令也会被拒绝。
 
 ### `/sandbox` 因 `Sandbox settings are overridden by a higher-priority configuration` 失败
 

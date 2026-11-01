@@ -29,7 +29,7 @@
 您还可以添加标志：
 
 * `--fix`：在审查后还要求 Claude 将发现的问题修复应用到您的工作树。其编辑会经过您的[权限模式](https://code.claude.com/docs/zh-CN/permission-modes.md)。
-* `--comment`：将发现的问题以行内评论形式发布到 GitHub Pull Request 上，或以单条备注形式发布到 [GitLab 合并请求](#post-findings-to-a-gitlab-merge-request)上
+* `--comment`：将发现的问题以行内评论形式发布到 GitHub Pull Request 上，或以单条备注形式发布到 [GitLab merge request](#post-findings-to-a-gitlab-merge-request)上
 
 **2. 继续工作**
 
@@ -71,7 +71,7 @@
 * 在终端会话中，`/code-review` 以[分叉子代理](https://code.claude.com/docs/zh-CN/skills.md#run-skills-in-a-subagent)的形式运行审查
 * 在输出为文本或 JSON 的 `-p` 运行中
 
-在请求发现列表的宿主应用程序（例如[桌面应用](https://code.claude.com/docs/zh-CN/desktop.md#review-your-code)）中，Claude 会改为通过 [`ReportFindings` 工具](https://code.claude.com/docs/zh-CN/tools-reference)报告审查发现的问题。报告以发现列表的形式显示，每个条目会显示文件位置、一句话摘要，以及类别标签（例如 `correctness`，如果该问题带有类别）。宿主请求适用于所有 effort 级别，需要 Claude Code v2.1.218 或更高版本。
+在请求发现列表的宿主应用程序（例如[桌面应用](https://code.claude.com/docs/zh-CN/desktop.md#review-your-code)）中，Claude 会改为通过 [`ReportFindings` 工具](https://code.claude.com/docs/zh-CN/tools-reference)报告审查发现的问题。报告以发现列表的形式显示，每个条目会显示文件位置、一句话摘要，以及类别标签（例如 `correctness`，如果该问题带有类别）。宿主请求适用于所有 effort 级别。
 
 当 Claude 在会话后续修复已报告的问题时，会再次报告这些问题。Claude Code 随后会在更新后的发现列表中将每个问题标记为已修复、已跳过或无需更改。
 
@@ -104,7 +104,7 @@
 在 effort 级别和标志之后，Claude Code 会将该行的其余部分读取为审查目标。`ultra` 参数会改变这种解读方式：
 
 * **使用 `ultra` 时**：Claude Code 会将单个单词读取为基础分支或 PR 编号。未指明分支或 PR 的较长文本会成为[附加到审查的备注](https://code.claude.com/docs/zh-CN/ultrareview.md#pass-a-request-in-plain-words)。`/code-review ultra check my auth changes` 会审查您的当前分支，Claude 会将发现的问题与您的备注关联起来。
-* **不使用 `ultra` 时**：剩余的所有内容都是审查目标，即使它以另一个命令名称开头。`/code-review /fix-issue 123` 会以 `/fix-issue 123` 作为目标文本进行审查，而不是将 `/fix-issue` 作为第二个[叠加的 skill](https://code.claude.com/docs/zh-CN/skills.md#stack-several-skills-in-one-message) 加载。在 v2.1.218 之前，叠加在 `/code-review` 之后的命令会作为其自身的 skill 展开。
+* **不使用 `ultra` 时**：剩余的所有内容都是审查目标，即使它以另一个命令名称开头。`/code-review /fix-issue 123` 会以 `/fix-issue 123` 作为目标文本进行审查，而不是将 `/fix-issue` 作为第二个[叠加的 skill](https://code.claude.com/docs/zh-CN/skills.md#stack-several-skills-in-one-message) 加载。
 
 ## 在前台运行
 
@@ -113,8 +113,6 @@
 * 在非交互模式下运行，使用 `-p` 标志或 Agent SDK。Claude Code 会等待审查完成，并在响应中包含发现的问题，但 `ultra` 除外，它[不会等待云端审查](https://code.claude.com/docs/zh-CN/ultrareview.md#run-ultrareview-non-interactively)。
 * 将 [`CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`](https://code.claude.com/docs/zh-CN/env-vars) 设置为 `1`，这也会关闭其他后台任务功能
 * 在之前的审查仍在进行时再次运行 `/code-review`
-
-在 v2.1.218 之前，审查在您的对话内部运行。
 
 ## 让 Claude 启动审查
 

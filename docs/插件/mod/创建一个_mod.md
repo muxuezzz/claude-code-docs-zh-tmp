@@ -46,7 +46,9 @@ Mod 是一个 Claude Code [插件](https://code.claude.com/docs/zh-CN/plugins/ov
 
 **4. 尝试 mod**
 
-使用你请求的内容。对于示例提示，当前分支名称出现在提示框上方。如果 mod 没有做你想要的，告诉 Claude 要改变什么。mod 在每个更改其文件的转折结束时重新加载，所以你可以在 Claude 完成后立即尝试更改。
+使用您请求的功能。对于示例提示词，当前分支名称会显示在输入框上方。如果 mod 没有按您的预期工作，请告诉 Claude 需要更改什么。mod 会在每个更改其文件的轮次结束时重新加载，因此 Claude 完成后您就可以立即尝试该更改。
+
+如果会话记录中以该 mod 名称开头的某一行显示[更改未加载](https://code.claude.com/docs/zh-CN/plugins/mods/troubleshoot.md#this-mods-change-didnt-load)，请在向 Claude 请求修复时将该行粘贴到您的下一条消息中。除非您粘贴，否则 Claude 看不到该行。
 
 ### 在其他会话中使用 mod
 
@@ -90,17 +92,17 @@ first-mod/
 
 创建保存文件的两个目录：
 
-**Bash or Zsh**
+> [tab] Bash or Zsh
+>
+> ```bash theme={null}
+> mkdir -p first-mod/.claude-plugin first-mod/hooks
+> ```
 
-```bash theme={null}
-mkdir -p first-mod/.claude-plugin first-mod/hooks
-```
-
-**PowerShell**
-
-```powershell theme={null}
-New-Item -ItemType Directory -Force first-mod\.claude-plugin, first-mod\hooks
-```
+> [tab] PowerShell
+>
+> ```powershell theme={null}
+> New-Item -ItemType Directory -Force first-mod\.claude-plugin, first-mod\hooks
+> ```
 
 **2. 编写清单**
 

@@ -470,29 +470,29 @@ ls ~/.claude/skills/*/SKILL.md
 
 每个 SDK 以不同的方式呈现拒绝：
 
-**TypeScript**
+> [tab] TypeScript
+>
+> TypeScript SDK 抛出一个 `Error`，说明条目破坏的规则。例如，`skills: ["docs:*"]` 抛出：
+>
+> ```text theme={null}
+> Invalid skill name "docs:*": wildcard-suffix names are not allowed; list each skill by its exact name.
+> ```
+>
+> 空名称报告 `Skill names must be non-empty strings.`
+>
+> 在 TypeScript Agent SDK 0.3.221 之前，SDK 没有运行此检查。
 
-TypeScript SDK 抛出一个 `Error`，说明条目破坏的规则。例如，`skills: ["docs:*"]` 抛出：
-
-```text theme={null}
-Invalid skill name "docs:*": wildcard-suffix names are not allowed; list each skill by its exact name.
-```
-
-空名称报告 `Skill names must be non-empty strings.`
-
-在 TypeScript Agent SDK 0.3.221 之前，SDK 没有运行此检查。
-
-**Python**
-
-Python SDK 引发 `ValueError`，说明条目破坏的规则。例如，`skills=["docs:*"]` 引发：
-
-```text theme={null}
-ValueError: Invalid skill name 'docs:*': wildcard-suffix names are not allowed; list each skill by its exact name.
-```
-
-空名称报告 `Skill names must be non-empty strings`。
-
-在 Python Agent SDK 0.2.129 之前，SDK 没有运行此检查。
+> [tab] Python
+>
+> Python SDK 引发 `ValueError`，说明条目破坏的规则。例如，`skills=["docs:*"]` 引发：
+>
+> ```text theme={null}
+> ValueError: Invalid skill name 'docs:*': wildcard-suffix names are not allowed; list each skill by its exact name.
+> ```
+>
+> 空名称报告 `Skill names must be non-empty strings`。
+>
+> 在 Python Agent SDK 0.2.129 之前，SDK 没有运行此检查。
 
 ### 其他故障排除
 

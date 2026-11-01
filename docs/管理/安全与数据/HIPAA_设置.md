@@ -26,7 +26,7 @@ HIPAA 配置是 Claude Enterprise 计划中的一项组织设置，适用于处�
 
 | 时间 | 操作内容 |
 | :- | :- |
-| 应用配置之前 | [准备计算机](#prepare-computers-before-the-hipaa-configuration-is-applied)：检查开发人员的连接方式、更新应用、允许网络访问并部署托管设置 |
+| 应用配置之前 | [准备计算机](#prepare-computers-before-the-hipaa-configuration-is-applied)：检查开发人员的连接方式、更新应用、允许网络访问、部署托管设置，并限制 Claude Desktop 登录 |
 | 应用配置之后 | Code 标签页处于关闭状态，直到所有者将其重新打开。[在计算机上确认配置](#confirm-the-configuration-on-a-computer) |
 | 持续进行 | [管理本地会话数据](#manage-local-session-data) |
 
@@ -160,6 +160,10 @@ HIPAA 配置不限制 `cleanupPeriodDays`，因此开发人员可以在自己的
 * **低于 v2.1.285 的版本**：这些版本会忽略 `allowedProviders`，因此仍可能在云提供商或网关上启动。要让 v2.1.163 至 v2.1.284 拒绝启动，您可以在与[示例键](#deploy-managed-settings)相同的托管设置中添加值为 `"2.1.285"` 的 [`requiredMinimumVersion`](https://code.claude.com/docs/zh-CN/settings-reference#requiredminimumversion)。v2.1.163 之前的版本既会忽略 `allowedProviders`，也会忽略 `requiredMinimumVersion`，因此请[更新这些计算机](#update-claude-code-and-claude-desktop)。
 
 要了解您的 BAA 是否涵盖在没有 HIPAA 配置的情况下运行的会话，请参阅[在符合 HIPAA 要求的 Enterprise 计划中使用 Claude Code（本地模式）和 Cowork（本地模式）](https://support.claude.com/en/articles/17318731)。
+
+### 限制 Claude Desktop 登录
+
+如果开发人员使用 Claude Desktop 的 Code 标签页，还需按照[将登录限制为您的组织](https://code.claude.com/docs/zh-CN/desktop.md#restrict-sign-in-to-your-organization)中的说明，在 Claude Desktop 策略中设置 `forceLoginOrgUUID`。在托管设置中部署 `forceLoginMethod` 和 `forceLoginOrgUUID` 不会改变 Claude Desktop 的登录界面。
 
 ## 在计算机上确认配置
 

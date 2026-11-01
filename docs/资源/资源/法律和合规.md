@@ -13,7 +13,7 @@
 您对 Claude Code 的使用受以下条款约束：
 
 * [商业条款](https://www.anthropic.com/legal/commercial-terms) - 适用于 Team、Enterprise 和 Claude API 用户
-* [消费者服务条款](https://www.anthropic.com/legal/consumer-terms) - 适用于 Free、Pro 和 Max 用户
+* [消费者服务条款](https://www.anthropic.com/legal/consumer-terms) - 适用于 Free、Pro、Max 和 Ultra 用户
 
 ### 商业协议
 
@@ -45,14 +45,14 @@ Claude Code 仍然受 Anthropic 的标准条款管制（请参阅上面的许可
 
 ### 可接受的使用
 
-Claude Code 的使用受 [Anthropic 使用政策](https://www.anthropic.com/legal/aup) 约束。Pro 和 Max 计划的公布使用限制假设 Claude Code 和 Agent SDK 的普通个人使用。
+Claude Code 的使用受 [Anthropic 使用政策](https://www.anthropic.com/legal/aup) 约束。Pro、Max 和 Ultra 套餐公布的用量限制以 Claude Code 和 Agent SDK 的普通个人使用为前提。
 
 ### 身份验证和凭证使用
 
 Claude Code 使用 OAuth 令牌或 API 密钥与 Anthropic 的服务器进行身份验证。这些身份验证方法有不同的用途：
 
-* **OAuth 身份验证**仅供 Claude Free、Pro、Max、Team 和 Enterprise 订阅计划的购买者使用，旨在支持 Claude Code 和其他原生 Anthropic 应用程序的普通使用。有关登录步骤，请参阅 [登录您的 Claude 账户](https://support.claude.com/en/articles/13189465-logging-in-to-your-claude-account)；有关 Claude Code 如何执行 OAuth 身份验证，请参阅 [身份验证](https://code.claude.com/docs/zh-CN/authentication.md)。
-* **开发者**构建与 Claude 功能交互的产品或服务，包括使用 [Agent SDK](https://code.claude.com/docs/zh-CN/agent-sdk/overview.md) 的产品或服务，应通过 [Claude Console](https://platform.claude.com/) 或受支持的云提供商使用 API 密钥身份验证。Anthropic 不允许第三方开发者提供 Claude.ai 登录到他们自己的应用程序，或代表其用户通过 Free、Pro 或 Max 计划凭证路由请求。此外，开发者不得收集、存储或中介 Claude.ai 凭证或会话令牌 — 登录到 Claude 账户必须通过 Anthropic 自己的流程完成。
+* **OAuth 身份验证**仅供 Claude Free、Pro、Max、Ultra、Team 和 Enterprise 订阅套餐的购买者使用，旨在支持 Claude Code 和其他原生 Anthropic 应用程序的普通使用。有关登录步骤，请参阅 [登录您的 Claude 账户](https://support.claude.com/en/articles/13189465-logging-in-to-your-claude-account)；有关 Claude Code 如何执行 OAuth 身份验证，请参阅 [身份验证](https://code.claude.com/docs/zh-CN/authentication.md)。
+* **开发者**构建与 Claude 功能交互的产品或服务，包括使用 [Agent SDK](https://code.claude.com/docs/zh-CN/agent-sdk/overview.md) 的产品或服务，应通过 [Claude Console](https://platform.claude.com/) 或受支持的云提供商使用 API 密钥身份验证。Anthropic 不允许第三方开发者在其自己的应用程序中提供 Claude.ai 登录，或代表其用户通过 Free、Pro、Max 或 Ultra 套餐凭据路由请求。此外，开发者不得收集、存储或中介 Claude.ai 凭据或会话令牌 — 登录到 Claude 账户必须通过 Anthropic 自己的流程完成。
 
 这不限制客户如何配置和管理他们自己的 API 密钥或第三方推理提供商凭证 — 例如，在开发环境、密钥管理器或机器镜像中配置 API 密钥供客户自己的授权用户使用 — 前提是所产生的使用按照密钥所有者与 Anthropic（或适用提供商）的协议进行计费，并且不被转售或按上述方式中介。它也不妨碍最终用户使用他们自己的 Claude 订阅登录到未修改的 Claude Code 二进制文件，包括平台按照上述\*客户可以在他们的产品中提供 Claude Code 吗？\*部分所述方式托管 Claude Code 的情况。
 

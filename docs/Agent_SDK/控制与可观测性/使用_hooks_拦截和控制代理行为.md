@@ -771,7 +771,9 @@ Claude Code 运行每个回调时都有超时限制，您可以在其 `HookMatch
 
 当回调超过其超时时间时，Claude Code 会取消它并丢弃其输出，会话继续而不是挂起。接下来发生的情况取决于事件：
 
-* `PreToolUse`: Claude Code 阻止该工具调用。作为替代，Claude 收到一个工具结果，说明 hook 未在超时前响应，轮次继续。在 v2.1.210 之前，Claude Code 将超时报告给 Claude 作为用户拒绝，这使得无人值守会话停止并等待输入。
+* `PreToolUse`: Claude Code 阻止该工具调用。如果其他所有 hook 均未返回任何内容或仅返回 `allow` 决定，工具结果会告知 Claude 该 hook 未在超时前响应，轮次继续。如果您的另一个 hook 已拒绝该调用，其拒绝仍会传达给 Claude：工具结果包含该 hook 的原因，超时文本可能跟在其后。
+
+  在 v2.1.210 之前，Claude Code 将超时报告给 Claude 作为用户拒绝，这使得无人值守会话停止并等待输入。
 * `PostToolUse` 和 `PostToolUseFailure`：Claude Code 保留工具结果，轮次继续。
 * `UserPromptSubmit` 和 [`UserPromptExpansion`](https://code.claude.com/docs/zh-CN/hooks#userpromptexpansion)：Claude Code 使用指明 hook 和超时的消息阻止该提示词，会话继续。在 v2.1.208 之前，当这些事件上的回调超时时，Claude Code 以 `error_during_execution` 结束查询。
 * `Stop` 和 `SubagentStop`：超时的回调计为不返回任何决定。Agent 或子代理停止，就像该回调已允许它一样，您在该事件上的其他 hook 的决定仍然适用。在 Claude Code v2.1.273 之前，超时的 `Stop` 或 `SubagentStop` 回调计为失败的 hook 运行，Claude Code 丢弃了您在该事件上的其他 hook 的决定。

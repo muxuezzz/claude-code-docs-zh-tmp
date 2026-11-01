@@ -43,7 +43,7 @@ export CLAUDE_CODE_AUTO_MODE_SERVER=0
 
 ## 为什么会出现通知
 
-[服务器端分类器审查](https://code.claude.com/docs/zh-CN/permission-modes.md#server-side-classifier-review)列出了哪些会话向服务器请求分类器检查。Pro、Max 和 Team 计划永远不会显示该通知。当它出现时，通常的原因是：
+使用 Pro、Max、Ultra 或 Team 计划时，永远不会看到该通知。要了解哪些会话会向服务器请求分类器检查，请参阅[服务器端分类器审查](https://code.claude.com/docs/zh-CN/permission-modes.md#server-side-classifier-review)。如果您看到该通知，请检查以下常见原因：
 
 * **路径中存在 LLM 网关或代理**：一个会剥离或重写请求头、丢弃它不识别的请求字段或编辑响应的网关。服务器随后永远不会收到检查请求，或 Claude Code 永远不会收到结果。当您的配置或响应识别网关时，通知会将其命名。
 * **服务器端检查尚未到达您的平台、区域或凭证**：平台或区域是否执行检查取决于该平台的推出情况。如果您看到通知且路径中没有网关或代理，并且它持续出现，这是可能的原因。要确认，请联系支持或您公司的管理员，或使用 `/feedback` 报告。

@@ -240,9 +240,11 @@ Claude Code 需要访问以下 URL。在代理配置和防火墙规则中将这�
 
 两个 Datadog 摄取主机仅携带可选的操作遥测，设置 [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/zh-CN/env-vars) 会禁用两者。第三方提供商上的会话永远不会发送到这些主机，即使平台设置了 [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/zh-CN/env-vars) 且遥测指标默认启用。有关 Claude Code 发送的所有内容以及如何在最终确定白名单之前禁用它，请参阅[遥测服务](https://code.claude.com/docs/zh-CN/data-usage.md#telemetry-services)。
 
+### 云提供商和 LLM 网关路由
+
 使用 [Amazon Bedrock](https://code.claude.com/docs/zh-CN/amazon-bedrock.md)、[Google Cloud 的 Agent Platform](https://code.claude.com/docs/zh-CN/google-vertex-ai.md)、[Microsoft Foundry](https://code.claude.com/docs/zh-CN/microsoft-foundry.md) 或已登录的 [Claude 应用网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway)会话时，模型流量和身份验证转到您的提供商或网关，而不是 `api.anthropic.com`、`claude.ai` 或 `platform.claude.com`。WebFetch 工具仍会调用 `api.anthropic.com` 进行其[域名安全检查](https://code.claude.com/docs/zh-CN/data-usage.md#webfetch-domain-safety-check)，除非您在[设置](https://code.claude.com/docs/zh-CN/settings.md)中设置 `skipWebFetchPreflight: true`。
 
-通过带有 [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/zh-CN/llm-gateway-connect#set-the-base-url-and-credential) 的 [LLM 网关](https://code.claude.com/docs/zh-CN/llm-gateway)路由时，[快速模式](https://code.claude.com/docs/zh-CN/fast-mode.md)可用性检查仍会调用 `api.anthropic.com` 而不是网关基础 URL。检查确实遵守配置的 HTTP 代理，因此当网络阻止是原因时，代理中 `api.anthropic.com` 的白名单条目是修复。网络阻止仅在主机即使通过代理也无法访问时才会导致检查失败，快速模式随后会报告连接错误。当检查呈现网关颁发的凭证而 Anthropic 拒绝时，也会出现相同的连接错误；白名单在那里无法帮助，因为没有任何内容被阻止。有关恢复它的变量，请参阅[在代理和 LLM 网关后面使用快速模式](https://code.claude.com/docs/zh-CN/fast-mode.md#use-fast-mode-behind-proxies-and-llm-gateways)。
+如果您的开发人员在通过 [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/zh-CN/llm-gateway-connect#set-the-base-url-and-credential) 设置的 [LLM 网关](https://code.claude.com/docs/zh-CN/llm-gateway)后面使用[快速模式](https://code.claude.com/docs/zh-CN/fast-mode.md)，请确保通过您的代理可以访问 `api.anthropic.com`。当 Claude Code 发送快速模式可用性检查时，该检查会通过任何已配置的 HTTP 代理发送到该主机，而永远不会发送到网关。有关何时不发送该检查，以及在每种情况下恢复快速模式的变量，请参阅[在代理和 LLM 网关后面使用快速模式](https://code.claude.com/docs/zh-CN/fast-mode.md#use-fast-mode-behind-proxies-and-llm-gateways)。
 
 ### 组织 IP 白名单和代理出口
 

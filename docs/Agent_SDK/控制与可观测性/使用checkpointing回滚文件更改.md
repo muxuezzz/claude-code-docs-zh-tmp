@@ -585,17 +585,17 @@ main();
 >
 > 在运行脚本之前，在您的IDE或编辑器中打开您的实用程序文件（`utils.py`或`utils.ts`）。当agent添加doc注释时，您将看到文件实时更新，然后当您选择回滚时恢复到原始状态。
 
-**Python**
+> [tab] Python
+>
+> ```bash theme={null}
+> python try_checkpointing.py
+> ```
 
-```bash theme={null}
-python try_checkpointing.py
-```
-
-**TypeScript**
-
-```bash theme={null}
-npx tsx try_checkpointing.ts
-```
+> [tab] TypeScript
+>
+> ```bash theme={null}
+> npx tsx try_checkpointing.ts
+> ```
 
 您将看到agent添加doc注释，然后出现一个提示，询问您是否想回滚。如果您选择是，文件将恢复到其原始状态。
 

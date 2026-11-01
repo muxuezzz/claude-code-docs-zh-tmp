@@ -70,6 +70,22 @@ Plugin 路径可以是：
 >
 > 路径应指向 plugin 的根目录：`skills/`、`agents/`、`hooks/`、`commands/` 或 `.claude-plugin/` 的父目录。
 
+### 向运行中的会话添加插件
+
+在 TypeScript SDK 中，对 `query()` 返回的 `Query` 对象调用 [`reloadPlugins()`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#load-more-plugin-folders-with-addplugins)，并在该调用的 `addPlugins` 选项中列出插件目录。每个 `addPlugins` 条目都是一个带有绝对 `path` 的 `{ type: "local", path }` 对象。需要 TypeScript Agent SDK v0.3.301 或更高版本。
+
+在此示例中，`q` 是 `query()` 返回的 `Query` 对象。该示例向运行中的会话添加一个插件目录，并在 `reloadPlugins()` 返回后打印会话中每个插件的路径：
+
+```typescript theme={null}
+const result = await q.reloadPlugins({
+  addPlugins: [{ type: "local", path: "/home/user/plugins/another-plugin" }]
+});
+
+console.log(result.plugins.map((plugin) => plugin.path));
+```
+
+如果插件已加载，打印的列表中会包含 `/home/user/plugins/another-plugin`。如果列表中缺少该路径，或者 `reloadPlugins()` 被拒绝（reject），请参阅[当 `reloadPlugins()` 未加载 `addPlugins` 文件夹时](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#when-reloadplugins-doesnt-load-the-addplugins-folders)了解原因。
+
 ## 验证 plugin 安装
 
 当 plugins 成功加载时，它们会出现在系统初始化消息中。你可以验证你的 plugins 是否可用：

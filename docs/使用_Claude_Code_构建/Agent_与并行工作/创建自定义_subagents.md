@@ -32,51 +32,51 @@ Claude Code 包括内置 subagents，Claude 在适当时自动使用。每个都
 
 Explore 和 Plan 启动时不加载您的 CLAUDE.md 文件和 git 状态快照，以保持研究快速且成本低廉。其他内置子代理和[自定义子代理](#configure-subagents)都会加载两者，除非您在自定义子代理的定义中设置 [`omitClaudeMd`](#supported-frontmatter-fields)，使其启动时不加载用户、项目和本地 CLAUDE.md 文件。有关到达子代理的内容的完整分解，请参阅[启动时加载的内容](#what-loads-at-startup)。
 
-**Explore**
+> [tab] Explore
+>
+> 一个快速的、只读的代理，针对搜索和分析代码库进行了优化。
+>
+> * **Model**: 主对话的模型。当主对话运行 Fable 时，Explore 的模型取决于您的连接方式：
+>   * 使用 Claude 订阅、Anthropic Console 账户，或通过 `ANTHROPIC_BASE_URL` 访问的 [LLM 网关](https://code.claude.com/docs/zh-CN/llm-gateway)时，Explore 在 [`opus` 别名](https://code.claude.com/docs/zh-CN/model-config#model-aliases)解析到的 Opus 模型上运行。
+>   * 在 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry、[AWS 上的 Claude Platform](https://code.claude.com/docs/zh-CN/claude-platform-on-aws.md) 或 [Claude apps 网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway)上，Explore 保持使用主对话的模型。
+> * **Tools**: 只读工具；拒绝访问 Write 和 Edit
+> * **Purpose**: 文件发现、代码搜索、代码库探索
+>
+> 名为 `Explore` 的[用户或项目子代理](#choose-the-subagent-scope)会覆盖内置的子代理，并保持其自己的 `model` 字段，因此可以定义一个带有 `model: haiku` 的子代理，在较低成本的模型上运行探索。要将同一个模型强制应用于每个子代理（包括 Explore），请参阅[在一个模型上运行每个子代理](#run-every-subagent-on-one-model)。
+>
+> 当 Claude 需要搜索或理解代码库而不进行更改时，它会委托给 Explore。这样可以将探索结果保持在主对话上下文之外。
+>
+> 调用 Explore 时，Claude 指定一个彻底程度级别：**quick** 用于有针对性的查找，**medium** 用于平衡的探索，或 **very thorough** 用于全面分析。
 
-一个快速的、只读的代理，针对搜索和分析代码库进行了优化。
+> [tab] Plan
+>
+> 一个研究代理，在 [plan mode](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode) 期间使用，以在呈现计划之前收集上下文。
+>
+> * **Model**: 从主对话继承，除非您设置 `CLAUDE_CODE_SUBAGENT_MODEL` 并[强制将其应用于每个 subagent](#run-every-subagent-on-one-model)
+> * **Tools**: 只读工具；拒绝访问 Write 和 Edit
+> * **Purpose**: 用于规划的代码库研究
+>
+> 当您处于 plan mode 并且 Claude 需要理解您的代码库时，它会将研究委托给 Plan subagent，以便探索输出保持在单独的上下文窗口中，而主对话保持只读。
 
-* **Model**: 主对话的模型。当主对话运行 Fable 时，Explore 的模型取决于您的连接方式：
-  * 使用 Claude 订阅、Anthropic Console 账户，或通过 `ANTHROPIC_BASE_URL` 访问的 [LLM 网关](https://code.claude.com/docs/zh-CN/llm-gateway)时，Explore 在 [`opus` 别名](https://code.claude.com/docs/zh-CN/model-config#model-aliases)解析到的 Opus 模型上运行。
-  * 在 Amazon Bedrock、Google Cloud 的 Agent Platform、Microsoft Foundry、[AWS 上的 Claude Platform](https://code.claude.com/docs/zh-CN/claude-platform-on-aws.md) 或 [Claude apps 网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway)上，Explore 保持使用主对话的模型。
-* **Tools**: 只读工具；拒绝访问 Write 和 Edit
-* **Purpose**: 文件发现、代码搜索、代码库探索
+> [tab] General-purpose
+>
+> 一个能够处理复杂、多步骤任务的代理，需要探索和操作。
+>
+> * **Model**: 如果您设置了 [`CLAUDE_CODE_SUBAGENT_MODEL`](#choose-a-model) 模型且没有其他方式分配模型，则使用该模型，否则使用主对话的模型；[选择模型](#choose-a-model) 说明了完整的顺序，[在一个模型上运行每个 subagent](#run-every-subagent-on-one-model) 展示了如何使变量覆盖这些来源
+> * **Tools**: 所有[可用于 subagents 的工具](#available-tools)
+> * **Purpose**: 复杂研究、多步骤操作、代码修改
+>
+> 当任务需要探索和修改、复杂推理来解释结果或多个依赖步骤时，Claude 会委托给 general-purpose。
 
-名为 `Explore` 的[用户或项目子代理](#choose-the-subagent-scope)会覆盖内置的子代理，并保持其自己的 `model` 字段，因此可以定义一个带有 `model: haiku` 的子代理，在较低成本的模型上运行探索。要将同一个模型强制应用于每个子代理（包括 Explore），请参阅[在一个模型上运行每个子代理](#run-every-subagent-on-one-model)。
-
-当 Claude 需要搜索或理解代码库而不进行更改时，它会委托给 Explore。这样可以将探索结果保持在主对话上下文之外。
-
-调用 Explore 时，Claude 指定一个彻底程度级别：**quick** 用于有针对性的查找，**medium** 用于平衡的探索，或 **very thorough** 用于全面分析。
-
-**Plan**
-
-一个研究代理，在 [plan mode](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode) 期间使用，以在呈现计划之前收集上下文。
-
-* **Model**: 从主对话继承，除非您设置 `CLAUDE_CODE_SUBAGENT_MODEL` 并[强制将其应用于每个 subagent](#run-every-subagent-on-one-model)
-* **Tools**: 只读工具；拒绝访问 Write 和 Edit
-* **Purpose**: 用于规划的代码库研究
-
-当您处于 plan mode 并且 Claude 需要理解您的代码库时，它会将研究委托给 Plan subagent，以便探索输出保持在单独的上下文窗口中，而主对话保持只读。
-
-**General-purpose**
-
-一个能够处理复杂、多步骤任务的代理，需要探索和操作。
-
-* **Model**: 如果您设置了 [`CLAUDE_CODE_SUBAGENT_MODEL`](#choose-a-model) 模型且没有其他方式分配模型，则使用该模型，否则使用主对话的模型；[选择模型](#choose-a-model) 说明了完整的顺序，[在一个模型上运行每个 subagent](#run-every-subagent-on-one-model) 展示了如何使变量覆盖这些来源
-* **Tools**: 所有[可用于 subagents 的工具](#available-tools)
-* **Purpose**: 复杂研究、多步骤操作、代码修改
-
-当任务需要探索和修改、复杂推理来解释结果或多个依赖步骤时，Claude 会委托给 general-purpose。
-
-**Other**
-
-Claude Code 包括用于特定任务的其他辅助代理。这些通常会自动调用，因此您不需要直接使用它们。
-
-| Agent | Model | Claude 何时使用它 |
-| :- | :- | :- |
-| claude | 没有自己的；当 Claude 将其生成为 subagent 时遵循[模型顺序](#choose-a-model) | 当任务不适合更专业的代理时。一个具有所有[可用于 subagents 的工具](#available-tools)的通用代理。也是调度的[后台会话](https://code.claude.com/docs/zh-CN/agent-view.md)的默认代理；[它启动的权限模式](https://code.claude.com/docs/zh-CN/agent-view.md#permission-mode-model-and-effort)取决于会话的启动方式 |
-| statusline-setup | Sonnet | 当您运行 `/statusline` 来配置您的状态行时 |
-| claude-code-guide | Haiku | 当您提出关于 Claude Code 功能的问题时 |
+> [tab] Other
+>
+> Claude Code 包括用于特定任务的其他辅助代理。这些通常会自动调用，因此您不需要直接使用它们。
+>
+> | Agent | Model | Claude 何时使用它 |
+> | :- | :- | :- |
+> | claude | 没有自己的；当 Claude 将其生成为 subagent 时遵循[模型顺序](#choose-a-model) | 当任务不适合更专业的代理时。一个具有所有[可用于 subagents 的工具](#available-tools)的通用代理。也是调度的[后台会话](https://code.claude.com/docs/zh-CN/agent-view.md)的默认代理；[它启动的权限模式](https://code.claude.com/docs/zh-CN/agent-view.md#permission-mode-model-and-effort)取决于会话的启动方式 |
+> | statusline-setup | Sonnet | 当您运行 `/statusline` 来配置您的状态行时 |
+> | claude-code-guide | Haiku | 当您提出关于 Claude Code 功能的问题时 |
 
 内置 subagents 在交互式会话中默认被注册。要限制它们：
 
@@ -179,41 +179,41 @@ Claude Code 会递归扫描 `.claude/agents/` 和 `~/.claude/agents/`，因此�
 
 **CLI 定义的子代理**在启动 Claude Code 时以 JSON 形式传入。它们仅在该会话中存在，不会保存到磁盘，因此适用于快速测试或自动化脚本。您可以在一次 `--agents` 调用中定义多个子代理：
 
-**macOS, Linux, WSL**
+> [tab] macOS, Linux, WSL
+>
+> ```bash theme={null}
+> claude --agents '{
+>   "code-reviewer": {
+>     "description": "Expert code reviewer. Use proactively after code changes.",
+>     "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
+>     "tools": ["Read", "Grep", "Glob", "Bash"],
+>     "model": "sonnet"
+>   },
+>   "debugger": {
+>     "description": "Debugging specialist for errors and test failures.",
+>     "prompt": "You are an expert debugger. Analyze errors, identify root causes, and provide fixes."
+>   }
+> }'
+> ```
 
-```bash theme={null}
-claude --agents '{
-  "code-reviewer": {
-    "description": "Expert code reviewer. Use proactively after code changes.",
-    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
-    "tools": ["Read", "Grep", "Glob", "Bash"],
-    "model": "sonnet"
-  },
-  "debugger": {
-    "description": "Debugging specialist for errors and test failures.",
-    "prompt": "You are an expert debugger. Analyze errors, identify root causes, and provide fixes."
-  }
-}'
-```
-
-**Windows PowerShell**
-
-```powershell theme={null}
-claude --agents @'
-{
-  "code-reviewer": {
-    "description": "Expert code reviewer. Use proactively after code changes.",
-    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
-    "tools": ["Read", "Grep", "Glob", "Bash"],
-    "model": "sonnet"
-  },
-  "debugger": {
-    "description": "Debugging specialist for errors and test failures.",
-    "prompt": "You are an expert debugger. Analyze errors, identify root causes, and provide fixes."
-  }
-}
-'@
-```
+> [tab] Windows PowerShell
+>
+> ```powershell theme={null}
+> claude --agents @'
+> {
+>   "code-reviewer": {
+>     "description": "Expert code reviewer. Use proactively after code changes.",
+>     "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
+>     "tools": ["Read", "Grep", "Glob", "Bash"],
+>     "model": "sonnet"
+>   },
+>   "debugger": {
+>     "description": "Debugging specialist for errors and test failures.",
+>     "prompt": "You are an expert debugger. Analyze errors, identify root causes, and provide fixes."
+>   }
+> }
+> '@
+> ```
 
 在[非交互模式](https://code.claude.com/docs/zh-CN/headless.md)下，`--agents` 也接受一个包含相同对象的 JSON 文件路径，适用于定义过大而无法在命令行中传入的情况。例如，`claude -p --agents ./agents.json "Review my changes"` 会从该文件读取定义。在交互式会话中，Claude Code 会拒绝文件路径。文件形式需要 Claude Code v2.1.281 或更高版本。
 
@@ -352,7 +352,7 @@ experimental:
 * **完整模型 ID**：使用完整模型 ID，例如 `claude-opus-5-5` 或 `claude-sonnet-5`。接受与 `--model` 标志相同的值
 * **inherit**：使用与主对话相同的模型
 
-当 Claude 调用子代理时，它还可以为该次调用传入 `model` 参数。Claude Code 按以下顺序确定子代理的模型：
+当 Claude 调用子代理时，它还可以为该次调用传入 `model` 参数。在 Agent 工具调用中，该参数接受模型别名：`sonnet`、`opus`、`haiku` 或 `fable`。Claude 无法在该调用中传入完整模型 ID 或 `inherit`。Claude Code 按以下顺序确定子代理的模型：
 
 1. 单次调用的 `model` 参数
 2. 子代理定义中的 `model` frontmatter，其中 `inherit` 选择主对话的模型
@@ -600,7 +600,7 @@ Use the Playwright tools to navigate, screenshot, and interact with pages.
 | `default` | Manual 模式：提示请求权限 |
 | `acceptEdits` | 对于工作目录或 `additionalDirectories` 中的路径，自动接受文件编辑和常见文件系统命令 |
 | `auto` | [自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)：后台分类器审查命令和对受保护目录的写入 |
-| `dontAsk` | 自动拒绝会触发提示的调用，但您安装的 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md) 仍可批准[其中部分调用](https://code.claude.com/docs/zh-CN/permissions.md#precedence-among-rules-hooks-and-mods)。明确允许的工具仍可使用。`AskUserQuestion`、标记为 [`requiresUserInteraction`](https://code.claude.com/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具、[从网络路径读取](https://code.claude.com/docs/zh-CN/permissions.md#network-paths)，以及在该设置能作用到 Claude Code 的会话中[您的组织设置为 `ask`](https://code.claude.com/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具，即使您已允许也会被拒绝 |
+| `dontAsk` | 自动拒绝会触发提示的调用，但您安装的 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md) 仍可批准[其中部分调用](https://code.claude.com/docs/zh-CN/permissions.md#precedence-among-rules-hooks-and-mods)。明确允许的工具仍可使用。`AskUserQuestion`、标记为 [`requiresUserInteraction`](https://code.claude.com/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具、[从网络路径读取](https://code.claude.com/docs/zh-CN/permissions.md#network-paths)，以及在该设置到达 Claude Code 的会话中[您的组织设置为 `ask`](https://code.claude.com/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具，即使您已允许也会被拒绝 |
 | `bypassPermissions` | [跳过权限提示](https://code.claude.com/docs/zh-CN/permission-modes.md#skip-all-checks-with-bypasspermissions-mode)。只有当主对话处于此模式时，子代理才会以此模式运行 |
 | `plan` | 计划模式（只读探索） |
 
@@ -762,7 +762,7 @@ claude --disallowedTools "Agent(Explore)"
 
 若要让项目级子代理的 frontmatter hook 运行，请为包含该 Agent 文件的文件夹接受[工作区信任对话框](https://code.claude.com/docs/zh-CN/permissions.md#project-allow-rules-and-workspace-trust)。来自 `~/.claude/agents/` 中用户级子代理以及您通过 `--agents` 传入的定义的 hook 无需此步骤即可运行。如果您通过 `--add-dir` 添加了位于受信任工作区仓库之外的文件夹，请单独信任该文件夹：其 `.claude/agents/` 中的 hook 不会继承工作区的授权。
 
-在您信任该文件夹之前，子代理仍会运行，但 Claude Code 会跳过其 frontmatter hook，并在调试日志中记录一条说明如何信任该文件夹的错误。这一规则比设置文件中 hook 的规则更严格：信任父文件夹是不够的，并且 `-p` 会话不算作受信任。[信任文件夹之前会运行什么](https://code.claude.com/docs/zh-CN/permissions.md#what-runs-before-you-trust-a-folder)对这两者进行了比较。在 v2.1.218 之前，frontmatter hook 可以从您未信任的文件夹中运行，包括在非交互式会话中。
+在您信任该文件夹之前，子代理仍会运行，但 Claude Code 会跳过其 frontmatter hook，并在调试日志中记录一条说明如何信任该文件夹的错误。这一规则比设置文件中 hook 的规则更严格：信任父文件夹是不够的，并且 `-p` 会话不算作受信任。[信任文件夹之前会运行什么](https://code.claude.com/docs/zh-CN/permissions.md#what-runs-before-you-trust-a-folder)对这两者进行了比较。
 
 支持所有 [hook 事件](https://code.claude.com/docs/zh-CN/hooks.md#hook-events)。子代理最常用的事件有：
 
@@ -938,7 +938,7 @@ claude --agent my-plugin:security-reviewer
 
 要在 Claude 等待期间继续工作，请在终端中按 **Ctrl+B**，或在 VS Code 中点击 [**Run in background**](https://code.claude.com/docs/zh-CN/vs-code.md#move-a-running-command-or-subagent-to-the-background)。
 
-如果您不关闭 fork 模式，而是将 [`CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`](https://code.claude.com/docs/zh-CN/env-vars) 环境变量设置为 `1`，Claude 会等待每一个子代理。后台命令也会被关闭，并且 **Ctrl+B** 不会将任何内容移到后台。
+如果您不关闭 fork 模式，而是将 [`CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`](https://code.claude.com/docs/zh-CN/env-vars) 环境变量设置为 `1`，Claude 会等待子代理完成后再继续。后台命令也会被关闭，并且 **Ctrl+B** 不会将任何内容移到后台。
 
 #### 后台子代理的工具、权限和结果
 
@@ -1074,13 +1074,6 @@ Use the code-reviewer subagent to find performance issues, then use the optimize
 嵌套子代理的配置方式与顶层子代理相同，并从相同的[作用域](#choose-the-subagent-scope)中解析。要在嵌套开启时阻止某个子代理生成子代理（例如应保持只读的审查者），请从其 [`tools`](#available-tools) 列表中省略 `Agent`，或将其添加到 `disallowedTools`。
 
 在终端中，Claude Code 会在输入框下方的子代理面板中以树形显示嵌套子代理，并为面板中仍有后代的每一行标注 `(+N)`，表示其后代数量。打开某一行即可查看该子代理的同级和直接子级，以及返回 `main` 的路径。
-
-> [!NOTE]
->
-> 早期版本使用不同的默认值：
->
-> * **v2.1.172 至 v2.1.216**：子代理默认可以嵌套，最多五层，且该限制无法更改。
-> * **v2.1.217 至 v2.1.218**：该限制默认为一，因此除非您调高，否则子代理无法生成自己的子代理；v2.1.219 将默认值提高到三。
 
 ### 并发子代理限制
 

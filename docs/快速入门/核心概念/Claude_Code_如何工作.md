@@ -131,7 +131,7 @@ Claude 的上下文窗口保存您的对话历史、文件内容、命令输出�
 
 #### 当上下文填满时
 
-Claude Code 在您接近限制时自动管理上下文。它首先清除较旧的工具输出，然后在需要时总结对话。您的请求和关键代码片段被保留；对话早期的详细说明可能会丢失。将持久规则放在 CLAUDE.md 中，而不是依赖对话历史。
+Claude Code 在您接近限制时自动管理上下文。它会将对话压缩为摘要。摘要会保留您的请求和关键代码片段，但对话早期的详细说明可能会丢失。将持久规则放在 CLAUDE.md 中，而不是依赖对话历史。
 
 要控制在压缩期间保留的内容，请在 CLAUDE.md 中添加"Compact Instructions"部分或使用焦点运行 `/compact`（如 `/compact focus on the API changes`）。
 
@@ -163,7 +163,7 @@ Checkpoints 独立于 git，在您恢复对话时仍然可用。它们仅涵盖�
 
 选择一个权限模式来设置 Claude 可以在不询问您的情况下做什么。按 `Shift+Tab` 循环通过权限模式：
 
-* **Auto**：分类器在后台审查大多数操作，并阻止风险操作而不是询问您。在 Claude Code v2.1.283 或更高版本中，它是[交互式终端和 VS Code 会话的内置起始权限模式](https://code.claude.com/docs/zh-CN/permission-modes.md#which-mode-a-session-starts-in)，在早期版本中仅在 Pro、Max 和 Team 计划上可用
+* **Auto**：分类器在后台审查大多数操作，并阻止风险操作而不是询问您。在 Claude Code v2.1.283 或更高版本中，它是交互式终端和 VS Code 会话的[内置起始权限模式](https://code.claude.com/docs/zh-CN/permission-modes.md#which-mode-a-session-starts-in)。在早期版本中，它仅在 Pro、Max、Ultra 和 Team 计划上是内置起始权限模式。
 * **Manual**：Claude 在文件编辑和 shell 命令之前询问
 * **Accept edits**：Claude 编辑文件并运行常见的文件系统命令（如 `mkdir` 和 `mv`）而不询问，仍然询问其他命令
 * **Plan**：Claude 探索并提出计划而不编辑您的源文件
@@ -174,7 +174,7 @@ Checkpoints 独立于 git，在您恢复对话时仍然可用。它们仅涵盖�
 
 ## 有效使用 Claude Code
 
-这些提示可以帮助您从 Claude Code 获得更好的结果。有关特定提示、验证和规划的更多信息，请参阅[最佳实践](https://code.claude.com/docs/zh-CN/best-practices.md)。
+这些提示可以帮助您从 Claude Code 获得更好的结果。有关具体提示词、验证，以及哪些规则值得强制执行而非通过提示词要求的更多信息，请参阅[最佳实践](https://code.claude.com/docs/zh-CN/best-practices.md)。
 
 ### 向 Claude Code 寻求帮助
 
@@ -223,10 +223,10 @@ Claude Code 是对话式的。您不需要完美的提示。从您想要的开�
 
 ## 接下来是什么
 
-> **[使用功能扩展](https://code.claude.com/docs/zh-CN/features-overview.md)**
+> [card] [使用功能扩展](https://code.claude.com/docs/zh-CN/features-overview.md)
 >
 > 添加 skills 和 MCP 连接
 
-> **[常见工作流](https://code.claude.com/docs/zh-CN/common-workflows.md)**
+> [card] [常见工作流](https://code.claude.com/docs/zh-CN/common-workflows.md)
 >
 > 典型任务的分步指南

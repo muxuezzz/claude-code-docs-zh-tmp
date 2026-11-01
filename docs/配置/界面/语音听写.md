@@ -105,7 +105,7 @@ Claude Code 插入转录并在转录至少有三个单词时自动提交提示�
 
 语音听写使用与控制 Claude 响应语言相同的[`language` 设置](https://code.claude.com/docs/zh-CN/settings-reference#language)。如果该设置为空，听写默认为英语。在 VS Code 扩展中，如果 `language` 为空，听写在默认为英语之前使用 VS Code 的 `accessibility.voice.speechLanguage` 设置。
 
-> **支持的听写语言**
+> [accordion] 支持的听写语言
 >
 > | 语言 | 代码 |
 > | :- | :- |

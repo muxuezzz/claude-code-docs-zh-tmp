@@ -24,21 +24,21 @@ Contact sales
 
 ## 使用 Bedrock 登录
 
-如果您拥有 AWS 凭证并想通过 Amazon Bedrock 开始使用 Claude Code，登录向导会引导您完成整个过程。您需要在每个账户上完成一次 AWS 端的先决条件；向导会处理 Claude Code 端的事务。
+如果您拥有 AWS 凭据，并希望通过 Amazon Bedrock 开始使用 Claude Code，登录向导会引导您完成整个过程。每个账户只需完成一次 AWS 端的前提条件；Claude Code 端的设置由向导处理。
 
 **1. 在您的 AWS 账户中启用 Anthropic 模型**
 
-在 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)中，打开模型目录，选择一个 Anthropic 模型，并提交用例表单。提交后立即授予访问权限。有关 AWS Organizations 的信息，请参阅[提交用例详情](#1-submit-use-case-details)；有关您的角色所需的权限，请参阅 [IAM 配置](#iam-configuration)。
+在 [Amazon Bedrock 控制台](https://console.aws.amazon.com/bedrock/)中，打开 Model catalog，选择一个 Anthropic 模型，然后提交用例表单。提交后即可立即获得访问权限。有关 AWS Organizations，请参阅[提交用例详细信息](#1-submit-use-case-details)；有关您的角色所需的权限，请参阅 [IAM 配置](#iam-configuration)。
 
 **2. 启动 Claude Code 并选择 Amazon Bedrock**
 
-运行 `claude`。在登录提示处，选择**第三方平台**，然后选择 **Amazon Bedrock**。如果您已经登录并看到聊天提示，请运行 `/setup-bedrock` 打开向导。在设置 `CLAUDE_CODE_USE_BEDROCK=1` 之前，Claude Code [会从命令菜单中隐藏该命令](https://code.claude.com/docs/zh-CN/commands.md#how-the-command-menu-matches-what-you-type)；请完整输入它。
+运行 `claude`。在登录提示中，选择 **3rd-party platform**，然后选择 **Amazon Bedrock**。如果您已经登录并看到的是聊天输入框，请运行 `/setup-bedrock` 打开向导。在设置 `CLAUDE_CODE_USE_BEDROCK=1` 之前，Claude Code 会[在命令菜单中隐藏该命令](https://code.claude.com/docs/zh-CN/commands.md#how-the-command-menu-matches-what-you-type)；请完整输入该命令。
 
 **3. 按照向导提示操作**
 
-选择您如何向 AWS 进行身份验证：从您的 `~/.aws` 目录检测到的 AWS 配置文件、Amazon Bedrock API 密钥、访问密钥和密钥，或已在您的环境中的凭证。向导会询问您的区域，验证您的账户可以调用哪些 Claude 模型，并让您固定它们。它将结果保存到您的[用户设置文件](https://code.claude.com/docs/zh-CN/settings.md)的 `env` 块中，因此您无需自己导出环境变量。
+选择您向 AWS 进行身份验证的方式：从您的 `~/.aws` 目录中检测到的 AWS 配置文件、Amazon Bedrock API 密钥、访问密钥和密钥，或环境中已有的凭据。向导会询问您的区域，验证您的账户可以调用哪些 Claude 模型，并允许您固定这些模型。它会将结果保存到您的[用户设置文件](https://code.claude.com/docs/zh-CN/settings.md)的 `env` 块中，因此您无需自行导出环境变量。
 
-登录后，随时运行 `/setup-bedrock` 重新打开向导并更改您的凭证、区域或模型固定。模型固定步骤从您当前固定的模型开始。向导写入 `~/.claude/settings.json`，或在设置了 [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/zh-CN/env-vars#variables) 时写入 `$CLAUDE_CONFIG_DIR/settings.json`。
+登录后，您可以随时运行 `/setup-bedrock` 重新打开向导，以更改您的凭据、区域或固定的模型。模型固定步骤会从您当前固定的模型开始。向导会写入 `~/.claude/settings.json`；如果设置了 [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/zh-CN/env-vars#variables)，则写入 `$CLAUDE_CONFIG_DIR/settings.json`。
 
 ## 手动设置
 
@@ -251,6 +251,8 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='us.anthropic.claude-haiku-4-5-20251001-v1:
 | 主要模型 | Opus 5.5，例如 `us-*` 区域中的 `us.anthropic.claude-opus-5-5` |
 | 小型/快速模型 | Sonnet 4.5，例如 `us-*` 区域中的 `us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
 
+在 v2.1.280 之前，Amazon Bedrock 上的主要模型默认为 Opus 5，`opus` 别名从 v2.1.219 起解析为 Opus 5。
+
 后台任务（如会话标题生成）使用小型/快速模型，通常是 Haiku 级别的模型。在 Amazon Bedrock 上，Claude Code 为后台任务使用默认 Sonnet 模型，因为 Haiku 可能不会在每个账户或区域中启用。两个选择改变哪个模型执行它们：
 
 * 当您使用 `--model`、`ANTHROPIC_MODEL` 或 `model` 设置选择主要模型时，后台任务使用该模型。当 Claude Code 在您使用 [`ANTHROPIC_DEFAULT_MODEL`](https://code.claude.com/docs/zh-CN/model-config#set-a-default-model-for-new-sessions) 设置的模型上启动会话时，后台任务也使用该模型。设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 而不设置 `ANTHROPIC_DEFAULT_SONNET_MODEL` 也算作选择，因为内置 Sonnet 模型可能在引导自己的 Opus 的账户中不启用。
@@ -259,8 +261,6 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='us.anthropic.claude-haiku-4-5-20251001-v1:
 > [!WARNING]
 >
 > Opus 模型的每 token 价格高于 Sonnet 模型，因此如果您不固定主要模型，将按 Opus 费率计费。要将 Sonnet 4.5 用作主要模型，请将 `ANTHROPIC_MODEL` 设置为其完整模型 ID。使用 `ANTHROPIC_DEFAULT_SONNET_MODEL` 引导默认值且不设置 `ANTHROPIC_DEFAULT_OPUS_MODEL` 的部署保留其引导的 Sonnet 模型作为默认值。
-
-在 v2.1.280 之前，Amazon Bedrock 上的主要模型默认为 Opus 5，`opus` 别名从 v2.1.219 解析为 Opus 5。在 v2.1.207 到 v2.1.218 上，Amazon Bedrock 上的主要模型默认为 Opus 4.8，`opus` 别名解析为 Opus 4.8。
 
 要进一步自定义模型，请使用以下方法之一：
 

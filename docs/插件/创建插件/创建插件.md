@@ -376,4 +376,4 @@ claude --plugin-dir ./my-plugin
 * [插件结构和测试](https://claude.com/docs/plugins/build)：同一插件文件夹在 claude.ai 和 Cowork 中安装。某些组件仅限 Claude Code，[组件支持表](https://claude.com/docs/plugins/platform-support#compare-component-support-by-app)列出了在每个平台上加载的组件
 * [插件清单参考](https://code.claude.com/docs/zh-CN/plugins/manifest-reference.md)：每个 `plugin.json` 字段、路径规则和目录
 * [技能](https://code.claude.com/docs/zh-CN/skills.md)：编写您的插件提供的技能
-* [Anthropic 在 claude-code 存储库中的插件](https://github.com/anthropics/claude-code/tree/main/plugins)：本页面布局的完整工作示例，例如 `feature-dev` 和 `code-review`
+* [Anthropic 在 claude-plugins-official 仓库中的插件](https://github.com/anthropics/claude-plugins-official/tree/main/plugins)：本页面布局的完整工作示例，例如 `feature-dev` 和 `code-review`

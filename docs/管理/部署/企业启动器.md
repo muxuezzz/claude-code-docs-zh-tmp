@@ -36,7 +36,7 @@
 以下进程不通过启动器启动：
 
 * 您自己在终端中启动的会话，它运行的方式取决于您如何调用它。要覆盖这些会话，在 `PATH` 上较早的目录中放置一个名为 `claude` 的脚本，该脚本使用真实二进制文件运行您的启动器；不要替换托管符号链接。后台服务及其会话启动时不进行 `PATH` 查询，所以两个启动器不会在那里堆叠。
-* `claude-cli://` 深层链接的第一个进程，操作系统的协议处理程序直接启动。该会话之后在后台启动的所有内容都通过启动器运行。要完全关闭此路径，请使用 `disableDeepLinkRegistration` 设置 [prevent handler registration](https://code.claude.com/docs/zh-CN/deep-links.md#registration-and-supported-platforms)。
+* 从 `claude-cli://` 深层链接打开的会话，它会在新终端中启动，而不经过您的启动器。要防止深层链接为新用户打开会话，请在该用户首次运行 Claude Code 之前将 [`disableDeepLinkRegistration`](https://code.claude.com/docs/zh-CN/settings-reference#disabledeeplinkregistration) 设置为 `"disable"`。对于已有[已注册处理程序](https://code.claude.com/docs/zh-CN/deep-links.md#registration-and-supported-platforms)的用户，深层链接仍会继续打开会话，因为该设置不会移除处理程序。
 * `--worktree` 与 `--tmux` 结合执行的重新启动：终端多路复用器启动该窗格，而不是 Claude Code 的二进制文件。
 * [Claude in Chrome](https://code.claude.com/docs/zh-CN/chrome.md) 注册的本机消息主机：浏览器启动它，而不是 Claude Code 的二进制文件。
 

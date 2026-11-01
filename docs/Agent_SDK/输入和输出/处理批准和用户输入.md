@@ -225,165 +225,165 @@ for await (const message of query({
 
 以下代码片段中的 `ask_user` 和 `askUser` 帮助程序代表您应用程序自己的提示 UI。
 
-**批准**
+> [tab] 批准
+>
+> 用户按原样批准该操作。从您的回调中传递 `input` 不变，工具完全按 Claude 请求的方式执行。
+>
+> ```python Python theme={null}
+> async def can_use_tool(tool_name, input_data, context):
+>     print(f"Claude wants to use {tool_name}")
+>     approved = await ask_user("Allow this action?")
+>
+>     if approved:
+>         return PermissionResultAllow(updated_input=input_data)
+>     return PermissionResultDeny(message="User declined")
+> ```
+>
+> ```typescript TypeScript theme={null}
+> canUseTool: async (toolName, input) => {
+>   console.log(`Claude wants to use ${toolName}`);
+>   const approved = await askUser("Allow this action?");
+>
+>   if (approved) {
+>     return { behavior: "allow", updatedInput: input };
+>   }
+>   return { behavior: "deny", message: "User declined" };
+> };
+> ```
 
-用户按原样批准该操作。从您的回调中传递 `input` 不变，工具完全按 Claude 请求的方式执行。
+> [tab] 批准并进行更改
+>
+> 用户批准但想先修改请求。您可以在工具执行前更改输入。Claude 会看到结果，但不会被告知您更改了任何内容。对于清理参数、添加约束或限制访问范围很有用。
+>
+> ```python Python theme={null}
+> async def can_use_tool(tool_name, input_data, context):
+>     if tool_name == "Bash":
+>         # 用户批准，但将所有命令限制在沙箱中
+>         sandboxed_input = {**input_data}
+>         sandboxed_input["command"] = input_data["command"].replace(
+>             "/tmp", "/tmp/sandbox"
+>         )
+>         return PermissionResultAllow(updated_input=sandboxed_input)
+>     return PermissionResultAllow(updated_input=input_data)
+> ```
+>
+> ```typescript TypeScript theme={null}
+> canUseTool: async (toolName, input) => {
+>   if (toolName === "Bash") {
+>     // 用户批准，但将所有命令限制在沙箱中
+>     const sandboxedInput = {
+>       ...input,
+>       command: input.command.replace("/tmp", "/tmp/sandbox")
+>     };
+>     return { behavior: "allow", updatedInput: sandboxedInput };
+>   }
+>   return { behavior: "allow", updatedInput: input };
+> };
+> ```
 
-```python Python theme={null}
-async def can_use_tool(tool_name, input_data, context):
-    print(f"Claude wants to use {tool_name}")
-    approved = await ask_user("Allow this action?")
+> [tab] 批准并记住
+>
+> 用户批准并且不想再被询问此类调用。第三个回调参数携带 `suggestions`，一个现成的 [`PermissionUpdate`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#permissionupdate) 条目数组。在 `updatedPermissions` 中回显其中一个以应用它。带有 `localSettings` 目标的建议会将规则写入 `.claude/settings.local.json`，以便将来的会话跳过匹配调用的提示。
+>
+> 在 TypeScript 中，跳过选项携带 [`suppressAlwaysAllowRule: true`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#canusetool) 的请求的始终允许选择。该提示需要 Agent SDK v0.3.268 或更高版本，Python `context` 不携带它。
+>
+> Python 示例需要 `claude-agent-sdk` 0.1.80 或更高版本。
+>
+> ```python Python theme={null}
+> async def can_use_tool(tool_name, input_data, context):
+>     choice = await ask_user(f"Allow {tool_name}?", ["once", "always", "no"])
+>
+>     if choice == "always":
+>         persist = [
+>             s for s in context.suggestions if s.destination == "localSettings"
+>         ]
+>         return PermissionResultAllow(
+>             updated_input=input_data, updated_permissions=persist
+>         )
+>     if choice == "once":
+>         return PermissionResultAllow(updated_input=input_data)
+>     return PermissionResultDeny(message="User declined")
+> ```
+>
+> ```typescript TypeScript theme={null}
+> canUseTool: async (toolName, input, { suggestions = [] }) => {
+>   const choice = await askUser(`Allow ${toolName}?`, ["once", "always", "no"]);
+>
+>   if (choice === "always") {
+>     const persist = suggestions.filter(
+>       (s) => s.destination === "localSettings"
+>     );
+>     return {
+>       behavior: "allow",
+>       updatedInput: input,
+>       updatedPermissions: persist
+>     };
+>   }
+>   if (choice === "once") {
+>     return { behavior: "allow", updatedInput: input };
+>   }
+>   return { behavior: "deny", message: "User declined" };
+> };
+> ```
 
-    if approved:
-        return PermissionResultAllow(updated_input=input_data)
-    return PermissionResultDeny(message="User declined")
-```
+> [tab] 拒绝
+>
+> 用户不希望发生此操作。阻止工具并提供说明原因的消息。Claude 会看到此消息并可能尝试不同的方法。
+>
+> ```python Python theme={null}
+> async def can_use_tool(tool_name, input_data, context):
+>     approved = await ask_user(f"Allow {tool_name}?")
+>
+>     if not approved:
+>         return PermissionResultDeny(message="User rejected this action")
+>     return PermissionResultAllow(updated_input=input_data)
+> ```
+>
+> ```typescript TypeScript theme={null}
+> canUseTool: async (toolName, input) => {
+>   const approved = await askUser(`Allow ${toolName}?`);
+>
+>   if (!approved) {
+>     return {
+>       behavior: "deny",
+>       message: "User rejected this action"
+>     };
+>   }
+>   return { behavior: "allow", updatedInput: input };
+> };
+> ```
 
-```typescript TypeScript theme={null}
-canUseTool: async (toolName, input) => {
-  console.log(`Claude wants to use ${toolName}`);
-  const approved = await askUser("Allow this action?");
+> [tab] 建议替代方案
+>
+> 用户不想要此特定操作，但有不同的想法。阻止工具并在您的消息中包含指导。Claude 将阅读此内容并根据您的反馈决定如何继续。
+>
+> ```python Python theme={null}
+> async def can_use_tool(tool_name, input_data, context):
+>     if tool_name == "Bash" and "rm" in input_data.get("command", ""):
+>         # 用户不想删除，建议改为存档
+>         return PermissionResultDeny(
+>             message="User doesn't want to delete files. They asked if you could compress them into an archive instead."
+>         )
+>     return PermissionResultAllow(updated_input=input_data)
+> ```
+>
+> ```typescript TypeScript theme={null}
+> canUseTool: async (toolName, input) => {
+>   if (toolName === "Bash" && input.command.includes("rm")) {
+>     // 用户不想删除，建议改为存档
+>     return {
+>       behavior: "deny",
+>       message:
+>         "User doesn't want to delete files. They asked if you could compress them into an archive instead."
+>     };
+>   }
+>   return { behavior: "allow", updatedInput: input };
+> };
+> ```
 
-  if (approved) {
-    return { behavior: "allow", updatedInput: input };
-  }
-  return { behavior: "deny", message: "User declined" };
-};
-```
-
-**批准并进行更改**
-
-用户批准但想先修改请求。您可以在工具执行前更改输入。Claude 会看到结果，但不会被告知您更改了任何内容。对于清理参数、添加约束或限制访问范围很有用。
-
-```python Python theme={null}
-async def can_use_tool(tool_name, input_data, context):
-    if tool_name == "Bash":
-        # 用户批准，但将所有命令限制在沙箱中
-        sandboxed_input = {**input_data}
-        sandboxed_input["command"] = input_data["command"].replace(
-            "/tmp", "/tmp/sandbox"
-        )
-        return PermissionResultAllow(updated_input=sandboxed_input)
-    return PermissionResultAllow(updated_input=input_data)
-```
-
-```typescript TypeScript theme={null}
-canUseTool: async (toolName, input) => {
-  if (toolName === "Bash") {
-    // 用户批准，但将所有命令限制在沙箱中
-    const sandboxedInput = {
-      ...input,
-      command: input.command.replace("/tmp", "/tmp/sandbox")
-    };
-    return { behavior: "allow", updatedInput: sandboxedInput };
-  }
-  return { behavior: "allow", updatedInput: input };
-};
-```
-
-**批准并记住**
-
-用户批准并且不想再被询问此类调用。第三个回调参数携带 `suggestions`，一个现成的 [`PermissionUpdate`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#permissionupdate) 条目数组。在 `updatedPermissions` 中回显其中一个以应用它。带有 `localSettings` 目标的建议会将规则写入 `.claude/settings.local.json`，以便将来的会话跳过匹配调用的提示。
-
-在 TypeScript 中，跳过选项携带 [`suppressAlwaysAllowRule: true`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#canusetool) 的请求的始终允许选择。该提示需要 Agent SDK v0.3.268 或更高版本，Python `context` 不携带它。
-
-Python 示例需要 `claude-agent-sdk` 0.1.80 或更高版本。
-
-```python Python theme={null}
-async def can_use_tool(tool_name, input_data, context):
-    choice = await ask_user(f"Allow {tool_name}?", ["once", "always", "no"])
-
-    if choice == "always":
-        persist = [
-            s for s in context.suggestions if s.destination == "localSettings"
-        ]
-        return PermissionResultAllow(
-            updated_input=input_data, updated_permissions=persist
-        )
-    if choice == "once":
-        return PermissionResultAllow(updated_input=input_data)
-    return PermissionResultDeny(message="User declined")
-```
-
-```typescript TypeScript theme={null}
-canUseTool: async (toolName, input, { suggestions = [] }) => {
-  const choice = await askUser(`Allow ${toolName}?`, ["once", "always", "no"]);
-
-  if (choice === "always") {
-    const persist = suggestions.filter(
-      (s) => s.destination === "localSettings"
-    );
-    return {
-      behavior: "allow",
-      updatedInput: input,
-      updatedPermissions: persist
-    };
-  }
-  if (choice === "once") {
-    return { behavior: "allow", updatedInput: input };
-  }
-  return { behavior: "deny", message: "User declined" };
-};
-```
-
-**拒绝**
-
-用户不希望发生此操作。阻止工具并提供说明原因的消息。Claude 会看到此消息并可能尝试不同的方法。
-
-```python Python theme={null}
-async def can_use_tool(tool_name, input_data, context):
-    approved = await ask_user(f"Allow {tool_name}?")
-
-    if not approved:
-        return PermissionResultDeny(message="User rejected this action")
-    return PermissionResultAllow(updated_input=input_data)
-```
-
-```typescript TypeScript theme={null}
-canUseTool: async (toolName, input) => {
-  const approved = await askUser(`Allow ${toolName}?`);
-
-  if (!approved) {
-    return {
-      behavior: "deny",
-      message: "User rejected this action"
-    };
-  }
-  return { behavior: "allow", updatedInput: input };
-};
-```
-
-**建议替代方案**
-
-用户不想要此特定操作，但有不同的想法。阻止工具并在您的消息中包含指导。Claude 将阅读此内容并根据您的反馈决定如何继续。
-
-```python Python theme={null}
-async def can_use_tool(tool_name, input_data, context):
-    if tool_name == "Bash" and "rm" in input_data.get("command", ""):
-        # 用户不想删除，建议改为存档
-        return PermissionResultDeny(
-            message="User doesn't want to delete files. They asked if you could compress them into an archive instead."
-        )
-    return PermissionResultAllow(updated_input=input_data)
-```
-
-```typescript TypeScript theme={null}
-canUseTool: async (toolName, input) => {
-  if (toolName === "Bash" && input.command.includes("rm")) {
-    // 用户不想删除，建议改为存档
-    return {
-      behavior: "deny",
-      message:
-        "User doesn't want to delete files. They asked if you could compress them into an archive instead."
-    };
-  }
-  return { behavior: "allow", updatedInput: input };
-};
-```
-
-**完全重定向**
-
-对于完全改变方向（不仅仅是轻推），使用[流输入](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)向 Claude 发送新指令。这绕过当前工具请求并为 Claude 提供全新指令来遵循。
+> [tab] 完全重定向
+>
+> 对于完全改变方向（不仅仅是轻推），使用[流输入](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)向 Claude 发送新指令。这绕过当前工具请求并为 Claude 提供全新指令来遵循。
 
 ## 处理澄清问题
 

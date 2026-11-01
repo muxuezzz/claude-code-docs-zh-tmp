@@ -155,7 +155,7 @@ claude plugin validate ./my-plugin
 | `workflows` | Path, or array of paths | [Workflow](https://code.claude.com/docs/zh-CN/workflows.md#distribute-a-workflow-in-a-plugin) `.js` 文件或目录。替换默认 `workflows/` 扫描 |
 | `experimental` | Object | `themes`、`monitors` 和 `evals` 的容器，其 manifest 形式可能仍会改变 |
 | `experimental.themes` | Path, or array of paths | 主题文件或目录。替换默认 `themes/` 扫描。顶级 `themes` 键仍然加载，带有 `claude plugin validate` 警告 |
-| [`experimental.monitors`](#monitors) | Path, or inline array | 包含 monitors 数组的 `.json` 文件，或数组本身。默认为 `monitors/monitors.json`。顶级 `monitors` 键仍然加载，带有 `claude plugin validate` 警告。Monitors 仅在交互式会话中运行，不在 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 上运行 |
+| [`experimental.monitors`](#monitors) | Path, or inline array | 包含 monitors 数组的 `.json` 文件，或数组本身。默认为 `monitors/monitors.json`。顶级 `monitors` 键仍然加载，带有 `claude plugin validate` 警告。Monitors [在使用 `-p` 标志时不会启动](https://code.claude.com/docs/zh-CN/plugins/components#monitors) |
 | `experimental.evals` | Path, or array of paths | 当不是默认 `evals/` 时，保存 plugin 的[评估案例](https://code.claude.com/docs/zh-CN/plugin-evals.md#use-a-different-eval-directory)的目录。`claude plugin eval --eval-dir` 覆盖它 |
 
 在"类型"列中，路径是相对于 plugin 根目录的字符串，例如 `"./custom/commands"`。
@@ -606,7 +606,7 @@ Claude Code 为 plugin 组件提供三个路径变量。在[每个变量解析�
 }
 ```
 
-在 Windows 上，替换的路径使用正斜杠，因此 shell 不会将反斜杠读取为转义。
+在 Windows 上，大多数替换的路径使用正斜杠，例如 `C:/Users/you/...`。在 [exec 形式 hook](https://code.claude.com/docs/zh-CN/hooks.md#exec-form-and-shell-form) 以及通过 PowerShell 运行的 hook 中，它们会保留原生的反斜杠；未安装 Git Bash 时，PowerShell 是 Windows 上的默认 shell。
 
 ## 标准布局
 

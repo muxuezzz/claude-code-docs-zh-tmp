@@ -880,7 +880,7 @@ class ClaudeAgentOptions:
 | `continue_conversation` | `bool` | `False` | 继续最近的对话 |
 | `resume` | `str \| None` | `None` | 要恢复的会话 ID |
 | `session_id` | `str \| None` | `None` | 使用特定的会话 ID 而不是自动生成的。必须是有效的 UUID。不能与 `continue_conversation` 或 `resume` 结合使用，除非也设置了 `fork_session` |
-| `max_turns` | `int \| None` | `None` | 最大 Agent 轮次（工具使用往返） |
+| `max_turns` | `int \| None` | `None` | 最大 Agent [轮次](https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop.md#turns-and-messages) |
 | `max_budget_usd` | `float \| None` | `None` | 当客户端成本估计达到此 USD 值时停止查询。该估计值可能超过此值，因此请[预留余量](https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop.md#budget-headroom)。仅计算调用自身的支出；从恢复的会话恢复的总数不计算。有关准确性注意事项和重置行为，见 [跟踪成本和使用](https://code.claude.com/docs/zh-CN/agent-sdk/cost-tracking.md) |
 | `disallowed_tools` | `list[str]` | `[]` | 要拒绝的工具。裸名称如 `"Bash"` 从 Claude 的上下文中移除工具。限定规则如 `"Bash(rm *)"` 保持工具可用，并在每个权限模式（包括 `bypassPermissions`）中拒绝匹配的调用，针对[按书写形式](https://code.claude.com/docs/zh-CN/permissions.md#bash-rule-limits)的命令。见 [权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#allow-and-deny-rules) |
 | `enable_file_checkpointing` | `bool` | `False` | 启用文件更改跟踪以进行回滚。见 [文件检查点功能](https://code.claude.com/docs/zh-CN/agent-sdk/file-checkpointing.md) |
@@ -1273,6 +1273,8 @@ class PermissionResultAllow:
 | `behavior` | `Literal["allow"]` | `"allow"` | 必须是 "allow" |
 | `updated_input` | `dict[str, Any] \| None` | `None` | 要使用的修改后的输入而不是原始输入 |
 | `updated_permissions` | `list[PermissionUpdate] \| None` | `None` | 要应用的权限更新 |
+
+如果您返回的 `PermissionResultAllow` 在 `updated_permissions` 中包含超过 4,096 项，Claude Code 会将该结果视为无效并拒绝该工具调用。每个 [`PermissionUpdate`](#permissionupdate) 计为一项，其 `rules` 或 `directories` 列表中的每个条目也各计为一项。拒绝消息以 `updatedPermissions may hold at most 4096 updates, rules and directories in all.` 结尾。为避免被拒绝，请返回不超过 4,096 项。
 
 ### `PermissionResultDeny`
 
@@ -2568,7 +2570,9 @@ asyncio.run(main())
 
 ### Agent
 
-**工具名称：** `Agent`。先前的名称 `Task` 仍作为别名被接受，并且为了向后兼容，init [`SystemMessage`](#systemmessage) 中的 `tools` 列表会将此工具报告为 `Task`。
+**工具名称：** `Agent`。当此工具对会话可用时，先前的名称 `Task` 仍作为别名被接受。
+
+为了向后兼容，init [`SystemMessage`](#systemmessage) 中的 `tools` 列表会将此工具报告为 `Task`。
 
 **输入：**
 
@@ -3318,7 +3322,7 @@ Grep 在每种输出模式下都返回这种 dict 形状。存在哪些可选键
 
 ### TaskStop
 
-**工具名称：** `TaskStop`。先前的名称 `KillShell` 和 `KillBash` 仍作为别名被接受。
+**工具名称：** `TaskStop`。您仍然可以在权限规则、hook 匹配器以及 `tools`、`allowed_tools` 和 `disallowed_tools` 选项中使用先前的名称 `KillShell` 和 `KillBash`。
 
 **输入：**
 
@@ -3642,7 +3646,7 @@ class SandboxNetworkConfig(TypedDict, total=False):
 | `deniedDomains` | `list[str]` | `[]` | 沙箱化进程无法访问的域名。优先于 `allowedDomains` |
 | `allowManagedDomainsOnly` | `bool` | `False` | 仅限托管设置：在托管设置中设置时，忽略 `allowedDomains` 和来自非托管设置源的 `WebFetch(domain:...)` 允许规则。通过 SDK 选项设置时无效 |
 | `allowUnixSockets` | `list[str]` | `[]` | 仅限 macOS：进程可以访问的 Unix socket 路径，例如 Docker socket。在 Linux 上被忽略 |
-| `allowAllUnixSockets` | `bool` | `False` | 允许访问所有 Unix sockets |
+| `allowAllUnixSockets` | `bool` | `False` | 允许访问所有 Unix sockets，在 Linux 上还允许访问 VM sockets（`AF_VSOCK`） |
 | `allowLocalBinding` | `bool` | `False` | 允许进程绑定到本地端口（例如开发服务器） |
 | `allowMachLookup` | `list[str]` | `[]` | 仅限 macOS：允许的 XPC/Mach 服务名称。支持尾部通配符 |
 | `httpProxyPort` | `int` | `None` | 网络请求的 HTTP 代理端口 |

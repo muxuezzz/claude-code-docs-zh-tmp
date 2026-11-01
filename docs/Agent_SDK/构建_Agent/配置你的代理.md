@@ -161,7 +161,7 @@ Claude Code 读取工作目录以确定：
 
 两种语言都有相同的设置器：
 
-* **`setModel()` / `set_model()`**：切换模型。不带模型调用它以切换到[Claude Code 的默认模型](https://code.claude.com/docs/zh-CN/model-config.md#default-model-setting)，而不是你在选项中传递的 `model`。
+* **`setModel()` / `set_model()`**：切换模型。不带模型调用它以切换到[Claude Code 的默认模型](https://code.claude.com/docs/zh-CN/model-config.md#default-model-setting)，而不是您在选项中传递的 `model`。如果会话处于自动模式，而您切换到自动模式不支持的模型，会话将更改为 `default` 模式。要返回自动模式，请参阅[自动模式（`auto`）](https://code.claude.com/docs/zh-CN/agent-sdk/permissions#auto-mode-auto)。
 * **`setPermissionMode()` / `set_permission_mode()`**：切换权限模式
 
 TypeScript 还有 `applyFlagSettings()` 和 `updateSettings()`：

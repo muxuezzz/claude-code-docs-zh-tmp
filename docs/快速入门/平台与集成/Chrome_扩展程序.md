@@ -39,17 +39,17 @@ Claude 为浏览器任务打开新标签页，并共享您浏览器的登录状�
 * [Google Chrome](https://www.google.com/chrome/)、[Microsoft Edge](https://www.microsoft.com/edge) 或其他基于 Chromium 的浏览器，如 Brave、Arc、Vivaldi 或 Opera
 * [Claude in Chrome 扩展程序](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn) 版本 1.0.36 或更高版本，可在 Chrome Web Store 中获得
 * [Claude Code](https://code.claude.com/docs/zh-CN/quickstart.md#step-1-install-claude-code)
-* 直接 Anthropic 计划（Pro、Max、Team 或 Enterprise）
+* 直接 Anthropic 计划（Pro、Max、Ultra、Team 或 Enterprise）
 
 在已启用 HIPAA 的 Enterprise 组织中，Claude in Chrome 默认处于关闭状态，[Owner](https://code.claude.com/docs/zh-CN/server-managed-settings.md#access-control) 可以在 [**Organization settings > Claude in Chrome**](https://claude.ai/admin-settings/browser-extension) 中将其启用。您与 Anthropic 签订的商业伙伴协议（BAA）不涵盖通过 Claude in Chrome 发送到第三方网站的数据。有关合格服务（Eligible Services）的列表，请参阅[实施指南](https://trust.anthropic.com/resources?s=l1wrssd9hsbi4gak0tp5a6\&name=%5Banthropic%5D-hipaa-ready-offering-implementation-guide)。
 
-Chrome 集成还需要使用 `/login` 登录。如果您使用 API 密钥或来自 [`claude setup-token`](https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token) 的长期令牌进行身份验证，Claude Code 会关闭 Chrome 集成，即使您传递 `--chrome`，因为浏览器扩展程序无法使用这些凭据进行身份验证。在 v2.1.216 之前，这些会话可以启用 Chrome 集成，但每次尝试连接到浏览器扩展程序都会失败，并显示 403 错误。
+Chrome 集成还需要使用 `/login` 登录。如果您使用 API 密钥或来自 [`claude setup-token`](https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token) 的长期令牌进行身份验证，即使您传递 `--chrome`，Claude Code 也会保持 Chrome 集成处于关闭状态。浏览器扩展程序无法使用这些凭据进行身份验证。
 
 > [!NOTE]
 >
 > Chrome 集成不可通过 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 等第三方提供商获得。如果您仅通过第三方提供商访问 Claude，则需要单独的 claude.ai 账户来使用此功能。
 
-## 在 CLI 中开始
+## 在 CLI 中开始使用
 
 **1. 使用 Chrome 启动 Claude Code**
 
@@ -59,77 +59,86 @@ Chrome 集成还需要使用 `/login` 登录。如果您使用 API 密钥或来�
 claude --chrome
 ```
 
-首次使用 Chrome 启动时，Claude Code 会显示一个一次性对话框，介绍该集成并解释网站权限的工作原理。按 Enter 继续。
+首次使用 Chrome 启动时，Claude Code 会显示一个一次性对话框，介绍该集成并说明站点权限的工作方式。按 Enter 继续。
 
-要在未来的会话中启用 Chrome 而无需该标志，请参阅[默认启用 Chrome](#enable-chrome-by-default)。
+如需在以后的会话中无需该标志即可启用 Chrome，请参阅[默认启用 Chrome](#enable-chrome-by-default)。
 
-**2. 要求 Claude 使用浏览器**
+**2. 让 Claude 使用浏览器**
 
-此示例导航到页面、与其交互并报告其发现，全部来自您的终端或编辑器：
+此示例会导航到一个页面、与之交互并报告发现的内容，所有操作都可以在终端或编辑器中完成：
 
 ```text wrap theme={null}
 Go to code.claude.com/docs, click on the search box,
 type "hooks", and tell me what results appear
 ```
 
-如果 Claude Code 在浏览器操作前要求权限，请批准它。对话框以 `Claude in Chrome wants to` 开头，并提供在该会话中允许该网站上所有操作的选项。Claude 打开一个新标签页并开始任务。
+如果 Claude Code 在执行浏览器操作前请求权限，请批准。该对话框以 `Claude in Chrome wants to` 开头，并提供在本次会话中允许该站点上所有操作的选项。Claude 会打开一个新标签页并开始执行任务。
 
-随时运行 `/chrome` 以检查连接状态、管理权限、重新连接扩展程序或选择要使用的已连接浏览器。当状态面板显示"Status: 已启用"和"Extension: 已安装"时，集成正在工作。
+随时运行 `/chrome` 可检查连接状态、管理权限、重新连接扩展程序，或选择要使用的已连接浏览器。当状态面板显示“状态：已启用”和“扩展程序：已安装”时，表示集成正常工作。
 
-如果连接了多个浏览器，您可以选择 Claude 使用哪一个。当浏览器操作在您选择之前开始时，Claude 会提示您选择一个。要稍后切换浏览器，运行 `/chrome` 并选择**选择浏览器…**。即使另一个浏览器连接，Claude 也会继续使用您的选择。
+如果连接了多个浏览器，您可以选择 Claude 使用哪一个。如果在您做出选择之前就开始了浏览器操作，Claude 会提示您选择一个。如需之后切换浏览器，请运行 `/chrome` 并选择 **Select browser…**。即使有其他浏览器连接，Claude 也会继续使用您选择的浏览器。
 
-对于 VS Code，请参阅[在 VS Code 中使用 Chrome 自动化浏览器任务](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)。
+对于 VS Code，请参阅 [VS Code 中的浏览器自动化](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)。
 
-### 当 Claude 要求时安装扩展程序
+### 在 Claude 询问时安装扩展程序
 
-当 Claude 在交互式会话中需要您的浏览器，而 Claude Code 未检测到扩展程序时，Claude Code 会显示标题为"Claude wants to use your browser"的安装提示。Claude Code 每个会话最多询问一次。
+当 Claude 在交互式会话中需要使用您的浏览器，而 Claude Code 未检测到扩展程序时，Claude Code 会显示一个标题为“Claude wants to use your browser”的安装提示。Claude Code 每个会话最多询问一次。
 
-该提示提供三个选择：
+该提示提供三个选项：
 
-* **安装扩展程序**：在您的浏览器中打开扩展程序安装页面并启动引导式设置。Claude Code 等待安装、连接扩展程序，并在同一会话中启用浏览器工具。当连接准备好时，选择"Continue with browser tools"，Claude 在您的浏览器中恢复任务。您可以通过选择"Continue without browser tools"离开设置，稍后使用 `/chrome` 完成。
-* **暂不**：继续执行任务而不使用浏览器工具。Claude Code 可以在稍后的会话中再次询问。
-* **不再询问**：在未来的会话中停止该提示。您仍然可以随时使用 `/chrome` 设置集成。
+* **Install extension**：在浏览器中打开扩展程序安装页面并启动引导式设置。Claude Code 会等待安装完成、连接扩展程序，并在同一会话中启用浏览器工具。连接就绪后，选择“Continue with browser tools”，Claude 会在您的浏览器中继续执行任务。您可以选择“Continue without browser tools”退出设置，之后再通过 `/chrome` 完成设置。
+* **Not now**：在不使用浏览器工具的情况下继续执行任务。Claude Code 可能会在之后的会话中再次询问。
+* **Don't ask again**：在以后的会话中不再显示该提示。您仍可随时通过 `/chrome` 设置该集成。
 
-两个托管 MCP 策略会关闭该提示：
+有两种托管 MCP 策略会关闭该提示：
 
-* 如果您的组织使用 [`deniedMcpServers` 托管设置](https://code.claude.com/docs/zh-CN/managed-mcp#policy-based-control-with-allowlists-and-denylists)阻止 `claude-in-chrome` MCP 服务器，Claude Code 不会显示安装提示。
-* 如果您的组织部署了 [`managed-mcp.json`](https://code.claude.com/docs/zh-CN/managed-mcp#exclusive-control-with-managed-mcp-json) 文件，但未[在托管集合中允许 Claude in Chrome](https://code.claude.com/docs/zh-CN/managed-mcp.md#allow-claude-in-chrome-alongside-the-managed-set)，Claude Code 不会显示安装提示。
+* 如果您的组织通过 [`deniedMcpServers` 托管设置](https://code.claude.com/docs/zh-CN/managed-mcp#policy-based-control-with-allowlists-and-denylists)阻止了 `claude-in-chrome` MCP 服务器，Claude Code 不会显示安装提示。
+* 如果您的组织部署了 [`managed-mcp.json`](https://code.claude.com/docs/zh-CN/managed-mcp#exclusive-control-with-managed-mcp-json) 文件，但没有[在托管集之外允许 Claude in Chrome](https://code.claude.com/docs/zh-CN/managed-mcp.md#allow-claude-in-chrome-alongside-the-managed-set)，Claude Code 不会显示安装提示。
 
 ### 默认启用 Chrome
 
-要连接 Chrome 而无需每次都传递 `--chrome`，请在 CLI 会话中运行 `/chrome` 并选择 **Enabled by default**。在 [VS Code 扩展程序](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)中，在输入框中键入 `/chrome` 并打开 **Enabled by default** 开关。两者共享同一个设置，因此在任一处启用它，都会同时对 CLI 和 VS Code 启用。
+如需无需每次传递 `--chrome` 即可连接 Chrome，请在 CLI 会话中运行 `/chrome` 并选择**默认启用**。在 [VS Code 扩展](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)中，在输入框中输入 `/chrome` 并打开**默认启用**开关。两者共享同一个设置，因此在任一处启用后，CLI 和 VS Code 都会启用该设置。
 
-启用该设置且使用 Claude Code v2.1.287 或更高版本时，每个 VS Code 会话在启动时就会连接到您的浏览器，因此 Claude 无需您键入 `@browser` 即可使用它。在更早的版本中，或在关闭该设置时，VS Code 会话会在您键入 `@browser` 时连接。
+启用该设置并使用 Claude Code v2.1.287 或更高版本时，每个 VS Code 会话都会在启动时连接到您的浏览器，因此 Claude 无需您输入 `@browser` 即可使用浏览器。在更早的版本中，或者关闭该设置时，VS Code 会话会在您输入 `@browser` 时连接。
 
-当 Chrome 未运行时，Claude Code 正常启动。
+Chrome 未运行时，Claude Code 会正常启动。
 
 > [!NOTE]
 >
-> 默认启用 Chrome 会增加上下文使用，因为浏览器工具及其说明始终被加载。如果您注意到上下文消耗增加，请关闭此设置，仅在需要时连接：在 CLI 中使用 `--chrome`，或在 VS Code 输入框中键入 [`@browser`](https://code.claude.com/docs/zh-CN/vs-code#automate-browser-tasks-with-chrome)。
+> 默认启用 Chrome 会增加上下文使用量，因为浏览器工具及其说明会始终被加载。如果您注意到上下文消耗增加，请关闭该设置，仅在需要时连接：在 CLI 中使用 `--chrome`，或在 VS Code 输入框中输入 [`@browser`](https://code.claude.com/docs/zh-CN/vs-code#automate-browser-tasks-with-chrome)。
 
-### 管理网站权限
+### 回答启动对话框
 
-网站级权限从 Chrome 扩展程序继承。在 Chrome 扩展程序设置中管理权限，以控制 Claude 可以浏览、点击和输入的网站。在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)中，当自动模式分类器本身批准对网站的浏览器调用时，扩展程序会跳过该调用的自己的按网站检查，除非您的权限规则拒绝任何网站对 Claude in Chrome 的访问。
+如果启动 `claude` 时出现“Claude in Chrome extension detected”对话框，您的回答会更改[**默认启用**设置](#enable-chrome-by-default)：
+
+* **Yes, use my browser**：启用该设置并连接本次会话
+* **No, keep browser tools off** 或 Esc：关闭该设置，Claude Code 将不再提供设置 Chrome 的选项
+
+如需为以后的会话更改您的回答，请运行 `/chrome`。
+
+### 管理站点权限
+
+站点级权限继承自 Chrome 扩展程序。在 Chrome 扩展程序设置中管理权限，以控制 Claude 可以在哪些站点上浏览、点击和输入。在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)下，当自动模式分类器本身批准了对某个站点的浏览器调用时，扩展程序会跳过该调用的逐站点检查，除非您的权限规则拒绝 Claude in Chrome 访问任何站点。
 
 ### VS Code 会话中的权限提示
 
-在 VS Code 会话中，当 Claude Code 在浏览器操作前询问您时，提示会以卡片形式显示在聊天面板中。当该操作针对您尚未允许的网站时，该卡片还会提供允许该网站的选项。
+在 VS Code 会话中，当 Claude Code 在执行浏览器操作前进行询问时，提示会以卡片形式显示在聊天面板中。当操作针对您尚未允许的站点时，该卡片还会提供允许该站点的选项。
 
-在因 [Enabled by default](#enable-chrome-by-default) 已开启而在启动时连接到您浏览器的会话中，在 Manual、Edit automatically、Auto 和 Bypass permissions 模式下，对于您尚未允许的网站，Claude Code 会在浏览器操作前询问您。在 Auto 和 Bypass permissions 模式下，这一行为持续到您在该会话中键入 `@browser` 为止。
+在因启用了[默认启用](#enable-chrome-by-default)而在启动时连接到浏览器的会话中，无论处于 Manual、Edit automatically、Auto 还是 Bypass permissions 模式，Claude Code 在对您尚未允许的站点执行浏览器操作前都会询问您。在 Auto 和 Bypass permissions 模式下，此行为会持续到您在该会话中输入 `@browser` 为止。
 
-### 计划模式中的浏览器工具
+### 计划模式下的浏览器工具
 
-在[计划模式](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode)中，在 Claude 记录 GIF、打开新标签页或运行快捷方式之前会出现权限提示。在交互式 CLI 会话中，如果[可用绕过权限模式](https://code.claude.com/docs/zh-CN/permission-modes.md#skip-all-checks-with-bypasspermissions-mode)且[功能标志获取](https://code.claude.com/docs/zh-CN/env-vars.md#features-that-need-feature-flag-fetching)已关闭，这些调用将在没有提示的情况下运行。
+在[计划模式](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode)下，Claude 在录制 GIF、打开新标签页或运行快捷方式之前会显示权限提示。在交互式 CLI 会话中，如果[绕过权限模式可用](https://code.claude.com/docs/zh-CN/permission-modes.md#skip-all-checks-with-bypasspermissions-mode)且[功能标志获取](https://code.claude.com/docs/zh-CN/env-vars.md#features-that-need-feature-flag-fetching)已关闭，这些调用将在不提示的情况下运行。
 
-当 `tabs_context_mcp` 调用设置 `createIfEmpty` 时也会提示，包含任何这些操作的 `browser_batch` 调用也是如此。
+设置了 `createIfEmpty` 的 `tabs_context_mcp` 调用也会触发提示，包含上述任一操作的 `browser_batch` 调用同样如此。
 
 ## 示例工作流
 
-这些示例展示了将浏览器操作与编码任务结合的常见方式。运行 `/mcp`，选择 `claude-in-chrome`，然后选择**查看工具**以查看可用浏览器工具的完整列表。
+以下示例展示了将浏览器操作与编码任务结合使用的常见方式。运行 `/mcp`，选择 `claude-in-chrome`，然后选择 **View tools**，即可查看可用浏览器工具的完整列表。
 
-### 测试本地网络应用
+### 测试本地 Web 应用程序
 
-在开发网络应用时，要求 Claude 验证您的更改是否正常工作：
+开发 Web 应用时，可以让 Claude 验证您的更改是否正常工作：
 
 ```text wrap theme={null}
 I just updated the login form validation. Can you open localhost:3000,
@@ -137,22 +146,22 @@ try submitting the form with invalid data, and check if the error
 messages appear correctly?
 ```
 
-Claude 导航到您的本地服务器、与表单交互并报告其观察到的内容。
+Claude 会导航到您的本地服务器，与表单进行交互，并报告其观察到的情况。
 
 ### 使用控制台日志进行调试
 
-Claude 可以读取控制台输出以帮助诊断问题。告诉 Claude 要查找的模式，而不是要求所有控制台输出，因为日志可能很冗长：
+Claude 可以读取控制台输出来帮助诊断问题。由于日志可能非常冗长，请告诉 Claude 需要查找哪些模式，而不是要求获取全部控制台输出：
 
 ```text wrap theme={null}
 Open the dashboard page and check the console for any errors when
 the page loads.
 ```
 
-Claude 读取控制台消息，可以过滤特定模式或错误类型。
+Claude 会读取控制台消息，并可以筛选特定模式或错误类型。
 
-### 自动填充表单
+### 自动填写表单
 
-加快重复数据输入任务的速度：
+加快重复性数据录入任务：
 
 ```text wrap theme={null}
 I have a spreadsheet of customer contacts in contacts.csv. For each row,
@@ -160,13 +169,13 @@ go to the CRM at crm.example.com, click "Add Contact", and fill in the
 name, email, and phone fields.
 ```
 
-Claude 读取您的本地文件、导航网络界面并为每条记录输入数据。
+Claude 会读取您的本地文件，在 Web 界面中导航，并为每条记录输入数据。
 
-### 将文件上传到网页
+### 向网页上传文件
 
-Claude 可以将您计算机中的文件附加到页面上的上传字段。Claude Code 读取文件并将其内容发送到浏览器，因此上传在本地和远程会话中都有效。
+Claude 可以将您计算机上的文件附加到页面上的上传字段中。Claude Code 会读取文件并将其内容发送到浏览器，因此上传在本地会话和远程会话中均可正常工作。
 
-此示例将日志文件附加到表单：
+以下示例将一个日志文件附加到表单：
 
 ```text wrap theme={null}
 Open the bug tracker at bugs.example.com, create a new issue,
@@ -175,21 +184,21 @@ and attach logs/session.log to it
 
 如果 Claude 拒绝附加文件或上传失败，请检查以下原因：
 
-* **权限**：Claude 只能在会话被允许读取文件时上传文件，因此[权限规则](https://code.claude.com/docs/zh-CN/settings-reference.md#permission-settings)拒绝对文件的 `Read` 访问也会阻止上传。
-* **大小**：单次上传最多可包含 10 MB 的文件。
-* **硬链接**：Claude 拒绝具有多个硬链接的文件，这在 `node_modules` 等包管理器存储中很常见。复制文件并上传副本。
-* **凭据名称**：如果文件名或所在文件夹是通常用于存放凭据的名称，例如 `.env`、`.pem` 或 `.key` 文件，或 `.ssh` 下的任何内容，Claude 会拒绝该文件。需要 Claude Code v2.1.293 或更高版本。
+* **权限**：只有当会话被允许读取某个文件时，Claude 才能上传该文件，因此拒绝对文件进行 `Read` 访问的[权限规则](https://code.claude.com/docs/zh-CN/settings-reference.md#permission-settings)也会阻止上传该文件。
+* **大小**：单次上传的文件总大小最多为 10 MB。
+* **硬链接**：Claude 会拒绝具有多个硬链接的文件，这种情况在 `node_modules` 等包管理器存储中很常见。请复制该文件并上传副本。
+* **凭据名称**：如果文件的名称或所在文件夹属于通常用于存放凭据的位置，例如 `.env`、`.pem` 或 `.key` 文件，或 `.ssh` 下的任何内容，Claude 会拒绝该文件。需要 Claude Code v2.1.293 或更高版本。
 
 ### 在 Google Docs 中起草内容
 
-使用 Claude 直接在您的文档中写入，无需 API 设置：
+使用 Claude 直接在您的文档中撰写内容，无需进行 API 设置：
 
 ```text wrap theme={null}
 Draft a project update based on the recent commits and add it to my
 Google Doc at docs.google.com/document/d/abc123
 ```
 
-Claude 打开文档、点击编辑器并输入内容。这适用于您已登录的任何网络应用：Gmail、Notion、Sheets 等。
+Claude 会打开文档，点击进入编辑器并输入内容。这适用于您已登录的任何 Web 应用：Gmail、Notion、Sheets 等。
 
 ### 从网页中提取数据
 
@@ -200,11 +209,11 @@ Go to the product listings page and extract the name, price, and
 availability for each item. Save the results as a CSV file.
 ```
 
-Claude 导航到页面、读取内容并将数据编译成结构化格式。
+Claude 会导航到该页面，读取内容，并将数据整理为结构化格式。
 
 ### 运行多站点工作流
 
-协调多个网站之间的任务：
+跨多个网站协调任务：
 
 ```text wrap theme={null}
 Check my calendar for meetings tomorrow, then for each meeting with
@@ -212,28 +221,28 @@ an external attendee, look up their company website and add a note
 about what they do.
 ```
 
-Claude 跨标签页工作以收集信息并完成工作流。
+Claude 会在多个标签页之间工作，以收集信息并完成工作流。
 
 ### 录制演示 GIF
 
-创建浏览器交互的可共享录制：
+创建可分享的浏览器交互录制：
 
 ```text wrap theme={null}
 Record a GIF showing how to complete the checkout flow, from adding
 an item to the cart through to the confirmation page.
 ```
 
-Claude 录制交互序列并将其保存为 GIF 文件。录制捕获浏览器中可见的所有内容，包括已登录页面上的帐户详细信息，因此在与团队外部共享之前请查看。
+Claude 会录制交互过程并将其保存为 GIF 文件。录制内容会捕获浏览器中可见的所有内容，包括已登录页面上的账户详细信息，因此在与团队以外的人员分享之前，请先进行检查。
 
 ### 将屏幕截图保存到磁盘
 
-要求 Claude 将屏幕截图保存为文件：
+让 Claude 将屏幕截图保存为文件：
 
 ```text wrap theme={null}
 Take a screenshot of the checkout page and save it to disk
 ```
 
-Claude 将图像保存到磁盘并报告文件路径。
+Claude 会将图像保存到磁盘并报告文件路径。
 
 ## 故障排除
 

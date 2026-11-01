@@ -172,6 +172,36 @@ Claude Code 忽略未知的顶级键或插件条目键，而不是拒绝它，�
 * **`url`**：Claude Code 仅获取 `marketplace.json`，所以相对路径无法解析。给每个插件一个对象源，如 `github` 或 `git-subdir`。
 * **`settings`**：相对路径被直接拒绝。
 
+#### Git submodules in the marketplace repository
+
+当 Claude Code 克隆市场仓库时，它只获取包含插件文件的 git 子模块。需要 Claude Code v2.1.295 或更高版本。
+
+早期版本会获取所有子模块，包括嵌套的子模块。如果仓库中有大型子模块，Claude Code 在获取它时可能会超出[克隆超时](https://code.claude.com/docs/zh-CN/plugins/troubleshooting.md#git-clone-timed-out-after-120s)。
+
+对于位于子目录中的插件（如 `./plugins/formatter`），Claude Code 在以下情况下获取子模块：
+
+* **插件位于子模块内**：子模块是插件的目录或其上级目录
+* **子模块位于插件内**：子模块位于插件目录下的任意位置
+* **符号链接指向子模块内部**：提交到仓库的链接的目标位于子模块中
+
+位于市场根目录的插件（`"source": "./"`）要么获取仓库中的所有子模块，要么一个都不获取。当以下任一项指向任何子模块内部时，Claude Code 获取所有子模块：
+
+* **组件目录**：根目录下存放插件组件的目录，如 `skills/`、`hooks/` 或 `bin/`
+* **插件配置中的路径**：插件的市场条目、其 `plugin.json` 或配置文件（如 `.mcp.json` 或 `hooks/hooks.json`）中的路径
+* **符号链接**：提交到仓库的链接
+* **插件文件中的文本**：写在配置文件中或组件目录下某个文件中的子模块路径，如 `vendor/tool`
+
+当以上各项都不指向子模块时，Claude Code 不为该插件获取任何子模块。既是项目又是插件的仓库通常含有仅供项目构建使用的子模块，此规则会将它们排除在外。
+
+在无法判断哪些子模块包含插件文件时，Claude Code 也会获取所有子模块，例如：
+
+* **根目录下的 `SKILL.md`**：此时整个仓库就是一个 skill 的目录
+* **Claude Code 无法读取的文件**：市场文件、插件的某个配置文件或 `.gitmodules`
+
+如果您使用 `--sparse` 添加市场，或其源设置了 `sparsePaths`，Claude Code 只检出其中指定的目录，不获取任何子模块。早期版本也是如此。
+
+要将插件未使用的子模块排除在克隆之外，请参阅[将未使用的子模块排除在克隆之外](https://code.claude.com/docs/zh-CN/plugins/create-marketplace.md#keep-unused-submodules-out-of-the-clone)。
+
 #### Bare names under pluginRoot
 
 裸名是一个没有 `/` 的单个目录名，如 `"formatter"`。要写裸名而不是 `./` 路径，设置 [`metadata.pluginRoot`](#top-level-fields) 为它们解析的目录。使用 `"pluginRoot": "./plugins"`，`"source": "formatter"` 解析为 `./plugins/formatter`。需要 Claude Code v2.1.239 或更高版本。

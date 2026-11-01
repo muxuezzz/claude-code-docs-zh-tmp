@@ -41,7 +41,7 @@
 * **设置声明但 `known_marketplaces.json` 缺少的市场**：Claude Code 克隆它，然后重新加载插件并下载未缓存的已启用插件
 * **声明的市场其源在设置中更改**：Claude Code 从新源重新获取它并显示 `Plugins changed. Run /reload-plugins to activate.`
 
-既未被任何路径获取且没有可用缓存目录的已启用插件在 `/plugin` **Errors** 选项卡中显示 `Plugin "<name>" not cached at <path>`，`claude plugin list` 在同一行添加 `— run /plugin to refresh`。有关修复，请参阅[`Plugin "<name>" not cached at <path>`](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#plugin-not-cached-at)。
+既未被任何路径获取且没有可用缓存目录的已启用插件会在 `/plugin` **Errors** 选项卡中显示 `Plugin "<name>" not cached at <path>`。有关修复，请参阅[`Plugin "<name>" not cached at <path>`](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#plugin-not-cached-at)。
 
 ## 查找插件的来源
 

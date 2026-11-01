@@ -48,23 +48,23 @@ Claude Code 可以在任何终端中工作，无需配置。此页面适用于�
 
 某些 Claude Code 快捷键使用 Option 键，例如 Option+Enter 用于换行或 Option+P 用于切换模型。在 macOS 上，大多数终端默认不会将 Option 作为修饰符发送，因此这些快捷键在启用之前不会起作用。终端设置通常标记为"Use Option as Meta Key"；Meta 是现在标记为 Option 或 Alt 的键的历史 Unix 名称。
 
-**Apple Terminal**
+> [tab] Apple Terminal
+>
+> 打开"设置"→"配置文件"→"键盘"并勾选"Use Option as Meta Key"。
+>
+> 如果您接受了 Claude Code 的首次运行终端设置提示，这已经完成。该提示为您运行 `/terminal-setup`，它启用 Option 作为 Meta 并在您的 Apple Terminal 配置文件中关闭可听见的铃声。
+>
+> 在[屏幕阅读器模式](https://code.claude.com/docs/zh-CN/accessibility.md)中，`/terminal-setup` 保持铃声设置不变，以便终端铃声保持可听见。如果较早的运行关闭了铃声，请在"设置"→"描述文件"→"高级"→"可听见的铃声"下将其重新打开。
 
-打开"设置"→"配置文件"→"键盘"并勾选"Use Option as Meta Key"。
+> [tab] iTerm2
+>
+> 打开"设置"→"描述文件"→"键"→"常规"并将"Left Option key"和"Right Option key"设置为"Esc+"。
+>
+> 在 iTerm2 中运行 `/terminal-setup` 会在"设置"→"常规"→"选择"下启用"Applications in terminal may access clipboard"，以便 `/copy` 命令可以写入您的系统剪贴板。该命令即使在 tmux 内运行时也能检测到 iTerm2。重启 iTerm2 以使更改生效。
 
-如果您接受了 Claude Code 的首次运行终端设置提示，这已经完成。该提示为您运行 `/terminal-setup`，它启用 Option 作为 Meta 并在您的 Apple Terminal 配置文件中关闭可听见的铃声。
-
-在[屏幕阅读器模式](https://code.claude.com/docs/zh-CN/accessibility.md)中，`/terminal-setup` 保持铃声设置不变，以便终端铃声保持可听见。如果较早的运行关闭了铃声，请在"设置"→"描述文件"→"高级"→"可听见的铃声"下将其重新打开。
-
-**iTerm2**
-
-打开"设置"→"描述文件"→"键"→"常规"并将"Left Option key"和"Right Option key"设置为"Esc+"。
-
-在 iTerm2 中运行 `/terminal-setup` 会在"设置"→"常规"→"选择"下启用"Applications in terminal may access clipboard"，以便 `/copy` 命令可以写入您的系统剪贴板。该命令即使在 tmux 内运行时也能检测到 iTerm2。重启 iTerm2 以使更改生效。
-
-**VS Code**
-
-将 `"terminal.integrated.macOptionIsMeta": true` 添加到您的 VS Code 设置中。
+> [tab] VS Code
+>
+> 将 `"terminal.integrated.macOptionIsMeta": true` 添加到您的 VS Code 设置中。
 
 对于 Ghostty、Kitty 和其他终端，请在终端的配置文件中查找 Option-as-Alt 或 Option-as-Meta 设置。
 
@@ -72,7 +72,13 @@ Claude Code 可以在任何终端中工作，无需配置。此页面适用于�
 
 当 Claude 完成任务或暂停以等待权限提示，且您似乎离开了终端时，它会触发通知事件。请参阅[每种通知类型何时触发](https://code.claude.com/docs/zh-CN/hooks.md#notification)以了解确切的时间。将其显示为终端铃声或桌面通知可让您在长任务运行时切换到其他工作。
 
-默认情况下，Claude Code 仅在 Ghostty、Kitty 和 iTerm2 中发送桌面通知。在其他终端中，将 [`preferredNotifChannel`](https://code.claude.com/docs/zh-CN/settings-reference#preferrednotifchannel) 设置为 `"terminal_bell"` 以改为响铃终端铃声，或配置[通知 hook](#play-a-sound-with-a-notification-hook) 以获得自定义声音或命令。以下设置条目打开终端铃声：
+默认情况下，Claude Code 在某些终端中发送桌面通知，在其他终端中则发送铃声字符或不发送任何内容：
+
+* **Ghostty、Kitty 和 iTerm2**：发送桌面通知，其中 iTerm2 仅在您启用其警报设置后才会显示。
+* **Apple Terminal**：没有声音；当 Claude Code 发现最前方 Terminal 窗口的描述文件中"Audible bell"已关闭时，发送静音铃声字符，否则不发送任何内容。如果该描述文件的"Visual bell"或 Dock 弹跳选项已启用，该铃声字符会显示为窗口闪烁，或在 Terminal 处于后台时显示为 Dock 图标弹跳。
+* **其他终端**：不发送任何内容。
+
+若要让 Claude Code 无论使用何种终端或描述文件都发送铃声字符，请将 [`preferredNotifChannel`](https://code.claude.com/docs/zh-CN/settings-reference#preferrednotifchannel) 设置为 `"terminal_bell"`。在 Apple Terminal 中，还需在 **Settings > Profiles > Advanced** 下启用 **Audible bell** 才能听到铃声。以下设置条目用于设置该通道：
 
 ```json ~/.claude/settings.json theme={null}
 {
@@ -121,17 +127,22 @@ Claude Code 可以在任何终端中工作，无需配置。此页面适用于�
 * **后台会话**：[后台会话](https://code.claude.com/docs/zh-CN/agent-view.md)不会向您的终端报告其状态，即使您已连接到该会话也是如此。Agent 视图会改为显示其状态。
 * **[`CLAUDE_CODE_DISABLE_TERMINAL_TITLE`](https://code.claude.com/docs/zh-CN/env-vars#variables)**：如果您将此变量设置为 `1`，Claude Code 将不会检查支持情况，也不会报告状态。请取消设置该变量。
 
+在报告支持该协议的终端中，标签页标题不会以状态符号开头。终端会自行显示会话的状态，因此 Claude Code 会省略其在其他终端中置于标题前面的符号。
+
 ## 配置 tmux
 
 当 Claude Code 在 tmux 中运行时，默认情况下 Shift+Enter 提交而不是插入换行符，桌面通知和[进度条](https://code.claude.com/docs/zh-CN/settings-reference.md#terminalprogressbarenabled)永远无法到达外部终端。将这些行添加到 `~/.tmux.conf`，然后运行 `tmux source-file ~/.tmux.conf` 将其应用到运行中的服务器：
 
 ```bash ~/.tmux.conf theme={null}
 set -g allow-passthrough on
+set -g focus-events on
 set -s extended-keys on
 set -as terminal-features 'xterm*:extkeys'
 ```
 
 `allow-passthrough` 行允许通知和进度更新到达外部终端，而不是被 tmux 吞掉。`extended-keys` 行让 tmux 区分 Shift+Enter 和普通 Enter，这样换行快捷键就能工作。
+
+[mod 的 `Image`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#elements) 需要 `allow-passthrough` 和 `focus-events` 行，以及其他[在 tmux 中绘制的要求](https://code.claude.com/docs/zh-CN/plugins/mods/gallery.md#draw-an-image-inside-tmux)。添加这些行后，还需要从 tmux 分离、重新连接，然后重启 Claude Code。
 
 ## 修复 Windows 上 Backspace 删除整个单词的问题
 
@@ -141,25 +152,25 @@ set -as terminal-features 'xterm*:extkeys'
 
 ## 匹配颜色主题
 
-使用 `/theme` 命令或 `/config` 中的主题选择器，选择与您的终端相匹配的 Claude Code 主题。选择自动选项可检测您的终端的浅色或深色背景，因此主题会在您的终端跟随操作系统外观更改时进行更改。Claude Code 不控制终端本身的配色方案，该方案由终端应用程序设置。
+使用 `/theme` 命令或 `/config` 中的主题选择器，选择与终端相匹配的 Claude Code 主题。选择自动选项会检测终端的浅色或深色背景，因此每当终端随操作系统外观变化时，主题也会随之变化。Claude Code 不控制终端自身的配色方案，该方案由终端应用程序设置。
 
-要自定义界面底部显示的内容，请配置一个[自定义状态行](https://code.claude.com/docs/zh-CN/statusline.md)，显示当前模型、工作目录、git 分支或其他上下文。
+要自定义界面底部显示的内容，请配置一个[自定义状态栏](https://code.claude.com/docs/zh-CN/statusline.md)，用于显示当前模型、工作目录、git 分支或其他上下文信息。
 
 ### 创建自定义主题
 
-除了内置预设外，`/theme` 还列出您定义的任何自定义主题以及由已安装的[插件](https://code.claude.com/docs/zh-CN/plugins/components.md#themes-and-output-styles)贡献的任何主题。选择列表末尾的\*\*新建自定义主题…\*\*以交互方式创建一个：您命名主题，然后选择要覆盖的各个颜色令牌。当自定义主题突出显示时，按 `Ctrl+E` 可编辑它。
+除内置预设外，`/theme` 还会列出您定义的所有自定义主题，以及已安装的[插件](https://code.claude.com/docs/zh-CN/plugins/components.md#themes-and-output-styles)所提供的主题。选择列表末尾的 **New custom theme…** 即可以交互方式创建主题：先为主题命名，然后选择要覆盖的各个颜色 token。在某个自定义主题处于高亮状态时按 `Ctrl+E` 可对其进行编辑。
 
-每个自定义主题都是 `~/.claude/themes/` 中的一个 JSON 文件。不带 `.json` 扩展名的文件名是主题的 slug，选择主题会将 `custom:<slug>` 存储为您的主题偏好设置。该文件有三个可选字段：
+每个自定义主题都是 `~/.claude/themes/` 中的一个 JSON 文件。去掉 `.json` 扩展名后的文件名即为主题的 slug，选择该主题后会将 `custom:<slug>` 存储为您的主题偏好。该文件包含三个可选字段：
 
 | 字段 | 类型 | 描述 |
 | :- | :- | :- |
 | `name` | string | 在 `/theme` 中显示的标签。默认为文件名 slug |
-| `base` | string | 主题开始的内置预设：`dark`、`light`、`dark-daltonized`、`light-daltonized`、`dark-ansi` 或 `light-ansi`。默认为 `dark` |
-| `overrides` | object | 颜色令牌名称到颜色值的映射。此处未列出的令牌会回退到基础预设 |
+| `base` | string | 主题所基于的内置预设：`dark`、`light`、`dark-daltonized`、`light-daltonized`、`dark-ansi` 或 `light-ansi`。默认为 `dark` |
+| `overrides` | object | 颜色 token 名称到颜色值的映射。未在此列出的 token 会沿用基础预设 |
 
-颜色值接受 `#rrggbb`、`#rgb`、`rgb(r,g,b)`、`ansi256(n)` 或 `ansi:<name>`，其中 `<name>` 是 16 个标准 ANSI 颜色名称之一，例如 `red` 或 `cyanBright`。未知令牌和无效颜色值会被忽略，因此拼写错误不会破坏渲染。
+颜色值支持 `#rrggbb`、`#rgb`、`rgb(r,g,b)`、`ansi256(n)` 或 `ansi:<name>`，其中 `<name>` 是 16 种标准 ANSI 颜色名称之一，例如 `red` 或 `cyanBright`。未知的 token 和无效的颜色值会被忽略，因此拼写错误不会破坏渲染。
 
-以下示例定义了一个主题，该主题保留深色预设但重新着色提示符强调、错误文本和成功文本：
+以下示例定义了一个主题，它保留 dark 预设，但重新设置了提示词强调色、错误文本和成功文本的颜色：
 
 ```json ~/.claude/themes/dracula.json theme={null}
 {
@@ -173,13 +184,13 @@ set -as terminal-features 'xterm*:extkeys'
 }
 ```
 
-Claude Code 监视 `~/.claude/themes/` 并在添加或更改文件时重新加载，因此在编辑器中所做的编辑会应用到正在运行的会话，无需重启。如果 Claude Code 启动时 `~/.claude/themes/` 文件夹本身不存在，请在创建第一个主题文件后重启一次。之后，更改会应用而无需重启。
+Claude Code 会监视 `~/.claude/themes/`，并在添加或更改文件时重新加载，因此在编辑器中所做的修改无需重启即可应用于正在运行的会话。如果 Claude Code 启动时 `~/.claude/themes/` 文件夹本身尚不存在，请在创建第一个主题文件后重启一次。此后，更改无需重启即可生效。
 
-下面的参考涵盖了您可以在 `overrides` 中设置的令牌。`/theme` 中的交互式编辑器显示相同的令牌以及实时预览，加上一些单一用途的强调，例如此处省略的入门屏幕颜色。
+以下参考涵盖了可在 `overrides` 中设置的 token。`/theme` 中的交互式编辑器会显示相同的 token 并提供实时预览，此外还有一些单一用途的强调色（例如引导界面颜色），此处未列出。
 
-> **颜色令牌参考**
+> [accordion] 颜色 token 参考
 >
-> 以下示例结合了下面几个组中的令牌：品牌强调、Plan Mode 边框、diff 背景和消息背景。
+> 以下示例组合了下面几个分组中的 token：品牌强调色、计划模式边框、diff 背景以及消息背景。
 >
 > ```json ~/.claude/themes/midnight.json theme={null}
 > {
@@ -195,86 +206,86 @@ Claude Code 监视 `~/.claude/themes/` 并在添加或更改文件时重新加�
 > }
 > ```
 >
-> #### 文本和强调颜色
+> #### 文本和强调色
 >
-> 控制整个界面中使用的主要品牌强调和前景文本阴影。
+> 控制整个界面中使用的主品牌强调色和前景文本色调。
 >
-> | 令牌 | 控制 |
+> | Token | 控制内容 |
 > | :- | :- |
-> | `claude` | 主要品牌强调，用于微调器和助手标签 |
+> | `claude` | 主品牌强调色，用于加载动画和助手标签 |
 > | `text` | 默认前景文本 |
-> | `inverseText` | 绘制在彩色背景顶部的文本，例如状态徽章 |
+> | `inverseText` | 绘制在彩色背景上的文本，例如状态徽章 |
 > | `inactive` | 次要文本，例如提示、时间戳和禁用项 |
-> | `subtle` | 淡色边框和去强调的次要文本 |
-> | `suggestion` | 自动完成建议和选择器中的选择突出显示 |
+> | `subtle` | 淡色边框和弱化的次要文本 |
+> | `suggestion` | 自动补全建议以及选择器中的选中高亮 |
 > | `permission` | 对话框边框，包括权限提示和选择器 |
-> | `remember` | 内存和 `CLAUDE.md` 指示器 |
+> | `remember` | 记忆和 `CLAUDE.md` 指示器 |
 >
 > #### 状态颜色
 >
-> 在消息和指示器中发出成功、失败和警告状态的信号。
+> 在消息和指示器中标示成功、失败和警告状态。
 >
-> | 令牌 | 控制 |
+> | Token | 控制内容 |
 > | :- | :- |
 > | `success` | 成功消息和通过的检查 |
 > | `error` | 错误消息和失败 |
-> | `warning` | 警告、注意消息和自动模式指示器 |
-> | `merged` | 合并的拉取请求状态 |
+> | `warning` | 警告、注意消息以及自动模式指示器 |
+> | `merged` | 已合并的 Pull Request 状态 |
 >
 > #### 输入框和模式指示器
 >
-> 设置输入框边框颜色和权限模式或指示器处于活动状态时显示的强调。
+> 设置输入框边框颜色，以及权限模式或指示器处于活动状态时显示的强调色。
 >
-> | 令牌 | 控制 |
+> | Token | 控制内容 |
 > | :- | :- |
 > | `promptBorder` | 输入框边框 |
-> | `planMode` | Plan Mode 强调、Plan Mode 消息和 Plan Mode 对话框 |
-> | `autoAccept` | Accept-edits mode 强调 |
+> | `planMode` | 计划模式强调色、计划消息和计划模式对话框 |
+> | `autoAccept` | 接受编辑模式强调色 |
 > | `bashBorder` | 输入 `!` shell 命令时的输入框边框 |
 > | `ide` | IDE 连接指示器 |
-> | `fastMode` | Fast mode 指示器 |
-> | `effortUltra` | 当[ultracode](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level)打开时输入框边框上的 `ultracode` 标签。您对此颜色的覆盖在 Claude Code v2.1.239 或更高版本上生效 |
+> | `fastMode` | 快速模式指示器 |
+> | `effortUltra` | 启用 [ultracode](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level) 时输入框边框上的 `ultracode` 标签。您对此颜色的覆盖在 Claude Code v2.1.239 或更高版本中生效 |
 >
 > #### Diff 渲染
 >
-> 在文件编辑和审查中着色添加和删除的代码。
+> 为文件编辑和审查中添加和删除的代码着色。
 >
-> | 令牌 | 控制 |
+> | Token | 控制内容 |
 > | :- | :- |
 > | `diffAdded` | 添加行的背景 |
 > | `diffRemoved` | 删除行的背景 |
-> | `diffAddedDimmed` | 您拒绝编辑后显示的变暗 diff 中添加行的背景 |
-> | `diffRemovedDimmed` | 您拒绝编辑后显示的变暗 diff 中删除行的背景 |
-> | `diffAddedWord` | 添加行内的字级突出显示 |
-> | `diffRemovedWord` | 删除行内的字级突出显示 |
+> | `diffAddedDimmed` | 拒绝编辑后显示的淡化 diff 中添加行的背景 |
+> | `diffRemovedDimmed` | 拒绝编辑后显示的淡化 diff 中删除行的背景 |
+> | `diffAddedWord` | 添加行内的单词级高亮 |
+> | `diffRemovedWord` | 删除行内的单词级高亮 |
 >
 > #### 全屏模式
 >
-> Claude Code 仅在[全屏渲染模式](https://code.claude.com/docs/zh-CN/fullscreen.md)中使用 `userMessageBackgroundHover`、`selectionBg` 和 `composerSidebarBackground`。它在默认和全屏渲染器中都绘制 `userMessageBackground`、`bashMessageBackgroundColor` 和 `memoryBackgroundColor`。
+> Claude Code 仅在[全屏渲染模式](https://code.claude.com/docs/zh-CN/fullscreen.md)中使用 `userMessageBackgroundHover`、`selectionBg` 和 `composerSidebarBackground`。`userMessageBackground`、`bashMessageBackgroundColor` 和 `memoryBackgroundColor` 则在默认渲染器和全屏渲染器中都会绘制。
 >
-> | 令牌 | 控制 |
+> | Token | 控制内容 |
 > | :- | :- |
-> | `userMessageBackground` | 成绩单中您的消息后面的背景 |
-> | `userMessageBackgroundHover` | 悬停或展开消息时消息后面的背景 |
-> | `bashMessageBackgroundColor` | 成绩单中 `!` shell 命令条目后面的背景 |
-> | `memoryBackgroundColor` | 成绩单中 `#` 内存条目后面的背景 |
-> | `selectionBg` | 用鼠标选择的文本的背景 |
+> | `userMessageBackground` | 会话记录中您的消息的背景 |
+> | `userMessageBackgroundHover` | 消息在悬停或展开时的背景 |
+> | `bashMessageBackgroundColor` | 会话记录中 `!` shell 命令条目的背景 |
+> | `memoryBackgroundColor` | 会话记录中 `#` 记忆条目的背景 |
+> | `selectionBg` | 用鼠标选中的文本的背景 |
 > | `composerSidebarBackground` | 对话旁边面板的背景，例如 [diff 面板](https://code.claude.com/docs/zh-CN/fullscreen.md#watch-your-changes-in-the-diff-panel)或 [mod 的窗格](https://code.claude.com/docs/zh-CN/plugins/mods/interface.md) |
 >
-> #### 使用量计量表和说话者标签
+> #### 用量计量条和发言者标签
 >
-> 调整 `/usage` 视图中显示的条形图和区分您的消息与 Claude 消息的标签。
+> 调整 `/usage` 视图中显示的计量条，以及用于区分您的消息与 Claude 消息的标签。
 >
-> | 令牌 | 控制 |
+> | Token | 控制内容 |
 > | :- | :- |
-> | `rate_limit_fill` | 使用量计量表的填充部分 |
-> | `rate_limit_empty` | 使用量计量表的未填充部分 |
+> | `rate_limit_fill` | 用量计量条的已填充部分 |
+> | `rate_limit_empty` | 用量计量条的未填充部分 |
 > | `briefLabelYou` | 您的消息上 `You` 标签的颜色 |
 > | `briefLabelClaude` | 助手消息上 `Claude` 标签的颜色 |
 >
-> #### 微光变体和子代理颜色
+> #### 闪烁变体和子代理颜色
 >
-> 几个令牌有一个配对的微光变体，提供微调器的动画梯度中使用的较浅颜色。如果动画看起来不匹配，请与其基础令牌一起覆盖微光。
+> 若干 token 有配对的闪烁变体，用于提供加载动画渐变中使用的较浅颜色。如果动画看起来不协调，请将闪烁变体与其基础 token 一起覆盖。
 >
 > * `claude` 和 `claudeShimmer`
 > * `warning` 和 `warningShimmer`
@@ -283,9 +294,9 @@ Claude Code 监视 `~/.claude/themes/` 并在添加或更改文件时重新加�
 > * `inactive` 和 `inactiveShimmer`
 > * `fastMode` 和 `fastModeShimmer`
 >
-> 每个[子代理](https://code.claude.com/docs/zh-CN/sub-agents.md)和并行任务以八个命名颜色之一显示，以便您可以在成绩单中区分它们。令牌名称遵循 `<color>_FOR_SUBAGENTS_ONLY` 的模式，其中 `<color>` 是 `red`、`blue`、`green`、`yellow`、`purple`、`orange`、`pink` 或 `cyan`。覆盖这些以更改每个命名颜色的外观。例如，定义中具有 `color: blue` 的子代理使用 `blue_FOR_SUBAGENTS_ONLY` 值绘制。
+> 每个[子代理](https://code.claude.com/docs/zh-CN/sub-agents.md)和并行任务都以八种命名颜色之一显示，以便您在会话记录中区分它们。token 名称遵循 `<color>_FOR_SUBAGENTS_ONLY` 模式，其中 `<color>` 为 `red`、`blue`、`green`、`yellow`、`purple`、`orange`、`pink` 或 `cyan`。覆盖这些 token 可更改每种命名颜色的外观。例如，定义中包含 `color: blue` 的子代理会使用 `blue_FOR_SUBAGENTS_ONLY` 的值进行绘制。
 >
-> Claude Code 在提示输入中使用七色彩虹梯度渲染[`ultrathink`](https://code.claude.com/docs/zh-CN/model-config#use-ultrathink-for-one-off-deep-reasoning)关键字。令牌名称遵循 `rainbow_<color>` 和 `rainbow_<color>_shimmer` 的模式，其中 `<color>` 是 `red`、`orange`、`yellow`、`green`、`blue`、`indigo` 或 `violet`。
+> 当 [`ultrathink`](https://code.claude.com/docs/zh-CN/model-config#use-ultrathink-for-one-off-deep-reasoning) 可以提高某一轮次的 effort 时，Claude Code 会在提示词输入框中以七色彩虹渐变渲染该词。token 名称遵循 `rainbow_<color>` 和 `rainbow_<color>_shimmer` 模式，其中 `<color>` 为 `red`、`orange`、`yellow`、`green`、`blue`、`indigo` 或 `violet`。
 
 ## 切换到全屏渲染
 

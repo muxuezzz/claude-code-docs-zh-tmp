@@ -43,7 +43,7 @@ Worktree 是一个新的检出，因此请在那里初始化您的开发环境�
 
 您也可以在会话期间要求 Claude "在 worktree 中工作"，它会使用 [`EnterWorktree`](https://code.claude.com/docs/zh-CN/tools-reference) 工具创建一个。一旦进入 worktree，Claude 可以通过调用 `EnterWorktree` 并指定目标路径，直接切换到 `.claude/worktrees/` 下的另一个 worktree；之前的 worktree 保留在磁盘上不变。
 
-当 Claude 进入存储库的 `.claude/worktrees/` 目录之外的路径时，Claude Code 会首先要求您的批准，因为该移动会将会话的工作目录、写入访问权限和项目配置（如 `CLAUDE.md` 和设置）转移到该位置。`EnterWorktree` [权限规则](https://code.claude.com/docs/zh-CN/permissions.md)或选择"不再询问"不会抑制此提示；只有 `bypassPermissions` 模式会跳过它。在 v2.1.206 之前，Claude 可以进入任何现有的 worktree 路径而无需询问。
+当 Claude 进入仓库的 `.claude/worktrees/` 目录之外的路径时，Claude Code 会首先请求您的批准。该移动会将会话的工作目录、写入访问权限和项目配置（如 `CLAUDE.md` 和设置）转移到该位置。`EnterWorktree` [权限规则](https://code.claude.com/docs/zh-CN/permissions.md)或选择"不再询问"不会抑制此提示；只有 `bypassPermissions` 模式会跳过它。
 
 > [!NOTE]
 >
@@ -63,7 +63,7 @@ Worktree 是一个新的检出，因此请在那里初始化您的开发环境�
 
 使用 `-p` 的非交互式运行没有退出提示，因此 Claude 不会清理它们的 worktrees，Claude Code 会保留它在创建时对每个 worktree 所取的锁，直到稍后会话的[陈旧锁扫描](#clean-up-subagent-and-background-session-worktrees)释放它。要删除一个，请运行 `git worktree remove`；如果 git 拒绝因为 worktree 被锁定，请先在其上运行 `git worktree unlock`。
 
-在 Windows 上，删除 worktree 不会删除其外部的文件。如果 worktree 内的文件夹是指向其他地方的链接，例如 NTFS 接合点或目录符号链接，Claude Code 只删除链接并保留它指向的文件夹。在 v2.1.205 之前，删除嵌套在子目录中的链接的 worktree 可能会删除它指向的文件夹。
+在 Windows 上，删除 worktree 不会删除其外部的文件。如果 worktree 内的文件夹是指向其他地方的链接，例如 NTFS 接合点或目录符号链接，Claude Code 只会删除该链接。
 
 ## 恢复 worktree 会话
 
@@ -81,7 +81,7 @@ Worktree 是一个新的检出，因此请在那里初始化您的开发环境�
 >
 > 在 v2.1.212 之前，非交互式恢复停留在启动目录中，`ExitWorktree` 报告没有活跃的 worktree 会话可以退出。
 
-当 Claude 进入或退出 Claude Code 使用 git 创建的 worktree 时，记录会跟随：Claude Code 在会话的新工作目录下记录会话，与 [`/cd`](https://code.claude.com/docs/zh-CN/commands) 的方式相同，因此 `/desktop` 和 `--resume` 在那里找到它。退出以相同的方式将其移回。由 [`WorktreeCreate` hook](#non-git-version-control) 创建的 worktree 会在启动目录保留其记录。需要 Claude Code v2.1.198 或更高版本。
+当 Claude 进入或退出 Claude Code 使用 git 创建的 worktree 时，会话记录会随之移动。Claude Code 在会话的新工作目录下记录会话，与 [`/cd`](https://code.claude.com/docs/zh-CN/commands) 的方式相同，因此 `/desktop` 和 `--resume` 会在那里找到它。退出时以相同的方式将其移回。由 [`WorktreeCreate` hook](#non-git-version-control) 创建的 worktree 会在启动目录保留其会话记录。
 
 ## Claude Code 如何强制隔离
 
@@ -139,9 +139,11 @@ Claude Code 运行定期扫描，删除 Claude 为子代理和[后台会话](htt
 
 Claude Code 将标记写入它使用 git 创建的每个 worktree 的 git 元数据中，扫描会保留任何没有标记的 worktree，包括 [`WorktreeCreate` hook](#non-git-version-control) 创建的 worktree。
 
+#### Worktree 锁与手动删除
+
 当代理运行时，Claude Code 在其 worktree 上持有 `git worktree lock`，以便并发清理无法删除它，当代理完成时释放锁。Claude Code 在为后台会话创建的 worktree 上持有相同的锁，同时会话运行，因此扫描会保留 worktree 并且 `git worktree remove` 拒绝删除它。
 
-扫描也会释放 Claude Code 为其进程已退出的会话设置的锁，因此被杀死的后台会话不会永久锁定其 worktree。扫描永远不会释放您自己使用 `git worktree lock` 设置的锁。在 v2.1.210 之前，被杀死的会话留下的锁会保留在原位，直到您运行 `git worktree unlock`。
+扫描也会释放 Claude Code 为其进程已退出的会话设置的锁，因此被杀死的后台会话不会永久锁定其 worktree。扫描永远不会释放您自己使用 `git worktree lock` 设置的锁。
 
 要清理扫描保留的 worktree，请运行 `git worktree remove`，如果 worktree 有未提交的更改或未跟踪的文件，请添加 `--force`。如果 git 拒绝因为 worktree 被锁定，请先在其上运行 `git worktree unlock`。
 
@@ -158,7 +160,11 @@ Claude Code 的 worktree 创建默认值涵盖大多数会话：它在 `.claude/
 
 您无法将 `worktree.baseRef` 设置为分支名称。要从特定的现有分支启动 worktree，请[直接使用 git 创建它](#manage-worktrees-manually)。
 
-对于 `"fresh"` 基础，Claude Code 会保持 `origin/HEAD` 最新：当仓库在过去 24 小时内没有被获取时，它会获取默认分支，上限为 5 秒，如果获取失败则使用本地缓存的引用。该获取操作从不等待您终端中的输入，因此当 git 或 ssh 要求输入密码、密钥密码短语或确认新的 SSH 主机时，也会被视为获取失败。如果未配置远程，或 `origin/HEAD` 未在本地缓存且无法获取，worktree 会回退到您当前的本地 `HEAD`。在 v2.1.208 之前，新 worktree 使用已经本地缓存的任何 `origin/HEAD`。
+对于 `"fresh"` 基础，Claude Code 会保持 `origin/HEAD` 最新：
+
+* 当仓库在过去 24 小时内没有被获取时，它会获取默认分支，上限为 5 秒，如果获取失败则使用本地缓存的引用。
+* 该获取操作从不等待您终端中的输入。当 git 或 ssh 要求输入密码、密钥密码短语或确认新的 SSH 主机时，也会被视为获取失败。
+* 如果未配置远程，或 `origin/HEAD` 未在本地缓存且无法获取，worktree 会回退到您当前的本地 `HEAD`。
 
 此示例使每个新 worktree 从您的当前工作分支：
 
@@ -208,9 +214,9 @@ config/secrets.json
 
 ### 重用 worktree 名称
 
-传递 `--worktree` 一个其目录已存在的名称会打开该现有 worktree 而不是创建一个新的。
+如果与您传递给 `--worktree` 的名称相同的 worktree 已存在，Claude Code 会打开它而不是创建一个新的。如果 Claude Code 因包含 `belongs to a different repository` 或 `is a leftover worktree` 的错误而停止，请参阅[worktree 目录 `belongs to a different repository`](#belongs-to-a-different-repository)。
 
-使用默认的 `"fresh"` [基础](#choose-the-base-branch)，当以下所有条件都成立时，重新打开的 worktree 会重置为存储库的默认分支而不是在其旧提示处继续：
+使用默认的 `"fresh"` [基础](#choose-the-base-branch)，当以下所有条件都成立时，重新打开的 worktree 会重置为仓库的默认分支而不是在其旧提示处继续：
 
 * 它没有未提交的更改或未跟踪的文件。
 * 它仍然在 Claude Code 为其创建的分支上。
@@ -225,8 +231,6 @@ Claude Code 仅从 git 状态检测合并的情况：worktree 推送到的远程
 * `worktree.baseRef` 是 `"head"`。
 * 名称是拉取请求或合并请求引用。
 
-在 v2.1.208 之前，当您重用名称时，Claude Code 总是在其旧提示处重新打开旧 worktree。
-
 ### 使用 hook 替换 worktree 创建
 
 配置 [`WorktreeCreate` hook](https://code.claude.com/docs/zh-CN/hooks#worktreecreate) 以完全替换默认的 `git worktree` 逻辑，包括将 worktrees 放在 `.claude/worktrees/` 之外的地方。有关完整示例，请参阅[非 git 版本控制](#non-git-version-control)。
@@ -236,8 +240,10 @@ Claude Code 仅从 git 状态检测合并的情况：worktree 推送到的远程
 Worktree 获得自己的文件和分支，但它与主检出共享以下内容：
 
 * **存储库的 `.git` 目录**：worktree 中的 git 命令写入主存储库的共享 `.git` 目录，[沙箱](https://code.claude.com/docs/zh-CN/sandboxing.md#filesystem-isolation)允许这些写入，因此 `git commit` 等命令可以从启用沙箱的 worktree 内部工作。
-* **插件**：从主检出在[项目范围](https://code.claude.com/docs/zh-CN/plugins/loading.md#find-where-a-plugin-is-enabled)安装的插件也会在同一存储库的 worktrees 中加载，因此您无需为每个 worktree 重新安装它们。需要 Claude Code v2.1.200 或更高版本。
-* **权限批准**：在 worktree 会话中为 Bash 命令选择"是，不再询问"会将规则保存到主检出的 `.claude/settings.local.json`，因此它适用于主检出和存储库的每个其他 worktree，并在 worktree 的删除后存活。在 Windows 和 Claude Code [不使用存储库根](https://code.claude.com/docs/zh-CN/settings.md#where-claude-code-looks-for-each-file)的其他情况下，规则与该 worktree 保持一致。在 v2.1.211 之前，在 worktree 中授予的批准被保存在该 worktree 内，不适用于其他地方，并在 worktree 被删除时丢失。请参阅[批准保存的位置](https://code.claude.com/docs/zh-CN/permissions.md#permission-system)。
+* **插件**：从主检出在[项目作用域](https://code.claude.com/docs/zh-CN/plugins/loading.md#find-where-a-plugin-is-enabled)安装的插件也会在同一仓库的 worktree 中加载，因此您无需为每个 worktree 重新安装它们。
+* **权限批准**：在 worktree 会话中为 Bash 命令选择"是，不再询问"会将规则保存到主检出的 `.claude/settings.local.json`。该规则适用于主检出和仓库的每个其他 worktree，并且在 worktree 被删除后仍会保留。
+
+  在 Windows 以及 Claude Code [不使用仓库根目录](https://code.claude.com/docs/zh-CN/settings.md#where-claude-code-looks-for-each-file)的其他情况下，规则保留在该 worktree 中。请参阅[批准保存的位置](https://code.claude.com/docs/zh-CN/permissions.md#permission-system)。
 * **未跟踪的 skills、agents 和 commands**：当 worktree 检出在其根目录没有 `.claude/skills` 目录时（例如因为您的 `.claude/skills` 被 gitignored），Claude Code 会在 worktree 会话中加载主检出的[项目 skills](https://code.claude.com/docs/zh-CN/skills.md#where-skills-live)。在具有自己的 `.claude/skills` 目录的 worktree 中，只加载该副本。
 
   相同的读取覆盖也适用于 `.claude/agents` 和 `.claude/commands`。对于 skills，读取覆盖需要 Claude Code v2.1.277 或更高版本。
@@ -322,6 +328,12 @@ Worktree 隔离默认使用 git。对于 SVN、Perforce、Mercurial 或其他系
 
 当 `.claude`、`.claude/worktrees` 或 worktree 目录本身是符号链接时，Claude Code 拒绝创建 worktree，错误会命名符号链接的路径。删除符号链接并重试。在 v2.1.212 之前，如果存储库已经在这些路径之一包含提交的符号链接，worktree 创建会跟随它并可能在存储库外创建文件。
 
+### Claude Code 创建的 worktree 包含被替换对象的原始内容
+
+如果您的仓库使用 [`git replace`](https://git-scm.com/docs/git-replace)，Claude Code 创建的 worktree 中的文件保存的是原始对象的内容，而不是您的 `refs/replace/` 条目所指定的替换内容。Claude Code 在运行检出 worktree 文件的 git 命令时使用 `GIT_NO_REPLACE_OBJECTS=1`，并忽略您为该变量导出的任何值。
+
+要获取替换后的内容，请使用 `git worktree add` [自行创建 worktree](#manage-worktrees-manually)，并在其中启动 Claude Code。
+
 ### Git LFS 文件在 Claude Code 创建的 worktree 中是指针文件
 
 如果您使用 `git lfs install --local` 设置了 [Git LFS](https://git-lfs.com)，Claude Code 创建的 worktree 包含 LFS 指针文件而不是真实文件。`--local` 标志将 LFS 过滤器写入存储库自己的 `.git/config` 而不是您的全局 git 配置。普通的 `git lfs install` 写入您的全局配置并不受影响。相同的适用于在存储库自己的配置中定义的任何其他[过滤驱动程序](https://git-scm.com/docs/gitattributes)。
@@ -340,6 +352,20 @@ Claude Code 在创建 worktree 时跳过存储库自己的过滤驱动程序，�
 ### 在部分克隆中创建 worktree 失败
 
 包含 `This repository is a partial clone` 的错误意味着 Claude Code 无法获取 worktree 起始提交所需的全部 git 对象。请执行消息中以 `try again` 结尾的那句话所述的步骤。然后在您执行该步骤的 shell 中重试：运行 `claude --worktree`，或在那里启动 `claude` 并再次提出请求。
+
+### `Can only use --worktree in a git repository`
+
+此错误意味着您在一个不是 git 检出的目录中传递了 `--worktree`，并且没有活动的 [`WorktreeCreate` hook](#non-git-version-control)。
+
+* 在没有版本控制的文件夹中，在那里运行 `git init`，创建第一个提交，然后重试。
+* 在其他版本控制系统的检出中，设置消息建议的 hook。
+* 要直接在该目录中工作，请在不使用 `--worktree` 的情况下启动 Claude。
+
+### worktree 目录 `belongs to a different repository`
+
+错误 `belongs to a different repository` 和 `is a leftover worktree` 都意味着 git 将您所传递的 worktree 名称对应的目录关联到了另一个位置。这可能发生在您复制或移动项目之后。
+
+请传递一个不同的 worktree 名称。如果该目录中没有需要保留的工作，并且您没有复制或移动项目，则可以删除它并使用相同的名称重试。在复制或移动之后，这种重试可能会失败并显示 `is already checked out elsewhere in this repository`，因此请使用不同的名称。
 
 ### Claude Code 拒绝使用 worktree
 

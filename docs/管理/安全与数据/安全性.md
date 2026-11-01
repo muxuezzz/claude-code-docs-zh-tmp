@@ -53,7 +53,7 @@
 * 对用户会话数据的受限访问
 * 用户对数据训练偏好的控制。消费者用户可以随时更改其 [隐私设置](https://claude.ai/settings/privacy)。
 
-有关完整详情，请查看我们的 [Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms)（适用于 Team、Enterprise 和 API 用户）或 [Consumer Terms](https://www.anthropic.com/legal/consumer-terms)（适用于 Free、Pro 和 Max 用户）以及 [Privacy Policy](https://www.anthropic.com/legal/privacy)。
+有关完整详情，请查看我们的 [Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms)（适用于 Team、Enterprise 和 API 用户）或 [Consumer Terms](https://www.anthropic.com/legal/consumer-terms)（适用于 Free、Pro、Max 和 Ultra 用户）以及 [Privacy Policy](https://www.anthropic.com/legal/privacy)。
 
 ### 其他保护措施
 

@@ -75,11 +75,11 @@ for await (const message of query({
 | :- | :- | :- |
 | `"project"` | 项目 `settings.json` 和 hooks；项目 CLAUDE.md 和 `.claude/rules/*.md`；项目 skills、commands 和 subagents | `<cwd>/.claude/` 用于 `settings.json` 和 hooks；`<cwd>` 和每个父目录用于 CLAUDE.md 和规则；`<cwd>` 和每个父目录直到存储库根目录用于 skills、commands 和 subagents，加上您通过 `additionalDirectories` 或 `add_dirs` 选项传递的每个目录的 `.claude/skills/`、`.claude/commands/` 和 `.claude/agents/` 文件夹，SDK 将其作为 [`--add-dir`](https://code.claude.com/docs/zh-CN/permissions#additional-directories-grant-file-access-not-configuration) 传递给 Claude Code |
 | `"user"` | 用户 `settings.json`；用户 CLAUDE.md 和 `~/.claude/rules/*.md`；用户 skills、commands 和 subagents | `~/.claude/` 用于 `settings.json`、CLAUDE.md 和规则；`~/.claude/skills/`、`~/.claude/commands/` 和 `~/.claude/agents/` 用于 skills、commands 和 subagents |
-| `"local"` | CLAUDE.local.md、`.claude/settings.local.json` | `<cwd>/.claude/` 用于 `settings.local.json`；`<cwd>` 和每个父目录用于 CLAUDE.local.md |
+| `"local"` | CLAUDE.local.md、`.claude/settings.local.json` | `<cwd>/.claude/` 用于 `settings.local.json`，当 `<cwd>` 位于 git 仓库内时，该文件[也可以从仓库根目录加载](https://code.claude.com/docs/zh-CN/settings.md#where-claude-code-keeps-the-local-file-in-a-git-repository)；`<cwd>` 和每个父目录用于 CLAUDE.local.md |
 
 省略 `settingSources` 等同于 `["user", "project", "local"]`。
 
-`cwd` 选项确定 SDK 查找项目级输入的位置。项目 `settings.json` 和 hooks 仅从 `<cwd>/.claude/` 加载，没有父目录回退。
+`cwd` 选项确定 SDK 查找项目级输入的位置。项目 `settings.json` 从 `<cwd>/.claude/` 加载，没有父目录回退。
 
 ### settingSources 不控制的内容
 

@@ -76,7 +76,7 @@ Claude Code 的[权限规则](https://code.claude.com/docs/zh-CN/permissions.md)
 * `first-party-plugins`
 * `claude-tag-plugins`
 
-有关官方、社区和演示市场的区别以及在哪里浏览每个市场列出的内容，请参阅 [Anthropic 的市场](https://code.claude.com/docs/zh-CN/plugins/anthropic-marketplaces.md)。
+有关官方市场和社区市场的区别以及在哪里浏览每个市场列出的内容，请参阅 [Anthropic 的市场](https://code.claude.com/docs/zh-CN/plugins/anthropic-marketplaces.md)。
 
 ## 在安装前审查插件
 

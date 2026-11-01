@@ -192,7 +192,7 @@ asyncio.run(main())
 
 容器需要您的 SDK 的语言运行时：
 
-* Python SDK 需要 Python 3.10+，或 TypeScript SDK 需要 Node.js 18+
+* Python SDK 需要 Python 3.10+，或 TypeScript SDK 需要 Node.js 18.14+
 * TypeScript 和 Python SDK 都为大多数安装捆绑了本机 Claude Code 二进制文件，生成的 CLI 不需要单独的 Node.js 安装。有关需要单独本机 Claude Code 安装的安装，请参阅 [quickstart 的安装说明](https://code.claude.com/docs/zh-CN/agent-sdk/quickstart.md)。
 
 捆绑的二进制文件固定到 SDK 包版本，因此更新 SDK 是更新 CLI 的方式。SDK 遵循 semver：持续采用补丁版本，并在采用次要版本之前查看 [TypeScript](https://github.com/anthropics/claude-agent-sdk-typescript/blob/main/CHANGELOG.md) 或 [Python](https://github.com/anthropics/claude-agent-sdk-python/blob/main/CHANGELOG.md) 更新日志。
@@ -335,7 +335,7 @@ asyncio.run(main())
 
 | 限制 | 解决方案 |
 | - | - |
-| 没有顶级会话超时 | 会话不会自动超时。在 TypeScript 中设置 `maxTurns` 或在 Python 中设置 `max_turns` 来限制代理在停止前进行多少次工具使用往返。 |
+| 没有顶级会话超时 | 会话不会自动超时。在 TypeScript 中设置 `maxTurns` 或在 Python 中设置 `max_turns`，以限制 Agent 在停止前执行的[轮次](https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop.md#turns-and-messages)数。 |
 | 长会话中的内存增长 | 限制会话长度或定期回收子进程。请参阅[扩展和并发](#scaling-and-concurrency)。 |
 | 大规模并行子代理扇出可能会触发速率限制 | 将工作分解为较小的批次，而不是发出一个宽范围的调度。 |
 | 没有每个子代理的挂钟截止时间 | 在其 `AgentDefinition` 中使用 `maxTurns` 限制每个[子代理](https://code.claude.com/docs/zh-CN/agent-sdk/subagents.md)。`CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS` 设置一个停滞监视程序，当子代理停止产生输出时触发；它不是总运行时截止时间。 |

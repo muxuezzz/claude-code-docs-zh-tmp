@@ -188,7 +188,7 @@ Spawn an architect teammate to refactor the authentication module.
 
 ### 分配和认领任务
 
-共享任务列表用于协调整个团队的工作。负责人创建任务，队友逐一完成。任务有三种状态：待处理、进行中和已完成。任务还可以依赖其他任务：具有未解决依赖的待处理任务，在这些依赖完成之前无法被认领。
+共享任务列表用于协调整个团队的工作。负责人创建任务，队友逐一完成。任务有三种状态：待处理、进行中和已完成。任务还可以依赖其他任务，在这些任务完成之前，它会在任务列表中显示为已阻塞。队友不会自行认领已阻塞的任务，但您或负责人仍可以分配它。
 
 [没有 Task 工具](https://code.claude.com/docs/zh-CN/tools-reference.md#task-tool-availability)的 Agent 改为通过消息进行协调，而不是通过共享任务列表。
 

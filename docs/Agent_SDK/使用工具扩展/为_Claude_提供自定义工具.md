@@ -16,6 +16,7 @@
 | 将参数设为可选 | 在 schema 中将其声明为可选，并在处理程序中应用默认值。请参阅[将参数设为可选](#make-a-parameter-optional)。 |
 | 向 Claude 注册工具 | 在 `create_sdk_mcp_server` / `createSdkMcpServer` 中包装并传递给 `query()` 中的 `mcpServers`。请参阅[调用自定义工具](#call-a-custom-tool)。 |
 | 预先批准工具 | 添加到您的允许工具列表。请参阅[配置允许的工具](#configure-allowed-tools)。 |
+| 要求调用某个工具前需经批准，或阻止该工具 | 在 TypeScript SDK 中，向 `createSdkMcpServer()` 返回的配置对象添加针对该工具的 `permission_policy`。请参阅[要求特定工具需经批准](#require-approval-for-specific-tools)。 |
 | 从 Claude 的上下文中删除内置工具 | 传递仅列出您想要的内置工具的 `tools` 数组。请参阅[配置允许的工具](#configure-allowed-tools)。 |
 | 让 Claude 并行调用工具 | 在没有副作用的工具上设置 `readOnlyHint: true`。请参阅[添加工具注释](#add-tool-annotations)。 |
 | 控制 Claude 读取的错误消息 | 返回 `isError: true` 来组合消息，而不是显示原始异常。请参阅[处理错误](#handle-errors)。 |
@@ -41,17 +42,17 @@
 
 本页中发出 HTTP 请求的 Python 示例使用 [httpx](https://www.python-httpx.org/)。请使用您项目所用的包管理器添加它：
 
-**Python (uv)**
+> [tab] Python (uv)
+>
+> ```bash theme={null}
+> uv add httpx
+> ```
 
-```bash theme={null}
-uv add httpx
-```
-
-**Python (pip)**
-
-```bash theme={null}
-pip install httpx
-```
+> [tab] Python (pip)
+>
+> ```bash theme={null}
+> pip install httpx
+> ```
 
 ### 天气工具示例
 
@@ -197,25 +198,25 @@ for await (const message of query({
 
 将此代码片段与[天气工具示例](#weather-tool-example)中的工具和服务器定义合并到一个文件（`weather.py` 或 `weather.ts`）中，然后在终端中运行它：
 
-**TypeScript**
+> [tab] TypeScript
+>
+> ```bash theme={null}
+> npx tsx weather.ts
+> ```
 
-```bash theme={null}
-npx tsx weather.ts
-```
+> [tab] Python (uv)
+>
+> ```bash theme={null}
+> uv run weather.py
+> ```
 
-**Python (uv)**
-
-```bash theme={null}
-uv run weather.py
-```
-
-**Python (pip)**
-
-激活您安装了 SDK 的虚拟环境，然后运行：
-
-```bash theme={null}
-python weather.py
-```
+> [tab] Python (pip)
+>
+> 激活您安装了 SDK 的虚拟环境，然后运行：
+>
+> ```bash theme={null}
+> python weather.py
+> ```
 
 Claude 调用 `get_temperature`，脚本打印一行答案，显示旧金山的当前温度。
 
@@ -327,7 +328,7 @@ const weatherServer = createSdkMcpServer({
 | 字段 | 默认值 | 含义 |
 | :- | :- | :- |
 | `readOnlyHint` | `false` | 工具不修改其环境。控制工具是否可以与其他只读工具并行调用。 |
-| `destructiveHint` | `true` | 工具可能执行破坏性更新。仅供参考。 |
+| `destructiveHint` | `true` | 工具可能执行破坏性更新。对于您[标记为 `always_ask`](#require-approval-for-specific-tools) 的任何工具，请将其显式设置为 `true`。 |
 | `idempotentHint` | `false` | 使用相同参数的重复调用没有额外效果。仅供参考。 |
 | `openWorldHint` | `true` | 工具到达流程外的系统。仅供参考。 |
 
@@ -382,6 +383,33 @@ tool(
 | 禁止的工具 | 两者 | 裸工具名称如`"Bash"`从Claude的上下文中移除工具，与从`tools`中省略它的效果相同。作用域规则如`"Bash(rm *)"`将工具保留在上下文中，仅拒绝与[如所写](https://code.claude.com/docs/zh-CN/permissions.md#bash-rule-limits)匹配的调用。 |
 
 要完全移除内置工具，请从`tools`中省略它或在`disallowedTools`中列出其裸名称（Python：`disallowed_tools`）；两者都将工具保留在上下文之外，以便Claude永远不会尝试它。作用域`disallowedTools`规则阻止匹配的调用但将工具保留为可见，因此Claude可能会浪费一个回合尝试它。有关完整的评估顺序，请参阅[配置权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md)。
+
+### 要求特定工具需经批准
+
+将工具的`permission_policy`设置为`always_ask`后，`allowedTools`将不再批准该工具的调用，因此即使该工具已被列出，其调用也可以到达您的[`canUseTool`](https://code.claude.com/docs/zh-CN/agent-sdk/user-input)回调。如果改为设置`always_deny`，则[对该工具的调用会被拒绝](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)，但您加载的插件中的[mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md)[仍然可以批准它](https://code.claude.com/docs/zh-CN/permissions.md#precedence-among-rules-hooks-and-mods)。该字段仅适用于TypeScript，并且需要Agent SDK v0.3.301或更高版本。
+
+请将策略条目放在`createSdkMcpServer()`返回的配置对象的`tools`数组中，而不是放在传入该函数的`tools`选项中。以下示例展开了[天气工具示例](#weather-tool-example)中的`weatherServer`，并添加了一个`tools`数组，为`get_temperature`指定`always_ask`策略：
+
+```typescript TypeScript theme={null}
+options: {
+  mcpServers: {
+    weather: {
+      ...weatherServer,
+      tools: [{ name: "get_temperature", permission_policy: "always_ask" as const }]
+    }
+  },
+  allowedTools: ["mcp__weather__get_temperature"],
+  permissionMode: "default",
+  canUseTool: async (toolName, input) => {
+    console.log(`Approval requested for ${toolName}`);
+    return { behavior: "allow", updatedInput: input };
+  }
+}
+```
+
+要试用该策略，请将[调用自定义工具](#call-a-custom-tool)脚本中的`options`替换为本示例的`options`，然后在终端中运行该脚本。脚本会打印`Approval requested for mcp__weather__get_temperature`，随后输出Claude关于温度的回答。有关完整脚本，请参阅[TypeScript参考](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#mcpsdkserverconfigwithinstance)。
+
+如果您使用`auto`或`plan`[权限模式](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#permission-modes)，请在工具的[注解](#add-tool-annotations)中设置`destructiveHint: true`，以便对该工具的调用仍能到达您的回调。否则，[自动模式分类器](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)可能会在[TypeScript参考中列出的条件](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)下批准某些`always_ask`调用，而被其批准的调用不会到达您的回调。请显式设置该提示，因为对于`always_ask`调用，未设置的`destructiveHint`会被视为`false`，而不是默认为`true`。
 
 ## 处理错误
 

@@ -73,143 +73,143 @@ Hooks 是用户定义的 shell 命令。Claude Code 在其生命周期中的特�
 
 按 `Esc` 返回 CLI。按 `Shift+Tab` 直到状态栏显示 `⏸ manual mode on`，要求 Claude 做需要权限的事情，然后切换离开终端。您应该会收到桌面通知。
 
-## 你可以自动化什么
+## 可以自动化的内容
 
-Hooks 让你在 Claude Code 生命周期中的关键点运行代码：编辑后格式化文件、在执行前阻止命令、在 Claude 需要输入时发送通知、在会话开始时注入上下文等。有关完整的 hook 事件列表，请参阅 [Hooks 参考](https://code.claude.com/docs/zh-CN/hooks.md#hook-lifecycle)。
+hook 让您可以在 Claude Code 生命周期的关键节点运行代码：在编辑后格式化文件、在命令执行前阻止命令、在 Claude 需要输入时发送通知、在会话开始时注入上下文，等等。有关 hook 事件的完整列表，请参阅 [Hooks 参考](https://code.claude.com/docs/zh-CN/hooks.md#hook-lifecycle)。
 
-每个示例都包含一个现成的配置块，你可以将其添加到 [设置文件](#configure-hook-location)。
+每个示例都包含一个可直接使用的配置块，您可以将其添加到[设置文件](#configure-hook-location)中。
 
-有关运行单独模型审查并将发现反馈回会话的 hooks 的生产示例，请参阅 [`security-guidance` 插件如何与 Claude Code 集成](https://code.claude.com/docs/zh-CN/security-guidance#how-the-plugin-integrates-with-claude-code)。
+有关运行独立模型审查并将发现结果反馈回会话的 hook 的生产示例，请参阅 [`security-guidance` 插件如何与 Claude Code 集成](https://code.claude.com/docs/zh-CN/security-guidance#how-the-plugin-integrates-with-claude-code)。
 
-### 在 Claude 需要输入时获得通知
+### 在 Claude 需要输入时收到通知
 
-每当 Claude 完成工作并需要你的输入时获得桌面通知，这样你可以切换到其他任务而无需检查终端。
+每当 Claude 完成工作并需要您输入时，都会收到桌面通知，这样您就可以切换到其他任务，而无需时刻查看终端。
 
-此 hook 使用 `Notification` 事件，Claude Code 会在 Claude 等待输入或权限时触发该事件。请参阅[每个通知类型何时触发](https://code.claude.com/docs/zh-CN/hooks.md#notification)以了解确切的时间。
+此 hook 使用 `Notification` 事件，Claude Code 会在 Claude 等待输入或权限时触发该事件。有关确切的触发时机，请参阅[各通知类型的触发时机](https://code.claude.com/docs/zh-CN/hooks.md#notification)。
 
-下面的每个选项卡使用平台的原生通知命令。将其添加到 `~/.claude/settings.json`：
+下面的每个选项卡都使用该平台的原生通知命令。将以下内容添加到 `~/.claude/settings.json`：
 
-**macOS**
-
-```json theme={null}
-{
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> **如果没有通知出现**
+> [tab] macOS
 >
-> `osascript` 通过内置的 Script Editor 应用程序路由通知。如果 Script Editor 没有通知权限，命令会静默失败，macOS 也不会提示您授予该权限。
->
-> 在 Terminal 中运行一次以下命令，使 Script Editor 出现在您的通知设置中：
->
-> ```bash theme={null}
-> osascript -e 'display notification "test"'
+> ```json theme={null}
+> {
+>   "hooks": {
+>     "Notification": [
+>       {
+>         "matcher": "",
+>         "hooks": [
+>           {
+>             "type": "command",
+>             "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
+>           }
+>         ]
+>       }
+>     ]
+>   }
+> }
 > ```
 >
-> 现在还不会出现任何内容。打开 **System Settings > Notifications**，在列表中找到 **Script Editor**，并打开 **Allow Notifications**。再次运行该命令以确认测试通知出现。
+> > [accordion] 如果没有出现通知
+> >
+> > `osascript` 通过内置的“脚本编辑器”应用发送通知。如果“脚本编辑器”没有通知权限，该命令会静默失败，并且 macOS 不会提示您授予权限。
+> >
+> > 在终端中运行一次以下命令，使“脚本编辑器”出现在通知设置中：
+> >
+> > ```bash theme={null}
+> > osascript -e 'display notification "test"'
+> > ```
+> >
+> > 此时还不会显示任何内容。打开 **System Settings > Notifications**，在列表中找到 **Script Editor**，然后打开 **Allow Notifications**。再次运行该命令，确认测试通知出现。
 
-**Linux**
-
-```json theme={null}
-{
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "notify-send 'Claude Code' 'Claude Code needs your attention'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> **如果没有通知出现**
+> [tab] Linux
 >
-> `notify-send` 需要一个桌面通知守护程序，无头服务器、SSH 会话和大多数容器都没有。首先直接测试该命令：
->
-> ```bash theme={null}
-> notify-send 'Claude Code' 'test'
+> ```json theme={null}
+> {
+>   "hooks": {
+>     "Notification": [
+>       {
+>         "matcher": "",
+>         "hooks": [
+>           {
+>             "type": "command",
+>             "command": "notify-send 'Claude Code' 'Claude Code needs your attention'"
+>           }
+>         ]
+>       }
+>     ]
+>   }
+> }
 > ```
 >
-> 如果找不到该命令，请在 Debian 和 Ubuntu 上安装 `libnotify-bin` 包，或安装你的发行版的等效包。
+> > [accordion] 如果没有出现通知
+> >
+> > `notify-send` 需要桌面通知守护进程，而无头服务器、SSH 会话和大多数容器都没有该进程。请先直接测试该命令：
+> >
+> > ```bash theme={null}
+> > notify-send 'Claude Code' 'test'
+> > ```
+> >
+> > 如果找不到该命令，请在 Debian 和 Ubuntu 上安装 `libnotify-bin` 软件包，或安装您所用发行版中的等效软件包。
 
-**Windows (PowerShell)**
-
-```json theme={null}
-{
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -Command \"[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); [System.Windows.Forms.MessageBox]::Show('Claude Code needs your attention', 'Claude Code')\""
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> **如果没有对话框出现**
+> [tab] Windows (PowerShell)
 >
-> 此命令打开一个对话框而不是屏幕角落的通知，因此对话框可能会在您的终端窗口后面打开。首先在 PowerShell 中直接测试该命令。
+> ```json theme={null}
+> {
+>   "hooks": {
+>     "Notification": [
+>       {
+>         "matcher": "",
+>         "hooks": [
+>           {
+>             "type": "command",
+>             "command": "powershell.exe -Command \"[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); [System.Windows.Forms.MessageBox]::Show('Claude Code needs your attention', 'Claude Code')\""
+>           }
+>         ]
+>       }
+>     ]
+>   }
+> }
+> ```
 >
-> 如果您在 WSL 中运行 Claude Code，`powershell.exe` 必须通过 Windows 互操作在您的 `PATH` 上可用。
+> > [accordion] 如果没有出现对话框
+> >
+> > 此命令打开的是一个对话框，而不是屏幕角落的通知，因此该对话框可能会在终端窗口后面打开。请先在 PowerShell 中直接测试该命令。
+> >
+> > 如果您在 WSL 中运行 Claude Code，则 `powershell.exe` 必须能够通过 Windows 互操作在您的 `PATH` 中使用。
 
-空的 `matcher` 对所有通知类型触发。要仅在特定事件上触发，请将其设置为以下值之一：
+空的 `matcher` 会对所有通知类型触发。若只想在特定事件时触发，请将其设置为以下值之一：
 
-| Matcher | 触发时机 |
+| 匹配器 | 触发时机 |
 | :- | :- |
-| `permission_prompt` | Claude 需要你批准工具使用或沙箱命令的[网络请求](https://code.claude.com/docs/zh-CN/sandboxing.md#network-isolation)，且提示已等待约六秒 |
-| `idle_prompt` | Claude 完成响应约 60 秒前，且你自那以后没有输入 |
+| `permission_prompt` | Claude 需要您批准某次工具使用或某个沙箱命令的[网络请求](https://code.claude.com/docs/zh-CN/sandboxing.md#network-isolation)，且该提示已等待约六秒 |
+| `idle_prompt` | Claude 大约 60 秒前已完成回复，且您此后一直没有输入 |
 | `auth_success` | 身份验证完成 |
-| `elicitation_dialog` | MCP 服务器打开引导表单，且你约六秒内没有输入 |
-| `elicitation_url_dialog` | MCP 服务器要求你打开浏览器 URL，且你约六秒内没有输入 |
-| `elicitation_complete` | MCP 服务器报告[URL 模式引导](https://code.claude.com/docs/zh-CN/hooks.md#elicitation-input)已完成 |
-| `elicitation_response` | MCP 引导响应被发送回服务器 |
-| `agent_needs_input` | 后台会话开始等待你的输入，同时 [agent view](https://code.claude.com/docs/zh-CN/agent-view.md) 打开。也在终端会话显示你一个[代理团队队友的终端设置问题](https://code.claude.com/docs/zh-CN/agent-teams.md#choose-a-display-mode)或自动模式的[分类器请求费用](https://code.claude.com/docs/zh-CN/auto-mode-classifier-billing.md)通知时触发，且你约六秒内没有输入 |
-| `agent_completed` | 后台会话完成或失败。仅在 [agent view](https://code.claude.com/docs/zh-CN/agent-view.md) 打开时触发 |
-| `quota_auto_resume_fired` | Claude Code 在 claude.ai 使用限制暂停后继续你的任务：在重置时，或更早当你在等待期间在 Claude Code 中做的某些事情（如添加使用额度、升级你的计划或切换模型）使使用量再次可用时，但有[模型设置例外](https://code.claude.com/docs/zh-CN/interactive-mode.md#wait-for-a-usage-limit-to-reset) |
-| `quota_auto_resume_stale` | claude.ai 使用限制在你的计算机睡眠超过约 30 分钟时重置。Claude Code 等待你按 `Enter` 而不是继续。在较短的睡眠后它继续并改为触发 `quota_auto_resume_fired` |
-| `quota_auto_resume_disabled` | Claude Code 结束其对 claude.ai 使用限制的等待而不继续你的任务：[`autoContinueAtUsageLimit`](https://code.claude.com/docs/zh-CN/settings-reference#autocontinueatusagelimit) 关闭或重置在 Claude Code 自己启动的等待期间移动超过 24 小时，继续的任务继续命中限制，或继续在到达模型前被阻止。当你按 `Esc` 或 `Ctrl+C` 或选择**不自动继续**时不触发 |
-| `plugin_notification` | [mod](https://code.claude.com/docs/zh-CN/plugins/mods/api.md#show-something-without-starting-a-turn) 使用 `$.ui.notify` 发出通知。除非 mod 自行设置了 `title`，否则 hook 的 `title` 为该 mod 的名称 |
+| `elicitation_dialog` | MCP 服务器打开了一个信息征询表单，且您约六秒没有输入 |
+| `elicitation_url_dialog` | MCP 服务器要求您在浏览器中打开某个 URL，且您约六秒没有输入 |
+| `elicitation_complete` | MCP 服务器报告某个 [URL 模式信息征询](https://code.claude.com/docs/zh-CN/hooks.md#elicitation-input)已完成 |
+| `elicitation_response` | MCP 信息征询的响应被发回服务器 |
+| `agent_needs_input` | 在 [Agent 视图](https://code.claude.com/docs/zh-CN/agent-view.md)打开时，某个后台会话开始等待您的输入。当终端会话向您显示 [agent team 队友的终端设置问题](https://code.claude.com/docs/zh-CN/agent-teams.md#choose-a-display-mode)或自动模式关于[分类器请求费用](https://code.claude.com/docs/zh-CN/auto-mode-classifier-billing.md)的通知，且您约六秒没有输入时，也会触发 |
+| `agent_completed` | 某个后台会话完成或失败。仅在 [Agent 视图](https://code.claude.com/docs/zh-CN/agent-view.md)打开时触发 |
+| `quota_auto_resume_fired` | 在 claude.ai 用量限制暂停任务后，Claude Code 继续执行您的任务：在重置时继续，或者当您在等待期间于 Claude Code 中执行的某些操作（例如添加使用额度、升级套餐或切换模型）使用量重新可用时更早继续，[模型设置例外](https://code.claude.com/docs/zh-CN/interactive-mode.md#wait-for-a-usage-limit-to-reset)除外 |
+| `quota_auto_resume_stale` | 在您的计算机休眠超过约 30 分钟期间，claude.ai 用量限制已重置。Claude Code 会等待您按 `Enter`，而不是继续执行。如果休眠时间较短，它会继续执行并改为触发 `quota_auto_resume_fired` |
+| `quota_auto_resume_disabled` | Claude Code 结束对 claude.ai 用量限制的等待，但没有继续您的任务：[`autoContinueAtUsageLimit`](https://code.claude.com/docs/zh-CN/settings-reference#autocontinueatusagelimit) 被关闭，或者在 Claude Code 自行开始的等待期间重置时间被推迟到 24 小时以后，继续执行的任务不断触及限制，或者继续执行在到达模型之前被阻止。当您按 `Esc` 或 `Ctrl+C`，或选择 **Don't continue automatically** 时不会触发 |
+| `plugin_notification` | 某个 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/api.md#show-something-without-starting-a-turn) 通过 `$.ui.notify` 发出通知。除非 mod 设置了 `title`，否则该 hook 的 `title` 为 mod 的名称 |
 
-Claude Code 在终端和通过 Agent SDK 回答权限请求的 Claude Desktop、VS Code 扩展和其他主机中对 `permission_prompt` 的时间不同。请参阅[每个通知类型何时触发](https://code.claude.com/docs/zh-CN/hooks.md#notification)以了解两种时间。
+在终端中，与在 Claude Desktop、VS Code 扩展以及其他通过 Agent SDK 响应权限请求的宿主中，Claude Code 对 `permission_prompt` 的计时方式不同。有关两种计时方式，请参阅[各通知类型的触发时机](https://code.claude.com/docs/zh-CN/hooks.md#notification)。
 
 `quota_auto_resume_fired`、`quota_auto_resume_stale` 和 `quota_auto_resume_disabled` 匹配器需要 Claude Code v2.1.234 或更高版本。
 
-在终端会话中，沙箱命令的网络请求的 `permission_prompt` 需要 Claude Code v2.1.246 或更高版本。
+在终端会话中，针对沙箱命令网络请求的 `permission_prompt` 需要 Claude Code v2.1.246 或更高版本。
 
-队友的终端设置问题的 `agent_needs_input` 需要 Claude Code v2.1.248 或更高版本。
+针对队友终端设置问题的 `agent_needs_input` 需要 Claude Code v2.1.248 或更高版本。
 
-在 Claude Code 输入框中输入 `/hooks`，并确认该 hook 出现在 `Notification` 下。
+在 Claude Code 输入框中键入 `/hooks`，确认该 hook 出现在 `Notification` 下。
 
 ### 编辑后自动格式化代码
 
-在 Claude 编辑的每个文件上自动运行 [Prettier](https://prettier.io/)，以便格式保持一致而无需手动干预。
+对 Claude 编辑的每个文件自动运行 [Prettier](https://prettier.io/)，从而无需手动干预即可保持格式一致。
 
-此 hook 使用带有 `Edit|Write` 匹配器的 `PostToolUse` 事件，因此它仅在文件编辑工具之后运行。该命令使用 [`jq`](https://jqlang.org/) 提取编辑的文件路径并将其传递给 Prettier。将其添加到项目根目录中的 `.claude/settings.json`：
+此 hook 使用带有 `Edit|Write` 匹配器的 `PostToolUse` 事件，因此仅在文件编辑工具之后运行。该命令使用 [`jq`](https://jqlang.org/) 提取被编辑文件的路径，并将其传递给 Prettier。将以下内容添加到项目根目录中的 `.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -229,25 +229,25 @@ Claude Code 在终端和通过 Agent SDK 回答权限请求的 Claude Desktop、
 }
 ```
 
-要测试 hook，请要求 Claude 向 JavaScript 文件添加一行带有单引号字符串的代码，然后打开该文件：使用 Prettier 的默认设置，hook 会将它们重写为双引号。
+要测试该 hook，请让 Claude 向某个 JavaScript 文件添加一行包含单引号字符串的代码，然后打开该文件：在 Prettier 的默认设置下，该 hook 会将它们改写为双引号。
 
-当 hook 成功时，Claude Code 在对话中不显示任何内容。要确认 hook 已运行，请检查编辑的文件是否已重新格式化，或参阅[检查 hook 执行了什么](#check-what-a-hook-did)。
+hook 成功执行时，Claude Code 不会在对话中显示任何内容。要确认 hook 已运行，请检查被编辑的文件是否已重新格式化，或参阅[检查 hook 执行了什么](#check-what-a-hook-did)。
 
-要重新格式化特定文件，无论它如何更改，包括当 `Bash` 命令重写它时，请改用 [FileChanged](https://code.claude.com/docs/zh-CN/hooks.md#filechanged) hook。
+若要在特定文件发生任何变更时（包括被 `Bash` 命令改写时）重新格式化该文件，请改用 [FileChanged](https://code.claude.com/docs/zh-CN/hooks.md#filechanged) hook。
 
 > [!NOTE]
 >
-> 本页上的 Bash 示例使用 `jq` 进行 JSON 解析。使用 `brew install jq`（macOS）、`apt-get install jq`（Debian 和 Ubuntu）安装它，或参阅 [`jq` 下载](https://jqlang.org/download/)。
+> 本页的 Bash 示例使用 `jq` 解析 JSON。在 macOS 上使用 `brew install jq` 安装，在 Debian 和 Ubuntu 上使用 `apt-get install jq` 安装，或参阅 [`jq` 下载](https://jqlang.org/download/)。
 
-### 阻止对受保护文件的编辑
+### 阻止编辑受保护的文件
 
-防止 Claude 修改敏感文件，如 `.env`、`package-lock.json` 或 `.git/` 中的任何内容。Claude 会收到解释编辑被阻止原因的反馈，因此它可以调整其方法。
+防止 Claude 修改敏感文件，例如 `.env`、`package-lock.json` 或 `.git/` 中的任何内容。Claude 会收到说明编辑被阻止原因的反馈，从而可以调整其做法。
 
-此示例使用 hook 调用的单独脚本文件。该脚本根据受保护模式列表检查目标文件路径，并以代码 2 退出以阻止编辑。
+此示例使用一个由 hook 调用的独立脚本文件。该脚本将目标文件路径与受保护模式列表进行比对，并以退出码 2 退出以阻止编辑。
 
 **1. 创建 hook 脚本**
 
-将其保存到 `.claude/hooks/protect-files.sh`：
+将以下内容保存到 `.claude/hooks/protect-files.sh`：
 
 ```bash theme={null}
 #!/bin/bash
@@ -271,9 +271,9 @@ done
 exit 0
 ```
 
-**2. 使脚本可执行（macOS 和 Linux）**
+**2. 在 macOS 和 Linux 上使脚本可执行**
 
-Hook 脚本必须可执行才能让 Claude Code 运行它们：
+hook 脚本必须具有可执行权限，Claude Code 才能运行它们：
 
 ```bash theme={null}
 chmod +x .claude/hooks/protect-files.sh
@@ -281,7 +281,7 @@ chmod +x .claude/hooks/protect-files.sh
 
 **3. 注册 hook**
 
-将 `PreToolUse` hook 添加到 `.claude/settings.json`，在任何 `Edit` 或 `Write` 工具调用之前运行脚本：
+向 `.claude/settings.json` 添加一个 `PreToolUse` hook，在任何 `Edit` 或 `Write` 工具调用之前运行该脚本：
 
 ```json theme={null}
 {
@@ -303,13 +303,13 @@ chmod +x .claude/hooks/protect-files.sh
 
 **4. 测试 hook**
 
-要求 Claude 向你的 `.env` 文件添加注释。Claude Code 在它运行前阻止编辑，并将脚本的 `Blocked:` 消息作为反馈传递给 Claude。
+让 Claude 向您的 `.env` 文件添加一条注释。Claude Code 会在编辑执行前将其阻止，并将脚本的 `Blocked:` 消息作为反馈传递给 Claude。
 
-### 压缩后重新注入上下文
+### 上下文压缩后重新注入上下文
 
-当 Claude 的上下文窗口填满时，压缩会总结对话以释放空间。这可能会丢失重要细节。使用带有 `compact` 匹配器的 `SessionStart` hook 在每次压缩后重新注入关键上下文。
+当 Claude 的上下文窗口填满时，压缩会总结对话以释放空间。这可能会丢失重要细节。使用带有 `compact` 匹配器的 `SessionStart` hook，在每次压缩后重新注入关键上下文。
 
-Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的上下文中。此示例提醒 Claude 项目约定和最近的工作。将其添加到项目根目录中的 `.claude/settings.json`：
+Claude Code 会将您的命令写入 stdout 的纯文本添加到 Claude 的上下文中。此示例提醒 Claude 项目约定和近期工作。将以下内容添加到项目根目录中的 `.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -329,13 +329,13 @@ Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的�
 }
 ```
 
-你可以用任何产生动态输出的命令替换 `echo`，如 `git log --oneline -5` 来显示最近的提交。有关在每个会话开始时注入上下文，请考虑改用 [CLAUDE.md](https://code.claude.com/docs/zh-CN/memory.md)。有关环境变量，请参阅参考中的 [`CLAUDE_ENV_FILE`](https://code.claude.com/docs/zh-CN/hooks#persist-environment-variables)。
+您可以将 `echo` 替换为任何产生动态输出的命令，例如使用 `git log --oneline -5` 显示最近的提交。若要在每次会话开始时注入上下文，请考虑改用 [CLAUDE.md](https://code.claude.com/docs/zh-CN/memory.md)。有关环境变量，请参阅参考中的 [`CLAUDE_ENV_FILE`](https://code.claude.com/docs/zh-CN/hooks#persist-environment-variables)。
 
-### 审计配置更改
+### 审计配置变更
 
-跟踪会话期间设置或 skills 文件何时更改。`ConfigChange` 事件在外部进程或编辑器修改配置文件时触发，因此你可以记录更改以进行合规性检查或阻止未授权的修改。
+跟踪会话期间设置文件或 skill 文件何时发生变更。当外部进程或编辑器修改配置文件时，会触发 `ConfigChange` 事件，因此您可以记录变更以满足合规要求，或阻止未经授权的修改。
 
-此示例将每个更改附加到审计日志。将其添加到 `~/.claude/settings.json`：
+此示例将每次变更追加到审计日志中。将以下内容添加到 `~/.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -355,15 +355,15 @@ Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的�
 }
 ```
 
-匹配器按配置类型过滤：`user_settings`、`project_settings`、`local_settings`、`policy_settings` 或 `skills`。要阻止更改生效，以代码 2 退出或返回 `{"decision": "block"}`。有关完整的输入架构，请参阅 [ConfigChange 参考](https://code.claude.com/docs/zh-CN/hooks.md#configchange)。
+匹配器按配置类型进行筛选：`user_settings`、`project_settings`、`local_settings`、`policy_settings` 或 `skills`。若要阻止变更生效，请以退出码 2 退出或返回 `{"decision": "block"}`。有关完整的输入 schema，请参阅 [ConfigChange 参考](https://code.claude.com/docs/zh-CN/hooks.md#configchange)。
 
-要确认 hook 记录更改，请在会话运行时在另一个编辑器中编辑设置文件，然后打开 `~/claude-config-audit.log`：hook 为每个更改附加一个 JSON 行，包含时间戳、源和文件路径。
+要确认该 hook 会记录变更，请在会话运行期间用另一个编辑器编辑某个设置文件，然后打开 `~/claude-config-audit.log`：该 hook 会为每次变更追加一行 JSON，其中包含时间戳、来源和文件路径。
 
-### 当目录或文件更改时重新加载环境
+### 目录或文件变更时重新加载环境
 
-某些项目根据你所在的目录设置不同的环境变量。[direnv](https://direnv.net/) 之类的工具在你的 shell 中自动执行此操作，但 Claude 的 Bash 工具不会自动拾取这些更改。
+有些项目会根据您所在的目录设置不同的环境变量。[direnv](https://direnv.net/) 等工具会在您的 shell 中自动完成此操作，但 Claude 的 Bash 工具本身不会获取这些变更。
 
-配对 `SessionStart` hook 和 `CwdChanged` hook 可以解决这个问题。`SessionStart` 加载你启动时所在目录的变量，`CwdChanged` 在 Claude 每次更改目录时重新加载它们。两者都写入 `CLAUDE_ENV_FILE`，Claude Code 在每个 Bash 命令之前作为脚本前导运行。将其添加到 `~/.claude/settings.json`：
+将 `SessionStart` hook 与 `CwdChanged` hook 搭配使用即可解决此问题。`SessionStart` 加载您启动时所在目录的变量，而 `CwdChanged` 会在 Claude 每次切换目录时重新加载这些变量。两者都会写入 `CLAUDE_ENV_FILE`，Claude Code 会在每个 Bash 命令之前将其作为脚本前导运行。将以下内容添加到 `~/.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -392,9 +392,9 @@ Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的�
 }
 ```
 
-在每个包含 `.envrc` 的目录中运行一次 `direnv allow`，以便 direnv 被允许加载它。如果你使用 devbox 或 nix 而不是 direnv，相同的模式适用于 `devbox shellenv` 或 `devbox global shellenv` 代替 `direnv export bash`。
+在每个包含 `.envrc` 的目录中运行一次 `direnv allow`，以允许 direnv 加载它。如果您使用 devbox 或 nix 而不是 direnv，同样的模式也适用，只需用 `devbox shellenv` 或 `devbox global shellenv` 替换 `direnv export bash`。
 
-要对特定文件而不是每个目录更改做出反应，请使用 `FileChanged` 和 `matcher` 列出要监视的文件名，用 `|` 分隔。要构建监视列表，Claude Code 将此值分割为文字文件名而不是作为正则表达式进行评估。有关当文件更改时相同值如何也过滤哪些 hook 组运行，请参阅 [FileChanged](https://code.claude.com/docs/zh-CN/hooks.md#filechanged)。此示例监视工作目录中 `.envrc` 和 `.env` 的更改：
+若要对特定文件而不是每次目录变更做出响应，请使用 `FileChanged`，并在 `matcher` 中列出要监视的文件名，以 `|` 分隔。构建监视列表时，Claude Code 会将该值拆分为字面文件名，而不是将其作为正则表达式求值。有关同一个值如何在文件变更时筛选要运行的 hook 组，请参阅 [FileChanged](https://code.claude.com/docs/zh-CN/hooks.md#filechanged)。此示例监视工作目录中的 `.envrc` 和 `.env`：
 
 ```json theme={null}
 {
@@ -414,15 +414,15 @@ Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的�
 }
 ```
 
-有关输入架构、`watchPaths` 输出和 `CLAUDE_ENV_FILE` 详情，请参阅 [CwdChanged](https://code.claude.com/docs/zh-CN/hooks.md#cwdchanged) 和 [FileChanged](https://code.claude.com/docs/zh-CN/hooks.md#filechanged) 参考条目。
+有关输入 schema、`watchPaths` 输出以及 `CLAUDE_ENV_FILE` 的详细信息，请参阅 [CwdChanged](https://code.claude.com/docs/zh-CN/hooks.md#cwdchanged) 和 [FileChanged](https://code.claude.com/docs/zh-CN/hooks.md#filechanged) 参考条目。
 
-### 自动批准特定权限提示
+### 自动批准特定的权限提示
 
-跳过你总是允许的工具调用的批准对话。此示例自动批准 `ExitPlanMode`，这是 Claude 在完成呈现计划并要求继续时调用的工具，因此你不会在每次计划准备好时被提示。
+对于您始终允许的工具调用，跳过批准对话框。此示例自动批准 `ExitPlanMode`，即 Claude 在展示完计划并请求继续时调用的工具，这样每次计划就绪时都不会提示您。
 
-与上面的退出代码示例不同，自动批准需要你的 hook 将 JSON 决策写入 stdout。Claude Code 运行 `PermissionRequest` hooks 当它即将要求你的权限时，如果你的 hook 返回 `"behavior": "allow"`，Claude Code 代表你回答请求。
+与上面的退出码示例不同，自动批准要求您的 hook 将 JSON 决策写入 stdout。Claude Code 在即将向您请求权限时运行 `PermissionRequest` hook，如果您的 hook 返回 `"behavior": "allow"`，Claude Code 就会代表您响应该请求。
 
-匹配器将 hook 的范围限制为仅 `ExitPlanMode`，因此没有其他提示受到影响。将其添加到 `~/.claude/settings.json`：
+匹配器将该 hook 仅限定于 `ExitPlanMode`，因此不会影响其他提示。将以下内容添加到 `~/.claude/settings.json`：
 
 ```json theme={null}
 {
@@ -442,17 +442,17 @@ Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的�
 }
 ```
 
-当 hook 批准时，Claude Code 退出计划模式并恢复进入计划模式之前处于活动状态的任何权限模式。成绩单显示"Allowed by PermissionRequest hook"，其中对话会出现。hook 路径始终保持当前对话：它无法清除上下文并以对话可以的方式启动新的实现会话。
+当该 hook 批准时，Claude Code 会退出计划模式，并恢复您进入计划模式之前处于活动状态的权限模式。会话记录会在原本出现对话框的位置显示“Allowed by PermissionRequest hook”。hook 路径始终保留当前对话：它无法像对话框那样清除上下文并开始一个全新的实现会话。
 
-要改为设置特定的权限模式，你的 hook 的输出可以包含一个 `updatedPermissions` 数组，其中包含 `setMode` 条目。`mode` 值是任何权限模式，如 `default`、`acceptEdits` 或 `bypassPermissions`，`destination: "session"` 仅将其应用于当前会话。
+若要改为设置特定的权限模式，您的 hook 输出可以包含一个带有 `setMode` 条目的 `updatedPermissions` 数组。`mode` 值可以是任何权限模式，例如 `default`、`acceptEdits` 或 `bypassPermissions`，而 `destination: "session"` 会使其仅对当前会话生效。
 
 > [!NOTE]
 >
-> `bypassPermissions` 仅在你启动会话时绕过模式已经可用的情况下才适用：`--dangerously-skip-permissions`、`--permission-mode bypassPermissions`、`--allow-dangerously-skip-permissions` 或 [用户设置、`--settings` 或托管设置](https://code.claude.com/docs/zh-CN/settings-reference#permissions-defaultmode) 中的 `permissions.defaultMode: "bypassPermissions"`。如果绕过模式已被 [`permissions.disableBypassPermissionsMode`](https://code.claude.com/docs/zh-CN/permissions#managed-settings) 禁用，或你是在[受限模式](https://code.claude.com/docs/zh-CN/cli-reference.md#cli-flags)中启动会话，则它不适用。
+> `bypassPermissions` 仅在您启动会话时 bypass 模式已可用的情况下才会生效：通过 `--dangerously-skip-permissions`、`--permission-mode bypassPermissions`、`--allow-dangerously-skip-permissions`，或在[用户设置、`--settings` 或托管设置](https://code.claude.com/docs/zh-CN/settings-reference#permissions-defaultmode)中设置 `permissions.defaultMode: "bypassPermissions"`。如果 bypass 模式已被 [`permissions.disableBypassPermissionsMode`](https://code.claude.com/docs/zh-CN/permissions#managed-settings) 禁用，或者您在[受限模式](https://code.claude.com/docs/zh-CN/cli-reference.md#cli-flags)下启动了会话，则它不会生效。
 >
 > Claude Code 永远不会将其保存为 `defaultMode`。
 
-要将会话切换到 `acceptEdits`，你的 hook 将此 JSON 写入 stdout：
+若要将会话切换到 `acceptEdits`，您的 hook 将以下 JSON 写入 stdout：
 
 ```json theme={null}
 {
@@ -468,7 +468,7 @@ Claude Code 将你的命令写入 stdout 的任何纯文本添加到 Claude 的�
 }
 ```
 
-保持匹配器尽可能狭窄。匹配 `.*` 或留下匹配器为空会自动批准每个工具权限提示，包括文件写入和 shell 命令。有关完整的决策字段集，请参阅 [PermissionRequest 参考](https://code.claude.com/docs/zh-CN/hooks.md#permissionrequest-decision-control)。
+请让匹配器尽可能精确。匹配 `.*` 或将匹配器留空会自动批准所有工具权限提示，包括文件写入和 shell 命令。有关完整的决策字段集，请参阅 [PermissionRequest 参考](https://code.claude.com/docs/zh-CN/hooks.md#permissionrequest-decision-control)。
 
 ## Hooks 如何工作
 
@@ -629,6 +629,7 @@ exit 0  # exit 0 = no decision; the normal permission flow applies
 
 * 从 [网络路径](https://code.claude.com/docs/zh-CN/permissions.md#network-paths) 读取
 * 标记为 [`requiresUserInteraction`](https://code.claude.com/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具
+* 对 [Agent SDK 应用标记为 `always_ask` 的工具](https://code.claude.com/docs/zh-CN/agent-sdk/custom-tools#require-approval-for-specific-tools) 的调用，除非 [权限模式批准该调用](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)
 * 在该设置到达 Claude Code 的会话中，[您的组织设置为 `ask`](https://code.claude.com/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具
 
   有关 `"allow"` 在计划模式下的作用，请参阅 [计划模式下的 hook 批准](https://code.claude.com/docs/zh-CN/permissions.md#hook-approvals-in-plan-mode)。
@@ -704,73 +705,73 @@ exit 0  # exit 0 = no decision; the normal permission flow applies
 
 下面的选项卡显示不同事件类型上的更多匹配器示例。
 
-**记录每个 Bash 命令**
+> [tab] 记录每个 Bash 命令
+>
+> 仅匹配 `Bash` 工具调用并将每个命令记录到文件。`PostToolUse` 事件在命令完成后触发，因此 `tool_input.command` 包含运行的内容。hook 在 stdin 上接收事件数据作为 JSON，`jq -r '.tool_input.command'` 仅提取命令字符串，`>>` 将其附加到日志文件：
+>
+> ```json theme={null}
+> {
+>   "hooks": {
+>     "PostToolUse": [
+>       {
+>         "matcher": "Bash",
+>         "hooks": [
+>           {
+>             "type": "command",
+>             "command": "jq -r '.tool_input.command' >> ~/.claude/command-log.txt"
+>           }
+>         ]
+>       }
+>     ]
+>   }
+> }
+> ```
 
-仅匹配 `Bash` 工具调用并将每个命令记录到文件。`PostToolUse` 事件在命令完成后触发，因此 `tool_input.command` 包含运行的内容。hook 在 stdin 上接收事件数据作为 JSON，`jq -r '.tool_input.command'` 仅提取命令字符串，`>>` 将其附加到日志文件：
+> [tab] 匹配 MCP 工具
+>
+> MCP 工具使用与内置工具不同的命名约定：`mcp__<server>__<tool>`，其中 `<server>` 是 MCP 服务器名称，`<tool>` 是它提供的工具。例如，`mcp__github__search_repositories` 或 `mcp__filesystem__read_file`。来自 [插件提供的 MCP 服务器](https://code.claude.com/docs/zh-CN/mcp.md#plugin-provided-mcp-servers) 的工具使用作用域服务器段，例如 `mcp__plugin_my-plugin_db__query`。使用正则表达式匹配器来针对来自特定服务器的所有工具，或使用 `mcp__.*__write.*` 之类的模式跨服务器匹配。有关完整的示例列表，请参阅参考中的 [匹配 MCP 工具](https://code.claude.com/docs/zh-CN/hooks.md#match-mcp-tools)。
+>
+> 下面的命令使用 `jq` 从 hook 的 JSON 输入中提取工具名称，并将其写入 stderr。将其写入 stderr 保持 stdout 清洁以用于 JSON 输出，并将消息发送到 [调试日志](https://code.claude.com/docs/zh-CN/hooks.md#debug-hooks)：
+>
+> ```json theme={null}
+> {
+>   "hooks": {
+>     "PreToolUse": [
+>       {
+>         "matcher": "mcp__github__.*",
+>         "hooks": [
+>           {
+>             "type": "command",
+>             "command": "echo \"GitHub tool called: $(jq -r '.tool_name')\" >&2"
+>           }
+>         ]
+>       }
+>     ]
+>   }
+> }
+> ```
 
-```json theme={null}
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.command' >> ~/.claude/command-log.txt"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**匹配 MCP 工具**
-
-MCP 工具使用与内置工具不同的命名约定：`mcp__<server>__<tool>`，其中 `<server>` 是 MCP 服务器名称，`<tool>` 是它提供的工具。例如，`mcp__github__search_repositories` 或 `mcp__filesystem__read_file`。来自 [插件提供的 MCP 服务器](https://code.claude.com/docs/zh-CN/mcp.md#plugin-provided-mcp-servers) 的工具使用作用域服务器段，例如 `mcp__plugin_my-plugin_db__query`。使用正则表达式匹配器来针对来自特定服务器的所有工具，或使用 `mcp__.*__write.*` 之类的模式跨服务器匹配。有关完整的示例列表，请参阅参考中的 [匹配 MCP 工具](https://code.claude.com/docs/zh-CN/hooks.md#match-mcp-tools)。
-
-下面的命令使用 `jq` 从 hook 的 JSON 输入中提取工具名称，并将其写入 stderr。将其写入 stderr 保持 stdout 清洁以用于 JSON 输出，并将消息发送到 [调试日志](https://code.claude.com/docs/zh-CN/hooks.md#debug-hooks)：
-
-```json theme={null}
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "mcp__github__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"GitHub tool called: $(jq -r '.tool_name')\" >&2"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**在会话结束时清理**
-
-`SessionEnd` 事件支持会话结束原因的匹配器。此 hook 仅在 `clear` 原因时触发（当你运行 `/clear` 时），而不是在正常退出时：
-
-```json theme={null}
-{
-  "hooks": {
-    "SessionEnd": [
-      {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "rm -f /tmp/claude-scratch-*.txt"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+> [tab] 在会话结束时清理
+>
+> `SessionEnd` 事件支持会话结束原因的匹配器。此 hook 仅在 `clear` 原因时触发（当你运行 `/clear` 时），而不是在正常退出时：
+>
+> ```json theme={null}
+> {
+>   "hooks": {
+>     "SessionEnd": [
+>       {
+>         "matcher": "clear",
+>         "hooks": [
+>           {
+>             "type": "command",
+>             "command": "rm -f /tmp/claude-scratch-*.txt"
+>           }
+>         ]
+>       }
+>     ]
+>   }
+> }
+> ```
 
 #### 使用 `if` 字段按工具名称和参数过滤
 
@@ -954,7 +955,7 @@ HTTP hooks 在你想要 web 服务器、云函数或外部服务处理 hook 逻�
 * `PostToolUse` hooks 无法撤销操作，因为工具已经执行。
 * [`PermissionRequest`](https://code.claude.com/docs/zh-CN/hooks#permissionrequest) hook 在 Claude Code 即将向您请求权限时触发，或在它原本会自动拒绝无法显示提示的调用时触发。在带 `-p` 标志的[非交互模式](https://code.claude.com/docs/zh-CN/headless.md)中，它们在 [`dontAsk` 模式](https://code.claude.com/docs/zh-CN/permission-modes#allow-only-pre-approved-tools-with-dontask-mode)之外仍会运行，而没有 hook 做出决策且无其他方式可以应答的调用会被拒绝。
 * `Stop` hooks 在 Claude 完成响应时触发，而不仅仅在任务完成时。它们不在用户中断时触发。API 错误触发 [StopFailure](https://code.claude.com/docs/zh-CN/hooks.md#stopfailure) 代替。
-* 当多个 `PreToolUse` hooks 返回 [`updatedInput`](https://code.claude.com/docs/zh-CN/hooks#pretooluse) 来重写工具的参数时，最后完成的获胜。由于 hooks 并行运行，顺序是非确定性的。避免有多个 hook 修改同一工具的输入。
+* 当多个 `PreToolUse` hook 返回 [`updatedInput`](https://code.claude.com/docs/zh-CN/hooks#pretooluse) 来改写工具的输入时，Claude Code 不会合并这些改写，也不保证工具使用哪一个改写运行。避免让多个 hook 改写同一工具的输入。
 
 ### Hooks 和权限模式
 
@@ -963,6 +964,7 @@ HTTP hooks 在你想要 web 服务器、云函数或外部服务处理 hook 逻�
 * **对 `"allow"` 仍然有效的限制**：返回 `"allow"` 的 hook 不会绕过设置中的拒绝规则，并且在以下情况下也无法抑制提示：
   * 从[网络路径](https://code.claude.com/docs/zh-CN/permissions.md#network-paths)读取
   * 标记为 [`requiresUserInteraction`](https://code.claude.com/docs/zh-CN/mcp#require-approval-for-a-specific-tool) 的 MCP 工具
+  * 调用 [Agent SDK 应用标记为 `always_ask` 的工具](https://code.claude.com/docs/zh-CN/agent-sdk/custom-tools#require-approval-for-specific-tools)，除非[权限模式批准该调用](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)
   * 在该设置会传达到 Claude Code 的会话中，[您的组织设置为 `ask`](https://code.claude.com/docs/zh-CN/mcp#organization-controls-on-connector-tools) 的连接器工具
 
 在[计划模式](https://code.claude.com/docs/zh-CN/permissions.md#hook-approvals-in-plan-mode)中，如果您的 `PreToolUse` hook 对文件编辑返回 `"allow"`，您得到的提示、阻止或批准与没有 hook 时该编辑所得到的相同。要解除对 hook 批准的这一限制，请[批准计划](https://code.claude.com/docs/zh-CN/permission-modes.md#review-and-approve-a-plan)或切换到其他权限模式。

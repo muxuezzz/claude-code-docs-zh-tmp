@@ -94,15 +94,18 @@ Fable 模型、Opus 5.5、Sonnet 5.5 和 Opus 5 上的[自动模型回退](https
 
 在大多数模型上，在会话中途更改 [effort 级别](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level)意味着下一个请求会读取整个对话历史记录而没有缓存命中。当缓存仍然温暖时，Claude Code 会要求您先确认更改。
 
-在 Opus 5.5、Sonnet 5.5、Haiku 5.5 和 Fable 5.1 上使用 API 密钥或 Claude 订阅时，更改 effort 会保持缓存，Claude Code 会在不询问的情况下应用新级别。这不适用于 Amazon Bedrock、Google Cloud 的 Agent Platform 或 [Claude 应用网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway)，也不适用于您设置了 [`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`](https://code.claude.com/docs/zh-CN/llm-gateway-protocol#disable-pre-release-capabilities) 或您的组织具有 HIPAA 配置的情况。
+在 Opus 5.5、Sonnet 5.5、Haiku 5.5 和 Fable 5.1 上使用 API 密钥或 Claude 订阅时，更改 effort 会保持缓存。Claude Code 会在不询问的情况下[应用新级别](https://code.claude.com/docs/zh-CN/model-config.md#when-a-new-effort-level-starts)。在 Amazon Bedrock、Google Cloud 的 Agent Platform 或 [Claude 应用网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway)上，或者当您设置了 [`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`](https://code.claude.com/docs/zh-CN/llm-gateway-protocol#disable-pre-release-capabilities) 或您的组织具有 HIPAA 配置时，其行为与大多数模型相同。
 
 在 v2.1.260 之前，在 Fable 5.1 上使用 API 密钥或 Claude 订阅更改 effort 也会使缓存失效。
 
 ### 启用快速模式
 
-启用[快速模式](https://code.claude.com/docs/zh-CN/fast-mode.md)会添加一个请求标头，该标头是缓存键的一部分，因此 Claude Code 在启用快速模式后发送的第一个请求会读取整个对话历史记录而没有缓存命中。Claude Code 在轮次开始时设置该标头一次，并在整个轮次中保持它，因此当您在 Claude 工作时启用快速模式，标头导致的缓存未命中会发生在您下一轮次的第一个请求上。这些未缓存的输入 token 按[快速模式费率](https://code.claude.com/docs/zh-CN/fast-mode.md#understand-the-cost-tradeoff)计费，这就是为什么在会话开始时启用它比在长会话的后段启用它成本更低。如果您当前的模型不支持快速模式，启用快速模式也会[切换您的模型](#switching-models)，该切换本身会从当前运行轮次中的下一个请求开始启动新的缓存。
+[快速模式](https://code.claude.com/docs/zh-CN/fast-mode.md)和标准速度各自保留独立的缓存，因此在您启用或关闭快速模式后，下一个请求无法使用另一种速度所缓存的内容。在一个对话中第一次启用快速模式时，下一个请求会以未缓存的方式读取到目前为止的整个对话，并按[快速模式费率](https://code.claude.com/docs/zh-CN/fast-mode.md#understand-the-cost-tradeoff)计费。为了使该成本保持较小，请在会话开始时启用它。
 
-该成本每个对话只产生一次。在第一个快速模式轮次之后，Claude Code 会继续发送该标头，仅改变请求的速度设置，而速度设置不是缓存键的一部分。关闭快速模式、[速率限制后自动回退到标准速度](https://code.claude.com/docs/zh-CN/fast-mode.md#handle-rate-limits)以及稍后重新启用它都会保持缓存。如果您在会话中途[用完使用额度](https://code.claude.com/docs/zh-CN/fast-mode.md#handle-rate-limits)，Claude Code 会以相同的方式在标准速度下重试每个被拒绝的快速模式请求，因此此回退也会保持缓存。`/clear` 和 `/compact` 会重置此状态，因为它们无论如何都会在这些时间点重建缓存。
+* 如果您在 Claude 工作时启用它，该轮次会以标准速度完成，任何未缓存读取的费用会在您下一轮次的第一个请求上产生。
+* 如果您当前的模型不支持快速模式，启用快速模式也会[将您切换到 Opus](https://code.claude.com/docs/zh-CN/fast-mode.md#toggle-fast-mode)。该[模型切换](#switching-models)本身会从当前运行轮次中的下一个请求开始启动新的缓存。
+
+之后的每次切换都会以未缓存的方式读取您所切换到的速度尚未缓存的内容。Claude Code 自行进行的速度更改，例如[速率限制后回退到标准速度](https://code.claude.com/docs/zh-CN/fast-mode.md#handle-rate-limits)以及稍后返回快速模式，也算作切换。
 
 ### 连接或移除 MCP 服务器
 
@@ -184,7 +187,7 @@ Claude Code 永远不会因插件的 skill、命令、Agent、hook、监视器�
 >
 > 当您丢弃的上下文是您不再需要的内容时，压缩对您有利。要选择其开销发生的时间，请在工作中的自然间歇处（例如任务之间）运行 `/compact`，而不是等待自动压缩在任务中途触发。如果您走上了一条想要完全放弃的路径，请改用 [`/rewind`](#rewinding-the-conversation) 回退到较早的轮次。回退会截断回到一个已缓存的前缀，而不是像压缩那样构建新的前缀。
 
-如果您在终端会话中让一个长对话处于空闲状态，且该对话使用的是[一小时 TTL](#which-ttl-each-request-gets)，Claude Code 可能会在缓存过期前不久对其进行压缩。要关闭空闲压缩，请将 [`idleCompaction`](https://code.claude.com/docs/zh-CN/settings-reference#idlecompaction) 设置为 `false`，这需要 Claude Code v2.1.290 或更高版本。
+如果您让一个长对话处于空闲状态，且该对话使用的是[一小时 TTL](#which-ttl-each-request-gets)，Claude Code 可能会对其进行压缩。要关闭空闲压缩，请将 [`idleCompaction`](https://code.claude.com/docs/zh-CN/settings-reference#idlecompaction) 设置为 `false`，这需要 Claude Code v2.1.290 或更高版本。
 
 ### 积累许多图像
 
@@ -309,9 +312,12 @@ Claude Code 按请求决定 TTL，每个请求都属于以下两个固定桶之�
 
 在 Claude Code 中，缓存有效地限定在一台机器和目录。系统提示嵌入了您的自动内存路径，对话以工作目录、平台、shell 和 OS 版本的公告开始。因此，两个不同目录中的会话构建不同的前缀并错过彼此的缓存。
 
-您在同一目录中并行运行的会话构建匹配的前缀并读取彼此的缓存。顺序会话仅当启动时的 git 状态快照匹配时才共享前缀，因为每个对话也携带该快照中的分支和最近的提交。
+* 您在同一目录中并行运行的会话会构建匹配的前缀，并且可以读取彼此的缓存。
+* 顺序会话仅当启动时的 git 状态快照匹配时才共享前缀，因为每个对话也携带该快照中的分支和最近的提交。
 
-底层 API 缓存更广泛。缓存在组织之间隔离，在某些提供商上，[在组织内的工作区之间隔离](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#cache-storage-and-sharing)。在这些边界内，任何两个具有相同模型和前缀的请求读取相同的缓存。对于运行自动化流程队列的 Agent SDK 调用者，请参阅[改进跨用户和机器的 prompt caching](https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md#improve-prompt-caching-across-users-and-machines)以将自动内存位置移出系统提示并跨用户和机器共享系统提示的缓存条目。
+底层 API 缓存更广泛。缓存在组织之间隔离，在某些提供商上，[在组织内的工作区之间隔离](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#cache-storage-and-sharing)。在这些边界内，只有当两个请求的模型、[速度](#turning-on-fast-mode)和前缀都匹配时，它们才会共享缓存。
+
+对于运行自动化流程队列的 Agent SDK 调用者，请参阅[改进跨用户和机器的提示缓存](https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md#improve-prompt-caching-across-users-and-machines)，以将自动记忆位置移出系统提示词。
 
 ## 检查缓存性能
 

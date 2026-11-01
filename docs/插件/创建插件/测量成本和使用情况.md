@@ -116,7 +116,7 @@ Claude Code 不会向其作者报告插件的使用情况。使用情况记录�
 
 ### `/usage` 中的使用情况份额
 
-在 Pro、Max、Team 或 Enterprise 计划上，`/usage` 分解将最近的使用情况归因于 skills、subagents、插件和 MCP 服务器，作为总数的份额。请参阅[使用 `/usage` 命令](https://code.claude.com/docs/zh-CN/costs#using-the-/usage-command)。
+在 Pro、Max、Ultra、Team 或 Enterprise 计划上，`/usage` 分解将最近的使用情况归因于 skill、子代理、插件和 MCP 服务器，作为总数的份额。请参阅[使用 `/usage` 命令](https://code.claude.com/docs/zh-CN/costs#using-the-/usage-command)。
 
 ## 跨机队测量
 

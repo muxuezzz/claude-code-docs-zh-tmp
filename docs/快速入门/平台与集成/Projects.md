@@ -8,7 +8,7 @@
 
 > [!NOTE]
 >
-> Projects 目前在 Pro 和 Max 计划上以公开测试版提供，并正在逐步推出。推出首先面向已使用过[云端会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md)且在 claude.ai 聊天或 Cowork 中没有现有项目的账户。Projects 目前尚未在 Team 或 Enterprise 计划上提供。
+> Projects 目前在 Pro、Max 和 Ultra 计划上以公开测试版提供，并正在逐步推出。推出首先面向已使用过[云端会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md)且在 claude.ai 聊天或 Cowork 中没有现有项目的账户。Projects 目前尚未在 Team 或 Enterprise 计划上提供。
 >
 > 如果您在 [claude.ai/code](https://claude.ai/code) 的侧边栏中或[桌面应用](https://code.claude.com/docs/zh-CN/desktop.md)的代码选项卡中没有看到 **Projects**，请在其中的 **More** 下查看。如果那里也没有，说明推出尚未覆盖到您的账户。您可以[加入等待列表](https://claude.com/form/projects)，并参阅[并行运行 Agent](https://code.claude.com/docs/zh-CN/agents.md)，了解您在此期间可以使用的功能。
 
@@ -70,7 +70,7 @@
 您在 [claude.ai/code](https://claude.ai/code)、桌面应用的 Code 标签页或 Claude 移动应用中创建和使用项目，支持 [iOS](https://apps.apple.com/us/app/claude-by-anthropic/id6473753684) 和 [Android](https://play.google.com/store/apps/details?id=com.anthropic.claude)。在浏览器和桌面应用中，有两种方式启动项目：
 
 * **从头开始**，当您知道希望 Claude 运行的工作流时：打开 **New project** 对话框并命名它。[从头开始启动新项目](#start-a-new-project-from-scratch)会逐步讲解对话框。
-* **从已经在进行工作的云端会话**：在该会话的侧边栏菜单中选择 **Move to project**，然后选择 **Continue as new project**。Claude 会根据会话正在做的事情提议项目的设置。请参阅[从现有云端会话启动](#start-from-an-existing-cloud-session)。
+* **从已经在进行工作的云端会话**：在该会话的侧边栏菜单中选择 **Continue in project**，然后选择 **Continue as new project**。Claude 会根据会话正在做的事情提议项目的设置。请参阅[从现有云端会话启动](#start-from-an-existing-cloud-session)。
 
 无论哪种方式，首先[检查先决条件](#check-the-prerequisites)。
 
@@ -78,7 +78,7 @@
 
 在创建项目之前，检查您的计划、GitHub 设置以及工作需要到达的内容：
 
-* **计划**：您使用的是 Pro 或 Max，并且 **Projects** 显示在您的侧边栏中（直接显示或位于 **More** 下）。选择 **Projects** 并检查它是否提供 **New project** 或 **Get started**。
+* **计划**：您使用的是 Pro、Max 或 Ultra，并且 **Projects** 显示在您的侧边栏中（直接显示或位于 **More** 下）。选择 **Projects** 并检查它是否提供 **New project** 或 **Get started**。
 * **GitHub，如果项目将处理代码**：您的代码在 github.com 上而不是 GitHub Enterprise Server、GitLab 或 Bitbucket 上，您连接的 GitHub 账户对其有推送访问权限，Claude GitHub App 已安装在其上。如果您使用 [`/web-setup`](https://code.claude.com/docs/zh-CN/web-quickstart#connect-from-your-terminal) 连接了 GitHub，该令牌让您的其他云会话可以访问代码库，但对于项目线程来说还不够，项目线程需要 Claude GitHub App。[设置 GitHub 访问](#set-up-github-access)有相关步骤。
 * **网络访问、密钥和工具**：对于云端线程，这些来自项目的[云环境](#choose-an-environment-for-threads)。默认环境已经可以访问[常见的包注册表](https://code.claude.com/docs/zh-CN/cloud-environments.md#default-allowed-domains)，因此仅在工作需要其他域、密钥或未预装的工具时检查此项。如果工作需要 MCP 服务器，检查它是否在您的 [claude.ai 连接器](https://claude.ai/customize/connectors)中显示为已连接。
 
@@ -111,16 +111,21 @@
 
 项目现在在侧边栏的 **Projects** 下列出，其对话已打开。[您的第一批](#your-first-batch)涵盖了在您向其发送工作之前要设置的内容。
 
-### 从现有云会话启动
+### 从现有会话启动
 
-如果您自己启动的某个云端会话正在进行属于项目的工作，请打开其侧边栏菜单并选择 **Move to project**，然后从子菜单中选择：
+如果您自己启动的某个云端会话正在进行属于项目的工作，请打开其侧边栏菜单并选择 **Continue in project**，然后从子菜单中选择：
 
 * 选择 **Continue as new project** 以从该会话创建新项目。项目会打开，Claude 读取会话并在项目对话中发布 **Setup recommendations** 供您确认。原始会话保留在您的会话列表中。如果它正处于某个轮次中间，它会继续运行，因此如果您不想两者同时工作，请自己停止它。
 * 选择您现有的某个项目，将会话的工作带入该项目。该项目会打开，并以您的名义发送一条消息，要求 Claude 读取会话并从中断的地方继续。原始会话保留在您的会话列表中，保持不变。
 
 云端会话的消息框上方也可能出现 **Set up project** 横幅。如果您使用它而不是 **Continue as new project**，结果是相同的，只是会话正在运行的轮次会在项目打开后停止。
 
-本地会话没有这些选项。要在项目中继续其工作，请在项目对话中描述工作，或推送其分支，将该代码库添加到项目，并在任务中命名分支。
+您自己机器上的会话通过 [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md#start-a-remote-control-session) 连接后，在 claude.ai/code 也会获得相同的侧边栏菜单。如果某个会话是在您的账户开启了 [**Require trusted devices**](https://code.claude.com/docs/zh-CN/remote-control.md#trusted-devices) 时连接的，Claude 无法从项目中读取该会话的会话记录。如果该设置处于关闭状态：
+
+1. 如果会话尚未连接，请在其中运行 `/remote-control`。如果它是在该设置开启时连接的，请先断开连接，然后重新连接。
+2. 在浏览器中，在 [claude.ai/code](https://claude.ai/code) 的侧边栏中找到该会话所在的行，打开其菜单，然后从同一子菜单中选择。
+
+如果 **Require trusted devices** 已开启，或者您不使用 Remote Control，请自己在项目对话中描述工作。或者推送该会话的分支，将其仓库添加到项目，并告诉 Claude 分支名称。
 
 ### 设置 GitHub 访问
 
@@ -257,20 +262,23 @@ Claude 会自动将这些偏好保存到[项目内存](#give-a-project-standing-
 
 在具有任务需要的文件夹的计算机上，通过以下两种方式之一通过远程控制使其可用。两者都需要该计算机上的 Claude Code v2.1.280 或更高版本。
 
-* **在 Claude 桌面应用中**：打开**设置 > Claude Code**，打开**从你的手机和 claude.ai 使用此计算机**，并将文件夹添加到该开关下的列表中。当应用打开时，线程可以在此计算机上运行。
-* **在终端中**：在文件夹中运行`claude remote-control`并让其保持运行。在 git 存储库中，添加`--spawn worktree`以为那里的每个线程提供其自己的 [worktree](https://code.claude.com/docs/zh-CN/worktrees.md)，而不是文件夹本身。
+* **在 Claude 桌面应用中**：打开**设置 > Code** 或**设置 > Claude Code**，然后启用**从您的手机和 claude.ai 使用此计算机**。将文件夹添加到该开关下方的列表中。应用打开期间，线程可以在此计算机上运行。
+* **在终端中**：在文件夹中运行 `claude remote-control` 并保持其运行。在 git 仓库中，添加 `--spawn worktree` 可为在那里运行的每个线程提供其自己的 [worktree](https://code.claude.com/docs/zh-CN/worktrees.md)，而不是使用文件夹本身。
 
-**2. 使用本地工作要求任务**
+**2. 使用本地工作提出任务**
 
-在项目对话中，从消息框旁边的\*\*+**菜单中选择**本地工作\*\*，它会标记你的消息为**本地**，并写下你想要完成的内容。在消息中说任务应该在你的计算机上运行也可以。
+在项目对话中，从消息框旁边的 **+** 菜单中选择**本地工作**，这会为您的消息添加**本地**标记，然后写下您想要完成的内容。在消息中说明该任务应在您的计算机上运行也同样有效。
 
-**3. 在卡片上允许它**
+**3. 在卡片上允许**
 
-Claude 会回答一张**允许 Claude 在你的设备上的文件夹中工作**卡片。如果你连接了多个，请选择文件夹。两个线程在一个文件夹中同时工作可能会覆盖彼此的更改，因此如果文件夹是 git 存储库，你可以在文件夹的选项中打开**Worktree** 以为此线程提供其自己的 worktree 而不是。然后点击**允许一次**。
+Claude 会回复一张**允许 Claude 在您设备上的文件夹中工作**卡片。如果您连接了多个文件夹，请选择其中一个。两个线程同时在同一文件夹中工作可能会覆盖彼此的更改，因此如果该文件夹是 git 仓库，您可以在文件夹的选项中启用 **Worktree**，为此线程提供其自己的 worktree。然后点击**允许一次**。
 
 线程在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)中运行，因此 Claude 在该文件夹中运行命令和编辑文件而不每次都询问你。如果自动模式在该计算机的 Claude Code 中不可用或已关闭，线程在没有它的情况下运行，它引发的任何权限提示都会在线程中等待你的答案，如[解除等待批准的线程](#unblock-a-thread-waiting-on-approval)所述。
 
-当线程运行时，其标题中的笔记本电脑图标显示你的计算机是否已连接。点击它可以查看线程使用的文件夹或关闭连接。当该计算机处于睡眠状态时线程暂停，如果桌面应用或`claude remote-control`退出则停止。[失去与你的文件夹的联系](#lost-contact-with-your-folder)涵盖了让它再次运行。在桌面应用中，在**设置 > Claude Code**下打开**为远程控制保持此计算机唤醒**以阻止计算机自动睡眠。
+线程运行时，其标题中的笔记本电脑图标会显示您的计算机是否已连接。点击该图标可查看线程正在使用哪个文件夹，或关闭连接。当该计算机处于睡眠状态时，线程会暂停；如果桌面应用或 `claude remote-control` 退出，线程会停止。
+
+* **要让线程重新运行**：请参阅[与您的文件夹失去联系](#lost-contact-with-your-folder)
+* **要防止计算机自动进入睡眠**：在桌面应用中，在**设置 > Code** 或**设置 > Claude Code** 中启用**为 Remote Control 保持此计算机唤醒**
 
 当[**需要受信任的设备**](https://code.claude.com/docs/zh-CN/remote-control.md#trusted-devices)对你的账户打开时，项目无法在你的计算机上运行线程。
 
@@ -403,7 +411,7 @@ This project holds p95 latency for the payments API under 200 ms: profiling, que
 
 项目比单个会话更快地使用您的限制，特别是在 Pro 计划上，您应该期望在运行一个的日子里更快地达到您的限制。项目的这些部分使用您的计划：
 
-* **运行线程**：每个都是一个完整的会话，多个可以同时运行。没有固定数字；Claude 启动工作需要的尽可能多，您[要求](#tune-how-claude-runs-a-project)的限制是偏好而不是上限。强制限制是每天跨您的项目 200 个新线程。
+* **运行线程**：每个都是一个完整的会话，多个可以同时运行。没有固定数字；Claude 启动工作需要的尽可能多，您[要求](#tune-how-claude-runs-a-project)的限制是偏好而不是上限。强制限制是每天跨您的项目 500 个新线程。
 * **对话**：Claude 使用自己的令牌读取线程报告的内容并决定下一步做什么。
 * **线程监视拉取请求**：当 CI 失败或审查评论到达其拉取请求时，空闲线程唤醒并再次使用您的计划。要停止这个，请在线程中要求它停止监视拉取请求。
 
@@ -413,7 +421,7 @@ This project holds p95 latency for the payments API under 200 ms: profiling, que
 
 在 **Project settings** 中打开 **Usage** 以按线程和按模型查看令牌使用，以及有多少进入项目对话。要降低它：
 
-* 路由到已闲置超过[缓存生命周期](https://code.claude.com/docs/zh-CN/prompt-caching.md#cache-lifetime)（Pro 和 Max 在您计划限制内为一小时）的线程的后续，在做任何事情之前重新读取该线程的整个对话。对于新工作，要求 Claude 启动新线程可以使用比恢复大的旧线程更少的。
+* 在 Pro、Max 和 Ultra 计划限制内，[缓存生命周期](https://code.claude.com/docs/zh-CN/prompt-caching.md#cache-lifetime)为一小时。闲置时间超过该时长的线程在收到后续消息时，会先重新读取其整个对话，然后再执行任何操作。对于新工作，请要求 Claude 启动一个新线程，这可能比恢复一个大型旧线程使用得更少。
 * 对于不需要最大模型的工作，为线程、对话或两者[选择更小的模型或更低的努力级别](#choose-models-and-let-claude-manage-context)。
 * 在项目对话中要求 Claude 一次运行更少的线程，或自己回答小问题而不是启动线程。
 
@@ -421,11 +429,13 @@ This project holds p95 latency for the payments API under 200 ms: profiling, que
 
 几个 Claude Code 功能让多个会话同时工作，因此并行运行工作本身不是项目的目的。在项目中，Claude 启动和跟踪会话而不是您，每个都从相同的说明开始。这是每个相邻功能如何连接到项目的方式：
 
-* **Claude Tag**：[Claude Tag](https://claude.com/docs/claude-tag/overview) 是您团队 Slack 频道中的 Claude，在 Team 和 Enterprise 计划上。频道中的任何人都可以给它工作，频道中的每个人都看到并引导它，它使用管理员为该频道设置的连接。项目是您的：您是唯一给它工作或看到其线程的人，它使用您自己的 GitHub 访问和连接器，它在 Pro 和 Max 上。[Claude Tag 与 Cowork 和 Claude Code 的不同之处](https://claude.com/docs/claude-tag/concepts/how-it-works#how-claude-tag-differs-from-cowork-and-claude-code)有并排比较。
-* **云端会话**：每个线程都是一个[云端会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md)，除非您要求 Claude 在您的机器上运行它。无论哪种方式，Claude 启动和跟踪它而不是您。您还可以将自己启动的云端会话的工作带入项目：在该会话的侧边栏菜单中选择 [**Move to project**](#start-from-an-existing-cloud-session)。
+* **Claude Tag**：[Claude Tag](https://claude.com/docs/claude-tag/overview) 是您团队 Slack 频道中的 Claude，在 Team 和 Enterprise 计划上提供。频道中的任何人都可以给它分配工作，频道中的每个人都能看到并引导它，它使用管理员为该频道设置的连接。
+
+  项目在 Pro、Max 和 Ultra 上提供。项目仅属于您一人：您是唯一给它分配工作或看到其线程的人，它使用您自己的 GitHub 访问权限和连接器。[Claude Tag 与 Cowork 和 Claude Code 的不同之处](https://claude.com/docs/claude-tag/concepts/how-it-works#how-claude-tag-differs-from-cowork-and-claude-code)有并排比较。
+* **云端会话**：每个线程都是一个[云端会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md)，除非您要求 Claude 在您的机器上运行它。无论哪种方式，Claude 启动和跟踪它而不是您。您还可以将自己启动的云端会话的工作带入项目：在该会话的侧边栏菜单中选择 [**Continue in project**](#start-from-an-existing-cloud-session)。
 * **定时任务**：当您在项目中请求定时工作时，Claude 会创建一个[云端定时任务](https://code.claude.com/docs/zh-CN/routines.md)，它作为该项目中的线程运行，并显示在项目的 **Scheduled tasks** 标签页上。您在项目之外创建的定时任务会继续独立运行。
 * **Remote Control**：[Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md) 连接 claude.ai 到在您的机器上运行的 Claude Code 会话。当您在项目中要求 Claude 在您的计算机上运行线程时，项目[使用 Remote Control 来执行](#run-a-thread-on-your-own-computer)。
-* **本地会话和代理视图**：您在终端、IDE 或桌面应用的本地环境中启动的会话不能添加到项目中。[代理视图](https://code.claude.com/docs/zh-CN/agent-view.md)是用于跟踪多个本地会话并排的屏幕，您仍然启动每个会话并自己给它分配任务。
+* **本地会话和 Agent 视图**：您自己在终端、IDE 或桌面应用的本地环境中启动的会话不属于您的项目，但您可以[将其工作带入某个项目](#start-from-an-existing-cloud-session)。[Agent 视图](https://code.claude.com/docs/zh-CN/agent-view.md)是用于并排跟踪多个本地会话的屏幕，您仍然需要自己启动每个会话并为其分配任务。
 * **Worktrees**：一个 [worktree](https://code.claude.com/docs/zh-CN/worktrees.md) 为每个本地会话提供其自己的仓库工作副本。云线程不需要它们：每个线程将其仓库克隆到其自己的云沙箱中，并在其自己的分支上工作。
 * **代理团队**：一个[代理团队](https://code.claude.com/docs/zh-CN/agent-teams.md)是一个会话，为单个任务启动队友会话，在您的机器上或在云会话内，并以该任务结束。
 * **Subagents**：一个[subagent](https://code.claude.com/docs/zh-CN/sub-agents.md)在一个会话内运行，在其自己的上下文窗口中执行一个辅助任务，并向该会话返回摘要。项目的线程是 Claude 启动的整个会话，向项目对话报告，一个线程仍然可以为其自己的辅助任务使用 subagents。
@@ -437,10 +447,10 @@ This project holds p95 latency for the payments API under 200 ms: profiling, que
 
 * Projects 在 claude.ai/code、桌面应用和 Claude 移动应用中可用，不在终端 CLI、VS Code 扩展或 JetBrains 插件中，也不通过 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry。
 * 项目线程是[云会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md)，或通过[远程控制](https://code.claude.com/docs/zh-CN/remote-control.md)在您自己的机器上的会话，两种情况下 Anthropic 都是模型提供者。[安全](https://code.claude.com/docs/zh-CN/security.md)和[数据使用](https://code.claude.com/docs/zh-CN/data-usage.md)涵盖了云会话如何隔离以及保留什么，[连接和安全](https://code.claude.com/docs/zh-CN/remote-control.md#connection-and-security)涵盖了您机器上的线程如何连接以及存储什么。
-* 您不能将自己在机器上启动的会话添加到项目中。项目仅通过[在您自己的计算机上通过远程控制运行线程](#run-a-thread-on-your-own-computer)到达您的机器，该部分列出了它需要什么。
+* 您不能将自己在机器上启动的会话添加到项目中，但可以[将其工作带入项目](#start-from-an-existing-cloud-session)。项目通过[在您自己的计算机上通过 Remote Control 运行线程](#run-a-thread-on-your-own-computer)到达您的机器，该部分列出了它需要什么。
 * 云线程的沙箱在轮之间暂停，并在线程继续时恢复。如果沙箱无法恢复，线程从新克隆继续，因此未提交的更改可能会丢失。在长任务上，要求 Claude 提交和推送进行中的工作。
 * 项目属于一个用户。您不能与另一个用户共享项目或其线程，线程记录没有其他云会话具有的共享选项。在测试版期间没有项目的组织级控制。
-* 线程属于启动它的一个项目。您不能将线程移动或复制到另一个项目，或将其移出以独立存在。[**Move to project**](#start-from-an-existing-cloud-session)仅以另一种方式进行：它将云会话的工作带入项目。您不能将两个项目合并为一个。
+* 线程属于启动它的一个项目。您不能将线程移动或复制到另一个项目，或将其移出以独立存在。[**Continue in project**](#start-from-an-existing-cloud-session)仅以另一种方式进行：它将云端会话的工作带入项目。您不能将两个项目合并为一个。
 
 ## 故障排除
 
@@ -484,7 +494,10 @@ Claude 不发布线程采取的每一步，因此显示为运行且项目对话�
 
 ### 与您的文件夹失去联系
 
-在您的计算机上运行的线程在 Claude Code 会话停止响应时显示此消息，通常是因为计算机进入睡眠状态或桌面应用或 `claude remote-control` 退出。唤醒计算机，如果桌面应用或 `claude remote-control` 不再在那里运行，请重新启动它：重新打开应用并确认 **Use this computer from your phone and claude.ai** 仍在 **Settings > Claude Code** 下打开，或在同一文件夹中再次运行 `claude remote-control`。
+在您的计算机上运行的线程在该处的 Claude Code 会话停止响应时显示此消息，通常是因为计算机进入睡眠状态，或桌面应用或 `claude remote-control` 退出。唤醒计算机。如果桌面应用或 `claude remote-control` 不再在那里运行，请重新启动它：
+
+* **桌面应用**：重新打开应用，并确认 **Settings > Code** 或 **Settings > Claude Code** 下的 **Use this computer from your phone and claude.ai** 仍处于打开状态
+* **终端**：在同一文件夹中再次运行 `claude remote-control`
 
 ### 其他消息
 

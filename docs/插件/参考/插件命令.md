@@ -638,7 +638,7 @@ Claude Code 打印所验证的文件、所有错误和警告及其路径，以�
 | 退出码 | 结论行 | 含义 |
 | :- | :- | :- |
 | `0` | `Validation passed` 或 `Validation passed with warnings` | 清单可以加载。使用 `--strict` 时，也没有警告 |
-| `1` | `Validation failed` 或 `Validation failed (--strict treats warnings as errors)` | 存在错误，或在 `--strict` 下存在警告 |
+| `1` | `Validation failed` 或 `Validation failed (--strict treats warnings as errors)` | 存在错误，或在 `--strict` 下存在警告。无论是否使用 `--strict`，[建议](#advice-on-the-readme)都不计入 |
 | `2` | `Unexpected error during validation: <reason>` | 验证器本身失败，例如遇到不可读的路径 |
 
 使用 `--json` 时，Claude Code 将报告作为一个 JSON 对象写入 stdout，包含以下顶级字段：
@@ -647,10 +647,40 @@ Claude Code 打印所验证的文件、所有错误和警告及其路径，以�
 * `strict`：运行是否将警告视为错误
 * `target`：Claude Code 验证的解析后路径
 * `manifest`：清单自身的结果，对于没有清单的运行为 `null`
-* `contents`：每个文件的结果，各自指明其 `file`，并携带 `errors`、`warnings` 和 `notes` 数组
+* `contents`：每个文件的结果，各自指明其 `file`，并携带 `errors`、`warnings` 和 `notes` 数组。没有错误、警告或说明的文件不会有条目，因此没有可报告的内容时 `contents` 为空。对于[同时包含 `marketplace.json` 和 `plugin.json` 的目录](#validate-a-directory)，`manifest` 为 `marketplace.json` 的结果，`plugin.json` 的结果放在 `contents` 中
   * `gatingHooks`：每个可以拒绝操作的 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md) hook（例如 `tool.call` hook）是否具有 [`.catch` 处理程序](https://code.claude.com/docs/zh-CN/plugins/mods/events#handle-a-hook-that-fails)。每一项给出 `module`、`pattern`、`hook` 和 `hasCatch`。需要 Claude Code v2.1.290 或更高版本
+* `advice`：本次运行给出的[建议](#advice-on-the-readme)，每个条目以 `file` 指明 README，并携带 `message` 以及要粘贴的 `installLine`。没有建议时为空。需要 Claude Code v2.1.295 或更高版本
 
 以 `2` 退出时，命令不向 stdout 写入任何内容。错误消息输出到 stderr。
+
+#### 关于 README 的建议
+
+`claude plugin validate` 输出中的 `Advice` 块表示某个插件的 README 中没有从市场安装该插件的行，并为您提供一行可添加的内容。建议既不是错误也不是警告。无论是否使用 `--strict`，它都不会改变结论行或退出码。它需要 Claude Code v2.1.295 或更高版本。
+
+例如，验证 `acme-tools` 市场的目录时，会为其 `deploy-helper` 插件打印以下建议：
+
+```text theme={null}
+Validating marketplace manifest: /path/to/acme-tools/.claude-plugin/marketplace.json
+
+ℹ Advice (does not change the verdict):
+
+  ❯ /path/to/acme-tools/plugins/deploy-helper/README.md: This README has no line that installs "deploy-helper" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later.
+      /plugin install deploy-helper --marketplace acme/tools
+
+✔ Validation passed
+```
+
+要清除该建议，请将建议的行粘贴到其指出的 README 中，然后在 shell 中再次运行 `claude plugin validate`。`Advice` 块将消失。
+
+如果建议的行包含占位符 `<owner>/<repo>`，原样粘贴不会清除该建议。请先获取真实来源：
+
+* **您验证的是插件自身的目录**：当市场从其自身内部的某个目录列出该插件时，请改为验证该市场的目录。当市场从其他位置（例如 GitHub 仓库）列出该插件时，请自行填写 `<owner>/<repo>`
+* **您验证的是市场的目录**：Claude Code 会根据该目录顶层 `.git` 目录的 `origin` 远程填写来源。当无法使用该远程时（例如不存在远程），请自行将 `<owner>/<repo>` 替换为您市场的来源
+
+当 `plugin install` 或其简写形式 `plugin i` 在同一行后接以下任一内容时，您已编写的安装行会被计入。`/plugin` 和 `claude plugin` 两种写法都计入：
+
+* `<plugin>@<marketplace>`，例如 `/plugin install deploy-helper@acme-tools`
+* 插件名称和 `--marketplace <source>`，例如 `/plugin install deploy-helper --marketplace acme/tools`
 
 ## claude plugin marketplace 命令
 

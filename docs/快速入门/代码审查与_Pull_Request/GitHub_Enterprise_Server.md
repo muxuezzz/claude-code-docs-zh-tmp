@@ -221,6 +221,15 @@ Claude Code 在本地安装这些市场：它注册每个条目并使用机器�
 
 如果审查或 Anthropic 托管的云会话超时，您的 GHES 实例可能无法从 Anthropic 基础设施访问。确认您的防火墙允许来自 Anthropic 的 [出站 IP 地址](https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses) 的入站连接。[自托管环境](https://code.claude.com/docs/zh-CN/self-hosted-environments) 中的会话从您的网络内部访问 GHES，因此当其中一个无法克隆时，请改为检查运行器自己的网络路径。对于存储库选择器和其他托管的会话前流程，请参阅 [网络要求](#network-requirements)。
 
+### 连接测试通过但第二项测试失败
+
+第二项测试以 Anthropic 托管的云端会话的方式连接到您的 GHES 实例。根据您看到的消息，确定应检查防火墙还是重试：
+
+* **`Connection test passed, but a second test failed.`**：如果您的实例位于防火墙之后，请允许 Anthropic 的所有 [出站 IP 地址](https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses)，因为即使防火墙阻止了其中部分地址，连接测试也可能通过。您也可以在几分钟后重试。
+* **`Connection test passed, but a second test could not run.`**：请在几分钟后重试。
+
+要再次测试，请在 [**Organization settings > Git providers**](https://claude.ai/admin-settings/source-control#github-enterprise) 中打开该连接的 **More options** 菜单，然后选择 **Test connection**。
+
 ### 会话启动失败，显示 `Unable to get organization UUID`
 
 Claude Code 无法从您的凭据中读取 claude.ai 组织。使用 `/login` 登录，使用您的 Team 或 Enterprise 组织中的账户，因为 GitHub Enterprise Server 支持仅限于这些计划。有关原因和此状态产生的其他消息，请参阅 [Unable to get organization UUID](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#unable-to-get-organization-uuid)。

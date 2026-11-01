@@ -66,7 +66,7 @@ Skills、子代理、hooks 和 MCP 服务器都可以独立工作，无需插件
 >
 > 插件市场不是 [Claude Marketplace](https://claude.com/marketplace)。Claude Marketplace 是 claude.com/marketplace 上的网站，您可以在其中浏览插件、连接器、合作伙伴产品和服务合作伙伴。它不是您使用 `/plugin marketplace add` 添加的市场。
 
-Claude Code 在您第一次启动交互式终端会话时添加 Anthropic 的官方市场，除非[托管策略](https://code.claude.com/docs/zh-CN/plugins/org.md#allow-the-official-marketplace-and-your-own)阻止它。Claude Code 不会自行添加 Anthropic 的社区和演示市场。要区分三个 Anthropic 市场，请阅读 [Anthropic 的市场](https://code.claude.com/docs/zh-CN/plugins/anthropic-marketplaces.md)。要查看官方市场列出的内容，请在会话中打开 `/plugin` 的**发现**选项卡，或浏览 [Claude Marketplace](https://claude.com/marketplace/plugins)。
+Claude Code 在您第一次启动交互式终端会话时添加 Anthropic 的官方市场，除非[托管策略](https://code.claude.com/docs/zh-CN/plugins/org.md#allow-the-official-marketplace-and-your-own)阻止它。Claude Code 不会自行添加 Anthropic 的社区市场。要区分 Anthropic 的各个市场，请阅读 [Anthropic 的市场](https://code.claude.com/docs/zh-CN/plugins/anthropic-marketplaces.md)。要查看官方市场列出的内容，请在会话中打开 `/plugin` 的**发现**选项卡，或浏览 [Claude Marketplace](https://claude.com/marketplace/plugins)。
 
 此图显示了从市场到您的会话的路径。市场列出一个插件，您安装该插件，Claude Code 加载其组件。
 
@@ -88,7 +88,7 @@ Claude Code 在您第一次启动交互式终端会话时添加 Anthropic 的官
 
 市场的名称将其放在三个层级之一中。Claude Code 仅接受来自 `github.com/anthropics/` 存储库的官方和社区名称：
 
-* **官方**：具有 Anthropic [官方市场名称](https://code.claude.com/docs/zh-CN/plugins/security.md#official-marketplace-names)之一的市场，包括 `claude-plugins-official` 和演示市场 `claude-code-plugins`。
+* **官方**：具有 Anthropic [官方市场名称](https://code.claude.com/docs/zh-CN/plugins/security.md#official-marketplace-names)之一的市场，包括 `claude-plugins-official` 和 `claude-code-plugins`。
 * **社区**：具有 Anthropic 社区名称之一的市场，例如 `claude-community`。[按名称识别 Anthropic 的市场](https://code.claude.com/docs/zh-CN/plugins/security.md#marketplace-tiers)列出了它们。
 * **第三方**：所有其他市场。您的同事或您的组织发布的市场是第三方。
 

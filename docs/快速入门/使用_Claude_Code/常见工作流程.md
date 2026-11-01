@@ -500,18 +500,18 @@ git log --oneline -20 | claude -p "summarize these recent commits"
 
 ## 后续步骤
 
-> **[最佳实践](https://code.claude.com/docs/zh-CN/best-practices.md)**
+> [card] [最佳实践](https://code.claude.com/docs/zh-CN/best-practices.md)
 >
 > 充分利用 Claude Code 的模式
 
-> **[管理会话](https://code.claude.com/docs/zh-CN/sessions.md)**
+> [card] [管理会话](https://code.claude.com/docs/zh-CN/sessions.md)
 >
 > 恢复、命名和分支对话
 
-> **[Worktrees](https://code.claude.com/docs/zh-CN/worktrees.md)**
+> [card] [Worktrees](https://code.claude.com/docs/zh-CN/worktrees.md)
 >
 > 运行隔离的并行会话
 
-> **[扩展 Claude Code](https://code.claude.com/docs/zh-CN/features-overview.md)**
+> [card] [扩展 Claude Code](https://code.claude.com/docs/zh-CN/features-overview.md)
 >
 > 添加 skills、hooks、MCP、subagents 和插件

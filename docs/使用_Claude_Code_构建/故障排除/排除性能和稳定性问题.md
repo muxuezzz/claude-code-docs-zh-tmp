@@ -134,37 +134,37 @@ echo $VTE_VERSION
 
 如果搜索工具、`@file` 提及、自定义代理或自定义 skills 找不到文件，捆绑的 `ripgrep` 二进制文件可能无法在您的系统上运行。安装您平台的 `ripgrep` 包并告诉 Claude Code 改用它：
 
-**macOS**
+> [tab] macOS
+>
+> ```bash theme={null}
+> brew install ripgrep
+> ```
 
-```bash theme={null}
-brew install ripgrep
-```
+> [tab] Ubuntu/Debian
+>
+> ```bash theme={null}
+> sudo apt install ripgrep
+> ```
 
-**Ubuntu/Debian**
+> [tab] Alpine
+>
+> ```bash theme={null}
+> apk add ripgrep
+> ```
+>
+> `ripgrep` 在 Alpine 的社区存储库中。如果 `apk` 报告包缺失，请参阅 [Alpine Linux 设置](https://code.claude.com/docs/zh-CN/setup.md#alpine-linux-and-musl-based-distributions)。
 
-```bash theme={null}
-sudo apt install ripgrep
-```
+> [tab] Arch
+>
+> ```bash theme={null}
+> pacman -S ripgrep
+> ```
 
-**Alpine**
-
-```bash theme={null}
-apk add ripgrep
-```
-
-`ripgrep` 在 Alpine 的社区存储库中。如果 `apk` 报告包缺失，请参阅 [Alpine Linux 设置](https://code.claude.com/docs/zh-CN/setup.md#alpine-linux-and-musl-based-distributions)。
-
-**Arch**
-
-```bash theme={null}
-pacman -S ripgrep
-```
-
-**Windows**
-
-```powershell theme={null}
-winget install BurntSushi.ripgrep.MSVC
-```
+> [tab] Windows
+>
+> ```powershell theme={null}
+> winget install BurntSushi.ripgrep.MSVC
+> ```
 
 然后在您的 shell [环境](https://code.claude.com/docs/zh-CN/env-vars.md)中或在您的 [`settings.json`](https://code.claude.com/docs/zh-CN/settings-reference#all-settings) 的 `env` 块中将 `USE_BUILTIN_RIPGREP` 设置为 `0`：
 

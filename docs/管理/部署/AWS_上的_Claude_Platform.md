@@ -55,7 +55,7 @@ export AWS_PROFILE=my-profile
 }
 ```
 
-Claude Code 在启动时如果无法验证您现有的 AWS 凭证，也会运行此命令，并在 `Authentication` 面板中显示命令的输出，直到登录完成。
+Claude Code 在启动时如果无法验证您现有的 AWS 凭据，也会运行此命令，并在 `Authentication` 面板中显示命令的输出，直到登录完成。
 
 配置了 `awsAuthRefresh` 后，运行 `/login`，选择 **3rd-party platform**，然后在 **Using 3rd-party platforms** 下选择 **Claude Platform on AWS · refresh credentials**。Claude Code 运行配置的命令并重新读取您的 AWS 凭证，无需重启。
 
@@ -95,7 +95,7 @@ Claude Code 从 AWS 区域计算基础 URL 为 `https://aws-external-anthropic.{
 
 AWS 上的 Claude Platform 使用与直接 Claude API 相同的模型 ID。
 
-默认别名 `fable`、`opus`、`sonnet` 和 `haiku` 解析为 Claude Code 为 AWS 上的 Claude Platform 内置的默认值，这些值可能滞后于最新版本。如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，`opus` 别名解析为 Opus 5.5。在 v2.1.280 之前，它从 v2.1.219 开始解析为 Opus 5，从 v2.1.207 开始解析为 Opus 4.8。
+默认别名 `fable`、`opus`、`sonnet` 和 `haiku` 解析为 Claude Code 为 AWS 上的 Claude Platform 内置的默认值，这些值可能滞后于最新版本。如果没有 `ANTHROPIC_DEFAULT_OPUS_MODEL`，`opus` 别名解析为 Opus 5.5。在 v2.1.280 之前，它从 v2.1.219 开始解析为 Opus 5。
 
 如果您将 Claude Code 部署到团队，请显式固定模型 ID，以便新版本不会一次性移动所有人：
 

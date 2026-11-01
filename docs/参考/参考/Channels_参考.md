@@ -52,13 +52,13 @@ Channel 是一个在与 Claude Code 相同的机器上运行的 [MCP](https://mo
 
 ## 示例：构建 webhook 接收器
 
-本演练构建一个单文件服务器，该服务器侦听 HTTP 请求并将其转发到您的 Claude Code 会话中。最后，任何可以发送 HTTP POST 的东西，如 CI 管道、监控警报或 `curl` 命令，都可以将事件推送到 Claude。
+本演练将构建一个单文件服务器，它监听 HTTP 请求并将其转发到您的 Claude Code 会话中。完成后，任何能够发送 HTTP POST 的对象，例如 CI 流水线、监控告警或 `curl` 命令，都可以向 Claude 推送事件。
 
-此示例使用 [Bun](https://bun.sh) 作为运行时，用于其内置的 HTTP 服务器和 TypeScript 支持。您可以改用 [Node](https://nodejs.org) 或 [Deno](https://deno.com)；唯一的要求是 [MCP SDK](https://www.npmjs.com/package/@modelcontextprotocol/sdk)。
+本示例使用 [Bun](https://bun.sh) 作为运行时，因为它内置了 HTTP 服务器和 TypeScript 支持。您也可以改用 [Node](https://nodejs.org) 或 [Deno](https://deno.com)；唯一的要求是 [MCP SDK](https://www.npmjs.com/package/@modelcontextprotocol/sdk)。
 
 **1. 创建项目**
 
-[permission relay](#relay-permission-prompts) 示例直接导入 `zod`，因此它与 MCP SDK 一起安装。创建一个新目录并安装两者：
+[权限中继](#relay-permission-prompts)示例会直接导入 `zod`，因此需要将其与 MCP SDK 一起安装。创建一个新目录并安装两者：
 
 ```bash theme={null}
 mkdir webhook-channel && cd webhook-channel
@@ -67,39 +67,39 @@ bun add @modelcontextprotocol/sdk zod
 
 **2. 编写频道服务器**
 
-创建一个名为 `webhook.ts` 的文件。这是您的整个频道服务器：它通过 stdio 连接到 Claude Code，并在端口 8788 上侦听 HTTP POST。当请求到达时，它将主体作为频道事件推送到 Claude。
+创建一个名为 `webhook.ts` 的文件。这就是您的整个频道服务器：它通过 stdio 连接到 Claude Code，并在端口 8788 上监听 HTTP POST。当请求到达时，它会将请求体作为频道事件推送给 Claude。
 
 ```ts title="webhook.ts" theme={null}
 #!/usr/bin/env bun
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
-// 创建 MCP 服务器并将其声明为频道
+// Create the MCP server and declare it as a channel
 const mcp = new Server(
   { name: 'webhook', version: '0.0.1' },
   {
-    // 这个键使其成为频道 — Claude Code 为其注册侦听器
+    // this key is what makes it a channel — Claude Code registers a listener for it
     capabilities: { experimental: { 'claude/channel': {} } },
-    // Claude Code 在服务器连接时将其传递给 Claude 作为上下文，以便它知道如何处理这些事件
+    // Claude Code delivers this to Claude as context when the server connects, so it knows how to handle these events
     instructions: 'Events from the webhook channel arrive as <channel source="webhook" ...>. They are one-way: read them and act, no reply expected.',
   },
 )
 
-// 通过 stdio 连接到 Claude Code（Claude Code 生成此进程）
+// Connect to Claude Code over stdio (Claude Code spawns this process)
 await mcp.connect(new StdioServerTransport())
 
-// 启动一个 HTTP 服务器，将每个 POST 转发给 Claude
+// Start an HTTP server that forwards every POST to Claude
 Bun.serve({
-  port: 8788,  // 任何开放端口都可以
-  // 仅限本地主机：此机器外的任何东西都无法 POST
+  port: 8788,  // any open port works
+  // localhost-only: nothing outside this machine can POST
   hostname: '127.0.0.1',
   async fetch(req) {
     const body = await req.text()
     await mcp.notification({
       method: 'notifications/claude/channel',
       params: {
-        content: body,  // 成为 <channel> 标签的主体
-        // 每个键都成为标签属性，例如 <channel path="/" method="POST">
+        content: body,  // becomes the body of the <channel> tag
+        // each key becomes a tag attribute, e.g. <channel path="/" method="POST">
         meta: { path: new URL(req.url).pathname, method: req.method },
       },
     })
@@ -108,15 +108,15 @@ Bun.serve({
 })
 ```
 
-该文件按顺序配置服务器、连接和启动 HTTP 侦听器：
+该文件依次配置服务器、通过 stdio 连接，并启动 HTTP 监听器：
 
-* **服务器配置**：使用 `claude/channel` 在其能力中创建 MCP 服务器，这是告诉 Claude Code 这是一个频道的原因。Claude Code 在服务器连接时将 [`instructions`](#server-options) 字符串传递给 Claude 作为上下文：告诉 Claude 期望什么事件、是否回复以及如果应该回复，如何路由回复。
-* **Stdio 连接**：通过 stdin/stdout 连接到 Claude Code。这对任何 [MCP 服务器](https://modelcontextprotocol.io/docs/concepts/transports#standard-io) 都是标准的。
-* **HTTP 侦听器**：在端口 8788 上启动本地 Web 服务器。每个 POST 主体都通过 `mcp.notification()` 作为频道事件转发给 Claude。`content` 成为事件主体，每个 `meta` 条目成为 `<channel>` 标签上的属性。侦听器需要访问 `mcp` 实例，因此它在同一进程中运行。对于更大的项目，您可以将其拆分为单独的模块。
+* **服务器配置**：创建在其 capabilities 中包含 `claude/channel` 的 MCP 服务器，正是这一点告诉 Claude Code 这是一个频道。服务器连接时，Claude Code 会将 [`instructions`](#server-options) 字符串作为上下文传递给 Claude：告诉 Claude 应预期哪些事件、是否需要回复，以及如需回复应如何路由回复。
+* **Stdio 连接**：通过 stdin/stdout 连接到 Claude Code。这对任何 [MCP 服务器](https://modelcontextprotocol.io/docs/concepts/transports#standard-io)来说都是标准做法。
+* **HTTP 监听器**：在端口 8788 上启动本地 Web 服务器。每个 POST 请求体都会通过 `mcp.notification()` 作为频道事件转发给 Claude。`content` 成为事件正文，每个 `meta` 条目成为 `<channel>` 标签上的一个属性。监听器需要访问 `mcp` 实例，因此它在同一进程中运行。对于较大的项目，您可以将其拆分为单独的模块。
 
 **3. 向 Claude Code 注册您的服务器**
 
-将服务器添加到您的 MCP 配置中，以便 Claude Code 知道如何启动它。对于同一目录中的项目级 `.mcp.json`，使用相对路径。对于 `~/.claude.json` 中的用户级配置，使用完整的绝对路径，以便可以从任何项目找到服务器：
+将服务器添加到您的 MCP 配置中，以便 Claude Code 知道如何启动它。对于同一目录中的项目级 `.mcp.json`，请使用相对路径。对于 `~/.claude.json` 中的用户级配置，请使用完整的绝对路径，以便从任何项目都能找到该服务器：
 
 ```json title=".mcp.json" theme={null}
 {
@@ -126,33 +126,33 @@ Bun.serve({
 }
 ```
 
-Claude Code 在启动时读取您的 MCP 配置并将每个服务器作为子进程生成。
+Claude Code 在启动时读取您的 MCP 配置，并将每个服务器作为子进程启动。
 
-**4. 测试它**
+**4. 测试**
 
-在研究预览期间，自定义频道不在允许列表上，因此使用开发标志启动 Claude Code：
+在研究预览期间，自定义频道不在允许列表中，因此请使用开发标志启动 Claude Code：
 
 ```bash theme={null}
 claude --dangerously-load-development-channels server:webhook
 ```
 
-Claude Code 首先显示一个全屏警告对话框，列出您正在加载的开发频道。选择**我正在使用此进行本地开发**继续，或选择**退出**退出。
+Claude Code 首先会显示一个全屏警告对话框，列出您正在加载的开发频道。选择 **I am using this for local development** 继续，或选择 **Exit** 退出。
 
-第一次在此项目中启动会话时，Claude Code 在使用来自 `.mcp.json` 的新服务器之前也会要求同意。对话框报告"在此项目中找到新的 MCP 服务器：webhook"。选择**使用此 MCP 服务器**继续。
+当您首次在此项目中启动会话时，Claude Code 还会在使用 `.mcp.json` 中的新服务器之前征求您的同意。对话框会显示"New MCP server found in this project: webhook"。选择 **Use this MCP server** 继续。
 
-接受后，Claude Code 将您的 `webhook.ts` 作为子进程生成，HTTP 侦听器自动在您配置的端口上启动（此示例中为 8788）。您不需要自己运行服务器。
+接受后，Claude Code 会将您的 `webhook.ts` 作为子进程启动，HTTP 监听器会在您配置的端口（本示例中为 8788）上自动启动。您无需自行运行服务器。
 
-启动横幅下方的暗淡通知确认频道已注册：`Channels (experimental) messages from server:webhook inject directly in this session · restart without --dangerously-load-development-channels to stop`。
+启动横幅下方的一条暗色提示会确认频道已注册：`Channels (experimental) messages from server:webhook inject directly in this session · restart without --dangerously-load-development-channels to stop`。
 
-如果您看到"被组织政策阻止"，您的组织管理员需要[启用频道](https://code.claude.com/docs/zh-CN/channels.md#enterprise-controls)。
+如果您看到"blocked by org policy"，则需要您的组织管理员先[启用频道](https://code.claude.com/docs/zh-CN/channels.md#enterprise-controls)。
 
-在单独的终端中，通过向您的服务器发送带有消息的 HTTP POST 来模拟 webhook。此示例向端口 8788 发送 CI 失败警报（或您配置的任何端口）：
+在另一个终端中，通过向服务器发送带有消息的 HTTP POST 来模拟 webhook。本示例向端口 8788（或您配置的任何端口）发送一条 CI 失败告警：
 
 ```bash theme={null}
 curl -X POST localhost:8788 -d "build failed on main: https://ci.example.com/run/1234"
 ```
 
-有效负载作为 `<channel>` 标签到达 Claude 的上下文中：
+负载会以 `<channel>` 标签的形式到达 Claude 的上下文：
 
 ```text theme={null}
 <channel source="webhook" path="/" method="POST">
@@ -160,14 +160,14 @@ build failed on main: https://ci.example.com/run/1234
 </channel>
 ```
 
-您的终端将事件呈现为单行摘要 `← webhook: build failed on main: https://ci.example.com/run/1234`，而不是原始标签。然后您会看到 Claude 开始响应：读取文件、运行命令或消息要求的任何操作。这是一个单向频道，因此 Claude 在您的会话中行动，但不会通过 webhook 发送任何内容回复。要添加回复，请参阅[公开回复工具](#expose-a-reply-tool)。
+您的终端会将该事件渲染为单行摘要 `← webhook: build failed on main: https://ci.example.com/run/1234`，而不是原始标签。随后您会看到 Claude 开始响应：读取文件、运行命令，或执行消息所要求的任何操作。这是一个单向频道，因此 Claude 会在您的会话中采取行动，但不会通过 webhook 发回任何内容。要添加回复功能，请参阅[公开回复工具](#expose-a-reply-tool)。
 
-如果事件没有到达，诊断取决于 `curl` 返回的内容：
+如果事件没有到达，诊断方法取决于 `curl` 返回的结果：
 
-* **`curl` 成功但没有任何内容到达 Claude**：在您的会话中运行 `/mcp` 以检查服务器的状态。`failed` 状态通常意味着您的服务器文件中存在依赖项或导入错误。要查看 stderr 跟踪，请使用 `claude --debug --dangerously-load-development-channels server:webhook` 重新启动，并检查 `~/.claude/debug/<session-id>.txt` 处的调试日志。
-* **`curl` 失败，显示"connection refused"**：端口要么尚未绑定，要么来自较早运行的陈旧进程正在占用它。`lsof -i :<port>` 显示正在侦听的内容；在重新启动会话之前 `kill` 陈旧进程。
+* **`curl` 成功但没有任何内容到达 Claude**：在会话中运行 `/mcp` 检查服务器状态。`failed` 状态通常表示服务器文件中存在依赖或导入错误。要查看 stderr 跟踪信息，请使用 `claude --debug --dangerously-load-development-channels server:webhook` 重新启动，并检查位于 `~/.claude/debug/<session-id>.txt` 的调试日志。
+* **`curl` 失败并显示"connection refused"**：端口要么尚未绑定，要么被先前运行遗留的进程占用。`lsof -i :<port>` 可显示正在监听的进程；在重新启动会话之前，请先 `kill` 掉遗留进程。
 
-[fakechat 服务器](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/fakechat)使用 Web UI、文件附件和用于双向聊天的回复工具扩展此模式。
+[fakechat 服务器](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/fakechat)在此模式的基础上进行了扩展，增加了 Web UI、文件附件以及用于双向聊天的回复工具。
 
 ## 在研究预览期间测试
 
@@ -581,10 +581,11 @@ async function onInbound(message: PlatformMessage) {
 }
 ```
 
-不完全匹配预期格式的远程回复以两种方式之一失败，在两种情况下对话都保持打开：
+如果远程回复没有任何效果，且本地终端对话保持打开，请检查以下原因：
 
-* **不同格式**：您的入站处理程序的正则表达式无法匹配，因此 `approve it` 或 `yes` 之类的文本（没有 ID）会作为正常消息落入 Claude。
-* **正确格式，错误的 ID**：您的服务器发出判决，但 Claude Code 找不到具有该 ID 的开放请求并静默删除它。
+* **格式错误**：您的入站处理程序的正则表达式无法匹配，因此 `approve it` 或 `yes` 之类的文本（没有 ID）会作为正常消息落入 Claude。
+* **ID 错误**：您的服务器发出判决，但 Claude Code 找不到具有该 ID 的开放请求并静默删除它。
+* **该 ID 已被较早的提示使用**：您的服务器使用请求中的 ID 发出判决，但会话中较早的提示具有相同的 ID。一旦 ID 重复，Claude Code 会删除携带该 ID 的任何频道判决，以便针对一个提示的回复无法批准另一个提示。ID 是五个随机字母，因此重复很少见。请改为在终端中回答。
 
 ### 完整示例
 

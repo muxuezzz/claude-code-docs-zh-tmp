@@ -403,7 +403,7 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 
 下面的手风琴演示了如何针对其他允许列表和拒绝列表组合评估服务器。
 
-> **仅 URL 允许列表**
+> [accordion] 仅 URL 允许列表
 >
 > ```json theme={null}
 > {
@@ -421,7 +421,7 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 > | `https://external.example.com/mcp` 处的 HTTP 服务器 | 阻止：不匹配任何 URL 模式 |
 > | 具有任何命令的 Stdio 服务器 | 阻止：没有名称或命令条目可匹配 |
 
-> **仅命令允许列表**
+> [accordion] 仅命令允许列表
 >
 > ```json theme={null}
 > {
@@ -437,7 +437,7 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 > | 具有 `["node", "server.js"]` 的 Stdio 服务器 | 阻止：不匹配命令 |
 > | 名为 `my-api` 的 HTTP 服务器 | 阻止：没有名称条目可匹配 |
 
-> **混合名称和命令允许列表**
+> [accordion] 混合名称和命令允许列表
 >
 > ```json theme={null}
 > {
@@ -456,7 +456,7 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 > | 名为 `github` 的 HTTP 服务器 | 允许：匹配名称 |
 > | 名为 `other-api` 的 HTTP 服务器 | 阻止：名称不匹配 |
 
-> **仅名称允许列表**
+> [accordion] 仅名称允许列表
 >
 > ```json theme={null}
 > {
@@ -474,7 +474,7 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 > | 名为 `github` 的 HTTP 服务器 | 允许：匹配名称 |
 > | 任何名为 `other` 的服务器 | 阻止：名称不匹配 |
 
-> **带拒绝列表覆盖的允许列表**
+> [accordion] 带拒绝列表覆盖的允许列表
 >
 > ```json theme={null}
 > {
@@ -510,22 +510,22 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 
 当 `allowManagedMcpServersOnly` 为 `true` 时，来自用户、项目和本地设置的允许列表被忽略。拒绝列表仍然从每个设置范围合并，因此用户总是可以为自己阻止服务器。
 
-## 限制如何向用户显示
+## 限制如何向用户呈现
 
-关于当部署 `managed-mcp.json` 且会话也有 `--mcp-config` 服务器时用户在启动时看到的内容，请参阅[使用 managed-mcp.json 的独占控制](#exclusive-control-with-managed-mcp-json)。使用此表格来识别其他报告，并在推出更改之前告诉用户应该期望什么：
+关于部署了 `managed-mcp.json` 且会话中同时存在 `--mcp-config` 服务器时用户在启动时看到的内容，请参阅[使用 managed-mcp.json 进行独占控制](#exclusive-control-with-managed-mcp-json)。使用下表识别其他报告，并在推出变更之前告知用户预期会看到什么：
 
 | 限制 | 用户看到的内容 |
 | :- | :- |
-| `managed-mcp.json` 存在且用户运行 `claude mcp add` | `Cannot add MCP server: enterprise MCP configuration is active and has exclusive control over MCP servers` |
-| `managed-mcp.json` 存在且可以在 Chrome 中运行 Claude 的用户运行 `claude --chrome` | Claude Code 在启动时退出，显示 `Claude in Chrome is blocked by your organization's managed MCP configuration (managed-mcp.json). An administrator can allow it with allowClaudeInChromeWithManagedMcp in device policy.` |
-| 服务器在拒绝列表上且用户运行 `claude mcp add` | `Cannot add MCP server "<name>": server is explicitly blocked by enterprise policy` |
-| 服务器不在允许列表上且用户运行 `claude mcp add` | `Cannot add MCP server "<name>": not allowed by enterprise policy` |
+| 存在 `managed-mcp.json`，且用户运行 `claude mcp add` | `Cannot add MCP server: enterprise MCP configuration is active and has exclusive control over MCP servers` |
+| 存在 `managed-mcp.json`，且原本可以运行 Claude in Chrome 的用户运行 `claude --chrome` | Claude Code 在启动时退出，并显示 `Claude in Chrome is blocked by your organization's managed MCP configuration (managed-mcp.json). An administrator can allow it with allowClaudeInChromeWithManagedMcp in device policy.` |
+| 服务器位于拒绝列表中，且用户运行 `claude mcp add` | `Cannot add MCP server "<name>": server is explicitly blocked by enterprise policy` |
+| 服务器不在允许列表中，且用户运行 `claude mcp add` | `Cannot add MCP server "<name>": not allowed by enterprise policy` |
 | [`strictPluginOnlyCustomization`](https://code.claude.com/docs/zh-CN/settings-reference#strictpluginonlycustomization) 为 `true` 或包含 `mcp`，且用户运行 `claude mcp add` | [`Cannot add MCP server: your organization's managed settings allow only MCP servers that plugins provide`](https://code.claude.com/docs/zh-CN/errors#cannot-add-mcp-server-when-managed-settings-allow-only-plugin-servers) |
-| 用户在来自 `managedMcpServers` 的服务器上运行 `claude mcp remove` | `MCP server "<name>" is provided by your organization (managed settings) and cannot be removed locally.` |
-| 之前配置的服务器现在被策略阻止 | 服务器从 `/mcp` 和 `claude mcp list` 中消失 |
-| 服务器在会话运行时被阻止，用户选择**重新连接**或在 `/mcp` 中将其重新打开 | [`MCP server <name> is blocked by enterprise managed policy`](https://code.claude.com/docs/zh-CN/errors#mcp-server-is-blocked-by-enterprise-managed-policy) |
+| 用户对来自 `managedMcpServers` 的服务器运行 `claude mcp remove` | `MCP server "<name>" is provided by your organization (managed settings) and cannot be removed locally.` |
+| 先前已配置的服务器现在被策略阻止 | 该服务器从 `/mcp` 和 `claude mcp list` 中消失 |
+| 服务器在会话运行期间被阻止，且用户在 `/mcp` 中选择 **Reconnect** 或将其重新启用 | [`MCP server <name> is blocked by enterprise managed policy`](https://code.claude.com/docs/zh-CN/errors#mcp-server-is-blocked-by-enterprise-managed-policy) |
 
-当服务器无声地消失时，用户无法获得策略是原因的信号，因此在推出新限制时，告诉受影响的用户哪些服务器被阻止。
+当服务器静默消失时，用户不会收到任何提示表明原因是策略，因此在推出新限制时，请告知受影响的用户哪些服务器被阻止。
 
 ## 监控 MCP 使用情况
 

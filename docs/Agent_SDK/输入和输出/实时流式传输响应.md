@@ -118,7 +118,10 @@ ResultMessage - final result
 
 ### 处理被中断的流
 
-如果流在消息中途被中断，例如当您中断该轮次或连接断开时，您仍会在该轮次结束前收到该消息的 `message_stop`。被中断的文本块或思考块也会收到其 `content_block_stop`。被中断的工具调用则不会，因此如果 `message_stop` 到达时某个工具调用的块仍处于打开状态，请将该调用的输入视为不完整。
+如果流在消息中途被中断，您仍会在该轮次结束前收到该消息的 `message_stop`。导致流被中断的原因包括轮次被中断、连接断开以及回退到非流式请求。在该 `message_stop` 之前，`content_block_stop` 和 `message_delta` 可能会缺失：
+
+* **`content_block_stop`**：会为处于打开状态的块到达，除非该块是工具调用。如果 `message_stop` 到达时某个工具调用的块仍处于打开状态，请将该调用的输入视为不完整。
+* **`message_delta`**：在您中断该轮次时会到达，而在连接断开或回退到非流式请求后可能会缺失，因此对于被中断的消息，请勿等待它。
 
 在 Claude Code v2.1.290 之前，被中断的流可能会在没有 `message_stop` 的情况下结束轮次，因此您根据流事件渲染的回复可能会一直显示为进行中。TypeScript Agent SDK 从 v0.3.290 起捆绑 Claude Code v2.1.290 或更高版本，Python Agent SDK 则从 v0.2.164 起捆绑。如果轮次结束后回复仍显示为进行中，请更新 SDK。
 

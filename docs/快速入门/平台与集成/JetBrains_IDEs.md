@@ -41,7 +41,7 @@ Claude Code 插件适用于大多数 JetBrains IDE，包括：
 
 如果 `claude` 安装在您的 IDE 找不到的位置，请在插件的 [Claude 命令设置](#general-settings)中设置完整路径。
 
-Claude Code 适用于任何付费 Claude 订阅（Pro、Max、Team 或 Enterprise）或 Claude Console 账户，无需 API 密钥。首次运行 `claude` 时，系统会提示您[登录](https://code.claude.com/docs/zh-CN/authentication.md#log-in-to-claude-code)。
+Claude Code 适用于任何付费 Claude 订阅（Pro、Max、Ultra、Team 或 Enterprise）或 Claude Console 账户，无需 API 密钥。首次运行 `claude` 时，系统会提示您[登录](https://code.claude.com/docs/zh-CN/authentication.md#log-in-to-claude-code)。
 
 ## 使用
 

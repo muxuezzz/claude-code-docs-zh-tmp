@@ -39,7 +39,7 @@ Claude [iOS](https://apps.apple.com/us/app/claude-by-anthropic/id6473753684) 和
 | [云会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md) | 云基础设施上的会话，默认由 Anthropic 托管 | 您的存储库在 GitHub 上，任务应在您放下手机后继续运行。请参阅[云快速入门](https://code.claude.com/docs/zh-CN/web-quickstart.md)进行设置。 |
 | [项目](https://code.claude.com/docs/zh-CN/claude-projects.md) | Claude 协调平行工作线程并报告回复的对话 | 您有一系列相关工作而不是一个任务，并且想要查看哪些线程已完成或需要您。 |
 | [远程控制](https://code.claude.com/docs/zh-CN/remote-control.md) | 在您的计算机上运行的 Claude Code 会话 | 工作需要您的本地文件系统、工具或 MCP 服务器。 |
-| [Dispatch](https://code.claude.com/docs/zh-CN/desktop.md#sessions-from-dispatch) | 您计算机上的桌面应用程序 | 您想消息传递一个任务，让 Dispatch 决定如何运行它。需要 Pro 或 Max 计划。 |
+| [Dispatch](https://code.claude.com/docs/zh-CN/desktop.md#sessions-from-dispatch) | 您计算机上的桌面应用程序 | 您想消息传递一个任务，让 Dispatch 决定如何运行它。需要 Pro、Max 或 Ultra 计划。 |
 
 如果您的计算机将关闭，请使用云会话或项目，它们在云中运行，并在您的笔记本电脑关闭后继续运行。远程控制和 Dispatch 驱动您自己的机器，因此它需要保持打开状态并运行 Claude Code 或桌面应用程序。如果您的机器在远程控制会话期间进入睡眠状态，Claude Code 会在机器重新上线时重新连接。
 
@@ -76,7 +76,7 @@ Dispatch 在其生成的 Code 会话完成或需要您的批准时发送自己�
 
 * **仅限本地命令**：仅在终端界面中运行的命令，例如 `/plugin` 和 `/resume`，无法从应用程序中工作。[远程控制限制](https://code.claude.com/docs/zh-CN/remote-control.md#limitations)列出了从移动设备工作的命令以及它们的行为如何不同。
 * **权限模式**：云端会话提供接受编辑、Plan 和 Auto，Remote Control 会话提供 Manual、接受编辑、Plan 和 Auto。在任何一种情况下，您都无法从应用程序中选择 Bypass permissions。有关 Auto 何时可用，请参阅[切换权限模式](https://code.claude.com/docs/zh-CN/permission-modes.md#switch-permission-modes)。
-* **Dispatch 计划**：Dispatch 需要 Pro 或 Max 计划，在 Team 或 Enterprise 上不可用。
+* **Dispatch 计划**：Dispatch 需要 Pro、Max 或 Ultra 计划，在 Team 或 Enterprise 上不可用。
 
 ## 相关资源
 

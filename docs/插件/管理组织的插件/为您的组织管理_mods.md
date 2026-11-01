@@ -95,6 +95,43 @@ Mods 不会替换您已有的控制：
 
 这些控制中的任何一个都不会沙箱化 mod。您允许的 mod 以用户身份运行，具有用户对文件、进程和网络的访问权限。
 
+### 了解用户 mod 的哪些 hook 不会运行
+
+在[内置守卫](#know-what-happens-by-default)加载的地方，用户的 mod 在以下事件上注册的 hook 永远不会运行，`/plugin` 会通过一条说明告知该用户。在 [`session.append`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#session) 各行中，`door` 是该 hook 所筛选的存储行的类型。
+
+| hook 所在事件 | 事件是什么 |
+| :- | :- |
+| [`classic.<Event>`](https://code.claude.com/docs/zh-CN/plugins/mods/events#hook-the-settings-hook-events)，例如 `classic.Stop` | 一个[设置 hook 事件](https://code.claude.com/docs/zh-CN/hooks.md#hook-events) |
+| [`prompt.compose`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#prompts-and-what-claude-reads) | 系统提示词的章节列表 |
+| `prompt.section` | 系统提示词的一个章节 |
+| `prompt.context` | 随对话第一条消息一起发送的上下文 |
+| `prompt.attachment` | Claude Code 为 Claude 添加的消息，例如提醒 |
+| `skill.prompt` | 为 Claude 展开时的 skill 文本 |
+| `attribution.text` | 提交或 Pull Request 的署名文本 |
+| [`session.compact`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#session) | 对话的一次压缩 |
+| `settings.read` | 一次设置读取，例如 mod 的 `$.settings.read` 调用 |
+| `session.append{door=attachment}` | Claude Code 为 Claude 添加的消息的存储行 |
+| `session.append{door=hook-context}` | 来自设置 hook 的上下文的存储行 |
+| `session.append{door=compaction}` | 压缩摘要和边界的存储行 |
+
+在其他一些情况下，守卫也会跳过用户的 hook，例如 [`tool.describe`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#tools) 上您组织的工具描述，以及 skill 文本的存储行。对于这些情况，`/plugin` 不会显示说明。如果其他事件上的 hook 没有任何作用，请参阅[查明 mod 为何没有任何作用](https://code.claude.com/docs/zh-CN/plugins/mods/troubleshoot.md#find-out-why-a-mod-does-nothing)。
+
+该说明显示在插件的详细信息中以及 `/plugin` 的 **Errors** 选项卡中。它需要 Claude Code v2.1.299 或更高版本。它会按照 mod 注册时的写法列出表中的每个 hook，如以下示例所示：
+
+```text theme={null}
+Its hooks on classic.Stop, prompt.section do not run here: where an organization manages Claude Code, these events pass over the plugins you install
+Only a plugin that counts as your organization's own runs hooks on these events. An administrator sets that up in managed settings
+```
+
+要让这些 hook 运行，请通过以下两种方式之一更改托管设置：
+
+* **将该 mod 作为您组织的 mod 运行**：[安装该 mod，使其算作您组织自己的 mod](#install-your-organizations-mods)。这样它在这些事件上的 hook 就会运行，而守卫对其他所有 mod 仍保持加载。该 mod 会为接收这些设置的每个人开启，并且必须位于您放置在每台机器上的目录中。如果您将其列在 `prependPlugins` 中，请在列表中保留 `sec-default@builtin`。
+* **移除守卫**：在 `prependPlugins` 中省略 `sec-default@builtin`。一个空列表 `"prependPlugins": []` 就足够了。您失去的是整个守卫，而不仅仅是这些事件。这样用户的 mod 就可以做[守卫原本会阻止它做的事情](#know-what-happens-by-default)，并且[守卫的选项](#set-options-on-the-built-in-guard)也不再适用。
+
+如果您通过[服务器托管设置](https://code.claude.com/docs/zh-CN/server-managed-settings.md#fetch-and-caching-behavior)下发不含守卫的列表，守卫会保持加载，直到服务器为该会话确认这些设置。要在运行 v2.1.299 或更高版本的机器上确认任一更改，请在该机器上的会话中打开 `/plugin`，并检查该说明是否已消失。
+
+没有 `door` 筛选条件的 `session.append` hook 仍会运行且不会收到说明，但表中的存储行不会传递给它。
+
 ## 决定是否保持 mods 开启
 
 Mod 可以做的比插件的其他部分更多，因为它在 Claude Code 内运行。它看到每个提示和工具调用，可以更改它们，并可以在权限提示出现之前允许或拒绝工具调用。
@@ -142,7 +179,7 @@ claude plugin validate ./some-mod
 | `$.prompt.submit` | 提交提示，可以将其作为用户自己的话语发送 |
 | `$.session.send` | 发送另一个会话、子代理或[队友](https://code.claude.com/docs/zh-CN/agent-teams.md)的 Claude 读取的消息 |
 
-在 `hooks:` 行中，[`tool.call`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#tools) 和 [`prompt.submit`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#prompts-and-what-claude-reads) 意味着 mod 看到每个工具调用和每个提示，并可以更改它们。[`session.append`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#session) 意味着 mod 可以在存储之前重写对话的每一行。[`ui.render{component=AskUserQuestion}`](https://code.claude.com/docs/zh-CN/plugins/mods/interface#change-what-claude-code-already-draws) 意味着 mod 可以重新绘制 Claude 用来询问用户问题的对话框。`tool.check` 意味着 mod 可以在权限提示出现之前批准或拒绝工具调用。[了解默认情况下会发生什么](#know-what-happens-by-default)列出了您的哪些规则和 hooks 优先于其答案。
+在 `hooks:` 行中，[`tool.call`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#tools) 和 [`prompt.submit`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#prompts-and-what-claude-reads) 意味着 mod 看到每个工具调用和每个提示词，并可以更改它们。[`session.append`](https://code.claude.com/docs/zh-CN/plugins/mods/reference#session) 意味着 mod 可以在存储之前重写对话的每一行，但[防护机制跳过的行](#hooks-the-guard-passes-over)除外。[`ui.render{component=AskUserQuestion}`](https://code.claude.com/docs/zh-CN/plugins/mods/interface#change-what-claude-code-already-draws) 意味着 mod 可以重新绘制 Claude 用来询问用户问题的对话框。`tool.check` 意味着 mod 可以在权限提示出现之前批准或拒绝工具调用。[了解默认情况下会发生什么](#know-what-happens-by-default)列出了您的哪些规则和 hook 优先于其答案。
 
 ## 选择允许的程度
 

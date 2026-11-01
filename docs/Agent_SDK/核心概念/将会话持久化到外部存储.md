@@ -258,37 +258,41 @@ async def test_my_store_conformance():
 
 ### 双写架构
 
-Claude Code 子进程始终首先将每批转录条目写入本地磁盘，然后 SDK 将同一批转发到您的存储的 `append()`，因此存储是本地转录的镜像而不是替代品。哪个副本在运行后保留取决于运行的启动方式：
+Claude Code 子进程始终首先将每批会话记录条目写入本地磁盘，然后 SDK 将同一批转发到您的存储的 `append()`，因此存储是本地会话记录的镜像而不是替代品。哪个副本在运行后保留取决于运行的启动方式：
 
-* **新会话，或当存储对该会话没有任何内容时的恢复**：您配置目录下的本地转录在运行后保留，存储接收一个副本。
+* **新会话，或当存储对该会话没有任何内容时的恢复**：您配置目录下的本地会话记录在运行后保留，存储接收一个副本。
 * **从存储[恢复的运行](#resume-from-the-store)**：本地副本在运行结束时被删除，因此存储持有唯一的持久副本。
 
-如果您不希望新会话在本地磁盘上留下转录，请在 `options.env` 中将 `CLAUDE_CONFIG_DIR` 设置为临时目录。从存储恢复的运行已经删除其本地副本，因此不需要此类设置。在 TypeScript 中，也将 `process.env` 展开到 `env` 中，因为 [`env` 选项](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#options) 替换子进程环境。
+如果您不希望新会话在本地磁盘上留下会话记录，请在 `options.env` 中将 `CLAUDE_CONFIG_DIR` 设置为一个新的私有临时目录。从存储恢复的运行已经删除其本地副本，因此不需要此类设置。在 TypeScript 中，也将 `process.env` 展开到 `env` 中，因为 [`env` 选项](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#options) 替换子进程环境。
 
-如果您的应用通过配置目录中的文件进行登录，例如 OAuth 凭证或用户 `settings.json` 中的 `apiKeyHelper`，请先将这些文件复制到临时目录中，或改为在 `env` 中设置 `ANTHROPIC_API_KEY`。否则运行失败并显示 `Not logged in`。
+如果您将 `CLAUDE_CONFIG_DIR` 设置为临时目录，并通过 [claude.ai 登录](https://code.claude.com/docs/zh-CN/authentication.md#credential-management)或用户 `settings.json` 中的 [`apiKeyHelper`](https://code.claude.com/docs/zh-CN/settings-reference#apikeyhelper) 进行登录，运行将失败并显示 `Not logged in`。要对运行进行身份验证，请设置长期令牌、设置 API 密钥或复制您的配置文件：
+
+* **长期令牌**：如果您使用自己的 Claude 订阅亲自运行 Agent，请在 `env` 中将 `CLAUDE_CODE_OAUTH_TOKEN` 设置为通过 [`claude setup-token`](https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token) 获取的令牌。该令牌只能用于发出模型请求，因此您的 [claude.ai 连接器](https://code.claude.com/docs/zh-CN/mcp.md#use-mcp-servers-from-claude-ai)在该运行中不可用。
+* **API 密钥**：在 `env` 中设置 `ANTHROPIC_API_KEY`。
+* **配置文件**：如果您通过常用配置目录中的文件登录，例如 OAuth 凭据或用户 `settings.json` 中的 `apiKeyHelper`，请将这些文件复制到临时目录中。
 
 两个选项与镜像冲突，如果您将其中任何一个与存储结合，SDK 会在启动时抛出异常：
 
 * **`persistSession: false`** 在 TypeScript 中：关闭镜像所基于的本地写入。Python SDK 没有等效选项。
-* **文件检查点**，TypeScript 中的 `enableFileCheckpointing` 或 Python 中的 `enable_file_checkpointing`：将其文件备份直接写入本地磁盘，SDK 不会将其镜像到存储。
+* **文件检查点功能**，TypeScript 中的 `enableFileCheckpointing` 或 Python 中的 `enable_file_checkpointing`：将其文件备份直接写入本地磁盘，SDK 不会将其镜像到存储。
 
 ### 从存储恢复
 
-当您传递 `resume`，或 TypeScript 中的 `continue: true` 或 Python 中的 `continue_conversation=True`，以及存储时，SDK 在生成子进程之前向存储请求转录：
+当您传递 `resume`，或 TypeScript 中的 `continue: true` 或 Python 中的 `continue_conversation=True`，以及存储时，SDK 在生成子进程之前向存储请求会话记录：
 
 * **`resume`**：SDK 请求您传递的会话 ID 的会话。
 * **`continue: true`** 或 **`continue_conversation=True`**：SDK 请求存储的最新会话。
 
-当存储返回转录时，SDK 将其写入临时配置目录，运行子进程时 `CLAUDE_CONFIG_DIR` 指向该目录，并在运行结束时删除该目录。该运行写入的本地转录随之被删除，这就是为什么存储在此路径上持有唯一的持久副本的原因。
+当存储返回会话记录时，SDK 将其写入临时配置目录，运行子进程时 `CLAUDE_CONFIG_DIR` 指向该目录，并在运行结束时删除该目录。该运行写入的本地会话记录随之被删除，这就是为什么存储在此路径上持有唯一的持久副本的原因。
 
 SDK 还使用来自您真实配置目录的文件为临时目录提供种子。它复制的内容因语言而异：
 
-* **TypeScript**：凭证、`.claude.json` 和您的用户 `settings.json`。从 `settings.json` 中，它删除在临时配置目录下表现不佳的键：`enabledPlugins`、`extraKnownMarketplaces`、其 [`additionalMarketplaces`](https://code.claude.com/docs/zh-CN/settings-reference#extraknownmarketplaces) 别名，以及文件 `env` 块中的任何 `CLAUDE_CONFIG_DIR`。在 Agent SDK v0.3.232 之前，SDK 没有删除别名。在设置中配置的身份验证，例如 [`apiKeyHelper`](https://code.claude.com/docs/zh-CN/settings-reference#apikeyhelper)，在从存储恢复时有效。在 Agent SDK v0.3.222 之前，TypeScript SDK 仅复制凭证和 `.claude.json`。
-* **Python**：仅凭证和 `.claude.json`，因此通过用户 `settings.json` 中的 `apiKeyHelper` 进行身份验证的应用在从存储恢复时失败并显示 `Not logged in`。托管或项目设置中的 `apiKeyHelper` 仍然有效，因为 Claude Code 从 `CLAUDE_CONFIG_DIR` 不影响的位置读取这些文件。
+* **TypeScript**：凭据、`.claude.json` 和您的用户 `settings.json`。从 `settings.json` 中，它删除在临时配置目录下表现不佳的键：`enabledPlugins`、`extraKnownMarketplaces`、其 [`additionalMarketplaces`](https://code.claude.com/docs/zh-CN/settings-reference#extraknownmarketplaces) 别名，以及文件 `env` 块中的任何 `CLAUDE_CONFIG_DIR`。在 Agent SDK v0.3.232 之前，SDK 没有删除别名。在设置中配置的身份验证，例如 [`apiKeyHelper`](https://code.claude.com/docs/zh-CN/settings-reference#apikeyhelper)，在从存储恢复时有效。在 Agent SDK v0.3.222 之前，TypeScript SDK 仅复制凭据和 `.claude.json`。
+* **Python**：仅凭据和 `.claude.json`，因此通过用户 `settings.json` 中的 `apiKeyHelper` 进行身份验证的应用在从存储恢复时失败并显示 `Not logged in`。托管或项目设置中的 `apiKeyHelper` 仍然有效，因为 Claude Code 从 `CLAUDE_CONFIG_DIR` 不影响的位置读取这些文件。
 
 当存储对该会话没有任何内容时，SDK 改为在您的真实配置目录下运行，结果取决于您传递的选项：
 
-* **`resume`**：两个 SDK 都将 ID 传递给子进程，子进程恢复本地转录，完全如同没有存储的 `resume` 一样。
+* **`resume`**：两个 SDK 都将 ID 传递给子进程，子进程恢复本地会话记录，完全如同没有存储的 `resume` 一样。
 * **TypeScript 中的 `continue: true`**：SDK 启动新会话。
 * **Python 中的 `continue_conversation=True`**：SDK 从最新的本地会话继续。
 
@@ -296,23 +300,25 @@ SDK 还使用来自您真实配置目录的文件为临时目录提供种子。�
 
 如果 `append()` 拒绝，SDK 会以短退避重试该批次最多两次，总共最多三次尝试。超时的调用不会重试，因为原始调用可能仍然会成功。如果批次仍然失败，SDK 记录错误，向迭代器发出 `{ type: "system", subtype: "mirror_error" }` 消息，丢弃批次，并继续查询。因为重试的批次可以重新传递已经成功的条目，请在您的 `append()` 实现中按 `entry.uuid` 进行去重。
 
-存储中断不会中断代理，因为子进程首先在本地写入。如果您需要检测存储数据丢失，请监视 `mirror_error`。在[从存储恢复](#resume-from-the-store)的运行上，丢弃的批次在运行结束后没有幸存的副本。
+存储中断不会中断 Agent，因为子进程首先在本地写入。如果您需要检测存储数据丢失，请监视 `mirror_error`。在[从存储恢复](#resume-from-the-store)的运行上，丢弃的批次在运行结束后没有幸存的副本。
 
 ### `getSessionMessages` 返回后压缩链
 
-`getSessionMessages({ sessionStore })` 返回代理在恢复时会看到的链接消息链。自动压缩后，早期的轮次被摘要替换，因此存储中包含 503 个原始条目的会话可能从 `getSessionMessages` 返回 18 条消息。对于完整的原始历史记录，包括压缩前的轮次和元数据条目，直接调用 `store.load(key)`。
+`getSessionMessages({ sessionStore })` 返回 Agent 在恢复时会看到的链接消息链。自动压缩后，早期的轮次被摘要替换，因此存储中包含 503 个原始条目的会话可能从 `getSessionMessages` 返回 18 条消息。对于完整的原始历史记录，包括压缩前的轮次和元数据条目，直接调用 `store.load(key)`。
 
 ### `forkSession` 不是字节副本
 
-`forkSession({ sessionStore })` 读取源条目，重写每个 `sessionId` 字段并重新映射消息 UUID，然后在新键下追加转换后的条目。适配器级别的副本或 `CopyObject` 快捷方式会产生仍然引用旧会话 ID 的转录，因此 SDK 不使用它。
+`forkSession({ sessionStore })` 读取源条目，重写每个 `sessionId` 字段并重新映射消息 UUID，然后在新键下追加转换后的条目。适配器级别的副本或 `CopyObject` 快捷方式会产生仍然引用旧会话 ID 的会话记录，因此 SDK 不使用它。
 
-### 子代理转录
+### 子代理会话记录
 
-子代理转录在 `subpath: "subagents/agent-<id>"` 下镜像。`listSubagents({ sessionStore })` 要求适配器实现 `listSubkeys`；`getSubagentMessages({ sessionStore })` 在可用时使用它，但在未定义时回退到直接子路径。恢复也调用 `listSubkeys` 来恢复子代理文件；没有它，仅实现主转录。
+子代理会话记录在 `subpath: "subagents/agent-<id>"` 下镜像。`listSubagents({ sessionStore })` 要求适配器实现 `listSubkeys`；`getSubagentMessages({ sessionStore })` 在可用时使用它，但在未定义时回退到直接子路径。恢复也调用 `listSubkeys` 来恢复子代理文件；没有它，仅实现主会话记录。
 
 ### 保留
 
-SDK 永远不会自行从您的存储中删除。保留是适配器的责任：根据您的合规要求实现 TTL、S3 生命周期策略或计划清理。`CLAUDE_CONFIG_DIR` 下的本地转录由 `cleanupPeriodDays` 设置独立清理，遵循[保留清理规则](https://code.claude.com/docs/zh-CN/claude-directory.md#cleaned-up-automatically)。[从存储恢复](#resume-from-the-store)的运行不留下本地转录，因此对于这些运行，您的存储保留是唯一的保留。
+SDK 永远不会自行从您的存储中删除。保留是适配器的责任：根据您的合规要求，使用您后端的过期或生命周期机制，或运行计划清理。
+
+`CLAUDE_CONFIG_DIR` 下的本地会话记录由 `cleanupPeriodDays` 设置独立清理，遵循[保留清理规则](https://code.claude.com/docs/zh-CN/claude-directory.md#cleaned-up-automatically)。[从存储恢复](#resume-from-the-store)的运行不留下本地会话记录，因此对于这些运行，您的存储保留是唯一的保留。
 
 ## 支持的功能
 

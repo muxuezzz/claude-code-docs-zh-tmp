@@ -79,9 +79,7 @@ Claude Code 在启动时打印[确认行](#turn-on-screen-reader-mode)后，会�
 | `Permission Required:` | 等待您的答案的权限提示 |
 | `Cost:` | Claude Code 退出时的会话成本摘要，如果您的帐户[显示成本](https://code.claude.com/docs/zh-CN/costs.md) |
 
-Claude Code 将终端光标保持在输入插入符上，因此屏幕阅读器的读取当前行命令读取您正在编辑的输入内容。
-
-当您在输入行末尾键入时，或在那里按 `Backspace`，Claude Code 仅写入更改的字符。您的屏幕阅读器仅回显这些字符。
+Claude Code 将终端光标保持在输入插入符上，因此屏幕阅读器的读取当前行命令读取您正在编辑的输入内容。当您在输入行末尾键入时，或在那里按 `Backspace`，Claude Code 仅写入更改的字符。您的屏幕阅读器仅回显这些字符。
 
 当您使用[文本编辑快捷键](https://code.claude.com/docs/zh-CN/interactive-mode.md#text-editing)之一删除单词或行时，Claude Code 宣布删除的文本：
 

@@ -8,14 +8,14 @@
 
 Claude Code 可以在用户的会话与您为该插件定义的信号匹配时，建议从您组织的 marketplace 安装插件。信号包括工作目录、Claude 已读取的文件以及 Claude 已运行的命令。您可以通过向 `marketplace.json` 中的插件条目添加 `relevance` 块来定义这些信号。
 
-marketplace 运营商编写 `relevance` 条目。然后管理员在托管设置中将 marketplace 列入允许列表。在 marketplace 被列入允许列表之前，用户看不到来自该 marketplace 的任何建议。
+市场运营商编写 `relevance` 条目。然后管理员在托管设置中将市场列入允许列表。在终端中，市场被列入允许列表之前，用户看不到来自该市场的任何建议。
 
 > [!NOTE]
 >
 > 这些情况在其他页面上有介绍：
 >
 > * **您想安装插件**：请参阅[安装和管理插件](https://code.claude.com/docs/zh-CN/plugins/install.md)
-> * **您想关闭建议**：请参阅[了解插件相关性的工作原理](#understand-how-plugin-relevance-works)
+> * **您想关闭建议**：请参阅[了解插件相关性的工作原理](#understand-how-plugin-relevance-works)；对于 Claude 在云端会话的对话中提出的建议，请参阅[关闭插件建议](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#turn-off-plugin-suggestions)
 
 从适合您角色的部分开始：
 
@@ -158,7 +158,7 @@ claude plugin validate ./my-marketplace
 
 ## 在托管设置中启用建议
 
-用户看不到来自 marketplace 的任何建议，直到管理员在 [托管设置](https://code.claude.com/docs/zh-CN/plugins/org.md) 中将其加入允许列表，即使其 `marketplace.json` 声明了 `relevance`。
+在终端中，即使市场的 `marketplace.json` 声明了 `relevance`，在管理员于[托管设置](https://code.claude.com/docs/zh-CN/plugins/org.md)中将其加入允许列表之前，用户也看不到来自该市场的任何建议。
 
 要将 marketplace 加入允许列表，请按如下方式编辑您的托管设置：
 
