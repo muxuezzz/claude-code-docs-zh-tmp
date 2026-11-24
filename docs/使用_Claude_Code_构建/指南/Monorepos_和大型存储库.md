@@ -96,7 +96,7 @@ Write database queries with the Knex query builder. Never put raw SQL strings in
 Never edit a migration after it has merged. Add a new migration instead.
 ```
 
-当你从 `packages/api/` 启动 Claude 时，它加载 `packages/api/CLAUDE.md` 和根 `CLAUDE.md`。Claude 看到本地指令与存储库范围的规则一起，上下文中没有来自 `packages/web/` 的指令。对于非 monorepo 树中的任何子目录也是如此。要确认加载了哪些文件，请运行 `/context` 并检查 **Memory files** 下的列表。
+当您从 `packages/api/` 启动 Claude 时，它会同时加载 `packages/api/CLAUDE.md` 和根 `CLAUDE.md`。Claude 会同时看到本地指令和仓库范围的规则，上下文中不会有来自 `packages/web/` 的指令。对于非 monorepo 目录树中的任何子目录也是如此。要确认加载了哪些文件，请运行 [`/context all`](https://code.claude.com/docs/zh-CN/commands#all-commands) 并检查 **Memory files** 下的列表。
 
 保持文件随着代码库和模型变化而最新的几种方法：
 
@@ -151,7 +151,7 @@ Never edit a migration after it has merged. Add a new migration instead.
 
 ### 阻止读取生成的和供应商代码
 
-Claude 的内容搜索默认尊重 `.gitignore`，所以已列在其中的路径，例如 `node_modules/`、`dist/` 和 `build/`，无需额外配置就会保持在搜索结果之外。
+Claude 的内容搜索默认尊重 `.gitignore`，所以已列在其中的路径，例如 `node_modules/`、`dist/` 和 `build/`，会保持在搜索结果之外。
 
 对于已检入的路径，例如供应商 SDK 或提交的生成代码，在 `permissions.deny` 中添加 `Read` 拒绝规则以阻止 Claude 打开这些文件。
 
@@ -197,7 +197,7 @@ Claude 的内容搜索默认尊重 `.gitignore`，所以已列在其中的路径
 * `Marketplace "claude-plugins-official" not found`：使用 `/plugin marketplace add anthropics/claude-plugins-official` 添加市场，然后重试安装。
 * `Plugin "<name>" not found in marketplace "claude-plugins-official"`：您本地的市场目录副本可能已过期。使用 `/plugin marketplace update claude-plugins-official` 刷新它，然后重试安装。如果重试后仍显示相同的消息，请参阅[在市场中找不到插件](https://code.claude.com/docs/zh-CN/plugins/troubleshooting.md#plugin-not-found-in-marketplace)。
 
-要为存储库中的每个人启用插件而不是自己安装，请将其添加到 [`enabledPlugins` 项目设置](https://code.claude.com/docs/zh-CN/settings-reference#plugin-settings)。
+要为仓库中的每个人启用插件，请将其添加到 [`enabledPlugins` 项目设置](https://code.claude.com/docs/zh-CN/settings-reference#plugin-settings)。每个人仍需[自行安装](https://code.claude.com/docs/zh-CN/plugins/loading.md#enabled-in-project-settings-but-not-installed)。
 
 代码智能插件需要每个开发者机器上的语言的语言服务器二进制文件。查看[每种语言需要哪个二进制文件](https://code.claude.com/docs/zh-CN/plugins/code-intelligence.md)。从官方市场安装需要网络访问 GitHub，市场在那里托管。在受限网络上，[从内部 Git 主机或本地路径添加市场](https://code.claude.com/docs/zh-CN/plugins/install.md#add-a-marketplace)。
 
@@ -235,7 +235,9 @@ Claude 的内容搜索默认尊重 `.gitignore`，所以已列在其中的路径
 
 在 `sparsePaths` 中列出目录，而不是单个文件。根级文件如 `package.json`、`tsconfig.base.json` 和锁文件始终与你列出的目录一起检出。根级目录不是，所以如果你想要存储库根目录的 `.claude/settings.json` 或 `.claude/rules/` 在 worktree 内可用，请在列表中包含 `.claude`。对于项目 skills、代理和命令，请参阅[worktrees 与主检出共享的内容](https://code.claude.com/docs/zh-CN/worktrees.md#what-worktrees-share-with-the-main-checkout)。
 
-Sparse checkout 需要 git 在存在 sparse worktree 时在仓库的共享 `.git/config` 中启用 `extensions.worktreeConfig`。Claude Code 在删除最后一个 worktree 后会删除该条目，但仅当 Claude Code 添加了它时。它永远不会删除您自己设置的值。
+> [!NOTE]
+>
+> Sparse checkout 需要 git 在存在 sparse worktree 时在仓库的共享 `.git/config` 中启用 `extensions.worktreeConfig`。Claude Code 在删除最后一个 worktree 后会删除该条目，但仅当该条目是 Claude Code 添加的时。
 
 要避免在 worktrees 中复制大型目录如 `node_modules`，将 `sparsePaths` 与同一 `.claude/settings.json` 中的 `symlinkDirectories` 配对：
 
@@ -351,7 +353,7 @@ description: API 包的测试模式。在 packages/api/ 中编写或修改测试
 
 不同的子目录以相同的方式保存不同的 skill：`packages/web/.claude/skills/component-patterns/` 描述前端的组件约定而不是测试。当 Claude 处理 `packages/api/` 中的文件时，它加载 api-testing skill。当它在 `packages/web/` 中工作时，它加载 component-patterns。
 
-您也可以按文件模式而不是按放置位置来限定 skill 的范围。[`paths` frontmatter 字段](https://code.claude.com/docs/zh-CN/skills#frontmatter-reference)采用 glob 模式，Claude 仅在处理匹配文件时自动加载 skill。对于位于仓库根目录的 `.claude/skills/` 中但仅适用于某些文件的 skill，可使用此功能，例如限定于 `**/migrations/**` 的数据库迁移 skill。
+您也可以按文件模式而不是按放置位置来限定 skill 的范围。[`paths` frontmatter 字段](https://code.claude.com/docs/zh-CN/skills#frontmatter-reference)采用 glob 模式，Claude 在处理匹配文件时会自动加载该 skill。对于位于仓库根目录的 `.claude/skills/` 中但仅适用于某些文件的 skill，可使用此功能，例如限定于 `**/migrations/**` 的数据库迁移 skill。
 
 有关创建和组织 skills 的更多信息，请参阅 [Skills](https://code.claude.com/docs/zh-CN/skills.md)。
 

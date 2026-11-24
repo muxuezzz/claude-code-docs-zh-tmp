@@ -15,7 +15,7 @@ Claude Code 可以在用户的会话与您为该插件定义的信号匹配时�
 > 这些情况在其他页面上有介绍：
 >
 > * **您想安装插件**：请参阅[安装和管理插件](https://code.claude.com/docs/zh-CN/plugins/install.md)
-> * **您想关闭建议**：请参阅[了解插件相关性的工作原理](#understand-how-plugin-relevance-works)；对于 Claude 在云端会话的对话中提出的建议，请参阅[关闭插件建议](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#turn-off-plugin-suggestions)
+> * **您想关闭建议**：请参阅[了解插件相关性的工作原理](#understand-how-plugin-relevance-works)；对于 Claude 在对话中提出的建议，请参阅[关闭插件建议](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#turn-off-plugin-suggestions)
 
 从适合您角色的部分开始：
 

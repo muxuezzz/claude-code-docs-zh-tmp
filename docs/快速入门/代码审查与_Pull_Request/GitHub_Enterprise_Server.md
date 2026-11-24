@@ -53,7 +53,7 @@ GitHub Enterprise Server (GHES) 支持让您的组织使用 Claude Code 处理�
 
 **5. 启用 Code Review**
 
-转到 [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code)，使用与 github.com 相同的配置为您的 GHES 仓库启用 [Code Review](https://code.claude.com/docs/zh-CN/code-review-setup.md)。
+转到 [**Organization settings > Claude Ship**](https://claude.ai/admin-settings/claude-code#code-review)，使用与 github.com 相同的配置为您的 GHES 仓库启用 [Code Review](https://code.claude.com/docs/zh-CN/code-review-setup.md)。
 
 ### GitHub App 权限
 
@@ -91,7 +91,7 @@ Claude 会在您保存连接时生成应用的 webhook URL。点击 **Add config
 
 Claude Code 从您工作目录中的 git 远程自动检测您的 GHES 主机名。
 
-像往常一样从您的 GHES 实例克隆存储库，将 `github.example.com` 和存储库路径替换为您的 GHES 主机名和存储库：
+从您的 GHES 实例克隆仓库，将 `github.example.com` 和仓库路径替换为您的 GHES 主机名和仓库：
 
 ```bash theme={null}
 git clone git@github.example.com:platform/api-service.git
@@ -108,7 +108,7 @@ claude --cloud "Add retry logic to the payment webhook handler"
 
 ### 将会话 Teleport 到您的终端
 
-使用 `claude --teleport` 将云会话拉入您的本地终端。Teleport 在获取分支和加载会话历史之前验证您在同一 GHES 存储库的检出中。有关详细信息，请参阅 [teleport 要求](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#teleport-requirements)。
+使用 `claude --teleport` 将云端会话拉入您的本地终端。Teleport 在加载会话历史之前验证您在同一 GHES 仓库的检出中。有关详细信息，请参阅 [teleport 要求](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#teleport-requirements)。
 
 ## GHES 上的插件市场
 
@@ -165,7 +165,7 @@ Claude Code 在本地安装这些市场：它注册每个条目并使用机器�
 
 * **使用完整的 git URL。** `owner/repo` 简写始终解析为 github.com，无法引用 GHES 主机。
 * **优先使用 HTTPS URL。** SSH 克隆在不信任您的 GHES 主机密钥的机器上失败。带有您组织标准 git 凭证助手的 HTTPS URL 在任何配置了凭证的机器上都可以工作。
-* **确认每台机器都可以从您的 GHES 主机克隆。** 如果机器缺少凭证，市场会被注册但永远不会安装，其插件报告为未找到而不是提示输入凭证。
+* **确认每台机器都可以从您的 GHES 主机克隆。** 如果机器缺少凭据，克隆会失败而不会提示输入凭据，`/plugin` 的 **Errors** 选项卡会显示原因。
 * **确认设置到达每台机器。** 托管设置文件仅在部署到的机器上生效，例如通过您的设备管理系统。有关文件位置，请参阅 [部署托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md#delivery-mechanisms)。
 
 ### 在托管设置中将 GHES 市场加入白名单
@@ -190,7 +190,7 @@ Claude Code 在本地安装这些市场：它注册每个条目并使用机器�
 一些功能在 GHES 上的行为与 github.com 上不同。[功能表](#what-works-with-github-enterprise-server) 总结了支持；本部分涵盖了解决方法。
 
 * **`/install-github-app` 命令**：改为在 claude.ai 上遵循 [管理员设置](#admin-setup) 流程。如果您还想在 GHES 上使用 GitHub Actions 工作流，请手动调整 [示例工作流](https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml)。
-* **GitHub MCP server**：改为使用为您的 GHES 主机配置的 `gh` CLI。运行 `gh auth login --hostname github.example.com` 进行身份验证，然后 Claude 可以在会话中使用 `gh` 命令。
+* **GitHub MCP 服务器**：在您自己机器上的会话中，改为使用为您的 GHES 主机配置的 `gh` CLI。运行 `gh auth login --hostname github.example.com` 进行身份验证，然后 Claude 即可在该会话中使用 `gh` 命令。
 
 ## 故障排除
 

@@ -55,9 +55,9 @@
 
 ### 为团队捆绑 plugin
 
-要让工程师用一个命令安装精选的 plugin 集合，请发布一个清单包含 `name` 和 `dependencies` 数组的 plugin。Plugin 清单只需要 `name`，所以这是一个有效的 plugin，安装它会安装每个依赖。
+要让用户用一个命令安装精选的插件集合，请发布一个清单包含 `name` 和 `dependencies` 数组的插件。插件清单只需要 `name`，所以这是一个有效的插件。
 
-例如，平台团队可以在内部市场中发布特定角色的捆绑包，以便工程师运行一个 `claude plugin install` 而不是分别安装每个 plugin：
+例如，平台团队可以在内部市场中发布特定角色的捆绑包，以便用户运行一个 `claude plugin install` 而不是分别安装每个插件：
 
 ```json .claude-plugin/plugin.json theme={null}
 {
@@ -73,12 +73,12 @@
 }
 ```
 
-要稍后向标准集添加 plugin，请发布新的 `backend-standard` 版本，包含额外的依赖。当市场不 [默认自动更新](https://code.claude.com/docs/zh-CN/plugins/loading.md#which-marketplaces-and-plugins-auto-update) 时，工程师要么为市场打开自动更新，要么手动更新：
+要稍后向标准集添加插件，请发布新的 `backend-standard` 版本，包含额外的依赖。当市场不 [默认自动更新](https://code.claude.com/docs/zh-CN/plugins/loading.md#which-marketplaces-and-plugins-auto-update) 时，用户要么为市场启用自动更新，要么手动更新：
 
-* **为市场打开自动更新**：下一次自动更新会将捆绑包移动到新版本并安装它添加的任何依赖。
+* **为市场启用自动更新**：下一次自动更新会将捆绑包移动到新版本并安装 [新添加的依赖](#when-a-dependency-installs-automatically)。该安装需要 Claude Code v2.1.319 或更高版本。
 * **手动更新**：在 shell 中运行 `claude plugin update backend-standard`，然后在打开的会话中运行 `/reload-plugins` 以安装新添加的依赖。
 
-有关工程师端的步骤，请参阅 [保持 plugin 更新](https://code.claude.com/docs/zh-CN/plugins/install.md#keep-plugins-updated)。
+您的用户请按照 [保持插件更新](https://code.claude.com/docs/zh-CN/plugins/install.md#keep-plugins-updated) 中的步骤操作。
 
 要将捆绑包部署给组织中的每个人，管理员将其添加到托管设置中的 `enabledPlugins`。请参阅 [预安装和要求 plugin](https://code.claude.com/docs/zh-CN/plugins/org.md#pre-install-and-require-plugins)。
 
@@ -129,7 +129,7 @@ claude --plugin-dir ./my-dependency --plugin-dir ./my-plugin
 * **你禁用了本地副本**：你的 plugin 在下一次 plugin 加载时被禁用，错误以 `is disabled — enable it or remove the dependency` 结尾。当错误将依赖命名为 `<name>@inline` 时，该标识符指的是 `--plugin-dir` 副本。
 * **你启动了一个没有依赖的 `--plugin-dir` 标志的会话**：错误报告依赖未安装。再次传递标志，或从其市场安装依赖。
 
-当两个 plugin 都在一个父文件夹中时，你可以将该文件夹传递给 `--plugin-dir` 一次。如果该文件夹本身不是 plugin，Claude Code 会加载每个具有 `.claude-plugin/plugin.json` 的子文件夹。需要 Claude Code v2.1.265 或更高版本。
+当两个插件都在一个父文件夹中时，您可以将该文件夹传递给 `--plugin-dir` 一次。如果该文件夹本身不是插件，Claude Code 会将其作为 [插件文件夹](https://code.claude.com/docs/zh-CN/plugins/create.md#load-a-folder-of-plugins) 加载。需要 Claude Code v2.1.265 或更高版本。
 
 ## 发布其他人依赖的 plugin
 
@@ -165,17 +165,20 @@ claude plugin tag --push
 
 ### 约束具有非 git 源的依赖
 
-基于标签的解析仅适用于 git 支持的源。对于具有 `npm`、`archive` 或 `command` [plugin 源](https://code.claude.com/docs/zh-CN/plugins/marketplace-reference.md#plugin-sources) 的依赖，约束不控制获取哪个版本。它在 plugin 加载时仍会被检查，如果安装的版本不满足它，依赖的 plugin 会被禁用。
+基于标签的解析仅适用于由 git 支持的源。对于具有 `npm`、`archive` 或 `command` [插件源](https://code.claude.com/docs/zh-CN/plugins/marketplace-reference.md#plugin-sources)的依赖，约束不控制获取哪个版本。但在插件加载时仍会检查该约束，如果已安装的版本不满足约束，则声明该依赖的插件（即依赖方插件）会被禁用。
 
 对于 `npm`、`archive` 和 `command` 源，检查的版本是依赖的 `plugin.json` 中的 `version`。在约束该依赖之前在那里设置一个，因为不设置版本的 `plugin.json` 不满足任何约束。
 
 Claude Code 永远不会自己安装具有 `command` 源的依赖，所以用户 [首先安装它](https://code.claude.com/docs/zh-CN/plugins/marketplace-reference.md#command-plugin-source)。它也永远不会运行依赖的 [`headersHelper`](https://code.claude.com/docs/zh-CN/plugins/host-marketplace#authenticate-archive-downloads)，所以用户也在安装你的 plugin 之前安装其市场条目设置的依赖。
 
-除了 `claude plugin install`，这些操作也会安装任何缺失的声明依赖，`command` 和 `headersHelper` 限制也适用于它们：
+### 依赖何时自动安装
+
+除了 `claude plugin install`，以下操作也会安装缺失的已声明依赖，[`command` 和 `headersHelper` 的限制](#constrain-a-dependency-that-has-a-non-git-source)同样适用于它们：
 
 * `/reload-plugins`
 * 依赖 plugin 市场的自动更新
 * 在依赖 plugin 上重新运行 `claude plugin install`
+* 使用 `claude plugin update` 或 `/plugin` 中的 **Update now** 更新依赖方插件，除非[已关闭非必要流量](https://code.claude.com/docs/zh-CN/plugins/troubleshooting.md#dependency-errors)。需要 Claude Code v2.1.319 或更高版本
 * `claude plugin marketplace add`
 
 ## 依赖如何为你的用户表现
@@ -187,7 +190,7 @@ Claude Code 永远不会自己安装具有 `command` 源的依赖，所以用户
 当用户安装声明 `{ "name": "secrets-vault", "version": "~2.1.0" }` 的 plugin 时，依赖从满足 `~2.1.0` 的最高 `secrets-vault--v` 标签安装在托管 `secrets-vault` 的存储库上。当没有标签满足范围时，安装要么失败，要么使用市场的当前副本：
 
 * **具有自身存储库的 plugin**：安装失败，消息包含 `Dependency "secrets-vault@your-marketplace" has no git tag satisfying`。
-* **由相对路径引用的 plugin**：安装改为使用市场的当前副本，约束在 plugin 加载时被检查。如果该副本在范围之外，依赖的 plugin 保持禁用，`claude plugin list` 显示 `Requires "secrets-vault@your-marketplace" ~2.1.0, installed 3.0.0`。
+* **由相对路径引用的 plugin**：安装改为使用市场的当前副本，约束在 plugin 加载时被检查。如果该副本在范围之外，依赖方插件保持禁用，`claude plugin list` 显示 `Requires "secrets-vault@your-marketplace" ~2.1.0, installed 3.0.0`。
 
 对于市场通过相对路径引用的插件，当您添加为本地文件夹路径的市场所在文件夹是 git 仓库时，该市场也会针对该文件夹的 git 标签解析约束。不是 git 仓库的本地文件夹没有标签，所以 Claude Code 改为从文件夹的当前内容安装依赖。
 

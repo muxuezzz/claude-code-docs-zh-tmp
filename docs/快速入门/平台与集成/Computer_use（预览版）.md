@@ -82,15 +82,13 @@ Claude 第一次尝试使用您的计算机时，您会看到一个提示来授�
 
 | 警告 | 适用于 |
 | :- | :- |
-| 等同于 shell 访问 | Terminal、iTerm、VS Code、Warp 以及其他终端和 IDE |
-| 可以读取或写入任何文件 | Finder |
+| 可以在您的计算机上运行命令 | Terminal、iTerm、VS Code、Warp 以及其他终端和 IDE |
+| 可以打开、更改或删除任何文件，以及运行应用和脚本 | Finder |
 | 可以更改系统设置 | System Settings |
 
-这些应用并不会被阻止。该警告让您能够判断任务是否需要这种级别的访问权限。
+这些应用并不会被阻止。该警告让您能够判断任务是否需要这种级别的访问权限。批准 Finder 后，Claude 即可点击桌面、Dock 或 Finder 窗口。
 
-批准 Finder 后，Claude 即可点击桌面、Dock 或 Finder 窗口。
-
-Claude 的控制级别也因应用类别而异：浏览器和交易平台仅可查看，终端和 IDE 仅可点击，其他所有应用则获得完全控制。有关完整的层级划分，请参阅 [Desktop 中的应用权限](https://code.claude.com/docs/zh-CN/desktop.md#app-permissions)。
+Claude 的控制级别也因应用类别而异：浏览器和交易平台仅可查看，终端和 IDE 仅可点击，其他大多数应用则获得完全访问权限。有关每个级别允许 Claude 执行的操作，请参阅 [Desktop 中的应用权限](https://code.claude.com/docs/zh-CN/desktop.md#app-permissions)。
 
 ## Claude 如何在您的屏幕上工作
 

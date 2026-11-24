@@ -48,7 +48,7 @@ async def main():
         prompt="Review the authentication module for security issues",
         options=ClaudeAgentOptions(
             # Auto-approve these tools
-            allowed_tools=["Read", "Grep", "Glob", "Agent"],
+            allowed_tools=["Read", "Grep", "Glob", "Agent", "Bash(npm test *)"],
             agents={
                 "code-reviewer": AgentDefinition(
                     # description tells Claude when to use this subagent
@@ -97,7 +97,7 @@ for await (const message of query({
   prompt: "Review the authentication module for security issues",
   options: {
     // Auto-approve these tools
-    allowedTools: ["Read", "Grep", "Glob", "Agent"],
+    allowedTools: ["Read", "Grep", "Glob", "Agent", "Bash(npm test *)"],
     agents: {
       "code-reviewer": {
         // description tells Claude when to use this subagent
@@ -144,15 +144,15 @@ Focus on:
 | :- | :- | :- | :- |
 | `description` | `string` | 是 | 何时使用此代理的自然语言描述 |
 | `prompt` | `string` | 是 | 代理的系统提示，定义其角色和行为 |
-| `tools` | `string[]` | 否 | 允许的工具名称数组。如果省略，继承[子代理可用的每个工具](https://code.claude.com/docs/zh-CN/sub-agents.md#available-tools) |
+| `tools` | `string[]` | 否 | 允许的工具名称数组；列出某个工具并不会[预先批准](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#allow-and-deny-rules)该工具。如果省略，继承[子代理可用的每个工具](https://code.claude.com/docs/zh-CN/sub-agents.md#available-tools) |
 | `disallowedTools` | `string[]` | 否 | 要从代理工具集中移除的工具名称数组。也接受 MCP 服务器级别的模式：`mcp__server` 或 `mcp__server__*` 移除该服务器的每个工具，`mcp__*` 移除任何服务器的每个 MCP 工具 |
-| `model` | `string` | 否 | 此代理的模型覆盖。接受别名如 `'fable'`、`'opus'`、`'sonnet'`、`'haiku'`、`'inherit'` 或完整模型 ID。`'inherit'` 使用主模型。省略时，Claude Code 选择[子代理模型顺序](https://code.claude.com/docs/zh-CN/sub-agents.md#choose-a-model)中的模型 |
+| `model` | `string` | 否 | 此 Agent 的模型覆盖。接受别名如 `'fable'`、`'opus'`、`'sonnet'`、`'haiku'`、`'inherit'` 或完整模型 ID。`'inherit'` 使用生成此 Agent 的那个 Agent 的模型。省略 `model` 时，Claude Code 选择[子代理模型顺序](https://code.claude.com/docs/zh-CN/sub-agents.md#choose-a-model)中的模型 |
 | `skills` | `string[]` | 否 | 启动时预加载到 Agent 上下文中的 skill 名称列表。最多预加载列表中的[前 32 个不同名称](https://code.claude.com/docs/zh-CN/sub-agents.md#preload-skills-into-subagents)。未列出的 skill 仍可通过 Skill 工具调用 |
 | `memory` | `'user' \| 'project' \| 'local'` | 否 | 此代理的内存源 |
 | `mcpServers` | `(string \| object)[]` | 否 | 此代理可用的 MCP 服务器，按名称或内联配置 |
 | `initialPrompt` | `string` | 否 | 当此代理作为主线程代理运行时自动提交为第一个用户轮次。当代理作为子代理调用时忽略 |
 | `maxTurns` | `number` | 否 | 代理停止前的最大代理轮次数。当代理达到限制时，Claude Code 返回其输出标记为部分，您可以[恢复代理](#resume-subagents)以继续。部分标记需要 Claude Code v2.1.246 或更高版本 |
-| `autoCompactWindow` | `number` | 否 | 当此 Agent 作为子代理运行时，将其[自动压缩窗口](https://code.claude.com/docs/zh-CN/sub-agents.md#subagent-auto-compact-window)降低到 `100000` 至 `1000000` 之间的 token 数。需要 TypeScript Agent SDK v0.3.296 或更高版本。Python SDK 的 [`AgentDefinition`](https://code.claude.com/docs/zh-CN/agent-sdk/python#agentdefinition) 没有此字段 |
+| `autoCompactWindow` | `number` | 否 | 当此 Agent 作为子代理运行时，将其[自动压缩窗口](https://code.claude.com/docs/zh-CN/sub-agents.md#subagent-auto-compact-window)降低到 `100000` 或更多的 token 数。需要 TypeScript Agent SDK v0.3.296 或更高版本。Python SDK 的 [`AgentDefinition`](https://code.claude.com/docs/zh-CN/agent-sdk/python#agentdefinition) 没有此字段 |
 | `background` | `boolean` | 否 | 调用时将此代理作为非阻塞后台任务运行 |
 | `omitClaudeMd` | `boolean` | 否 | 将用户、项目和本地 CLAUDE.md 文件排除在此 Agent 的初始上下文之外；托管策略文件仍会加载。当该 Agent 作为主线程 Agent 运行时忽略。需要 TypeScript Agent SDK v0.3.271 或更高版本。Python SDK 的 [`AgentDefinition`](https://code.claude.com/docs/zh-CN/agent-sdk/python#agentdefinition) 没有此字段 |
 | `effort` | `'low' \| 'medium' \| 'high' \| 'xhigh' \| 'max' \| number` | 否 | 此代理的推理工作量级别 |
@@ -211,19 +211,17 @@ Focus on:
 
 ### 自动调用
 
-Claude 根据任务和每个子代理的 `description` 自动决定何时调用子代理。例如，如果你定义了一个 `performance-optimizer` 子代理，其描述为"用于查询调优的性能优化专家"，当你的提示中提到优化查询时，Claude 将调用它。
+Claude 根据任务和每个子代理的 `description` 自动决定何时调用子代理。例如，描述为"用于查询调优的性能优化专家"的 `performance-optimizer` 子代理适合处理有关优化查询的提示词。
 
 编写清晰、具体的描述，以便 Claude 能够将任务与正确的子代理匹配。
 
 ### 显式调用
 
-要保证 Claude 使用特定的子代理，请在你的提示中按名称提及它：
+要请求使用特定的子代理，请在提示词中按名称提及它：
 
 ```text theme={null}
 "Use the code-reviewer agent to check the authentication module"
 ```
-
-这会绕过自动匹配，直接调用指定的子代理。
 
 ### 分叉子代理
 
@@ -421,7 +419,9 @@ for await (const message of query({
 
 当子代理在其 [`maxTurns`](#agentdefinition-configuration) 限制处停止时，Claude Code 会在 Agent 工具结果中将输出标记为部分，以便 Claude 知道运行未完成。
 
-当子代理完成时，Agent 工具结果包含一个包含 `agentId: <id>` 的文本块。内置的 [`Explore` 和 `Plan` 代理](https://code.claude.com/docs/zh-CN/sub-agents#built-in-subagents) 是一次性的，不返回 `agentId`，因此当您需要恢复时，请使用自定义代理或 `general-purpose`。要以编程方式恢复子代理：
+### 从代码中恢复子代理
+
+当子代理完成时，Agent 工具结果包含一个包含 `agentId: <id>` 的文本块。内置的 [`Explore` 和 `Plan` Agent](https://code.claude.com/docs/zh-CN/sub-agents#built-in-subagents) 可能会在该文本中省略 ID，因此当您需要恢复时，请使用自定义 Agent 或 `general-purpose`。要以编程方式恢复子代理：
 
 1. **捕获会话 ID**：从第一个查询期间的消息中提取 `session_id`
 2. **提取代理 ID**：从 Agent 工具结果文本中解析 `agentId`
@@ -560,9 +560,7 @@ if (agentId && sessionId) {
 使用 `tools` 字段来限制子代理可以执行的操作：
 
 * **省略 `tools`**：子代理获得[可用于子代理的每个工具](https://code.claude.com/docs/zh-CN/sub-agents.md#available-tools)
-* **列出工具**：子代理仅获得这些工具。例如，不应该编辑文件的代码审查员会获得 `["Read", "Grep", "Glob"]`
-
-你省略的工具根本不会出现在子代理的会话中：Claude 可以在没有它的情况下工作，不会出现权限提示或错误。
+* **列出工具**：子代理获得这些工具。启用 [`memory`](https://code.claude.com/docs/zh-CN/sub-agents#enable-persistent-memory) 后，它还会获得 Read、Write 和 Edit。例如，不应该编辑文件的代码审查员会获得 `["Read", "Grep", "Glob"]`
 
 此示例创建了一个只读分析代理，可以检查代码但无法修改文件或运行命令。
 

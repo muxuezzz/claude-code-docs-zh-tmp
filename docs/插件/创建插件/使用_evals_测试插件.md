@@ -350,7 +350,20 @@ claude plugin eval . --allow-tools Write Edit "Bash(npm test *)"
 
 当用例请求您没有授予的工具时，进度输出会将其列为 `not granted`。[模拟](#mock-mcp-servers) MCP 服务器上的工具不需要授予。真实插件 MCP 服务器上的工具需要服务器启动（使用 `--allow-real-servers` 或 `--mocks off`）和按名称授予，例如 `--allow-tools "mcp__plugin_my-plugin_github__*"`；插件的 MCP 工具命名为 `mcp__plugin_<plugin>_<server>__<tool>`。
 
+#### shell 授予需要沙箱
+
 当您以任何形式授予 `Bash` 时，每个命令都在 Claude Code 的 [OS 级沙箱](https://code.claude.com/docs/zh-CN/sandboxing.md) 下运行。写入被限制在运行的工作区，您的主目录和 Claude Code 配置不可读，网络访问限制为您使用 `--allow-tools "WebFetch(domain:example.com)"` 授予的域。如果您在没有沙箱后端的机器上授予 Bash 或 PowerShell，Claude Code 会拒绝每次运行而不是无限制地运行它，用例会显示运行错误，通常得分为 0。原生 Windows 没有后端，所以请在 WSL2 下运行授予 shell 的套件；在 Linux 上，请首先安装 `bubblewrap` 和 `socat`。请参阅 [沙箱隔离前提条件](https://code.claude.com/docs/zh-CN/sandboxing.md)。
+
+#### 在托管机器上 shell 授予被拒绝
+
+当授予 shell 的运行在您的组织管理的机器上被拒绝时，原因可能是其[托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md)中的 `sandbox` 键。错误以 `A shell tool (Bash or PowerShell) was granted but this machine cannot confine it (no sandbox backend on this platform, or it is not installed)` 开头。
+
+当原因是托管键时，消息以 `this machine's managed settings:` 和该键结尾，而每次运行的进度行会将其截断：
+
+* **不使用 `--json` 时**：从摘要表的 `NOTES` 列中读取，例如 `sandbox.enabled is false`
+* **使用 `--json` 时**：从 [JSON 结果](#json-result) 中该运行的 `error` 字段读取
+
+请询问您的管理员该设置能否针对您的机器更改，或从该运行中移除 shell 授予。
 
 ### 命令选项
 
@@ -652,7 +665,7 @@ eval 目录下不存在 `<case>/prompt.md` 或 `<case>/case.yaml`，或你的 `-
 
 ### 基线臂显示没有插件，或 delta 为零
 
-如果摘要没有 `W/OUT` 列，或案例失败并显示"ablation requested but no plugin resolved"，则没有为该案例找到插件。如果每个案例都通过 `context.history_file` 恢复一个记录，缺少该列是预期的，因为这些案例默认运行[一个臂](#compare-against-a-no-plugin-baseline)。否则，将 `plugins: ["../.."]` 添加到案例中，给出从案例目录到插件目录的路径。
+如果摘要中没有 `W/OUT` 列，或者某个用例失败并显示 "ablation requested but no plugin resolved"，通常的原因是没有为该用例找到插件。如果每个用例都通过 `context.history_file` 恢复会话记录，那么缺少该列则是预期行为，因为这些用例[默认只运行一组](#compare-against-a-no-plugin-baseline)。否则，请在用例中添加 `plugins: ["../.."]`，给出从用例目录到插件目录的路径。
 
 如果插件确实加载了，而 `Δ` 仍然接近零，且你的 `tool_used: Skill` grader 失败，这通常是一个真实的发现，意味着该 skill 的 `description` 不会在提示的措辞上触发。调整描述并重新运行相同的套件。
 
@@ -679,6 +692,8 @@ eval 目录下不存在 `<case>/prompt.md` 或 `<case>/case.yaml`，或你的 `-
 ### 工具被拒绝、MCP 工具缺失或 Bash 无法运行
 
 超出只读集合的任何内容都需要你的授权，例如 `--allow-tools Bash Write`。你的个人 MCP 服务器永远不会在运行中加载。插件自己的服务器不会启动，除非你[选择加入](#mock-mcp-servers)，它们的工具也需要 `--allow-tools "mcp__plugin_<plugin>_<server>__*"` 授权；模拟工具两者都不需要。
+
+如果您已授权 Bash，但运行仍被拒绝，请阅读完整的错误信息，每次运行的进度行会将其截断。完整错误位于摘要表的 `NOTES` 列中，或在 `--json` 下位于该运行的 `error` 字段中。如果完整错误指明了某个托管设置，请参阅[在托管机器上 shell 授权被拒绝](#shell-grants-refused-on-a-managed-machine)；否则请参阅[shell 授权需要沙箱](#shell-grants-need-a-sandbox)。
 
 ### 运行退出代码为 1，但结果看起来很好
 

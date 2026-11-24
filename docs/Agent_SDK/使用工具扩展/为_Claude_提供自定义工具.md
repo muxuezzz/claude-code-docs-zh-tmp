@@ -56,7 +56,7 @@
 
 ### 天气工具示例
 
-此示例定义了一个 `get_temperature` 工具并将其包装在 MCP 服务器中，但没有将服务器传递给 `query`。要运行该工具，请参阅下面的[调用自定义工具](#call-a-custom-tool)。
+此示例定义了一个 `get_temperature` 工具并将其包装在 MCP 服务器中，但没有将服务器传递给 `query`。要运行该工具，请参阅[调用自定义工具](#call-a-custom-tool)。
 
 ```python Python theme={null}
 from typing import Annotated, Any
@@ -148,11 +148,14 @@ const weatherServer = createSdkMcpServer({
 * **TypeScript**：向 Zod 字段添加 `.optional()`。
 * **Python**：字典 schema 要求每个键都必须提供。请使用 JSON Schema 形式，将该参数从 `required` 中省略，并使用 `args.get()` 读取它。如需带有可选键的类型化 schema，请参阅 [TypedDict 类](https://code.claude.com/docs/zh-CN/agent-sdk/python.md#input-schema-options)。
 
-下面的 [`get_precipitation_chance` 工具](#add-more-tools)展示了这两种写法。
+[`get_precipitation_chance` 工具](#add-more-tools)展示了这两种写法。
 
 ### 调用自定义工具
 
-通过 `mcpServers` 选项将您创建的 MCP 服务器传递给 `query`，并在 `allowedTools` 中列出每个工具的[完全限定名称](https://code.claude.com/docs/zh-CN/agent-sdk/mcp.md#tool-naming-convention)，以便工具运行而无需权限提示。该名称为 `mcp__{server_name}__{tool_name}`，其中 `{server_name}` 是您在 `mcpServers` 中为服务器指定的键。如果该键包含 `.` 或空格等字符，请在编写 `{server_name}` 时将其替换为 `_`。
+要调用自定义工具，请按以下步骤操作：
+
+1. 通过 `mcpServers` 选项将您创建的 MCP 服务器传递给 `query`。
+2. 在 `allowedTools` 中列出该工具的[完全限定名称](https://code.claude.com/docs/zh-CN/agent-sdk/mcp.md#tool-naming-convention)，以[预先批准](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#allow-and-deny-rules)对它的调用。该名称遵循 `mcp__{server_name}__{tool_name}` 约定，其中 `{server_name}` 是您在 `mcpServers` 中为服务器指定的键。如果该键包含 `.` 或空格等字符，请在编写 `{server_name}` 时将其替换为 `_`。
 
 这些代码片段重用了[天气工具示例](#weather-tool-example)中的 `weatherServer`，以询问 Claude 特定位置的天气。
 
@@ -329,8 +332,8 @@ const weatherServer = createSdkMcpServer({
 | :- | :- | :- |
 | `readOnlyHint` | `false` | 工具不修改其环境。控制工具是否可以与其他只读工具并行调用。 |
 | `destructiveHint` | `true` | 工具可能执行破坏性更新。对于您[标记为 `always_ask`](#require-approval-for-specific-tools) 的任何工具，请将其显式设置为 `true`。 |
-| `idempotentHint` | `false` | 使用相同参数的重复调用没有额外效果。仅供参考。 |
-| `openWorldHint` | `true` | 工具到达流程外的系统。仅供参考。 |
+| `idempotentHint` | `false` | 使用相同参数的重复调用没有额外效果。 |
+| `openWorldHint` | `true` | 工具会访问您进程之外的系统。 |
 
 注释是元数据，不是强制执行。标记为 `readOnlyHint: true` 的工具如果处理程序这样做，仍然可以写入磁盘。保持注释与处理程序准确一致。
 
@@ -373,20 +376,23 @@ tool(
 
 ### 配置允许的工具
 
-`tools`选项和允许/禁止列表影响两个层级：可用性（控制工具是否出现在Claude的上下文中）和权限（控制Claude尝试调用后是否批准该调用）。`tools`和裸名称`disallowedTools`条目改变可用性。`allowedTools`和作用域`disallowedTools`规则改变权限。如果您在`allowedTools`中命名其中一个[任务跟踪工具](https://code.claude.com/docs/zh-CN/agent-sdk/todo-tracking.md#model-availability)，Claude Code也会为该会话启用这些工具。
+您可以通过`tools`、`allowedTools`和`disallowedTools`选项控制两个层级：
+
+* **可用性**：工具是否出现在Claude的上下文中。要更改它，请使用`tools`选项，或在`disallowedTools`中列出裸内置工具名称，例如`"Bash"`。
+* **权限**：当Claude发起调用时，Claude Code是否批准该调用。要更改它，请使用`allowedTools`或限定范围的`disallowedTools`规则，例如`"Bash(rm *)"`。
 
 | 选项 | 层级 | 效果 |
 | :- | :- | :- |
 | `tools: ["Read", "Grep"]` | 可用性 | 仅列出的内置工具在Claude的上下文中。未列出的内置工具被移除。MCP工具不受影响。 |
 | `tools: []` | 可用性 | 所有内置工具都被移除。Claude只能使用您的MCP工具。 |
-| 允许的工具 | 权限 | 列出的工具无需权限提示即可运行。其他未列出的工具保持可用；调用通过[权限流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md)进行。 |
-| 禁止的工具 | 两者 | 裸工具名称如`"Bash"`从Claude的上下文中移除工具，与从`tools`中省略它的效果相同。作用域规则如`"Bash(rm *)"`将工具保留在上下文中，仅拒绝与[如所写](https://code.claude.com/docs/zh-CN/permissions.md#bash-rule-limits)匹配的调用。 |
+| 允许的工具 | 权限 | 列出的工具会被预先批准，但[任何允许规则都不会批准的调用](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#calls-an-allow-rule-never-approves)除外。对未列入列表的工具的调用将通过[权限流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md)进行。 |
+| 禁止的工具 | 两者 | 裸内置工具名称如`"Bash"`会从Claude的上下文中移除该工具。限定范围的规则如`"Bash(rm *)"`将工具保留在上下文中，并拒绝与其[如所写](https://code.claude.com/docs/zh-CN/permissions.md#bash-rule-limits)匹配的调用。 |
 
-要完全移除内置工具，请从`tools`中省略它或在`disallowedTools`中列出其裸名称（Python：`disallowed_tools`）；两者都将工具保留在上下文之外，以便Claude永远不会尝试它。作用域`disallowedTools`规则阻止匹配的调用但将工具保留为可见，因此Claude可能会浪费一个回合尝试它。有关完整的评估顺序，请参阅[配置权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md)。
+要从Claude的上下文中移除内置工具，请从`tools`中省略它，或在`disallowedTools`（TypeScript）或`disallowed_tools`（Python）中列出其裸名称。有关完整的评估顺序，请参阅[配置权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)。
 
 ### 要求特定工具需经批准
 
-将工具的`permission_policy`设置为`always_ask`后，`allowedTools`将不再批准该工具的调用，因此即使该工具已被列出，其调用也可以到达您的[`canUseTool`](https://code.claude.com/docs/zh-CN/agent-sdk/user-input)回调。如果改为设置`always_deny`，则[对该工具的调用会被拒绝](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)，但您加载的插件中的[mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md)[仍然可以批准它](https://code.claude.com/docs/zh-CN/permissions.md#precedence-among-rules-hooks-and-mods)。该字段仅适用于TypeScript，并且需要Agent SDK v0.3.301或更高版本。
+将工具的`permission_policy`设置为`always_ask`后，`allowedTools`将不再批准该工具的调用，因此即使该工具已被列出，其调用也可以到达您的[`canUseTool`](https://code.claude.com/docs/zh-CN/agent-sdk/user-input)回调。如果改为设置`always_deny`，则会[阻止该工具](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#permission-policy-values)。该字段仅适用于TypeScript，并且需要Agent SDK v0.3.301或更高版本。
 
 请将策略条目放在`createSdkMcpServer()`返回的配置对象的`tools`数组中，而不是放在传入该函数的`tools`选项中。以下示例展开了[天气工具示例](#weather-tool-example)中的`weatherServer`，并添加了一个`tools`数组，为`get_temperature`指定`always_ask`策略：
 
@@ -409,7 +415,7 @@ options: {
 
 要试用该策略，请将[调用自定义工具](#call-a-custom-tool)脚本中的`options`替换为本示例的`options`，然后在终端中运行该脚本。脚本会打印`Approval requested for mcp__weather__get_temperature`，随后输出Claude关于温度的回答。有关完整脚本，请参阅[TypeScript参考](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#mcpsdkserverconfigwithinstance)。
 
-如果您使用`auto`或`plan`[权限模式](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#permission-modes)，请在工具的[注解](#add-tool-annotations)中设置`destructiveHint: true`，以便对该工具的调用仍能到达您的回调。否则，[自动模式分类器](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)可能会在[TypeScript参考中列出的条件](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)下批准某些`always_ask`调用，而被其批准的调用不会到达您的回调。请显式设置该提示，因为对于`always_ask`调用，未设置的`destructiveHint`会被视为`false`，而不是默认为`true`。
+如果您使用`auto`或`plan`[权限模式](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#permission-modes)，请在工具的[注解](#add-tool-annotations)中设置`destructiveHint: true`，以防止[自动模式分类器](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)代替您的回调批准调用。否则，该分类器可能会在[TypeScript参考中列出的条件](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)下批准某些`always_ask`调用。请显式设置该提示，因为对于`always_ask`调用，未设置的`destructiveHint`会被视为`false`，而不是默认为`true`。
 
 ## 处理错误
 
@@ -637,9 +643,9 @@ return {
 
 ## 返回结构化数据
 
-`structuredContent` 是结果上的可选 JSON 对象，与 `content` 数组分开。使用它来返回原始值，Claude 可以将其作为精确字段读取，而不是从文本字符串或图像中解析它们。
+`structuredContent` 是结果上的可选 JSON 对象，与 `content` 数组分开。使用它来返回原始值，Claude 可以将其作为精确字段读取，而不是从文本字符串或图像中解析它们。对于 Python 处理程序，请参阅 [Python 中的结构化内容](#structured-content-in-python)。
 
-当设置 `structuredContent` 时，Claude 会接收 JSON 以及来自 `content` 的任何图像或资源块。`content` 中的文本块不会被转发，因为假设它们会复制结构化数据。下面的示例将图表呈现为图像块，并从同一处理程序的 `structuredContent` 中返回其后面的数据点。在代码片段中，`chartPngBuffer` 是一个包含呈现的 PNG 字节的 `Buffer`。
+当 TypeScript `tool()` 处理程序设置 `structuredContent` 时，Claude 会接收 JSON 以及 `content` 中的图像和资源块，而 `content` 中的文本块不会到达 Claude。下面的示例将图表呈现为图像块，并从同一处理程序的 `structuredContent` 中返回其后面的数据点。在代码片段中，`chartPngBuffer` 是一个包含呈现的 PNG 字节的 `Buffer`。
 
 ```typescript TypeScript theme={null}
 return {

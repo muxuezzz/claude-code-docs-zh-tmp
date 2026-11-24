@@ -875,7 +875,7 @@ class ClaudeAgentOptions:
 | `allowed_tools` | `list[str]` | `[]` | 无需提示即可自动批准的工具，但从[网络路径](https://code.claude.com/docs/zh-CN/permissions.md#network-paths)进行的读取除外。这不会限制 Claude 仅使用这些工具。如果您在此处列出[任务跟踪工具](https://code.claude.com/docs/zh-CN/agent-sdk/todo-tracking.md#model-availability)之一，Claude Code 也会为该会话启用它们。其他未列出的工具会交由 `permission_mode` 和 `can_use_tool` 处理。使用 `disallowed_tools` 阻止工具。见 [权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#allow-and-deny-rules) |
 | `system_prompt` | `str \| SystemPromptPreset \| SystemPromptCustom \| SystemPromptFile \| None` | `None` | 系统提示词配置。传递字符串以使用自定义提示词，`{"type": "preset", "preset": "claude_code"}` 以使用 Claude Code 的系统提示词（带可选 `"append"`），`{"type": "custom", "prompt": "..."}` 以使用也可以设置 `"snapshot"` 的自定义提示词，或 `{"type": "file", "path": "..."}` 从磁盘加载大型提示词。见 [`SystemPromptPreset`](#systempromptpreset)、[`SystemPromptCustom`](#systempromptcustom) 和 [`SystemPromptFile`](#systempromptfile) |
 | `mcp_servers` | `dict[str, McpServerConfig] \| str \| Path` | `{}` | MCP 服务器配置或配置文件路径 |
-| `strict_mcp_config` | `bool` | `False` | 当为 `True` 时，仅使用在 `mcp_servers` 中传递的服务器，忽略项目 `.mcp.json`、用户设置、插件提供的 MCP 服务器和 [claude.ai 连接器](https://code.claude.com/docs/zh-CN/mcp.md#use-mcp-servers-from-claude-ai)。映射到 CLI `--strict-mcp-config` 标志 |
+| `strict_mcp_config` | `bool` | `False` | 当为 `True` 时，使用在 `mcp_servers` 中传入的服务器，并忽略项目 `.mcp.json`、用户设置、插件提供的 MCP 服务器以及 [claude.ai 连接器](https://code.claude.com/docs/zh-CN/mcp.md#use-mcp-servers-from-claude-ai)。对应 CLI 的 `--strict-mcp-config` 标志 |
 | `permission_mode` | `PermissionMode \| None` | `None` | 工具使用的权限模式 |
 | `continue_conversation` | `bool` | `False` | 继续最近的对话 |
 | `resume` | `str \| None` | `None` | 要恢复的会话 ID |
@@ -895,7 +895,7 @@ class ClaudeAgentOptions:
 | `add_dirs` | `list[str \| Path]` | `[]` | Claude 可以访问的其他目录。SDK 将每个条目作为 `--add-dir` 传递给 Claude Code，因此使用 `project` 设置源时，Claude Code 也会[加载目录的 skill、命令和子代理](https://code.claude.com/docs/zh-CN/permissions.md#additional-directories-grant-file-access-not-configuration) |
 | `env` | `dict[str, str]` | `{}` | 合并到继承的进程环境之上的环境变量。见 [环境变量](https://code.claude.com/docs/zh-CN/env-vars.md) 了解底层 CLI 读取的变量，以及 [处理缓慢或停滞的 API 响应](#handle-slow-or-stalled-api-responses) 了解超时相关变量。设置 `CLAUDE_AGENT_SDK_CLIENT_APP` 以在 User-Agent 标头中标识您的应用 |
 | `extra_args` | `dict[str, str \| None]` | `{}` | 直接传递给 CLI 的其他 CLI 参数 |
-| `max_buffer_size` | `int \| None` | `None` | 缓冲 CLI stdout 时的最大字节数 |
+| `max_buffer_size` | `int \| None` | `None` | SDK 从 CLI 接受的单条消息的最大长度，以字符为单位。`None` 使用 1,048,576。更长的消息会引发 [`CLIJSONDecodeError`](#clijsondecodeerror) |
 | `debug_stderr` | `Any` | `sys.stderr` | *已弃用* - SDK 忽略此值。使用 `stderr` 回调获取 CLI stderr 输出 |
 | `stderr` | `Callable[[str], None] \| None` | `None` | CLI 中 stderr 输出的回调函数 |
 | `can_use_tool` | [`CanUseTool`](#canusetool) ` \| None` | `None` | 工具权限回调，仅在[权限流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)落到提示时调用。对于由 `allowed_tools`、允许规则或 `permission_mode` 自动批准的调用不会调用。允许规则不会预批准[任何模式都不自动批准的操作](https://code.claude.com/docs/zh-CN/permission-modes.md#actions-no-mode-auto-approves)。见 [`CanUseTool`](#canusetool) 了解详情 |
@@ -912,7 +912,7 @@ class ClaudeAgentOptions:
 | `plugins` | `list[SdkPluginConfig]` | `[]` | 从本地路径加载自定义插件。见 [插件](https://code.claude.com/docs/zh-CN/agent-sdk/plugins.md) 了解详情 |
 | `sandbox` | [`SandboxSettings`](#sandboxsettings) ` \| None` | `None` | 以编程方式配置沙箱行为。见 [沙箱设置](#sandboxsettings) 了解详情 |
 | `setting_sources` | `list[SettingSource] \| None` | `None`（CLI 默认值：所有源） | 控制加载哪些文件系统设置。传递 `[]` 以禁用用户、项目和本地设置。如果设置了 `skills` 而未设置此字段，则仅加载用户和项目源。显式设置 `setting_sources` 以保留本地设置。端点托管策略始终会加载；当会话使用组织凭据在[符合条件的配置](https://code.claude.com/docs/zh-CN/server-managed-settings.md#platform-availability)上进行身份验证时，会获取服务器托管设置。有关无论此选项如何都会读取的输入，见 [settingSources 不控制什么](https://code.claude.com/docs/zh-CN/agent-sdk/claude-code-features.md#what-settingsources-does-not-control) |
-| `skills` | `list[str] \| Literal["all"] \| None` | `None` | 会话可用的 skill。传递 `"all"` 以启用每个发现的 skill，或传递 skill 名称列表。仅传递精确名称。SDK 在启动 Claude Code 进程之前会以 `ValueError` 拒绝格式错误和通配符形式的名称；此检查需要 Python Agent SDK 0.2.129 或更高版本。设置时，SDK 会自动将 Skill 工具添加到 `allowed_tools`。如果您也传递 `tools`，请在该列表中包含 `"Skill"`。见 [Skills](https://code.claude.com/docs/zh-CN/agent-sdk/skills.md) |
+| `skills` | `list[str] \| Literal["all"] \| None` | `None` | 限制主 Agent 的 skill。传递 `"all"` 以启用每个发现的 skill，或传递 skill 名称列表。仅传递精确名称。SDK 在启动 Claude Code 进程之前会以 `ValueError` 拒绝格式错误和通配符形式的名称；此检查需要 Python Agent SDK 0.2.129 或更高版本。如果您也传递 `tools`，请在该列表中包含 `"Skill"`。见 [Skills](https://code.claude.com/docs/zh-CN/agent-sdk/skills.md) |
 | `max_thinking_tokens` | `int \| None` | `None` | *已弃用* - 思考块的最大 token 数。改用 `thinking` |
 | `thinking` | [`ThinkingConfig`](#thinkingconfig) ` \| None` | `None` | 控制扩展思考行为。优先于 `max_thinking_tokens` |
 | `effort` | [`EffortLevel`](#effortlevel) ` \| None` | `None` | 思考深度的 effort 级别。见 [调整 effort 级别](https://code.claude.com/docs/zh-CN/model-config.md#adjust-effort-level) |
@@ -1123,7 +1123,7 @@ asyncio.run(main())
 2. 项目设置（`.claude/settings.json`）
 3. 用户设置（`~/.claude/settings.json`）
 
-编程选项（如 `agents`、`allowed_tools` 和 `settings`）覆盖用户、项目和本地文件系统设置。托管策略设置优先于编程选项。
+您在 `allowed_tools` 或 `settings` 中传递的权限规则会[添加到](https://code.claude.com/docs/zh-CN/settings.md#lists-merge-instead-of-overriding)这些文件的规则中。对于大多数单值设置项，Claude Code 会采用 `settings` 中的值，而不是这些文件中的值。托管策略设置优先于大多数编程选项。
 
 ### `AgentDefinition`
 
@@ -1175,8 +1175,8 @@ class AgentDefinition:
 PermissionMode = Literal[
     "default",  # Standard permission behavior
     "acceptEdits",  # Auto-accept file edits
-    "plan",  # Planning mode - explore without editing
-    "dontAsk",  # Deny anything not pre-approved instead of prompting
+    "plan",  # Planning mode - Claude explores and plans
+    "dontAsk",  # Deny calls that would otherwise prompt
     "bypassPermissions",  # Bypass permission checks; explicit ask rules still prompt (use with caution)
     "auto",  # A model classifier reviews actions such as shell commands and network requests
 ]
@@ -1214,7 +1214,12 @@ CanUseTool = Callable[
 
 返回 `PermissionResult`（`PermissionResultAllow` 或 `PermissionResultDeny`）。
 
-回调是 SDK 对交互式权限提示的替代：它仅在[权限评估流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)解析为提示时调用。已由 `allowed_tools` 条目、设置中的允许规则或权限模式（如 `acceptEdits` 或 `bypassPermissions`）批准的工具调用永远不会调用它。要把关每个工具调用，请改用 [`PreToolUse` hook](https://code.claude.com/docs/zh-CN/agent-sdk/hooks)。
+该回调取代交互式权限提示。当[权限评估流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)解析为提示时，SDK 会调用 `can_use_tool`。以下列任一方式批准的调用会直接运行，不会调用 `can_use_tool`：
+
+* 由 `allowed_tools` 条目或设置中的允许规则批准的调用
+* 由权限模式批准的调用，例如 `acceptEdits` 模式下的文件编辑
+
+要检查这些调用，请使用 [`PreToolUse` hook](https://code.claude.com/docs/zh-CN/agent-sdk/hooks)，它也会针对这些调用运行。
 
 允许规则不会预批准[任何模式都不自动批准的操作](https://code.claude.com/docs/zh-CN/permission-modes.md#actions-no-mode-auto-approves)；见 [权限如何被评估](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated) 了解其中哪些会到达回调，以及在 `dontAsk` 和 `auto` 模式下会发生什么。
 
@@ -1239,7 +1244,7 @@ class ToolPermissionContext:
 | 字段 | 类型 | 描述 |
 | :- | :- | :- |
 | `signal` | `Any \| None` | 保留供将来中止信号支持 |
-| `suggestions` | `list[PermissionUpdate]` | 来自 CLI 的权限更新建议。Bash 提示包括带有 `localSettings` 目标的建议，因此在 `updated_permissions` 中返回它会将规则写入 `.claude/settings.local.json` 并在会话间持久化。 |
+| `suggestions` | `list[PermissionUpdate]` | 来自 CLI 的权限更新建议。Bash 提示可能包含带有 `localSettings` 目标的建议，因此在 `updated_permissions` 中返回它会将规则写入 `.claude/settings.local.json` 并在会话间持久化。 |
 | `tool_use_id` | `str \| None` | 此提示所针对的特定工具调用的标识符。传递给 `can_use_tool` 时始终填充 |
 | `agent_id` | `str \| None` | 当调用来自子代理时的子代理 ID；主 Agent 为 `None` |
 | `blocked_path` | `str \| None` | 触发权限请求的文件路径（如适用）。例如，当 Bash 命令尝试访问允许目录外的路径时 |
@@ -1378,9 +1383,9 @@ ThinkingConfig = ThinkingConfigAdaptive | ThinkingConfigEnabled | ThinkingConfig
 | :- | :- | :- |
 | `adaptive` | `type`, `display` | Claude 自适应决定何时思考 |
 | `enabled` | `type`, `budget_tokens`, `display` | 启用具有特定 token 预算的思考 |
-| `disabled` | `type` | 禁用思考 |
+| `disabled` | `type` | 在[模型和提供商允许的情况下](https://code.claude.com/docs/zh-CN/model-config.md#where-you-cant-turn-thinking-off)关闭思考 |
 
-可选的 `display` 字段控制思考文本以 `"summarized"` 还是 `"omitted"` 形式返回。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此请设置 `"summarized"` 以在 [`ThinkingBlock`](#thinkingblock) 输出中接收思考内容。Claude Code 不会将您的 `display` 值传递给某些提供商，例如 Amazon Bedrock 和 Google Cloud 的 Agent Platform。在这些提供商上，即使您将 `display` 设置为 `"summarized"`，Opus 4.7 及更高版本也会返回空的 `ThinkingBlock` 输出。
+可选的 `display` 字段控制思考文本以 `"summarized"` 还是 `"omitted"` 形式返回。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此请设置 `"summarized"` 以在 [`ThinkingBlock`](#thinkingblock) 输出中接收思考内容。在 Amazon Bedrock 和 Google Cloud 的 Agent Platform 等提供商上，对于其能识别的较早模型，Claude Code 不会传递 `display`。这些模型包括 Opus 4.6、Sonnet 4.6、Haiku 4.5 及更早的模型，它们使用各自的默认值。
 
 因为这些是 `TypedDict` 类，它们在运行时是普通字典。可以将它们构造为字典字面量，也可以像调用构造函数一样调用类；两者都产生 `dict`。使用 `config["budget_tokens"]` 访问字段，而不是 `config.budget_tokens`：
 
@@ -1720,14 +1725,16 @@ class ResultMessage:
 * `is_error`：当对话以错误状态结束时为 `True`。在 `error_*` 子类型上始终为 `True`。在 `subtype="success"` 上，有三种情况为 `True`。请检查 `stop_reason` 以区分它们：
   * `"refusal"`：模型拒绝回复。请在 `result` 中读取拒绝文本；当 `result` 为空时，在前面的 `AssistantMessage` 中读取。
   * `"tool_deferred_unavailable"`：恢复会话时，[延迟的工具](https://code.claude.com/docs/zh-CN/hooks.md#defer-a-tool-call-for-later)已不再可用，例如因为其 MCP 服务器未连接。在以下两种情况中，恢复后发送的提示词与随恢复一起传递的提示词效果相同：
-    * 无提示词：该调用仍处于挂起状态。使该工具可用后，再次不带提示词地恢复，该调用会首先运行。
-    * 有提示词：Claude Code 会在没有该工具结果的情况下回答它，延迟的调用将不复存在。如果仍需要调用该工具，请发送新的提示词。
+    * 无提示词：默认情况下，该调用仍处于挂起状态。使该工具可用后，再次不带提示词地恢复，该调用会首先运行。
+    * 有提示词：默认情况下，该提示词不会到达 Claude，且该调用仍处于挂起状态。要在没有该工具的情况下继续，请[丢弃该调用](https://code.claude.com/docs/zh-CN/hooks.md#resume-when-a-deferred-tool-is-unavailable)。
   * 任何其他值：轮次因 Claude Code 报告的错误（代替模型回复）而结束，例如 API 错误。读取 `terminal_reason` 了解原因，读取 `result` 获取消息，当 API 返回 HTTP 状态时读取 `api_error_status` 获取该状态。
 * `api_error_status`：终止 API 错误的 HTTP 状态代码。当轮次结束时没有错误时为 `None`。仅在 `subtype="success"` 上填充。
 * `result`：在 `subtype="success"` 上为最终助手消息的文本，或在 `error_*` 子类型上为 `None`。当 `subtype="success"` 且 `is_error=True` 时，如果可用，此字段保存 API 错误字符串，但可能为空，因此请检查 `api_error_status` 和前面的 `AssistantMessage` 内容以获取详情。
 * `errors`：循环级别的错误字符串，例如最大轮次消息。仅在 `error_*` 子类型上填充。
 * `terminal_reason`：查询循环结束的原因，例如 `"completed"`、`"max_turns"`、`"api_error"`、`"aborted_streaming"` 或 `"aborted_tools"`。值为 `"aborted_streaming"` 或 `"aborted_tools"` 意味着轮次在完成前被中止。常见原因是 [`interrupt()`](#claudesdkclient) 和权限回调返回 [`PermissionResultDeny`](#permissionresultdeny) 且 `interrupt=True`。在早于该字段的 CLI 版本上为 `None`，在本地命令（如 `/voice` 或 `/usage`）的结果上为 `None`，这些命令绕过查询循环，或在会话严重失败时发出的合成错误结果上为 `None`。镜像 TypeScript SDK 的 [`SDKResultMessage.terminal_reason`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#sdkresultmessage)，其列出了完整的值集。
-* `origin`：触发此轮次的用户消息的来源。在[流式输入模式](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)中，检查此项以区分您自己的提示词结果（其中 `origin` 为 `None` 或 `{"kind": "human"}`）与注入的轮次（如后台任务通知）的结果。需要 Python Agent SDK 0.2.137 或更高版本。
+* `origin`：触发此轮次的用户消息的来源。需要 Python Agent SDK 0.2.137 或更高版本。不要仅凭 `kind` 就屏蔽某个结果。在[流式输入模式](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)中，检查 `origin` 以确定该轮次是否由您自己的提示词启动：
+  * **您自己的提示词**：`origin` 为 `None` 或 `{"kind": "human"}`
+  * **后台任务通知**：`origin["kind"]` 为 `"task-notification"`。该轮次的结果还可能包含 Claude 对您在该轮次运行工具期间发送的消息的回复。
 
 当多个后台任务在相近时间内完成时，Claude Code 可以在一个轮次中回复它们的通知，而不是为每个通知各用一个轮次。您仍会按顺序为每个通知收到一个 `ResultMessage`，每个都带有 `kind` 为 `"task-notification"` 的 `origin`。除最后一个外，其余消息的 `num_turns` 均为 `0` 且 `result` 为空，最后一个则承载回复所有通知的那个轮次。
 
@@ -1853,7 +1860,7 @@ class ConversationResetMessage:
 
 ### `TaskStartedMessage`
 
-当后台任务启动时发出。后台任务是在主轮次之外跟踪的任何内容：后台 Bash 命令、[Monitor](#monitor) 监视、通过 Agent 工具生成的子代理或远程 Agent。`task_type` 字段告诉您是哪一个。此命名与 `Task` 到 `Agent` 工具重命名无关。
+当后台任务启动时发出。后台任务是在主轮次之外跟踪的任何内容，例如后台 Bash 命令、[Monitor](#monitor) 监视、通过 Agent 工具生成的子代理或远程 Agent。此命名与 `Task` 到 `Agent` 工具重命名无关。
 
 ```python theme={null}
 @dataclass
@@ -1873,7 +1880,7 @@ class TaskStartedMessage(SystemMessage):
 | `uuid` | `str` | 唯一消息标识符 |
 | `session_id` | `str` | 会话标识符 |
 | `tool_use_id` | `str \| None` | 关联的工具使用 ID |
-| `task_type` | `str \| None` | 哪种后台任务：`"local_bash"` 用于后台 Bash 和 Monitor 监视，`"local_agent"` 或 `"remote_agent"` |
+| `task_type` | `str \| None` | 哪种后台任务，例如 `"local_bash"` 用于后台 Bash 和 Monitor 监视，`"local_agent"` 用于子代理，`"mcp_task"` 用于[后台 MCP 工具调用](https://code.claude.com/docs/zh-CN/mcp.md#automatic-backgrounding-of-long-tool-calls)，或 `"remote_agent"` |
 
 ### `TaskUsage`
 
@@ -2078,7 +2085,7 @@ class ResultError(ProcessError):
 
 ### `CLIJSONDecodeError`
 
-当 JSON 解析失败时引发。
+当 JSON 解析失败，或来自 CLI 的单条消息长度超过 `max_buffer_size` 时引发。要提高该限制并继续已中断的工作，请参阅[大型工具调用和结果](https://code.claude.com/docs/zh-CN/agent-sdk/troubleshooting.md#large-tool-calls-and-results)。
 
 ```python theme={null}
 class CLIJSONDecodeError(ClaudeSDKError):
@@ -2161,7 +2168,12 @@ class HookMatcher:
         None  # Timeout in seconds. When omitted, the per-event default applies:
         # 600 for most events, 30 for UserPromptSubmit
     )
+    on_failure: Literal["continue", "block"] | None = (
+        None  # "block" blocks the action when a callback fails
+    )
 ```
+
+要确定 `on_failure` 涵盖的范围，见 [回调失败时阻止操作](https://code.claude.com/docs/zh-CN/agent-sdk/hooks.md#block-the-action-when-a-callback-fails)。
 
 ### `HookInput`
 
@@ -2419,7 +2431,7 @@ HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput
 class SyncHookJSONOutput(TypedDict):
     # Control fields
     continue_: NotRequired[bool]  # Whether to proceed (default: True)
-    suppressOutput: NotRequired[bool]  # Hide stdout from transcript
+    suppressOutput: NotRequired[bool]  # Has no effect
     stopReason: NotRequired[str]  # Message when continue is False
 
     # Decision fields
@@ -2507,7 +2519,7 @@ class AsyncHookJSONOutput(TypedDict):
 
 ### Hook 使用示例
 
-此示例注册两个 hook：一个阻止危险的 Bash 命令（如 `rm -rf /`），另一个记录所有工具使用以进行审计。安全 hook 仅在 Bash 命令上运行（通过 `matcher`），而日志 hook 在所有工具上运行。
+此示例注册两个 hook：一个阻止危险的 Bash 命令（如 `rm -rf /`），另一个记录所有工具使用以进行审计。借助其 [`Bash` 匹配器](https://code.claude.com/docs/zh-CN/agent-sdk/hooks#matchers)，安全 hook 在 Bash 工具调用上运行。日志 hook 没有匹配器，因此会匹配所有工具。
 
 ```python theme={null}
 import asyncio
@@ -2596,7 +2608,7 @@ asyncio.run(main())
 当 Claude 在 `Agent` 调用中省略 `run_in_background` 时，默认情况下，您的主 Agent 不会等待新 Agent，而子代理会等待：
 
 * **从您的主 Agent 调用**：新 Agent 在后台运行，结果带有 `status: "async_launched"`。如需让主 Agent 改为等待新 Agent，请参阅[选择 Claude 是否等待子代理](https://code.claude.com/docs/zh-CN/agent-sdk/subagents.md#choose-whether-claude-waits-for-subagents)。
-* **从您的某个子代理调用**：发起调用的子代理会[等待新 Agent](https://code.claude.com/docs/zh-CN/sub-agents.md#let-subagents-spawn-their-own-subagents)。当新 Agent 的定义将 [`background`](#agentdefinition) 设置为 `True`，或者您通过将 `CLAUDE_CODE_FORK_SUBAGENT` 设置为 `0` 来[关闭 fork 模式](https://code.claude.com/docs/zh-CN/sub-agents.md#turn-fork-mode-on-or-off)时，新 Agent 会改为在后台运行。
+* **从您的某个子代理调用**：发起调用的子代理会[等待新 Agent](https://code.claude.com/docs/zh-CN/sub-agents.md#let-subagents-spawn-their-own-subagents)。当新 Agent 的定义将 [`background`](#agentdefinition) 设置为 `True` 时，新 Agent 会改为在后台运行。
 
 在 Python SDK v0.2.169 之前，由您的子代理启动的 Agent 默认也在后台运行。该版本是首个捆绑 Claude Code v2.1.302 或更高版本的版本。
 
@@ -2616,7 +2628,7 @@ asyncio.run(main())
     ],
     "resolvedModel": str | None,  # 子代理启动时使用的模型
     "modelsUsed": list[str] | None,  # 按顺序使用的模型，连续重复项已合并
-    "totalToolUseCount": int,  # Agent 进行的工具调用次数
+    "totalToolUseCount": int,  # Agent 进行的工具调用次数，不包括 SubagentHandback 调用
     "totalDurationMs": int,  # 执行时长（毫秒）
     "totalTokens": int,  # 来自最后一次 API 请求的 token 数，而非整个运行过程
     "usage": {  # token 使用统计
@@ -2660,7 +2672,7 @@ asyncio.run(main())
     "resolvedModel": str | None,  # 转入后台时正在使用的模型
     "modelsUsed": list[str] | None,  # 转入后台之前按顺序使用的模型，连续重复项已合并
     "prompt": str,  # Agent 运行的提示词
-    "outputFile": str,  # 写入 Agent 输出的文件路径
+    "outputFile": str,  # 任务输出文件的路径
     "canReadOutputFile": bool | None,  # 是否可以直接读取输出文件
 }
 ```
@@ -2777,7 +2789,7 @@ Claude Code 根据子代理的最后一次 API 请求（而非整个运行过程
 
 运行一个后台来源，并将每个事件传递给 Claude，使其无需轮询即可做出响应：`command` 运行一个脚本，每行 stdout 产生一个事件；`ws` 打开一个 WebSocket，每个文本帧产生一个事件。`command` 和 `ws` 必须且只能提供其中一个。
 
-当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则；WebSocket 监视会单独请求批准。`ws` 来源需要 Claude Code v2.1.195 或更高版本。有关行为和提供商可用性，请参阅 [Monitor 工具参考](https://code.claude.com/docs/zh-CN/tools-reference.md#monitor-tool)。
+`ws` 来源需要 Claude Code v2.1.195 或更高版本。当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则。有关 WebSocket 权限、行为和提供商可用性，请参阅 [Monitor 工具参考](https://code.claude.com/docs/zh-CN/tools-reference.md#monitor-tool)。
 
 **输入：**
 
@@ -3060,12 +3072,13 @@ Claude Code 根据子代理的最后一次 API 请求（而非整个运行过程
     "totalLines": int | None,  # 可选；应用 head_limit 和 offset 之前的总数，在 content 模式下
     "appliedLimit": int | None,  # 当 head_limit 截断了结果时存在
     "appliedOffset": int | None,  # 当应用了 offset 时存在
+    "timedOut": bool | None,  # 当搜索超时时为 True，因此结果可能不完整
 }
 ```
 
 Grep 在每种输出模式下都返回这种 dict 形状。存在哪些可选键取决于 `output_mode`。
 
-`totalFiles` 需要 Claude Code v2.1.208 或更高版本。`totalLines` 需要 Claude Code v2.1.210 或更高版本。
+`totalFiles` 需要 Claude Code v2.1.208 或更高版本。`totalLines` 需要 Claude Code v2.1.210 或更高版本。`timedOut` 需要 Claude Code v2.1.317 或更高版本。
 
 ### NotebookEdit
 
@@ -3121,7 +3134,7 @@ Grep 在每种输出模式下都返回这种 dict 形状。存在哪些可选键
     "bytes": int,  # 获取内容的大小（字节）
     "code": int,  # HTTP 响应码
     "codeText": str,  # HTTP 响应码文本
-    "result": str,  # 将提示词应用于内容后得到的处理结果
+    "result": str,  # 对提示词的回答，或页面文本
     "durationMs": int,  # 获取和处理内容所用的时间（毫秒）
     "url": str,  # 被获取的 URL
 }
@@ -3573,7 +3586,7 @@ class SandboxSettings(TypedDict, total=False):
 | 属性 | 类型 | 默认值 | 描述 |
 | :- | :- | :- | :- |
 | `enabled` | `bool` | `False` | 为命令执行启用沙箱模式 |
-| `autoAllowBashIfSandboxed` | `bool` | `True` | 启用沙箱时自动批准 bash 命令 |
+| [`autoAllowBashIfSandboxed`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-autoallowbashifsandboxed) | `bool` | `False` | 启用沙箱时自动批准 Bash 命令。`False` 默认值需要 Python SDK v0.2.182 或更高版本 |
 | `excludedCommands` | `list[str]` | `[]` | 绕过沙箱限制的命令，例如 `["docker *"]`。这些自动运行沙箱外，无需模型参与；[`sandbox.excludedCommands`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-excludedcommands) 涵盖何时应用条目 |
 | `allowUnsandboxedCommands` | `bool` | `True` | 允许模型请求在沙箱外运行命令。当为 `True` 时，模型可以在工具输入中设置 `dangerouslyDisableSandbox`，这会回退到 [权限系统](#permissions-fallback-for-unsandboxed-commands) |
 | `network` | [`SandboxNetworkConfig`](#sandboxnetworkconfig) | `None` | 网络特定的沙箱配置 |
@@ -3584,7 +3597,7 @@ class SandboxSettings(TypedDict, total=False):
 >
 > 沙箱取决于平台支持，在 Linux 上，需要 `bubblewrap` 和 `socat` 等工具。默认情况下，当 `enabled` 为 `True` 但沙箱无法启动时，命令在沙箱外运行，并在 stderr 上显示警告。此默认值与 TypeScript SDK 不同，后者中 `failIfUnavailable` 默认为 `true`。
 >
-> 在沙箱设置中设置 `"failIfUnavailable": True` 以改为停止。SDK 会将 `failIfUnavailable` 与已声明的 `SandboxSettings` 字段一起转发给 Claude Code。然后 `query()` 报告一个 `ResultMessage`，其 `subtype="error_during_execution"`，原因在 `errors` 中。因为这是一个单次 `query()` 调用，SDK 在生成该错误结果后会引发异常，所以请将循环包装在 try 块中以继续执行。有关错误约定，请参阅 [处理结果](https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop.md#handle-the-result)。
+> 在沙箱设置中设置 `"failIfUnavailable": True` 以改为停止。设置 `failIfUnavailable` 后，当沙箱无法启动时，`query()` 会引发 [`ResultError`](#resulterror)，因此请将 `async for` 循环包装在 `try` 块中。原因位于该异常的 `errors` 列表中。SDK 会将 `failIfUnavailable` 与已声明的 `SandboxSettings` 字段一起转发给 Claude Code。
 
 要阻止沙箱化命令写入某个文件，请在沙箱设置中将其绝对路径列在 [`denyWrite`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-filesystem-denywrite) 下，例如 `"filesystem": {"denyWrite": ["/home/user/project/.env"]}`。SDK 会将 `filesystem` 与已声明的 `SandboxSettings` 字段一起转发给 Claude Code。沙箱启动后，会阻止对您所列的每个绝对路径的写入。
 
@@ -3611,8 +3624,8 @@ async def main():
         ):
             print(message)
     except Exception as error:
-        # A single-shot query() raises after yielding an error result,
-        # such as when failIfUnavailable is set and the sandbox can't start.
+        # query() raises, for example, when failIfUnavailable is set
+        # and the sandbox can't start.
         print(f"Session ended with an error: {error}")
 
 
@@ -3654,22 +3667,15 @@ class SandboxNetworkConfig(TypedDict, total=False):
 
 > [!NOTE]
 >
-> 内置沙箱代理基于请求的主机名强制执行网络允许列表，不会终止或检查 TLS 流量，因此 [域名前置](https://en.wikipedia.org/wiki/Domain_fronting) 等技术可能会绕过它。有关详细信息，请参阅 [沙箱安全限制](https://code.claude.com/docs/zh-CN/sandboxing.md#security-limitations)，以及 [安全部署](https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md#traffic-forwarding) 以配置 TLS 终止代理。
+> 内置沙箱代理基于请求的主机名强制执行网络允许列表。默认情况下，该代理不会终止或检查 TLS 流量，因此 [域名前置](https://en.wikipedia.org/wiki/Domain_fronting) 等技术可能会绕过允许列表。有关详细信息，请参阅 [沙箱隔离安全限制](https://code.claude.com/docs/zh-CN/sandboxing.md#security-limitations)，以及 [安全部署](https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md#traffic-forwarding) 以配置 TLS 终止代理。
 
 ### `SandboxIgnoreViolations`
 
-用于忽略特定沙箱违规的配置。
+要从沙箱违规报告中排除的违规。每个键匹配命令的一部分，或使用 `*` 匹配所有命令；每个值列出要在违规行中匹配的文本：`{"*": ["/etc/hosts"]}` 会隐藏提及 `/etc/hosts` 的违规。匹配的访问仍会被阻止。请参阅 [`sandbox.ignoreViolations`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-ignoreviolations)。
 
 ```python theme={null}
-class SandboxIgnoreViolations(TypedDict, total=False):
-    file: list[str]
-    network: list[str]
+SandboxIgnoreViolations = dict[str, list[str]]
 ```
-
-| 属性 | 类型 | 默认值 | 描述 |
-| :- | :- | :- | :- |
-| `file` | `list[str]` | `[]` | 要忽略违规的文件路径模式 |
-| `network` | `list[str]` | `[]` | 要忽略违规的网络模式 |
 
 ### 沙箱外命令的权限回退
 

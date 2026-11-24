@@ -41,13 +41,17 @@ Claude 为浏览器任务打开新标签页，并共享您浏览器的登录状�
 * [Claude Code](https://code.claude.com/docs/zh-CN/quickstart.md#step-1-install-claude-code)
 * 直接 Anthropic 计划（Pro、Max、Ultra、Team 或 Enterprise）
 
-在已启用 HIPAA 的 Enterprise 组织中，Claude in Chrome 默认处于关闭状态，[Owner](https://code.claude.com/docs/zh-CN/server-managed-settings.md#access-control) 可以在 [**Organization settings > Claude in Chrome**](https://claude.ai/admin-settings/browser-extension) 中将其启用。您与 Anthropic 签订的商业伙伴协议（BAA）不涵盖通过 Claude in Chrome 发送到第三方网站的数据。有关合格服务（Eligible Services）的列表，请参阅[实施指南](https://trust.anthropic.com/resources?s=l1wrssd9hsbi4gak0tp5a6\&name=%5Banthropic%5D-hipaa-ready-offering-implementation-guide)。
-
 Chrome 集成还需要使用 `/login` 登录。如果您使用 API 密钥或来自 [`claude setup-token`](https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token) 的长期令牌进行身份验证，即使您传递 `--chrome`，Claude Code 也会保持 Chrome 集成处于关闭状态。浏览器扩展程序无法使用这些凭据进行身份验证。
 
 > [!NOTE]
 >
 > Chrome 集成不可通过 Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry 等第三方提供商获得。如果您仅通过第三方提供商访问 Claude，则需要单独的 claude.ai 账户来使用此功能。
+
+### 启用 HIPAA 或零数据保留时的 Chrome 可用性
+
+在已启用 HIPAA 的 Enterprise 组织中，Claude in Chrome 默认处于关闭状态，[Owner](https://code.claude.com/docs/zh-CN/server-managed-settings.md#access-control) 可以在 [**Organization settings > Claude in Chrome**](https://claude.ai/admin-settings/browser-extension) 中将其启用。您与 Anthropic 签订的商业伙伴协议（BAA）不涵盖通过 Claude in Chrome 发送到第三方网站的数据。有关合格服务（Eligible Services）的列表，请参阅[实施指南](https://trust.anthropic.com/resources?s=l1wrssd9hsbi4gak0tp5a6\&name=%5Banthropic%5D-hipaa-ready-offering-implementation-guide)。
+
+如果您的组织为 Claude Code 启用了[零数据保留（ZDR）](https://code.claude.com/docs/zh-CN/zero-data-retention.md)，则 Claude in Chrome 在 Claude Code 中不可用。即使 Owner 已在 **Organization settings > Claude in Chrome** 中将其启用，或者您传递了 `--chrome`，它也会保持关闭状态。`/chrome` 会报告 `Claude in Chrome is disabled by your organization's policy`。在您的组织允许的情况下，您仍然可以在 Claude Code 之外使用该扩展程序。
 
 ## 在 CLI 中开始使用
 
@@ -74,9 +78,9 @@ type "hooks", and tell me what results appear
 
 如果 Claude Code 在执行浏览器操作前请求权限，请批准。该对话框以 `Claude in Chrome wants to` 开头，并提供在本次会话中允许该站点上所有操作的选项。Claude 会打开一个新标签页并开始执行任务。
 
-随时运行 `/chrome` 可检查连接状态、管理权限、重新连接扩展程序，或选择要使用的已连接浏览器。当状态面板显示“状态：已启用”和“扩展程序：已安装”时，表示集成正常工作。
+随时运行 `/chrome` 可检查连接状态、管理权限、重新连接扩展程序，或选择要使用的已连接浏览器。
 
-如果连接了多个浏览器，您可以选择 Claude 使用哪一个。如果在您做出选择之前就开始了浏览器操作，Claude 会提示您选择一个。如需之后切换浏览器，请运行 `/chrome` 并选择 **Select browser…**。即使有其他浏览器连接，Claude 也会继续使用您选择的浏览器。
+如果连接了多个浏览器，您可以选择 Claude 使用哪一个。如果在您做出选择之前就开始了浏览器操作，Claude 会提示您选择一个。如需之后切换浏览器，请运行 `/chrome` 并选择其他浏览器。即使有其他浏览器连接，Claude 也会继续使用您选择的浏览器。
 
 对于 VS Code，请参阅 [VS Code 中的浏览器自动化](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)。
 
@@ -97,7 +101,7 @@ type "hooks", and tell me what results appear
 
 ### 默认启用 Chrome
 
-如需无需每次传递 `--chrome` 即可连接 Chrome，请在 CLI 会话中运行 `/chrome` 并选择**默认启用**。在 [VS Code 扩展](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)中，在输入框中输入 `/chrome` 并打开**默认启用**开关。两者共享同一个设置，因此在任一处启用后，CLI 和 VS Code 都会启用该设置。
+如需无需每次传递 `--chrome` 即可连接 Chrome，请在 CLI 会话中运行 `/chrome` 并选择默认启用 Chrome 的选项。在 [VS Code 扩展](https://code.claude.com/docs/zh-CN/vs-code.md#automate-browser-tasks-with-chrome)中，在输入框中输入 `/chrome` 并打开**默认启用**开关。CLI 和 VS Code 共享同一个设置，因此在任一处启用后，两者都会启用该设置。
 
 启用该设置并使用 Claude Code v2.1.287 或更高版本时，每个 VS Code 会话都会在启动时连接到您的浏览器，因此 Claude 无需您输入 `@browser` 即可使用浏览器。在更早的版本中，或者关闭该设置时，VS Code 会话会在您输入 `@browser` 时连接。
 
@@ -106,6 +110,8 @@ Chrome 未运行时，Claude Code 会正常启动。
 > [!NOTE]
 >
 > 默认启用 Chrome 会增加上下文使用量，因为浏览器工具及其说明会始终被加载。如果您注意到上下文消耗增加，请关闭该设置，仅在需要时连接：在 CLI 中使用 `--chrome`，或在 VS Code 输入框中输入 [`@browser`](https://code.claude.com/docs/zh-CN/vs-code#automate-browser-tasks-with-chrome)。
+
+如需在保持该设置开启的同时启动单个不使用 Chrome 的 CLI 会话，请在终端中运行 [`claude --no-chrome`](https://code.claude.com/docs/zh-CN/cli-reference#cli-flags)。
 
 ### 回答启动对话框
 
@@ -118,17 +124,17 @@ Chrome 未运行时，Claude Code 会正常启动。
 
 ### 管理站点权限
 
-站点级权限继承自 Chrome 扩展程序。在 Chrome 扩展程序设置中管理权限，以控制 Claude 可以在哪些站点上浏览、点击和输入。在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)下，当自动模式分类器本身批准了对某个站点的浏览器调用时，扩展程序会跳过该调用的逐站点检查，除非您的权限规则拒绝 Claude in Chrome 访问任何站点。
+如需让 Claude 在某个站点上执行操作，请在 Claude Code 询问时批准。在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)下，当分类器本身批准了对某个站点的浏览器调用时，扩展程序可以跳过其自身针对该调用的逐站点检查，除非您的权限规则拒绝 Claude in Chrome 访问至少一个站点。
 
 ### VS Code 会话中的权限提示
 
-在 VS Code 会话中，当 Claude Code 在执行浏览器操作前进行询问时，提示会以卡片形式显示在聊天面板中。当操作针对您尚未允许的站点时，该卡片还会提供允许该站点的选项。
+在 VS Code 会话中，当 Claude Code 在执行浏览器操作前进行询问时，提示会以卡片形式显示在聊天面板中。
 
 在因启用了[默认启用](#enable-chrome-by-default)而在启动时连接到浏览器的会话中，无论处于 Manual、Edit automatically、Auto 还是 Bypass permissions 模式，Claude Code 在对您尚未允许的站点执行浏览器操作前都会询问您。在 Auto 和 Bypass permissions 模式下，此行为会持续到您在该会话中输入 `@browser` 为止。
 
 ### 计划模式下的浏览器工具
 
-在[计划模式](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode)下，Claude 在录制 GIF、打开新标签页或运行快捷方式之前会显示权限提示。在交互式 CLI 会话中，如果[绕过权限模式可用](https://code.claude.com/docs/zh-CN/permission-modes.md#skip-all-checks-with-bypasspermissions-mode)且[功能标志获取](https://code.claude.com/docs/zh-CN/env-vars.md#features-that-need-feature-flag-fetching)已关闭，这些调用将在不提示的情况下运行。
+在[计划模式](https://code.claude.com/docs/zh-CN/permission-modes.md#analyze-before-you-edit-with-plan-mode)下，Claude 在录制 GIF 或打开新标签页之前会显示权限提示。在交互式 CLI 会话中，如果[绕过权限模式可用](https://code.claude.com/docs/zh-CN/permission-modes.md#skip-all-checks-with-bypasspermissions-mode)且[功能标志获取](https://code.claude.com/docs/zh-CN/env-vars.md#features-that-need-feature-flag-fetching)已关闭，这些调用将在不提示的情况下运行。
 
 设置了 `createIfEmpty` 的 `tabs_context_mcp` 调用也会触发提示，包含上述任一操作的 `browser_batch` 调用同样如此。
 
@@ -253,12 +259,12 @@ Claude 会将图像保存到磁盘并报告文件路径。
 1. 验证 Chrome 扩展程序已安装并在 `chrome://extensions` 中启用
 2. 通过运行 `claude --version` 验证 Claude Code 是最新的
 3. 检查 Chrome 是否正在运行
-4. 运行 `/chrome` 并选择"重新连接扩展程序"以重新建立连接
+4. 运行 `/chrome` 并选择"Reconnect extension"以重新建立连接
 5. 如果问题仍然存在，请重新启动 Claude Code 和 Chrome
 
 第一次启用 Chrome 集成时，Claude Code 会安装本机消息传递主机配置文件。Chrome 在启动时读取此文件，因此如果扩展程序在您的第一次尝试中未被检测到，请重新启动 Chrome 以获取新配置。
 
-Claude Code 在首次安装时会打开一个浏览器标签页，提示您连接扩展程序。稍后重写配置文件的会话（例如在切换构建或配置目录后）不会重新打开它。
+Claude Code 仅在首次安装时会打开一个浏览器标签页，提示您连接扩展程序。当之后的会话重写配置文件时（例如在切换构建版本或配置目录后），Claude Code 不会重新打开它。
 
 如果连接仍然失败，请验证主机配置文件是否存在于：
 
@@ -291,7 +297,7 @@ Claude Code 会跳过该设置，因为这些文件存储在项目目录中，�
 您可以照常继续工作。如果您需要浏览器工具，或希望消除该警告，请执行以下操作之一：
 
 * **立即获取浏览器工具**：退出，然后在 shell 中使用 `claude --chrome` 重新启动。
-* **在后续会话中获取浏览器工具**：在 Claude Code 输入框中运行 `/chrome` 并选择[**默认启用**](#enable-chrome-by-default)。这适用于之后启动的会话，而不是当前正在运行的会话。
+* **在后续会话中获取浏览器工具**：在 Claude Code 输入框中运行 `/chrome` 并[默认启用 Chrome](#enable-chrome-by-default)。
 * **在不使用浏览器工具的情况下停止警告**：从项目的设置文件中删除 `CLAUDE_CODE_ENABLE_CFC` 这一行。
 
 ### 浏览器无响应
@@ -304,9 +310,9 @@ Claude Code 会跳过该设置，因为这些文件存储在项目目录中，�
 
 ### 长会话期间连接断开
 
-Chrome 扩展程序的 service worker 在扩展会话期间可能会进入空闲状态，这会破坏连接。如果浏览器工具在一段时间不活动后停止工作，请运行 `/chrome` 并选择"重新连接扩展程序"。
+Chrome 扩展程序的 service worker 在长时间会话期间可能会进入空闲状态，这会破坏连接。如果浏览器工具在一段时间不活动后停止工作，请运行 `/chrome` 并选择"Reconnect extension"。
 
-运行 `/chrome` 时，请查看其 `Status` 行。如果显示"未连接"，则表示正在运行的会话自身与 Chrome 的连接已失败。选择"重新连接扩展程序"以重新启动该连接。连接成功后，扩展程序的重新连接页面会在 Chrome 中打开。在 v2.1.290 之前，"重新连接扩展程序"仅会打开该页面，而不会重新启动失败的连接，因此如果在较早版本上浏览器工具未恢复，请更新 Claude Code。
+运行 `/chrome` 时，请查看其 `Status` 行。如果显示"Not connected"，则表示正在运行的会话自身与 Chrome 的连接已失败。选择"Reconnect extension"以重新启动该连接。连接成功后，扩展程序的重新连接页面会在 Chrome 中打开。在 v2.1.290 之前，"Reconnect extension"仅会打开该页面，而不会重新启动失败的连接，因此如果在较早版本上浏览器工具未恢复，请更新 Claude Code。
 
 ### 扩展程序登录到了不同的组织
 
@@ -334,11 +340,11 @@ Chrome 扩展程序的 service worker 在扩展会话期间可能会进入空闲
 
 | 错误 | 原因 | 修复 |
 | - | - | - |
-| "浏览器扩展程序未连接" | 扩展程序未在 Chrome 中安装并运行，扩展程序登录的 claude.ai 账户或组织与 Claude Code 不同，或您的组织的 IP 允许列表拒绝了到 `bridge.claudeusercontent.com` 的连接 | 检查扩展程序登录的 claude.ai 账户和[组织](#extension-signed-in-to-a-different-organization)是否与 Claude Code 相同，重新启动 Chrome 和 Claude Code，然后运行 `/chrome` 以重新连接。如果您的组织使用 IP 允许列表且错误仍然存在，请参阅[组织 IP 允许列表和代理出口](https://code.claude.com/docs/zh-CN/network-config.md#organization-ip-allowlists-and-proxy-egress) |
-| 扩展程序在 `/chrome` 中显示"未检测到" | Chrome 扩展程序未安装或已禁用 | 在 `chrome://extensions` 中安装或启用扩展程序 |
-| "没有可用的标签页" | Claude 在标签页准备好之前尝试操作 | 要求 Claude 创建新标签页并重试 |
-| "接收端不存在" | 扩展程序 service worker 进入空闲状态 | 运行 `/chrome` 并选择"重新连接扩展程序" |
-| "没有已连接的浏览器" | Chrome 未打开，或扩展程序登录的 claude.ai 账户和组织与 Claude Code 不同，或 Claude Code 无法访问 `bridge.claudeusercontent.com` | 确认 Chrome 已打开，且扩展程序登录的 claude.ai 账户和[组织](#extension-signed-in-to-a-different-organization)与 Claude Code 相同。如果是这样，请检查您的网络是否允许 Claude Code 访问 `bridge.claudeusercontent.com`，该地址列于[网络访问要求](https://code.claude.com/docs/zh-CN/network-config.md#network-access-requirements)中 |
+| "Browser extension is not connected" | 扩展程序未在 Chrome 中安装并运行，扩展程序登录的 claude.ai 账户或组织与 Claude Code 不同，或您的组织的 IP 允许列表拒绝了到 `bridge.claudeusercontent.com` 的连接 | 检查扩展程序登录的 claude.ai 账户和[组织](#extension-signed-in-to-a-different-organization)是否与 Claude Code 相同，重新启动 Chrome 和 Claude Code，然后运行 `/chrome` 以重新连接。如果您的组织使用 IP 允许列表且错误仍然存在，请参阅[组织 IP 允许列表和代理出口](https://code.claude.com/docs/zh-CN/network-config.md#organization-ip-allowlists-and-proxy-egress) |
+| 扩展程序在 `/chrome` 中显示"Not detected" | Chrome 扩展程序未安装或已禁用 | 在 `chrome://extensions` 中安装或启用扩展程序 |
+| "No tab available" | Claude 在标签页准备好之前尝试操作 | 要求 Claude 创建新标签页并重试 |
+| "Receiving end does not exist" | 扩展程序 service worker 进入空闲状态 | 运行 `/chrome` 并选择"Reconnect extension" |
+| "No browsers are connected" | Chrome 未在扩展程序登录到与 Claude Code 相同的 claude.ai 账户和组织的状态下打开，或 Claude Code 无法访问 `bridge.claudeusercontent.com` | 确认 Chrome 已打开，且扩展程序登录的 claude.ai 账户和[组织](#extension-signed-in-to-a-different-organization)与 Claude Code 相同。如果是这样，请检查您的网络是否允许 Claude Code 访问 `bridge.claudeusercontent.com`，该地址列于[网络访问要求](https://code.claude.com/docs/zh-CN/network-config.md#network-access-requirements)中 |
 
 ## 另请参阅
 

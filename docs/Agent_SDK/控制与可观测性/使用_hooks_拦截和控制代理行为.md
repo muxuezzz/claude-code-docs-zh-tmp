@@ -65,7 +65,7 @@ async def protect_env_files(input_data, tool_use_id, context):
             }
         }
 
-    # 返回空对象以允许操作
+    # 空对象：不做决定，适用常规权限
     return {}
 
 
@@ -79,7 +79,7 @@ async def main():
     )
 
     async with ClaudeSDKClient(options=options) as client:
-        await client.query("使用标准本地开发数据库配置创建 .env 文件")
+        await client.query("Create a .env file with the standard local development database configuration")
         async for message in client.receive_response():
             # 过滤助手和结果消息
             if isinstance(message, (AssistantMessage, ResultMessage)):
@@ -113,12 +113,12 @@ const protectEnvFiles: HookCallback = async (input, toolUseID, { signal }) => {
     };
   }
 
-  // 返回空对象以允许操作
+  // 空对象：不做决定，适用常规权限
   return {};
 };
 
 for await (const message of query({
-  prompt: "使用标准本地开发数据库配置创建 .env 文件",
+  prompt: "Create a .env file with the standard local development database configuration",
   options: {
     hooks: {
       // 为 PreToolUse 事件注册 hook
@@ -134,7 +134,7 @@ for await (const message of query({
 }
 ```
 
-该 hook 会拒绝 `file_path` 以 `/.env` 结尾的 Write 或 Edit 调用，不区分字母大小写。在 Windows 上，`file_path` 使用反斜杠，例如 `C:\project\.env`，此时该 hook 会允许对 `C:\project\.env` 的 Write 或 Edit 调用。
+该 hook 会拒绝 `file_path` 以 `/.env` 结尾的 Write 或 Edit 调用，不区分字母大小写。在 Windows 上，`file_path` 使用反斜杠，例如 `C:\project\.env`，该 hook 不会阻止对 `C:\project\.env` 的 Write 或 Edit 调用。
 
 > [!WARNING]
 >
@@ -152,7 +152,7 @@ SDK 为代理执行的不同阶段提供 hooks。某些 hooks 在两个 SDK 中�
 | `PostToolBatch` | 否 | 是 | 一整批工具调用解决，每批一次，在下一个模型调用之前 | 为整个批次注入约定 |
 | [`UserPromptSubmit`](https://code.claude.com/docs/zh-CN/hooks#userpromptsubmit) | 是 | 是 | 提交提示词，包括 Claude Code 自行发起的轮次 | 将额外上下文注入到提示词中 |
 | [`UserPromptExpansion`](https://code.claude.com/docs/zh-CN/hooks#userpromptexpansion) | 否 | 是 | 用户输入的命令或 MCP 提示在到达 Claude 之前扩展为提示。当 Claude 自己调用 skill 时不会触发 | 阻止命令直接调用或在输入 skill 时添加上下文 |
-| `MessageDisplay` | 否 | 是 | 助手消息包含文本完成，每条消息一次，包含完整消息文本 | 编辑或重新格式化显示的文本而不改变记录 |
+| `MessageDisplay` | 否 | 是 | 包含文本的助手消息完成，每条消息一次，包含完整消息文本 | 重新格式化显示的文本而不更改会话记录 |
 | `Stop` | 是 | 是 | 代理执行停止 | 在退出前保存会话状态 |
 | `StopFailure` | 否 | 是 | 转换以 API 错误结束而不是正常停止 | 记录失败或发送警报 |
 | `SubagentStart` | 是 | 是 | 子代理初始化 | 跟踪并行任务生成 |
@@ -174,7 +174,7 @@ SDK 为代理执行的不同阶段提供 hooks。某些 hooks 在两个 SDK 中�
 | `ElicitationResult` | 否 | 是 | 用户响应 MCP 引出 | 在返回到服务器之前修改或阻止响应 |
 | `ConfigChange` | 否 | 是 | 配置文件更改 | 动态重新加载设置 |
 | `InstructionsLoaded` | 否 | 是 | `CLAUDE.md` 或规则文件加载到上下文中 | 审计加载哪些指令文件 |
-| `WorktreeCreate` | 否 | 是 | Git worktree 创建 | 跟踪隔离的工作区 |
+| `WorktreeCreate` | 否 | 是 | Claude Code 需要一个 worktree，由该 hook 代替 git 创建它 | 创建 worktree 并在 [`hookSpecificOutput.worktreePath`](https://code.claude.com/docs/zh-CN/hooks#worktreecreate-output) 中返回其路径 |
 | `WorktreeRemove` | 否 | 是 | 由 `WorktreeCreate` hook 创建的 worktree 正在被移除 | 清理工作区资源 |
 | `CwdChanged` | 否 | 是 | 会话期间工作目录更改 | 按目录重新加载环境变量 |
 | `FileChanged` | 否 | 是 | 监视的文件被修改、创建或删除 | 项目文件更改时重新加载配置 |
@@ -224,8 +224,9 @@ SDK 匹配器遵循与[设置文件中的匹配器](https://code.claude.com/docs
 | `matcher` | `string` | `undefined` | 针对事件的过滤字段匹配的模式，遵循[设置文件中匹配器的规则](https://code.claude.com/docs/zh-CN/hooks.md#matcher-patterns)。对于工具 hook，该字段是工具名称。内置工具包括 `Bash`、`Read`、`Write`、`Edit`、`Glob`、`Grep`、`WebFetch`、`Agent` 等。请参阅[工具输入类型](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#tool-input-types)以获取完整列表。MCP 工具使用模式 `mcp__<server>__<action>`，其中 `<server>` 是您在 `mcpServers` 配置中使用的键，其拼写方式遵循[工具命名约定](https://code.claude.com/docs/zh-CN/agent-sdk/mcp.md#tool-naming-convention)中的说明。 |
 | `hooks` | `HookCallback[]` | - | 必需。当模式匹配时执行的回调函数数组 |
 | `timeout` | `number` | `undefined` | 超时时间（秒）。省略时，Claude Code 应用[事件的默认超时](#hook-timeout)。您的 SDK 回调遵循 `command` hook 默认值 |
+| `onFailure` | `"continue" \| "block"` | `undefined` | 回调失败时的行为。设置为 `"block"` 可[在回调失败时阻止操作](#block-the-action-when-a-callback-fails)。在 Python 中，使用 `on_failure` |
 
-尽可能使用 `matcher` 模式来针对特定工具。带有 `'Bash'` 的匹配器仅对 Bash 命令运行，而省略模式会为事件的每次出现运行您的回调。
+尽可能使用 `matcher` 模式来针对特定工具。使用 `'Bash'` 匹配器时，您的回调会针对 Bash 命令运行。在 Claude Code v2.1.314 或更高版本上，它们还会针对 Monitor 命令在 `PreToolUse` 和 `PermissionRequest` 上运行，对于这些命令，回调[可以拒绝但不能批准](https://code.claude.com/docs/zh-CN/hooks.md#match-monitor-commands)。如果没有匹配器，它们会在事件每次出现时运行。
 
 ### 回调函数
 
@@ -246,10 +247,10 @@ SDK 匹配器遵循与[设置文件中的匹配器](https://code.claude.com/docs
 * **顶级字段**在每个事件上被接受：`systemMessage` 向用户显示消息，`continue`（Python 中的 `continue_`）确定 Agent 在此 hook 后是否继续运行。某些事件会丢弃它们或将它们传递到其他地方。hooks 页面上每个[事件的部分](https://code.claude.com/docs/zh-CN/hooks.md#hook-events)说明了它们的去向。
 * **`hookSpecificOutput`** 控制当前操作。内部的字段取决于 hook 事件类型：
   * 对于 `PreToolUse` hook，这是您设置 `permissionDecision`（`"allow"`、`"deny"`、`"ask"` 或 `"defer"`）、`permissionDecisionReason` 和 `updatedInput` 的地方。如果您返回 `"defer"`，该轮次将以一条 `stop_reason` 为 `"tool_deferred"` 的结果消息结束，以便您可以[稍后恢复该调用](https://code.claude.com/docs/zh-CN/hooks.md#defer-a-tool-call-for-later)。
-  * 对于 `PostToolUse` hook，您可以设置 `additionalContext` 以将信息附加到工具结果。要在 Claude 看到之前替换工具的输出，请设置 `updatedToolOutput`，这适用于两个 SDK 中的任何工具。较旧的 `updatedMCPToolOutput` 字段仅替换 MCP 工具输出。
+  * 对于 `PostToolUse` hook，您可以设置 `additionalContext` 以将信息附加到工具结果。要在 Claude 看到之前替换工具的输出，请设置 `updatedToolOutput`，这适用于两个 SDK 中的内置工具和 MCP 工具。较旧的 `updatedMCPToolOutput` 字段仅替换 MCP 工具输出。
   * 在 TypeScript SDK 中，`PostToolUse` 回调也可以返回 `classifierContext`，这是关于工具调用结果的简短说明，用于[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#eliminate-prompts-with-auto-mode)权限分类器。因为您的回调在您的应用程序自己的进程中运行，分类器可能会将您在说明中转达的用户声明视为用户意图。该字段需要 TypeScript Agent SDK v0.3.236 或更高版本。[为自动模式分类器注释结果](https://code.claude.com/docs/zh-CN/hooks.md#annotate-a-result-for-the-auto-mode-classifier)涵盖了长度上限、仅同步规则以及不要在说明中放入的内容。
 
-返回 `{}` 以允许操作而不进行更改。SDK 回调 hook 使用与 [Claude Code shell 命令 hook](https://code.claude.com/docs/zh-CN/hooks.md#json-output) 相同的 JSON 输出格式，其中记录了每个字段和事件特定的选项。对于 SDK 类型定义，请参阅 [TypeScript](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#synchookjsonoutput) 和 [Python](https://code.claude.com/docs/zh-CN/agent-sdk/python.md#synchookjsonoutput) SDK 参考。
+对于 `PreToolUse`，返回 `{}` 表示不作出决策，从而应用正常的[权限流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)。SDK 回调 hook 使用与 [Claude Code shell 命令 hook](https://code.claude.com/docs/zh-CN/hooks.md#json-output) 相同的 JSON 输出格式，其中记录了每个字段和事件特定的选项。对于 SDK 类型定义，请参阅 [TypeScript](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#synchookjsonoutput) 和 [Python](https://code.claude.com/docs/zh-CN/agent-sdk/python.md#synchookjsonoutput) SDK 参考。
 
 > [!NOTE]
 >
@@ -282,6 +283,53 @@ const asyncHook: HookCallback = async (input, toolUseID, { signal }) => {
 > [!NOTE]
 >
 > 异步输出无法阻止、修改或将上下文注入到操作中，因为 Agent 已经继续。仅将它们用于日志记录、指标或通知等副作用。
+
+### 在回调失败时阻止操作
+
+在大多数事件上，如果回调抛出异常或返回未通过验证的输出，操作会继续进行，并且您的应用程序会收到一条 `tag` 为 `hook_callback_failed` 的 [`SDKInformationalMessage`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#sdkinformationalmessage) 警告。这样一来，崩溃的 `PreToolUse` 守卫会让工具调用进入正常的权限流程。不返回任何内容的回调（例如某条没有 `return` 的路径）也算作失败。在 Python 中，请从 `SystemMessage.data` 读取 `tag`。
+
+要改为阻止操作，请在匹配器上设置 `onFailure: "block"`（TypeScript）或 `on_failure="block"`（Python）。需要 TypeScript Agent SDK v0.3.317 或更高版本，或 Python Agent SDK v0.2.177 或更高版本。此示例在 Python 中的 `check_policy` 或 TypeScript 中的 `checkPolicy` 失败时阻止 Bash 调用：
+
+```python Python theme={null}
+options = ClaudeAgentOptions(
+    hooks={
+        "PreToolUse": [
+            HookMatcher(matcher="Bash", hooks=[check_policy], on_failure="block")
+        ]
+    }
+)
+```
+
+```typescript TypeScript theme={null}
+import type { Options } from "@anthropic-ai/claude-agent-sdk";
+
+const options: Options = {
+  hooks: {
+    PreToolUse: [{ matcher: "Bash", hooks: [checkPolicy], onFailure: "block" }]
+  }
+};
+```
+
+要进行测试，请让回调抛出错误，然后让 Claude 运行一条 Bash 命令。工具结果会包含 `failed; blocking because onFailure is "block"`，并且 Claude 看不到您的错误文本。
+
+当回调没有意见时，请返回 `{}`。设置 `"block"` 后，没有 `return` 的路径会阻止操作。捕获自身错误并返回 `{}` 的回调不算失败，因此请让错误从守卫中向上传播。`WorktreeCreate` 回调必须返回 `hookSpecificOutput.worktreePath`。
+
+#### 行为不同的事件
+
+设置 `"block"` 后，以下事件并不总是会阻止：
+
+* **`Stop`、`SubagentStop`、`TaskCompleted` 和 `TeammateIdle`**：这些事件会忽略该选项，因此操作会继续进行。
+* **`PermissionRequest`**：仅当阻止在您的 `canUseTool` 回调作出响应之前到达时才生效。
+* **`PostToolUse`**：工具已经运行，因此 Claude 会将失败作为反馈接收。
+
+超出超时时间的回调遵循 [Hook 超时](#hook-timeout)。设置 `"block"` 后，超时还会阻止 `PreCompact` 和 `Elicitation`。
+
+#### `onFailure` 的启动错误
+
+设置 `"block"` 后，如果无法遵循该选项，查询会在启动时失败，并且不会发送任何提示词：
+
+* **Claude Code 不支持该选项**：错误包含 `does not honor`。请更新 Claude Code，或移除该选项。
+* **会话已在运行且未注册您的 hook**：错误包含 `did not register your hooks`。请启动新会话。
 
 ## 示例
 
@@ -502,7 +550,7 @@ const options = {
 
 ### 跟踪子代理活动
 
-使用 `SubagentStop` hooks 监控子代理何时完成其工作。请参阅 [TypeScript](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#hookinput) 和 [Python](https://code.claude.com/docs/zh-CN/agent-sdk/python.md#hookinput) SDK 参考中的完整输入类型。此示例在每次子代理完成时记录摘要：
+使用 `SubagentStop` hook 监控子代理何时完成其工作。请参阅 [TypeScript](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md#hookinput) 和 [Python](https://code.claude.com/docs/zh-CN/agent-sdk/python.md#hookinput) SDK 参考中的完整输入类型。此示例在子代理完成时记录摘要：
 
 ```python Python theme={null}
 async def subagent_tracker(input_data, tool_use_id, context):
@@ -557,7 +605,7 @@ from datetime import datetime
 
 
 def _send_webhook(tool_name):
-    """同步辅助函数，将工具使用数据 POST 到外部 webhook。"""
+    """Synchronous helper that POSTs tool usage data to an external webhook."""
     data = json.dumps(
         {
             "tool": tool_name,
@@ -655,7 +703,7 @@ from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, HookMatcher
 
 
 def _send_slack_notification(message):
-    """同步辅助函数，通过传入 webhook 向 Slack 发送消息。"""
+    """Synchronous helper that sends a message to Slack via incoming webhook."""
     data = json.dumps({"text": f"Agent status: {message}"}).encode()
     req = urllib.request.Request(
         "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
@@ -779,7 +827,8 @@ Claude Code 运行每个回调时都有超时限制，您可以在其 `HookMatch
 * `Stop` 和 `SubagentStop`：超时的回调计为不返回任何决定。Agent 或子代理停止，就像该回调已允许它一样，您在该事件上的其他 hook 的决定仍然适用。在 Claude Code v2.1.273 之前，超时的 `Stop` 或 `SubagentStop` 回调计为失败的 hook 运行，Claude Code 丢弃了您在该事件上的其他 hook 的决定。
 * `SessionStart`：超时的回调计为不返回任何输出，会话继续使用您的其他 `SessionStart` hook 的输出。
 * `PreModelSwitch`：Claude Code 阻止模型切换。未回答的 hook 尚未批准切换。
-* 其他事件，如 `Notification`、`PreCompact` 和 `PostModelSwitch`：Claude Code 记录失败并继续。
+* `WorktreeCreate`：worktree 创建失败并报错。
+* 其他事件，如 `Notification`、`PreCompact` 和 `PostModelSwitch`：Claude Code 记录失败并继续。使用 [`onFailure: "block"`](#block-the-action-when-a-callback-fails) 时，`PreCompact` 或 `Elicitation` 上的超时会阻止该操作。
 
 主会话中 `Stop` 或 `SessionStart` 回调第一次超时时，Claude Code 还会向消息流添加一个 [`SDKInformationalMessage`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#sdkinformationalmessage)，说明驱动会话的应用未响应。当您的应用保持无响应时，后续超时不会重复该消息。
 
@@ -792,6 +841,7 @@ Claude Code 运行每个回调时都有超时限制，您可以在其 `HookMatch
 * 检查所有 `PreToolUse` hook 是否返回 `permissionDecision: 'deny'`
 * 向您的 hook 添加日志记录以查看它们返回的 `permissionDecisionReason`
 * 验证匹配器模式不会太宽泛：空匹配器匹配所有工具
+* 如果工具结果显示某个 hook `returned updatedInput that failed schema validation` 或 `returned updatedInput that the tool refused`，请修复该 hook 的 `updatedInput`。请包含未更改的 `tool_input` 字段，如[修改工具输入](#modify-tool-input)中所示，因为 `updatedInput` 会替换整个输入。
 
 ### 修改的输入未应用
 

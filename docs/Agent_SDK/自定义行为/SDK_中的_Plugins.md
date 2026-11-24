@@ -70,6 +70,10 @@ Plugin 路径可以是：
 >
 > 路径应指向 plugin 的根目录：`skills/`、`agents/`、`hooks/`、`commands/` 或 `.claude-plugin/` 的父目录。
 
+### 在运行中的会话中重新加载插件
+
+要在不启动新会话的情况下应用对插件的 skill、命令、Agent 或 hook 所做的更改，请在 TypeScript SDK 的 `Query` 对象上调用 [`reloadPlugins()`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#query-object)。Python SDK 未提供等效方法；请改为在会话中将 [`/reload-plugins`](https://code.claude.com/docs/zh-CN/plugins/cli-reference#reload-plugins) 作为提示词发送。
+
 ### 向运行中的会话添加插件
 
 在 TypeScript SDK 中，对 `query()` 返回的 `Query` 对象调用 [`reloadPlugins()`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#load-more-plugin-folders-with-addplugins)，并在该调用的 `addPlugins` 选项中列出插件目录。每个 `addPlugins` 条目都是一个带有绝对 `path` 的 `{ type: "local", path }` 对象。需要 TypeScript Agent SDK v0.3.301 或更高版本。

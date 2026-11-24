@@ -8,13 +8,13 @@
 
 AWS 上的 Claude Platform 是 Anthropic 运营的 Claude API，支持 AWS 身份验证、IAM 访问控制和 AWS Marketplace 计费。请求直接到达 Anthropic 的 API，因此您获得与 [Claude API](https://platform.claude.com/docs) 相同的模型和 API 功能，并遵循相同的发布计划。您使用 AWS 凭证或工作区 API 密钥进行身份验证，并通过 AWS Marketplace 付款。
 
-Claude Code 通过 Anthropic 的功能标志服务启用的客户端功能默认处于关闭状态，[advisor 工具](https://code.claude.com/docs/zh-CN/advisor.md)不可用。有关完整列表，请参阅[功能可用性矩阵](https://code.claude.com/docs/zh-CN/feature-availability.md#summary-by-provider)。
-
 使用本指南将 Claude Code 指向您已通过 AWS 上的 Claude Platform 配置的工作区。有关在此之前的 AWS 订阅和工作区设置，请参阅 [AWS 上的 Claude Platform 文档](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws)。
 
 > [!NOTE]
 >
 > 通过 AWS Marketplace 订阅会配置一个与您的 AWS 账户关联的新 Anthropic 组织。此组织与您已有的任何 Anthropic 组织分开，凭证不会在它们之间转移。使用来自 AWS 关联组织的工作区 ID 和 API 密钥，而不是来自预先存在的 Claude Console 账户的凭证。
+
+部分 Claude Code 功能在 AWS 上的 Claude Platform 中不可用或工作方式有所不同。请参阅[功能可用性矩阵](https://code.claude.com/docs/zh-CN/feature-availability.md#summary-by-provider)以及[需要获取功能标志的功能](https://code.claude.com/docs/zh-CN/env-vars.md#features-that-need-feature-flag-fetching)。
 
 ## 前置条件
 
@@ -55,7 +55,7 @@ export AWS_PROFILE=my-profile
 }
 ```
 
-Claude Code 在启动时如果无法验证您现有的 AWS 凭据，也会运行此命令，并在 `Authentication` 面板中显示命令的输出，直到登录完成。
+Claude Code 在启动时如果无法验证您现有的 AWS 凭据，也会运行此命令。
 
 配置了 `awsAuthRefresh` 后，运行 `/login`，选择 **3rd-party platform**，然后在 **Using 3rd-party platforms** 下选择 **Claude Platform on AWS · refresh credentials**。Claude Code 运行配置的命令并重新读取您的 AWS 凭证，无需重启。
 

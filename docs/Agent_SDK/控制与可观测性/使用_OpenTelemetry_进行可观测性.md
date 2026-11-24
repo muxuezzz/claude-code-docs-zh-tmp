@@ -220,11 +220,10 @@ const options = {
 附加最终用户身份后，这些事件将成为每个用户的审计跟踪，您可以将其转发到安全信息和事件管理 (SIEM) 平台：
 
 * `tool_decision` 和 `tool_result`：每个工具调用、该调用是被允许还是被拒绝，以及其结果
-* `safety_event`：哪项检查拒绝了某个工具调用或要求为其显示权限提示，例如权限规则或自动模式分类器。某些调用[没有安全事件](https://code.claude.com/docs/zh-CN/monitoring-usage.md#calls-without-a-safety-event)。需要 Claude Code v2.1.307 或更高版本
 * `mcp_server_connection`：MCP 服务器连接和连接失败
 * `permission_mode_changed`：权限模式更改
 
-这些事件导出为以 `claude_code.` 前缀命名的日志记录，例如 `claude_code.safety_event`。有关完整的安全相关事件列表和每个事件携带的属性，请参阅监控参考中的[审计安全事件](https://code.claude.com/docs/zh-CN/monitoring-usage.md#audit-security-events)。
+这些事件导出为以 `claude_code.` 前缀命名的日志记录，例如 `claude_code.tool_decision`。有关完整的安全相关事件列表和每个事件携带的属性，请参阅监控参考中的[审计安全事件](https://code.claude.com/docs/zh-CN/monitoring-usage.md#audit-security-events)。
 
 ## 控制导出中的敏感数据
 
@@ -233,9 +232,9 @@ const options = {
 | 变量 | 添加 |
 | - | - |
 | `OTEL_LOG_USER_PROMPTS=1` | `claude_code.user_prompt` 事件和 `claude_code.interaction` 跨度上的提示文本 |
-| `OTEL_LOG_TOOL_DETAILS=1` | `claude_code.tool_result` 事件上的工具输入参数，例如文件路径、shell 命令和搜索模式，以及[成本和 token 指标](https://code.claude.com/docs/zh-CN/monitoring-usage.md#cost-counter)上的真实 Agent、skill、插件和 MCP 服务器名称。自动模式分类器在阻止调用时指明的内置规则，以 [`classifier_category`](https://code.claude.com/docs/zh-CN/monitoring-usage#tool-decision-event) 的形式记录在 `claude_code.tool_decision` 和 `claude_code.safety_event` 事件上 |
+| `OTEL_LOG_TOOL_DETAILS=1` | `claude_code.tool_result` 事件上的工具输入参数，例如文件路径、shell 命令和搜索模式，以及[成本和 token 指标](https://code.claude.com/docs/zh-CN/monitoring-usage.md#cost-counter)上的真实 Agent、skill、插件和 MCP 服务器名称。自动模式分类器在阻止调用时指明的内置规则，以 [`classifier_category`](https://code.claude.com/docs/zh-CN/monitoring-usage#tool-decision-event) 的形式记录在 `claude_code.tool_decision` 事件上 |
 | `OTEL_LOG_TOOL_CONTENT=1` | `claude_code.tool` 上的[`tool.output` 跨度事件](https://code.claude.com/docs/zh-CN/monitoring-usage#tool-output-span-event)，包含文件内容、Bash 输出以及 MCP 工具、WebFetch 和 WebSearch 返回的内容，默认在 60 KB 处截断，可通过 `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` 配置，需要 Claude Code v2.1.214 或更高版本。来自 MCP 工具、WebFetch 和 WebSearch 的结果需要 Claude Code v2.1.283 或更高版本。需要启用[跟踪](#read-agent-traces)。跨度属性在[其自己的门控](https://code.claude.com/docs/zh-CN/monitoring-usage.md#new-context-gates)下携带工具内容 |
-| `OTEL_LOG_RAW_API_BODIES` | 完整的 Anthropic Messages API 请求和响应 JSON 作为 `claude_code.api_request_body` 和 `claude_code.api_response_body` 日志事件。设置为 `1` 表示在 60 KB 处截断的内联体，或 `file:<dir>` 表示磁盘上的未截断体，事件中有 `body_ref` 路径。`CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` 配置内联截断限制，需要 Claude Code v2.1.214 或更高版本。体包括整个对话历史记录，扩展思考内容被编辑。启用此项意味着同意上述三个变量将揭示的所有内容 |
+| `OTEL_LOG_RAW_API_BODIES` | 完整的 Anthropic Messages API 请求和响应 JSON 作为 `claude_code.api_request_body` 和 `claude_code.api_response_body` 日志事件。设置为 `1` 表示默认在 60 KB 处截断的内联体，或 `file:<dir>` 表示磁盘上的未截断体，事件中有 `body_ref` 路径。`CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` 配置内联截断限制，需要 Claude Code v2.1.214 或更高版本。体包括整个对话历史记录，扩展思考内容被脱敏。启用此项意味着同意上述三个变量将揭示的所有内容 |
 
 除非您的可观测性管道被批准存储您的代理处理的数据，否则请不要设置这些。有关完整的属性列表和编辑行为，请参阅监控参考中的[安全和隐私](https://code.claude.com/docs/zh-CN/monitoring-usage.md#security-and-privacy)。
 

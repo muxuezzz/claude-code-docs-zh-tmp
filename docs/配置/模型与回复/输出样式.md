@@ -59,7 +59,7 @@ Claude 在以下情况下仍然会完整编写：
 
 ### Explanatory
 
-在 Explanatory 样式中，Claude 以与默认样式相同的方式完成任务，并添加关于其做出选择原因的简短解释。每个解释出现在对话中，在其相关代码之前或之后，在标记为 `Insight` 的块中。这些解释不会作为注释写入你的文件中。
+在 Explanatory 样式中，Claude 以与默认样式相同的方式完成任务，并添加简短的解释，说明其做出这些选择的原因。每条解释都出现在对话中，位于其相关代码之前或之后，放在标记为 `Insight` 的块中。
 
 `Insight` 块包含关于你的代码库或 Claude 编写的代码的两到三个要点，例如添加 API 端点后的这个：
 
@@ -164,7 +164,7 @@ Use `flowchart TD` for control flow and `sequenceDiagram` for request paths. Kee
 | `name` | 否 | 输出样式的名称，在 `/config` 选择器中显示。默认值：文件名 |
 | `description` | 否 | 输出样式的描述，在 `/config` 选择器中显示 |
 | `keep-coding-instructions` | 否 | 设置为 `true` 以在您的样式之外保留 Claude Code 的内置软件工程说明部分（只有完整的系统提示词包含该部分）。请参阅[输出样式的工作原理](#how-output-styles-work)。默认值：`false` |
-| `force-for-plugin` | 否 | 仅限 Plugin 输出样式。设置为 `true` 以在启用 plugin 时自动应用此样式，无需要求用户选择它。覆盖用户的 `outputStyle` 设置。如果多个启用的 plugin 设置了此项，Claude Code 使用第一个加载的。默认值：`false` |
+| `force-for-plugin` | 否 | 仅限插件输出样式。设置为 `true` 以在启用该插件时自动应用此样式。覆盖用户的 `outputStyle` 设置。如果多个启用的插件设置了此项，Claude Code 使用第一个加载的。默认值：`false` |
 
 ## 在输出样式和其他功能之间选择
 

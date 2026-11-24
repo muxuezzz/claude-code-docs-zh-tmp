@@ -15,8 +15,8 @@
       "title": "快速入门",
       "original_url": "https://code.claude.com/docs/zh-CN/quickstart",
       "original_md_url": "https://code.claude.com/docs/zh-CN/quickstart.md",
-      "hash": "c092185e76c390ef05fa283989f9d079b74e4ef7fe1f67c9d12b7f7ac02aa0d5",
-      "last_updated": "2026-11-01T04:57:55.976117"
+      "hash": "eeb6c2abd0f41311af9dc3e5fd15dcbc13bf0f260c592cb2f9151d29a3f8cb65",
+      "last_updated": "2026-11-24T16:26:02.705452"
     },
     "快速入门/核心概念/Claude_Code_如何工作.md": {
       "level1": "快速入门",
@@ -24,8 +24,8 @@
       "title": "Claude Code 如何工作",
       "original_url": "https://code.claude.com/docs/zh-CN/how-claude-code-works",
       "original_md_url": "https://code.claude.com/docs/zh-CN/how-claude-code-works.md",
-      "hash": "63f767923e07a159c98897993812278c0c761a4688ee076abe01eb906afd1fdc",
-      "last_updated": "2026-11-01T04:57:56.619946"
+      "hash": "8e57c7bf4a1280cebf5f5c2e7dbed3411850a5fb0b75ff4f951eb749fabba9f6",
+      "last_updated": "2026-11-24T16:26:03.263612"
     },
     "快速入门/核心概念/扩展_Claude_Code.md": {
       "level1": "快速入门",
@@ -33,8 +33,8 @@
       "title": "扩展 Claude Code",
       "original_url": "https://code.claude.com/docs/zh-CN/features-overview",
       "original_md_url": "https://code.claude.com/docs/zh-CN/features-overview.md",
-      "hash": "edf8f043e5bbcbf5d3df6985614fa845f178044e0163907c6cb843338000d7c5",
-      "last_updated": "2026-11-01T04:57:57.154338"
+      "hash": "f75eee4320aae23f87c0db49ba0bea353f485d4b0c4e3a03efb9ded819fb8949",
+      "last_updated": "2026-11-24T16:26:03.827615"
     },
     "快速入门/核心概念/探索_.claude_目录.md": {
       "level1": "快速入门",
@@ -42,8 +42,8 @@
       "title": "探索 .claude 目录",
       "original_url": "https://code.claude.com/docs/zh-CN/claude-directory",
       "original_md_url": "https://code.claude.com/docs/zh-CN/claude-directory.md",
-      "hash": "ce8ff63a4c5a0423e35a2fb7af037f978cf4a3b5bec28aa8b168ca66d3ab00f8",
-      "last_updated": "2026-11-01T04:57:57.729496"
+      "hash": "be9e4ddbfbedf43390a1d33407d92b429b91c09d6f3c7be423ae2c35a684d746",
+      "last_updated": "2026-11-24T16:26:04.383291"
     },
     "快速入门/核心概念/探索上下文窗口.md": {
       "level1": "快速入门",
@@ -51,17 +51,17 @@
       "title": "探索上下文窗口",
       "original_url": "https://code.claude.com/docs/zh-CN/context-window",
       "original_md_url": "https://code.claude.com/docs/zh-CN/context-window.md",
-      "hash": "91c979929bdacf618c385f4de6a717d110c843d78bb1c8251572c51584aa2651",
-      "last_updated": "2026-11-01T04:57:58.258147"
+      "hash": "839ae04778aa7b64fdfa4ba04565a6de5cc84bd3bdddbdf8d04045018c4f261e",
+      "last_updated": "2026-11-24T16:26:04.934780"
     },
-    "快速入门/核心概念/Prompt_caching.md": {
+    "快速入门/核心概念/提示缓存.md": {
       "level1": "快速入门",
       "level2": "核心概念",
-      "title": "Prompt caching",
+      "title": "提示缓存",
       "original_url": "https://code.claude.com/docs/zh-CN/prompt-caching",
       "original_md_url": "https://code.claude.com/docs/zh-CN/prompt-caching.md",
-      "hash": "032fa4b4aec5cf89db651ff8c07ef96a418c5af24e7eb490413f358158e398c0",
-      "last_updated": "2026-11-01T04:57:58.785116"
+      "hash": "0e611352bccea731cd81913b9087c909ecca0ce7f3d12378c70ecbeb874ae897",
+      "last_updated": "2026-11-24T16:26:05.499889"
     },
     "快速入门/使用_Claude_Code/存储指令和记忆.md": {
       "level1": "快速入门",
@@ -69,8 +69,8 @@
       "title": "存储指令和记忆",
       "original_url": "https://code.claude.com/docs/zh-CN/memory",
       "original_md_url": "https://code.claude.com/docs/zh-CN/memory.md",
-      "hash": "94d630eb54925d2ca6efd8c395f11cae61a1cb9811126eec26de6782c91b3cf0",
-      "last_updated": "2026-11-01T04:57:59.313909"
+      "hash": "6293861425f11c62e049a635ff8f31127c4c0ece018e9d86ce952c952f43a38c",
+      "last_updated": "2026-11-24T16:26:06.070459"
     },
     "快速入门/使用_Claude_Code/管理会话.md": {
       "level1": "快速入门",
@@ -78,8 +78,8 @@
       "title": "管理会话",
       "original_url": "https://code.claude.com/docs/zh-CN/sessions",
       "original_md_url": "https://code.claude.com/docs/zh-CN/sessions.md",
-      "hash": "66c47b96ae42ca60a2700c75670f03eab650c9e4f6378d9686a013af65d5bbe3",
-      "last_updated": "2026-11-01T04:57:59.840644"
+      "hash": "37d015aa3aaa30e61acc6af96091cd076eb9b3519a593b9e8faf5a6123d4406a",
+      "last_updated": "2026-11-24T16:26:06.622890"
     },
     "快速入门/使用_Claude_Code/常见工作流程.md": {
       "level1": "快速入门",
@@ -87,8 +87,8 @@
       "title": "常见工作流程",
       "original_url": "https://code.claude.com/docs/zh-CN/common-workflows",
       "original_md_url": "https://code.claude.com/docs/zh-CN/common-workflows.md",
-      "hash": "21b608630da2ea7c7f9d2f81d55c0450477df6bd4452e89dbd87d1c643262656",
-      "last_updated": "2026-11-01T04:58:00.364056"
+      "hash": "71fd3637fa3c56d9d4eaa80cd457fd4de24f436b6e62de1501106dfc4fcdd6dd",
+      "last_updated": "2026-11-24T16:26:07.179568"
     },
     "快速入门/使用_Claude_Code/提示词库.md": {
       "level1": "快速入门",
@@ -105,8 +105,8 @@
       "title": "最佳实践",
       "original_url": "https://code.claude.com/docs/zh-CN/best-practices",
       "original_md_url": "https://code.claude.com/docs/zh-CN/best-practices.md",
-      "hash": "6093bd6df2e2b731e8e36371fd889d7cc40e44190ff1dfd6cedf7608912a2b3a",
-      "last_updated": "2026-11-01T04:58:01.429528"
+      "hash": "8ede2f8add6b3d30975fa467ac773e983b8a8af6bda1c8f7b24d92bdc3bd84be",
+      "last_updated": "2026-11-24T16:26:08.297561"
     },
     "快速入门/平台与集成/概览.md": {
       "level1": "快速入门",
@@ -114,8 +114,8 @@
       "title": "概览",
       "original_url": "https://code.claude.com/docs/zh-CN/platforms",
       "original_md_url": "https://code.claude.com/docs/zh-CN/platforms.md",
-      "hash": "a3a6870e4f61e70d5882112973eeb4b00abd6ef2319c0ffb34d2b54d4cfdf829",
-      "last_updated": "2026-11-01T04:58:01.954433"
+      "hash": "4750291badc8b3a86837734466faaa64e54dfcccb8a659082e284d168f7d1861",
+      "last_updated": "2026-11-24T16:26:08.846752"
     },
     "快速入门/平台与集成/Remote_Control.md": {
       "level1": "快速入门",
@@ -123,8 +123,8 @@
       "title": "Remote Control",
       "original_url": "https://code.claude.com/docs/zh-CN/remote-control",
       "original_md_url": "https://code.claude.com/docs/zh-CN/remote-control.md",
-      "hash": "88f3a274001635095a51e78c42cb1f38809b9f6cebf84fd6258a99da08b9b906",
-      "last_updated": "2026-11-01T04:58:02.487083"
+      "hash": "94287065872777f9aaac1b6fcc459a2f9843bb22413c8d2f3e3ea1f222bc3ff5",
+      "last_updated": "2026-11-24T16:26:09.415984"
     },
     "快速入门/平台与集成/Projects.md": {
       "level1": "快速入门",
@@ -132,8 +132,8 @@
       "title": "Projects",
       "original_url": "https://code.claude.com/docs/zh-CN/claude-projects",
       "original_md_url": "https://code.claude.com/docs/zh-CN/claude-projects.md",
-      "hash": "cc49d614f979a29aecfb60931dcf7a2cf1be9f32d61a8b251cf527aaf461cf9c",
-      "last_updated": "2026-11-01T04:58:03.015942"
+      "hash": "5df3f3afa1947306a94f62fb2e0b14ce53c890a9e1957ed4aedc568409ef2b58",
+      "last_updated": "2026-11-24T16:26:09.992345"
     },
     "快速入门/平台与集成/移动版.md": {
       "level1": "快速入门",
@@ -141,8 +141,8 @@
       "title": "移动版",
       "original_url": "https://code.claude.com/docs/zh-CN/mobile",
       "original_md_url": "https://code.claude.com/docs/zh-CN/mobile.md",
-      "hash": "d8c18dd39c4e45cf7599b746c7a6e2d50ccecd6d73491a4034bf59f6a9adaa81",
-      "last_updated": "2026-11-01T04:58:03.654999"
+      "hash": "168fd1cab12574e8f14c166cf31d8143ab682f118d7541a2f59fe62002648b3a",
+      "last_updated": "2026-11-24T16:26:10.535899"
     },
     "快速入门/平台与集成/Chrome_扩展程序.md": {
       "level1": "快速入门",
@@ -150,17 +150,17 @@
       "title": "Chrome 扩展程序",
       "original_url": "https://code.claude.com/docs/zh-CN/chrome",
       "original_md_url": "https://code.claude.com/docs/zh-CN/chrome.md",
-      "hash": "e6b46e4d7e65401884152883abeffa141c9e55f9a75721bccdaef0965bfc08e2",
-      "last_updated": "2026-11-01T04:58:04.181489"
+      "hash": "47be9bfe04d5aaf9827cda653c2acaef49bcec76a94fbb750333346ecd13967b",
+      "last_updated": "2026-11-24T16:26:11.085600"
     },
-    "快速入门/平台与集成/Computer_use_(preview).md": {
+    "快速入门/平台与集成/Computer_use（预览版）.md": {
       "level1": "快速入门",
       "level2": "平台与集成",
-      "title": "Computer use (preview)",
+      "title": "Computer use（预览版）",
       "original_url": "https://code.claude.com/docs/zh-CN/computer-use",
       "original_md_url": "https://code.claude.com/docs/zh-CN/computer-use.md",
-      "hash": "60685223ad0e529e76deeae609133f2307cdd952d5c5418a13999942bcd2f0e7",
-      "last_updated": "2026-11-01T04:58:04.718245"
+      "hash": "63e5417293b04172c469e782d6d23a6bc26ed85ddef39f035c6e10a806eb686b",
+      "last_updated": "2026-11-24T16:26:11.656093"
     },
     "快速入门/平台与集成/Visual_Studio_Code.md": {
       "level1": "快速入门",
@@ -168,8 +168,8 @@
       "title": "Visual Studio Code",
       "original_url": "https://code.claude.com/docs/zh-CN/vs-code",
       "original_md_url": "https://code.claude.com/docs/zh-CN/vs-code.md",
-      "hash": "dcb4c6cb5c18f1aa26e40db564e1f9e4ca973f791ff72a2677857a6baa8546d8",
-      "last_updated": "2026-11-01T04:58:05.254283"
+      "hash": "1e755d655900a510c9a232c77b573a4b4ae0bf7b29f9f999ed8bcd2b678b8a8b",
+      "last_updated": "2026-11-24T16:26:12.221783"
     },
     "快速入门/平台与集成/JetBrains_IDEs.md": {
       "level1": "快速入门",
@@ -177,8 +177,8 @@
       "title": "JetBrains IDEs",
       "original_url": "https://code.claude.com/docs/zh-CN/jetbrains",
       "original_md_url": "https://code.claude.com/docs/zh-CN/jetbrains.md",
-      "hash": "b32d39b7eccd07172a78b615ee328873153588f0907e6a07d2dc98a98ef3f45d",
-      "last_updated": "2026-11-01T04:58:05.790269"
+      "hash": "aa9f08dfdb7e3845066763b7456ee62493d0b4762c6dbaa388711ab6af8a8c11",
+      "last_updated": "2026-11-24T16:26:12.768621"
     },
     "快速入门/平台与集成/Slack_中的_Claude_Code.md": {
       "level1": "快速入门",
@@ -186,26 +186,17 @@
       "title": "Slack 中的 Claude Code",
       "original_url": "https://code.claude.com/docs/zh-CN/slack",
       "original_md_url": "https://code.claude.com/docs/zh-CN/slack.md",
-      "hash": "1ecf8deb5b5c18519c0910f712e96cd8883b76a7975a1422a1a425139e7e63e1",
-      "last_updated": "2026-11-01T04:58:06.315795"
+      "hash": "3cf83c17f150967825d17a45b429b69d0703fd03278215e10df5793132c02456",
+      "last_updated": "2026-11-24T16:26:13.320311"
     },
-    "快速入门/代码审查与_Pull_Request/在本地审查代码.md": {
+    "快速入门/代码审查与_Pull_Request/Claude_Ship.md": {
       "level1": "快速入门",
       "level2": "代码审查与 Pull Request",
-      "title": "在本地审查代码",
-      "original_url": "https://code.claude.com/docs/zh-CN/code-review-local",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/code-review-local.md",
-      "hash": "a70c20e55090818be7792ee90d7955913cee46b8161ae90077ba2f35ec0a8c70",
-      "last_updated": "2026-11-01T04:58:06.840270"
-    },
-    "快速入门/代码审查与_Pull_Request/Ultrareview.md": {
-      "level1": "快速入门",
-      "level2": "代码审查与 Pull Request",
-      "title": "Ultrareview",
-      "original_url": "https://code.claude.com/docs/zh-CN/ultrareview",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/ultrareview.md",
-      "hash": "a6e9176756045f872ddb8145e64731087534c972b100fca5bbad0d2d1faf6221",
-      "last_updated": "2026-11-01T04:58:07.364216"
+      "title": "Claude Ship",
+      "original_url": "https://code.claude.com/docs/zh-CN/claude-ship",
+      "original_md_url": "https://code.claude.com/docs/zh-CN/claude-ship.md",
+      "hash": "eb9f3051e9d44fe44b2e8a0bd33ba46be939c39b46b5dd49555ffafb475aec30",
+      "last_updated": "2026-11-24T16:26:13.884231"
     },
     "快速入门/代码审查与_Pull_Request/GitHub_Enterprise_Server.md": {
       "level1": "快速入门",
@@ -213,8 +204,8 @@
       "title": "GitHub Enterprise Server",
       "original_url": "https://code.claude.com/docs/zh-CN/github-enterprise-server",
       "original_md_url": "https://code.claude.com/docs/zh-CN/github-enterprise-server.md",
-      "hash": "5837877b71ab9f35856757e8d6f897d7ad0d62808c951a628edb91c3f81ba429",
-      "last_updated": "2026-11-01T04:58:07.889603"
+      "hash": "cbc9dfbfe9b1b06949411752ece0298d2c340e60938a1bb0595e8da887cf74cd",
+      "last_updated": "2026-11-24T16:26:14.435739"
     },
     "使用_Claude_Code_构建/Agent_与并行工作/概述.md": {
       "level1": "使用 Claude Code 构建",
@@ -231,17 +222,17 @@
       "title": "创建自定义 subagents",
       "original_url": "https://code.claude.com/docs/zh-CN/sub-agents",
       "original_md_url": "https://code.claude.com/docs/zh-CN/sub-agents.md",
-      "hash": "f8889f357959b4a9cf2c3680bdce57f9d0682fb7a859a5a823b144d3ada2267d",
-      "last_updated": "2026-11-01T04:58:08.949744"
+      "hash": "94b51ed52d6b7ac0e0b0f45b67354068ed2006926f2775fbd7eb68a6d5327570",
+      "last_updated": "2026-11-24T16:26:15.565682"
     },
-    "使用_Claude_Code_构建/Agent_与并行工作/Agent_view.md": {
+    "使用_Claude_Code_构建/Agent_与并行工作/Agent_视图.md": {
       "level1": "使用 Claude Code 构建",
       "level2": "Agent 与并行工作",
-      "title": "Agent view",
+      "title": "Agent 视图",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-view",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-view.md",
-      "hash": "9f819926717a7bfe6b2e1a79aa0310e0da9feefbef0c009799b91fb3633d4093",
-      "last_updated": "2026-11-01T04:58:09.488387"
+      "hash": "36c2171daa8abcb205a3b69f223cbcb35c449e618852b1690d69bc1a64619a05",
+      "last_updated": "2026-11-24T16:26:16.158478"
     },
     "使用_Claude_Code_构建/Agent_与并行工作/运行代理团队.md": {
       "level1": "使用 Claude Code 构建",
@@ -249,8 +240,8 @@
       "title": "运行代理团队",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-teams",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-teams.md",
-      "hash": "cb1c8eade0c2f7f673ede36aceea86bc7417c50b155b4cc41ff0a98d97dad30e",
-      "last_updated": "2026-11-01T04:58:10.015659"
+      "hash": "7a8ef7aed6964150ec3161033a4905a378ea623186a28ee63e01a06462708a52",
+      "last_updated": "2026-11-24T16:26:16.715832"
     },
     "使用_Claude_Code_构建/Agent_与并行工作/跨会话消息传递.md": {
       "level1": "使用 Claude Code 构建",
@@ -258,8 +249,8 @@
       "title": "跨会话消息传递",
       "original_url": "https://code.claude.com/docs/zh-CN/cross-session-messaging",
       "original_md_url": "https://code.claude.com/docs/zh-CN/cross-session-messaging.md",
-      "hash": "8ce2927f4d3744da26399d2df7221f400fcd834ddccf6bc7e29fe147158f83cc",
-      "last_updated": "2026-11-01T04:58:10.545775"
+      "hash": "2cbcedbad4b770eb8534d85423101d1bb8dfd5d09fa9169431d8bffddd1f5156",
+      "last_updated": "2026-11-24T16:26:17.506328"
     },
     "使用_Claude_Code_构建/Agent_与并行工作/动态工作流.md": {
       "level1": "使用 Claude Code 构建",
@@ -267,8 +258,8 @@
       "title": "动态工作流",
       "original_url": "https://code.claude.com/docs/zh-CN/workflows",
       "original_md_url": "https://code.claude.com/docs/zh-CN/workflows.md",
-      "hash": "713c2a8f44e9a85c0aa54f7300e1adb2f4c224337fb829956b9a2043b4ce6181",
-      "last_updated": "2026-11-01T04:58:11.073317"
+      "hash": "11cfaa2dc536d2a89f85ca628289cea9c9dde317d2acaa17feb3ee5aa64a2966",
+      "last_updated": "2026-11-24T16:26:18.838070"
     },
     "使用_Claude_Code_构建/Agent_与并行工作/使用_worktrees_隔离会话.md": {
       "level1": "使用 Claude Code 构建",
@@ -276,8 +267,8 @@
       "title": "使用 worktrees 隔离会话",
       "original_url": "https://code.claude.com/docs/zh-CN/worktrees",
       "original_md_url": "https://code.claude.com/docs/zh-CN/worktrees.md",
-      "hash": "f736c581add4e752375af871b2b319d6efe883df59dd51a5466301fe4d4ef9f2",
-      "last_updated": "2026-11-01T04:58:11.600986"
+      "hash": "bf19cf51ad5642476f7ed588714045b5e20066ce3a838e81f00150feac71609a",
+      "last_updated": "2026-11-24T16:26:19.421435"
     },
     "使用_Claude_Code_构建/MCP/快速入门.md": {
       "level1": "使用 Claude Code 构建",
@@ -285,8 +276,8 @@
       "title": "快速入门",
       "original_url": "https://code.claude.com/docs/zh-CN/mcp-quickstart",
       "original_md_url": "https://code.claude.com/docs/zh-CN/mcp-quickstart.md",
-      "hash": "c819a497d74ca9b8af705177d3ce35963886b927a911ce518ab9a60314df7052",
-      "last_updated": "2026-11-01T04:58:12.127044"
+      "hash": "ba8f5d39a7319a1b2a0462a5c32ac358ccb959e420ed01b916dd74b2ba8f0321",
+      "last_updated": "2026-11-24T16:26:19.974767"
     },
     "使用_Claude_Code_构建/MCP/参考.md": {
       "level1": "使用 Claude Code 构建",
@@ -294,8 +285,8 @@
       "title": "参考",
       "original_url": "https://code.claude.com/docs/zh-CN/mcp",
       "original_md_url": "https://code.claude.com/docs/zh-CN/mcp.md",
-      "hash": "f58cf659d7e66e01a811b3c88406783be9017486c2a749c0ee80591316f2ca54",
-      "last_updated": "2026-11-01T04:58:12.788771"
+      "hash": "45d8243d1477cbacfee9ef4137e69fc3be45a7e4f25968664dd4d4524d808468",
+      "last_updated": "2026-11-24T16:26:20.541023"
     },
     "使用_Claude_Code_构建/Skills/使用_skills_扩展_Claude.md": {
       "level1": "使用 Claude Code 构建",
@@ -303,8 +294,8 @@
       "title": "使用 skills 扩展 Claude",
       "original_url": "https://code.claude.com/docs/zh-CN/skills",
       "original_md_url": "https://code.claude.com/docs/zh-CN/skills.md",
-      "hash": "6cbf21a1c7ae2f87a70bbcf22840bf37dbd82402fcfa8d12bf43303e1c1c02b2",
-      "last_updated": "2026-11-01T04:58:13.332194"
+      "hash": "cbf0c2c10a7ebf8f803aa978f08bf4982537867fa6b075b5e4d9c51edb2afa28",
+      "last_updated": "2026-11-24T16:26:21.105969"
     },
     "使用_Claude_Code_构建/Artifact/将会话输出作为_artifacts_共享.md": {
       "level1": "使用 Claude Code 构建",
@@ -312,8 +303,8 @@
       "title": "将会话输出作为 artifacts 共享",
       "original_url": "https://code.claude.com/docs/zh-CN/artifacts",
       "original_md_url": "https://code.claude.com/docs/zh-CN/artifacts.md",
-      "hash": "9ce29e93c108f0b0e45e1e98ae59e78fb615f33f5bff9cc74cc599a1e06c2746",
-      "last_updated": "2026-11-01T04:58:13.859962"
+      "hash": "ba859baf9536ba91932c79ee908f89ec3ab63c66eef4907594f4d3d4f5ccd0ee",
+      "last_updated": "2026-11-24T16:26:21.670018"
     },
     "使用_Claude_Code_构建/自动化/使用_hooks_自动化.md": {
       "level1": "使用 Claude Code 构建",
@@ -321,8 +312,8 @@
       "title": "使用 hooks 自动化",
       "original_url": "https://code.claude.com/docs/zh-CN/hooks-guide",
       "original_md_url": "https://code.claude.com/docs/zh-CN/hooks-guide.md",
-      "hash": "5688b7477a0bde32040b3f289ca3b362cc572d5d221c1f063d1c31764d7ddf95",
-      "last_updated": "2026-11-01T04:58:14.390705"
+      "hash": "552a0a467b10ef329406a6b0a932ce5679bcc8e352da374b07793073315b6cc1",
+      "last_updated": "2026-11-24T16:26:22.236815"
     },
     "使用_Claude_Code_构建/自动化/将外部事件推送到_Claude.md": {
       "level1": "使用 Claude Code 构建",
@@ -330,8 +321,8 @@
       "title": "将外部事件推送到 Claude",
       "original_url": "https://code.claude.com/docs/zh-CN/channels",
       "original_md_url": "https://code.claude.com/docs/zh-CN/channels.md",
-      "hash": "b06efa31788a1840fbc20b7367290503b9f1f366a5e036bb41a3349f5d0b024c",
-      "last_updated": "2026-11-01T04:58:14.919510"
+      "hash": "2056d474480cf0c43da610b737d7a962140d70772e3dde661c674a2dae5eb58e",
+      "last_updated": "2026-11-24T16:26:22.788858"
     },
     "使用_Claude_Code_构建/自动化/按计划运行提示词.md": {
       "level1": "使用 Claude Code 构建",
@@ -339,8 +330,8 @@
       "title": "按计划运行提示词",
       "original_url": "https://code.claude.com/docs/zh-CN/scheduled-tasks",
       "original_md_url": "https://code.claude.com/docs/zh-CN/scheduled-tasks.md",
-      "hash": "6cc8e4017b63311d807982500a803759a008ac0c4b8e268ac4f571d29bb1f002",
-      "last_updated": "2026-10-24T05:32:33.149115"
+      "hash": "339cbe7be4e15c37138d5d3f67ac7cc9c9e52470b9b96035dcfadb508e81dbd0",
+      "last_updated": "2026-11-24T16:26:23.347736"
     },
     "使用_Claude_Code_构建/自动化/目标.md": {
       "level1": "使用 Claude Code 构建",
@@ -348,8 +339,8 @@
       "title": "目标",
       "original_url": "https://code.claude.com/docs/zh-CN/goal",
       "original_md_url": "https://code.claude.com/docs/zh-CN/goal.md",
-      "hash": "fb8ca3cba9127e483d6030bb94d2fd0f01f4b3cce78003a631ee36fc5a18bf3d",
-      "last_updated": "2026-11-01T04:58:15.971338"
+      "hash": "f9fa71fe7a5fa7abaf9fc6cc5a6975bc103eb6165b5e4201e3efbd6c2190d42c",
+      "last_updated": "2026-11-24T16:26:23.951331"
     },
     "使用_Claude_Code_构建/自动化/编程使用.md": {
       "level1": "使用 Claude Code 构建",
@@ -357,8 +348,8 @@
       "title": "编程使用",
       "original_url": "https://code.claude.com/docs/zh-CN/headless",
       "original_md_url": "https://code.claude.com/docs/zh-CN/headless.md",
-      "hash": "d09f8ea42e97e0c385ea51a32dd97a8afceb01abdbeb249b98d2a16a9e9dcc06",
-      "last_updated": "2026-11-01T04:58:16.504582"
+      "hash": "02ed0f1e63a9857954d8cacc3d38ef9d26a9cf598a0051c327ecb25e0eb2382c",
+      "last_updated": "2026-11-24T16:26:24.506698"
     },
     "使用_Claude_Code_构建/自动化/从链接启动会话.md": {
       "level1": "使用 Claude Code 构建",
@@ -366,8 +357,8 @@
       "title": "从链接启动会话",
       "original_url": "https://code.claude.com/docs/zh-CN/deep-links",
       "original_md_url": "https://code.claude.com/docs/zh-CN/deep-links.md",
-      "hash": "b4f4be69727c20bc148e71fa5c665517d3e9a54a8da960467ee1ec0f3c46dd4f",
-      "last_updated": "2026-11-01T04:58:17.028217"
+      "hash": "998b8469ad3ce7fb0c6bde3fc659fba3273267df28c3ee8055c8d202c4330173",
+      "last_updated": "2026-11-24T16:26:25.066959"
     },
     "使用_Claude_Code_构建/指南/Monorepos_和大型存储库.md": {
       "level1": "使用 Claude Code 构建",
@@ -375,8 +366,8 @@
       "title": "Monorepos 和大型存储库",
       "original_url": "https://code.claude.com/docs/zh-CN/large-codebases",
       "original_md_url": "https://code.claude.com/docs/zh-CN/large-codebases.md",
-      "hash": "56de7b8d0d09b4a9390b723b1caeb6f9251d6dcf4edaf6bd2e4740be27ddcdf4",
-      "last_updated": "2026-11-01T04:58:17.553560"
+      "hash": "95bf1241310bc561f0b78de762e390f1b3c58389bb0b45baf05cc39c2e2028ed",
+      "last_updated": "2026-11-24T16:26:25.624381"
     },
     "使用_Claude_Code_构建/故障排除/排查安装和登录问题.md": {
       "level1": "使用 Claude Code 构建",
@@ -384,8 +375,8 @@
       "title": "排查安装和登录问题",
       "original_url": "https://code.claude.com/docs/zh-CN/troubleshoot-install",
       "original_md_url": "https://code.claude.com/docs/zh-CN/troubleshoot-install.md",
-      "hash": "71d95f1f2e6816ab75a0db4dac7ac978c39a72ad27d65d48020e0aa89171f141",
-      "last_updated": "2026-11-01T04:58:18.085555"
+      "hash": "312ea3b050b80939573e14b0ac3a1a8859836f1b89c751879550cacbddd5b65d",
+      "last_updated": "2026-11-24T16:26:26.185551"
     },
     "使用_Claude_Code_构建/故障排除/排除性能和稳定性问题.md": {
       "level1": "使用 Claude Code 构建",
@@ -393,8 +384,8 @@
       "title": "排除性能和稳定性问题",
       "original_url": "https://code.claude.com/docs/zh-CN/troubleshooting",
       "original_md_url": "https://code.claude.com/docs/zh-CN/troubleshooting.md",
-      "hash": "041519623fa4fd88b3e19adadb7112c0035881984272ffb548992cfd962b0aeb",
-      "last_updated": "2026-11-01T04:58:18.612549"
+      "hash": "36e4c0377790388e66cb2ea9216836d4b7aaccb717531f5463e6ac1797fb5343",
+      "last_updated": "2026-11-24T16:26:26.757160"
     },
     "使用_Claude_Code_构建/故障排除/调试配置.md": {
       "level1": "使用 Claude Code 构建",
@@ -402,8 +393,8 @@
       "title": "调试配置",
       "original_url": "https://code.claude.com/docs/zh-CN/debug-your-config",
       "original_md_url": "https://code.claude.com/docs/zh-CN/debug-your-config.md",
-      "hash": "7e662da246669120110e44175e69bfccc6602b858237d59141cd88f0d4450e27",
-      "last_updated": "2026-11-01T04:58:19.137690"
+      "hash": "f2bff0389d6ed08b95f2c76eea1d8e4bdd901a127182ad5795cfb641d2feba2f",
+      "last_updated": "2026-11-24T16:26:27.319663"
     },
     "使用_Claude_Code_构建/故障排除/错误参考.md": {
       "level1": "使用 Claude Code 构建",
@@ -411,8 +402,8 @@
       "title": "错误参考",
       "original_url": "https://code.claude.com/docs/zh-CN/errors",
       "original_md_url": "https://code.claude.com/docs/zh-CN/errors.md",
-      "hash": "b3f124629abe08073bdb224e1b7bff5d06bd37727c77c967761814e6de987d71",
-      "last_updated": "2026-11-01T04:58:19.712007"
+      "hash": "c164658e7e10712187c8bc335d89dc5beb8968d78b7d158d384c6316b0f05de4",
+      "last_updated": "2026-11-24T16:26:27.932774"
     },
     "插件/插件/概览.md": {
       "level1": "插件",
@@ -420,8 +411,8 @@
       "title": "概览",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/overview",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/overview.md",
-      "hash": "0ef8386c0a2201d444181b47f4858f4c87a7d063d74bb92088e56175ab9d9b27",
-      "last_updated": "2026-11-01T04:58:20.240730"
+      "hash": "667c65dbca4bfecc63a4a0038ae503736ddc5ec7c78af4d9873dab7610b38294",
+      "last_updated": "2026-11-24T16:26:28.672160"
     },
     "插件/使用插件/安装和管理插件.md": {
       "level1": "插件",
@@ -429,8 +420,8 @@
       "title": "安装和管理插件",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/install",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/install.md",
-      "hash": "fe149f036e218eccc5772a30bae7030153096b2ca45e4ac742278659092bf4a5",
-      "last_updated": "2026-11-01T04:58:20.770717"
+      "hash": "772de8474bbe9c69bc72c8ca0769c1671ae053c29d726729f859f22b4d4e693a",
+      "last_updated": "2026-11-24T16:26:29.499869"
     },
     "插件/使用插件/Anthropic_的插件市场.md": {
       "level1": "插件",
@@ -447,8 +438,8 @@
       "title": "代码智能",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/code-intelligence",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/code-intelligence.md",
-      "hash": "210903e94b5a888a0992cf2819f5ec49f2ae79a141af3a6380dbba03a3f9d26c",
-      "last_updated": "2026-10-24T05:32:41.901921"
+      "hash": "43e03f1e4861d6d12ce9aa986464d004539bf3d63e9945b777e13038838128e3",
+      "last_updated": "2026-11-24T16:26:31.285962"
     },
     "插件/使用插件/安全和信任.md": {
       "level1": "插件",
@@ -456,8 +447,8 @@
       "title": "安全和信任",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/security",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/security.md",
-      "hash": "ffe30b3e5c557bdd4510b4a9eea81727997c17266d28f9b5a364c3986c3d8fd0",
-      "last_updated": "2026-11-01T04:58:22.354510"
+      "hash": "af7c08fff5bb5cc05aeb61ea5c904176f9a7dca0d742f6f78307913be252abe4",
+      "last_updated": "2026-11-24T16:26:32.352740"
     },
     "插件/创建插件/创建插件.md": {
       "level1": "插件",
@@ -465,8 +456,8 @@
       "title": "创建插件",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/create",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/create.md",
-      "hash": "b4e7573307de54d9b329045839be36f389dff92bdf8d17cc146601efee72973d",
-      "last_updated": "2026-11-01T04:58:22.879779"
+      "hash": "167ff7f9504007e416df1e35f26557ca1150b48f7d6a4c9853984b0b7a89c425",
+      "last_updated": "2026-11-24T16:26:33.997277"
     },
     "插件/创建插件/添加组件.md": {
       "level1": "插件",
@@ -474,8 +465,8 @@
       "title": "添加组件",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/components",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/components.md",
-      "hash": "008a43db7b6f2f822aab6876e01d3bd810a47f3811d4c5bf49b572cb9c941b17",
-      "last_updated": "2026-11-01T04:58:23.407779"
+      "hash": "04f46fce29b28a47817ec5bb97f17989dff1d2ee1044310ce9eb570561f98052",
+      "last_updated": "2026-11-24T16:26:34.619114"
     },
     "插件/创建插件/依赖.md": {
       "level1": "插件",
@@ -483,8 +474,8 @@
       "title": "依赖",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/dependencies",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/dependencies.md",
-      "hash": "3d2668c979b4aa55357386e170a5176137ccf8cbd9115c5654a25d95fba79ed7",
-      "last_updated": "2026-10-24T05:32:44.978967"
+      "hash": "0c41849edb3c72e3957dcd3e15232da8944f940ba2f286ef8599a80a249c4003",
+      "last_updated": "2026-11-24T16:26:35.262575"
     },
     "插件/创建插件/使用_evals_测试插件.md": {
       "level1": "插件",
@@ -492,8 +483,8 @@
       "title": "使用 evals 测试插件",
       "original_url": "https://code.claude.com/docs/zh-CN/plugin-evals",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugin-evals.md",
-      "hash": "9de1a58114a69a07bd21ae488d7ed0106a99c1ebdb7a0b7fabc0b2f9bb98b061",
-      "last_updated": "2026-10-24T05:32:45.678108"
+      "hash": "779397dc06192ef153ab48e36a0aa65ab26abe8fe63a862d4b4e3da75a96993e",
+      "last_updated": "2026-11-24T16:26:35.819633"
     },
     "插件/创建插件/发布插件.md": {
       "level1": "插件",
@@ -501,8 +492,8 @@
       "title": "发布插件",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/publish",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/publish.md",
-      "hash": "982766a7ebf8084a731442437bd71b2980dd7fabde7ac57be883a41102ef2f59",
-      "last_updated": "2026-11-01T04:58:25.173461"
+      "hash": "e6b89226ab878147cb10bba285bb5d9ef55c04214c8f1c0891ab8d17504e06c1",
+      "last_updated": "2026-11-24T16:26:36.616643"
     },
     "插件/创建插件/测量成本和使用情况.md": {
       "level1": "插件",
@@ -510,8 +501,8 @@
       "title": "测量成本和使用情况",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/measure",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/measure.md",
-      "hash": "89617041d1eefdef1d1be8db8c518d6d54333e25f01a97abda4a776c61a444d2",
-      "last_updated": "2026-11-01T04:58:25.705895"
+      "hash": "b18ddc2f71b145aa8cd2392acb8aba2a13727c69cf9b1cf81ae836d38cfdf9e9",
+      "last_updated": "2026-11-24T16:26:37.167095"
     },
     "插件/创建插件/从您的_CLI_推荐.md": {
       "level1": "插件",
@@ -528,8 +519,8 @@
       "title": "概览",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/mods/overview",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/mods/overview.md",
-      "hash": "0700f829a58baf0c40caa23981556af72eab45933e3b404763ece6e88359a13e",
-      "last_updated": "2026-10-24T05:32:48.355320"
+      "hash": "ef2460689d48f57c5dfc8d8e59fcce111b0171adefaf7d2c834325b627a9edc4",
+      "last_updated": "2026-11-24T16:26:38.762185"
     },
     "插件/mod/创建一个_mod.md": {
       "level1": "插件",
@@ -537,8 +528,8 @@
       "title": "创建一个 mod",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/mods/create",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/mods/create.md",
-      "hash": "92de3b9bb15c9d2de56139ac8780f085103b743bc86dd8d715843393fa27ac8d",
-      "last_updated": "2026-11-01T04:58:27.488780"
+      "hash": "c0a6777797cca828584636cdb2a39298e2924b252f4cf853b967d31f5ba7a8b6",
+      "last_updated": "2026-11-24T16:26:39.587762"
     },
     "插件/mod/参考.md": {
       "level1": "插件",
@@ -546,8 +537,8 @@
       "title": "参考",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/mods/reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/mods/reference.md",
-      "hash": "c2f76af2f8d2b242a300cc168590e741843f051942b1b500d626445016c675ab",
-      "last_updated": "2026-11-01T04:58:28.016781"
+      "hash": "a4e7b7063ae52472216cc020b76fca362513c7a31ad847da48adf9dbd4d17931",
+      "last_updated": "2026-11-24T16:26:40.236986"
     },
     "插件/运营市场/创建一个_marketplace.md": {
       "level1": "插件",
@@ -555,8 +546,8 @@
       "title": "创建一个 marketplace",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/create-marketplace",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/create-marketplace.md",
-      "hash": "a09f09cc1ec35f571d4962a3bf3fa65295b04a9aba2547a4d2d41bd19b7a365c",
-      "last_updated": "2026-11-01T04:58:28.543203"
+      "hash": "b845710cc2737f9fc2746b3120be4ad5ce0168d13905c2264dab1d1a95d95ffd",
+      "last_updated": "2026-11-24T16:26:40.973754"
     },
     "插件/运营市场/托管_marketplace.md": {
       "level1": "插件",
@@ -564,8 +555,8 @@
       "title": "托管 marketplace",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/host-marketplace",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/host-marketplace.md",
-      "hash": "3eca9b2fc8656d792b14ca8eed70279981978fa41d93484bafe55a8bbf965105",
-      "last_updated": "2026-11-01T04:58:29.070984"
+      "hash": "588305332d99f31b3ec9aed8defd806157de5448250319ed3c782937f31c1000",
+      "last_updated": "2026-11-24T16:26:41.714046"
     },
     "插件/运营市场/推荐插件.md": {
       "level1": "插件",
@@ -573,8 +564,8 @@
       "title": "推荐插件",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/relevance",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/relevance.md",
-      "hash": "5abd56f52122cf81f3cf468b4c2ab4f74b362a0a893ad8182ea020bbbfbcb405",
-      "last_updated": "2026-11-01T04:58:29.880545"
+      "hash": "173f141ee4194819a7f261c26849a20f0048b3228b4ba402cbbb058a1965a808",
+      "last_updated": "2026-11-24T16:26:42.428625"
     },
     "插件/管理组织的插件/为您的组织管理_plugins.md": {
       "level1": "插件",
@@ -582,8 +573,8 @@
       "title": "为您的组织管理 plugins",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/org",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/org.md",
-      "hash": "c98fda29d4ba74e84a9f877dc6d5874ab1ebc84a58fa499203737feef59d1417",
-      "last_updated": "2026-11-01T04:58:30.407926"
+      "hash": "f6ff8a9323eba7f72926622c3fbfec68b45c9b43e1052abf0b499f5a334804a4",
+      "last_updated": "2026-11-24T16:26:43.201895"
     },
     "插件/管理组织的插件/为您的组织管理_mods.md": {
       "level1": "插件",
@@ -591,8 +582,8 @@
       "title": "为您的组织管理 mods",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/mods/admin",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/mods/admin.md",
-      "hash": "42d9fd71a1e0119871267acab67866876145b6537fd607ffa03112bc846cd0b7",
-      "last_updated": "2026-11-01T04:58:30.934799"
+      "hash": "a4bebb3d658ac460ff6f0dcc113cf5e3ae1c5500446def76f1b6d4925e2b1ab1",
+      "last_updated": "2026-11-24T16:26:43.834489"
     },
     "插件/故障排除/故障排除.md": {
       "level1": "插件",
@@ -600,8 +591,8 @@
       "title": "故障排除",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/troubleshooting",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/troubleshooting.md",
-      "hash": "721765fe0ddd6a13f8c82311f33c6458adbc9a9dd5c8c029ad572889bfbc2db6",
-      "last_updated": "2026-11-01T04:58:31.470528"
+      "hash": "95cbb11d6a0cca71ad205ed298ff0cfc4891c10d6781628b5f58c94769d705eb",
+      "last_updated": "2026-11-24T16:26:44.471256"
     },
     "插件/故障排除/加载参考.md": {
       "level1": "插件",
@@ -609,8 +600,8 @@
       "title": "加载参考",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/loading",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/loading.md",
-      "hash": "0257d292a75fb86361af79eaf99dd570d64a49ed74c54a2664f703bd2271c560",
-      "last_updated": "2026-11-01T04:58:31.997891"
+      "hash": "56e8b4bdcc362775276eff504303a1b502dce110de5bf6948cb49c78cee7a712",
+      "last_updated": "2026-11-24T16:26:45.109829"
     },
     "插件/参考/Manifest_参考.md": {
       "level1": "插件",
@@ -618,17 +609,17 @@
       "title": "Manifest 参考",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/manifest-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/manifest-reference.md",
-      "hash": "f75979792dabda028e060bde2beb6d3d99532673094e621de41a4131fce7a204",
-      "last_updated": "2026-11-01T04:58:32.527100"
+      "hash": "7dd256f906c8274125c4a3f8793133b8c07f520ed24d2b0f07d05ccdce988ef5",
+      "last_updated": "2026-11-24T16:26:45.728749"
     },
-    "插件/参考/Marketplace_参考.md": {
+    "插件/参考/市场参考.md": {
       "level1": "插件",
       "level2": "参考",
-      "title": "Marketplace 参考",
+      "title": "市场参考",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/marketplace-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/marketplace-reference.md",
-      "hash": "e92b7d8b7dbe4e0065cb5bd641802afc9eb379506ab83030eb0d7d10d738704f",
-      "last_updated": "2026-11-01T04:58:33.053556"
+      "hash": "8430a0e29427c9a19d0d6c79f749ca1499de40ff6d9f7f3b48212341e0ab79ce",
+      "last_updated": "2026-11-24T16:26:46.504132"
     },
     "插件/参考/插件命令.md": {
       "level1": "插件",
@@ -636,8 +627,8 @@
       "title": "插件命令",
       "original_url": "https://code.claude.com/docs/zh-CN/plugins/cli-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/plugins/cli-reference.md",
-      "hash": "4bab994e26bd116793dde74414232142af274c06f1df1bb9f7c137aeb46f15b9",
-      "last_updated": "2026-11-01T04:58:33.581428"
+      "hash": "f34e36a4d87183c7b5a18d7f960edd7b42c329a879fe084ca83e170cb963d0f2",
+      "last_updated": "2026-11-24T16:26:47.192592"
     },
     "管理/设置与访问/管理概述.md": {
       "level1": "管理",
@@ -645,8 +636,8 @@
       "title": "管理概述",
       "original_url": "https://code.claude.com/docs/zh-CN/admin-setup",
       "original_md_url": "https://code.claude.com/docs/zh-CN/admin-setup.md",
-      "hash": "ce31ddb2eba4056f1e80193271bba6261dfb8f91956bc6a78933edb3c9202030",
-      "last_updated": "2026-11-01T04:58:34.104714"
+      "hash": "59db63028b5e98d7d6ddbc6bfb4b43fff12e9a6d6a800195d34f959df292607a",
+      "last_updated": "2026-11-24T16:26:47.756536"
     },
     "管理/设置与访问/高级设置.md": {
       "level1": "管理",
@@ -654,8 +645,8 @@
       "title": "高级设置",
       "original_url": "https://code.claude.com/docs/zh-CN/setup",
       "original_md_url": "https://code.claude.com/docs/zh-CN/setup.md",
-      "hash": "cca617c8af3ff280d1e7d309ea33060712c3a5292f5b140a5d21948b0b7e57d8",
-      "last_updated": "2026-11-01T04:58:34.632730"
+      "hash": "01ec2c7ac4b2313ad773c62692a96383d9623c56e275e7762acc99801bb5d271",
+      "last_updated": "2026-11-24T16:26:48.318059"
     },
     "管理/设置与访问/身份验证.md": {
       "level1": "管理",
@@ -663,8 +654,8 @@
       "title": "身份验证",
       "original_url": "https://code.claude.com/docs/zh-CN/authentication",
       "original_md_url": "https://code.claude.com/docs/zh-CN/authentication.md",
-      "hash": "ef6dc3098964353f2465e51804e0b64f37fc3c153fb3e03329a413f5122ee5df",
-      "last_updated": "2026-11-01T04:58:35.158024"
+      "hash": "4522dc086812bb4dc58990b63b6483920fca4917166d55b9756d80dfe557cba2",
+      "last_updated": "2026-11-24T16:26:48.884192"
     },
     "管理/设置与访问/托管设置.md": {
       "level1": "管理",
@@ -672,8 +663,8 @@
       "title": "托管设置",
       "original_url": "https://code.claude.com/docs/zh-CN/managed-settings",
       "original_md_url": "https://code.claude.com/docs/zh-CN/managed-settings.md",
-      "hash": "2d0fca097fbd64afd7f67849272e39ca15a1374dbb5c738d06efa6dcf7000b40",
-      "last_updated": "2026-11-01T04:58:35.690681"
+      "hash": "7fe17d176b27da7d0304d5a049c8434be627394727dc63f1f89ddfc32cd56374",
+      "last_updated": "2026-11-24T16:26:49.438700"
     },
     "管理/设置与访问/服务器管理的设置.md": {
       "level1": "管理",
@@ -681,8 +672,8 @@
       "title": "服务器管理的设置",
       "original_url": "https://code.claude.com/docs/zh-CN/server-managed-settings",
       "original_md_url": "https://code.claude.com/docs/zh-CN/server-managed-settings.md",
-      "hash": "f09fc9a83205b66883085df7de2db125134d07be6b809a6036e58cf6100de2df",
-      "last_updated": "2026-11-01T04:58:36.223132"
+      "hash": "1e1e6ed382e4a6c5c96295ae1e78e2a4b3e4653df15bff5dc3be4ca180624486",
+      "last_updated": "2026-11-24T16:26:49.999943"
     },
     "管理/设置与访问/托管_MCP_配置.md": {
       "level1": "管理",
@@ -690,8 +681,8 @@
       "title": "托管 MCP 配置",
       "original_url": "https://code.claude.com/docs/zh-CN/managed-mcp",
       "original_md_url": "https://code.claude.com/docs/zh-CN/managed-mcp.md",
-      "hash": "58c4094ed995ee888eb9680a208f23012b8287514e173900524d84b8877fca5d",
-      "last_updated": "2026-11-01T04:58:36.751242"
+      "hash": "05085a3c2d424fbb5420bac421b7de6a0a100f9a1e2382490ade3f9a0863823e",
+      "last_updated": "2026-11-24T16:26:50.554374"
     },
     "管理/设置与访问/配置自动模式.md": {
       "level1": "管理",
@@ -699,8 +690,8 @@
       "title": "配置自动模式",
       "original_url": "https://code.claude.com/docs/zh-CN/auto-mode-config",
       "original_md_url": "https://code.claude.com/docs/zh-CN/auto-mode-config.md",
-      "hash": "9b2f0756cd0fc880ab73f1cc8b9d7c00d3793c4ea325a919cabad4ae22c89a41",
-      "last_updated": "2026-11-01T04:58:37.276690"
+      "hash": "f5a9d6e5ff479346bb9b41ccf8c469ae1c9c221cb1b855d95e8b53639726b151",
+      "last_updated": "2026-11-24T16:26:51.110966"
     },
     "管理/部署/概览.md": {
       "level1": "管理",
@@ -708,8 +699,8 @@
       "title": "概览",
       "original_url": "https://code.claude.com/docs/zh-CN/third-party-integrations",
       "original_md_url": "https://code.claude.com/docs/zh-CN/third-party-integrations.md",
-      "hash": "5bc15aee6fec62e9392d244f25108dc3463a633043f4dedb3e76e8c927f7b563",
-      "last_updated": "2026-10-24T05:33:02.585461"
+      "hash": "0354c550361d500bcbec2c14115f500a5e90f03808bbd0ac9cb36b777f299d0d",
+      "last_updated": "2026-11-24T16:26:51.689840"
     },
     "管理/部署/功能可用性.md": {
       "level1": "管理",
@@ -717,8 +708,8 @@
       "title": "功能可用性",
       "original_url": "https://code.claude.com/docs/zh-CN/feature-availability",
       "original_md_url": "https://code.claude.com/docs/zh-CN/feature-availability.md",
-      "hash": "142c6519e3ca994edcf574e7c468bef23a9128461921067a4de8eb95b43a50f9",
-      "last_updated": "2026-11-01T04:58:38.330980"
+      "hash": "d3ceb2890c9c0267b4a04dfc97f936e91a430c0628a56c06afe1d9668908a869",
+      "last_updated": "2026-11-24T16:26:52.260030"
     },
     "管理/部署/Amazon_Bedrock.md": {
       "level1": "管理",
@@ -726,8 +717,8 @@
       "title": "Amazon Bedrock",
       "original_url": "https://code.claude.com/docs/zh-CN/amazon-bedrock",
       "original_md_url": "https://code.claude.com/docs/zh-CN/amazon-bedrock.md",
-      "hash": "8a5a3ba1eed468a3072099ee4815f8025b07a312b7fa610fde181047eb74a90e",
-      "last_updated": "2026-11-01T04:58:38.872239"
+      "hash": "579ccf15cfbd419351bd29e68c7ec58a2685cc2a40fb72b825baa775422c4e94",
+      "last_updated": "2026-11-24T16:26:52.817273"
     },
     "管理/部署/AWS_上的_Claude_Platform.md": {
       "level1": "管理",
@@ -735,8 +726,17 @@
       "title": "AWS 上的 Claude Platform",
       "original_url": "https://code.claude.com/docs/zh-CN/claude-platform-on-aws",
       "original_md_url": "https://code.claude.com/docs/zh-CN/claude-platform-on-aws.md",
-      "hash": "3e4055f6e35d9a87a55f2a7acd7e0992acf1c85552d6ec2d173a9ec8c7dedf62",
-      "last_updated": "2026-11-01T04:58:39.397995"
+      "hash": "1be2f425cf26ff9ceab0662b691582beaf19ad2cc6596590e5144edf07376415",
+      "last_updated": "2026-11-24T16:26:53.371821"
+    },
+    "管理/部署/Google_Cloud_上的_Claude_模型（由_Anthropic_管理）.md": {
+      "level1": "管理",
+      "level2": "部署",
+      "title": "Google Cloud 上的 Claude 模型（由 Anthropic 管理）",
+      "original_url": "https://code.claude.com/docs/zh-CN/claude-models-on-google-cloud-anthropic-managed",
+      "original_md_url": "https://code.claude.com/docs/zh-CN/claude-models-on-google-cloud-anthropic-managed.md",
+      "hash": "2dfd4795eff2318028a4ce159e764c6b443fda8588d245117ce94a7752864201",
+      "last_updated": "2026-11-24T16:26:53.919265"
     },
     "管理/部署/Google_Cloud_的_Agent_Platform.md": {
       "level1": "管理",
@@ -744,8 +744,8 @@
       "title": "Google Cloud 的 Agent Platform",
       "original_url": "https://code.claude.com/docs/zh-CN/google-vertex-ai",
       "original_md_url": "https://code.claude.com/docs/zh-CN/google-vertex-ai.md",
-      "hash": "dcfa7714569166448ec1bcec8fc2643481dbcadadc5987d608a28d9d910313ac",
-      "last_updated": "2026-11-01T04:58:40.239994"
+      "hash": "cd7328380c00dc1a70ac32febb0c3075b9c7709da07299f99793a7a37c2dfb34",
+      "last_updated": "2026-11-24T16:26:54.471812"
     },
     "管理/部署/Microsoft_Foundry.md": {
       "level1": "管理",
@@ -753,8 +753,8 @@
       "title": "Microsoft Foundry",
       "original_url": "https://code.claude.com/docs/zh-CN/microsoft-foundry",
       "original_md_url": "https://code.claude.com/docs/zh-CN/microsoft-foundry.md",
-      "hash": "a396133b80acd05e5ef4452251d1262d5f61a47076869ec369c8917ac617ebe1",
-      "last_updated": "2026-10-24T05:33:05.983808"
+      "hash": "bd763780e705a07626156c53b7a1ebbc219e1189d75263d0d0d61fa3bfe79c37",
+      "last_updated": "2026-11-24T16:26:55.024982"
     },
     "管理/部署/网络配置.md": {
       "level1": "管理",
@@ -762,8 +762,8 @@
       "title": "网络配置",
       "original_url": "https://code.claude.com/docs/zh-CN/network-config",
       "original_md_url": "https://code.claude.com/docs/zh-CN/network-config.md",
-      "hash": "2eef09ade899c870e9ee8bceb013e69afc2ba234c632c6642483d449694885e9",
-      "last_updated": "2026-11-01T04:58:41.293089"
+      "hash": "3f36566c8db0d741bc47cf2f56c2433ea51fafcac06be20a24fdaff338d83b4f",
+      "last_updated": "2026-11-24T16:26:55.580888"
     },
     "管理/部署/企业启动器.md": {
       "level1": "管理",
@@ -780,8 +780,8 @@
       "title": "开发容器",
       "original_url": "https://code.claude.com/docs/zh-CN/devcontainer",
       "original_md_url": "https://code.claude.com/docs/zh-CN/devcontainer.md",
-      "hash": "87379494118d5ade77da65394e597f74845eb11770d2c4c57f18058086f19251",
-      "last_updated": "2026-11-01T04:58:42.347010"
+      "hash": "df3aca20f36c8a7289c99430487404aa2a8e834a561842b49f0494294488466f",
+      "last_updated": "2026-11-24T16:26:56.695030"
     },
     "管理/网关/概述.md": {
       "level1": "管理",
@@ -789,8 +789,8 @@
       "title": "概述",
       "original_url": "https://code.claude.com/docs/zh-CN/gateways",
       "original_md_url": "https://code.claude.com/docs/zh-CN/gateways.md",
-      "hash": "9c72fbaf155b6c9f61f2acd854d76822c1d6d585b4d0d012057ac08592ea9f5e",
-      "last_updated": "2026-10-24T05:33:08.694616"
+      "hash": "1f6ec3ae1bd81865919474476ea7a8abfd11cfc8ad2aa84f8fb0b1217775ab19",
+      "last_updated": "2026-11-24T16:26:57.254248"
     },
     "管理/用量与费用/监控.md": {
       "level1": "管理",
@@ -798,8 +798,8 @@
       "title": "监控",
       "original_url": "https://code.claude.com/docs/zh-CN/monitoring-usage",
       "original_md_url": "https://code.claude.com/docs/zh-CN/monitoring-usage.md",
-      "hash": "3d5fd791a3cc3165daf0dac67227395140489f79da0fc2111930012d4ee47b6f",
-      "last_updated": "2026-11-01T04:58:43.414378"
+      "hash": "546ffa1623559262c739a8ceb9144c44cae6e7af73edbffe62436592b7237ba2",
+      "last_updated": "2026-11-24T16:26:57.828490"
     },
     "管理/用量与费用/成本.md": {
       "level1": "管理",
@@ -807,8 +807,8 @@
       "title": "成本",
       "original_url": "https://code.claude.com/docs/zh-CN/costs",
       "original_md_url": "https://code.claude.com/docs/zh-CN/costs.md",
-      "hash": "24f03b539c09d33352d390ce78ff4e12fcd5d47fa091da45995e692ff10af0d6",
-      "last_updated": "2026-11-01T04:58:43.945421"
+      "hash": "20dd8af5a5dd919188b046a26a3b87a3eb002dacfe27438c6c68a96f187bed02",
+      "last_updated": "2026-11-24T16:26:58.382803"
     },
     "管理/用量与费用/使用分析跟踪团队使用情况.md": {
       "level1": "管理",
@@ -816,8 +816,8 @@
       "title": "使用分析跟踪团队使用情况",
       "original_url": "https://code.claude.com/docs/zh-CN/analytics",
       "original_md_url": "https://code.claude.com/docs/zh-CN/analytics.md",
-      "hash": "ef08853f1debe611511945fd403dc15fa62a24ef788aee7f9828c690958034a1",
-      "last_updated": "2026-10-24T05:33:10.794981"
+      "hash": "c233680aa18d10dc33cd99ff7774dc9c69c028c39a052c6f93ed40a88ef1d654",
+      "last_updated": "2026-11-24T16:26:58.942858"
     },
     "管理/安全与数据/安全性.md": {
       "level1": "管理",
@@ -825,8 +825,8 @@
       "title": "安全性",
       "original_url": "https://code.claude.com/docs/zh-CN/security",
       "original_md_url": "https://code.claude.com/docs/zh-CN/security.md",
-      "hash": "53e018dfa4dcdffddf055f4729fcbc1ff3592da5502df42f80c7227dde91e8ad",
-      "last_updated": "2026-11-01T04:58:44.994155"
+      "hash": "5f728e9c439081f276a8c3f826c173b8bbb94dca5fb39d80f599ec6873dfda88",
+      "last_updated": "2026-11-24T16:26:59.495057"
     },
     "管理/安全与数据/数据使用.md": {
       "level1": "管理",
@@ -834,8 +834,8 @@
       "title": "数据使用",
       "original_url": "https://code.claude.com/docs/zh-CN/data-usage",
       "original_md_url": "https://code.claude.com/docs/zh-CN/data-usage.md",
-      "hash": "156d0d5cb9a87dbfb1873c12a3c2d3f1b2adfdc563a1e08897cfe4e121e26567",
-      "last_updated": "2026-11-01T04:58:45.518030"
+      "hash": "9c7192e78074b8e56c412fe448e44ac85751a06cedc39a963f88ab7779a30af1",
+      "last_updated": "2026-11-24T16:27:00.050061"
     },
     "管理/安全与数据/零数据保留.md": {
       "level1": "管理",
@@ -843,8 +843,8 @@
       "title": "零数据保留",
       "original_url": "https://code.claude.com/docs/zh-CN/zero-data-retention",
       "original_md_url": "https://code.claude.com/docs/zh-CN/zero-data-retention.md",
-      "hash": "33a1ed4d44967946aaa5c5347cf5361084ac60a0eb753fb02bb4188a8216085e",
-      "last_updated": "2026-10-24T05:33:12.870307"
+      "hash": "8d2279e6460f3f493061d483478fb2c7e938a4c123fabc6bf9bd3256b2743525",
+      "last_updated": "2026-11-24T16:27:00.606712"
     },
     "管理/安全与数据/HIPAA_设置.md": {
       "level1": "管理",
@@ -861,17 +861,17 @@
       "title": "通信工具包",
       "original_url": "https://code.claude.com/docs/zh-CN/communications-kit",
       "original_md_url": "https://code.claude.com/docs/zh-CN/communications-kit.md",
-      "hash": "28805ff2172d00c5ac905dacf48918c505de3b3227f3c9d5cda60de74757c78b",
-      "last_updated": "2026-11-01T04:58:47.123455"
+      "hash": "bc98fc8d7f70eaa7580b5759f355e3c55953ceea5189e5e0ba6872ac91813d0b",
+      "last_updated": "2026-11-24T16:27:01.712134"
     },
-    "管理/采用/Champion_kit.md": {
+    "管理/采用/倡导者工具包.md": {
       "level1": "管理",
       "level2": "采用",
-      "title": "Champion kit",
+      "title": "倡导者工具包",
       "original_url": "https://code.claude.com/docs/zh-CN/champion-kit",
       "original_md_url": "https://code.claude.com/docs/zh-CN/champion-kit.md",
-      "hash": "f6bfb4c0611b82f2c3143647028699f5b395d980395ee70b6c767aab24ff6b63",
-      "last_updated": "2026-10-24T05:33:14.946400"
+      "hash": "2284eb8f6124cbd7efb73eeda63e35d353aa33dd05b064611b1d8dc5f7f1fcdb",
+      "last_updated": "2026-11-24T16:27:02.274675"
     },
     "配置/设置/设置文件和优先级.md": {
       "level1": "配置",
@@ -879,8 +879,8 @@
       "title": "设置文件和优先级",
       "original_url": "https://code.claude.com/docs/zh-CN/settings",
       "original_md_url": "https://code.claude.com/docs/zh-CN/settings.md",
-      "hash": "84c14b7d510c92004b4e07fbf51f22217fc633b2c580edfb207c099f9f6ec2c5",
-      "last_updated": "2026-11-01T04:58:48.175458"
+      "hash": "09b736c0077193c66b7cf966238ce8e2c8673c01c1862dcffcc1b535d32e9f15",
+      "last_updated": "2026-11-24T16:27:02.823276"
     },
     "配置/设置/所有设置.md": {
       "level1": "配置",
@@ -888,8 +888,8 @@
       "title": "所有设置",
       "original_url": "https://code.claude.com/docs/zh-CN/settings-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/settings-reference.md",
-      "hash": "a122e6f13ab7c19091631a58edf6c6007e757761f64d45db64421868a12e9d78",
-      "last_updated": "2026-11-01T04:58:48.744870"
+      "hash": "c7eeae6eebecdc33412811a2952a270ad27d69ea0f93080d474dc36262afbe29",
+      "last_updated": "2026-11-24T16:27:03.425109"
     },
     "配置/设置/示例设置文件.md": {
       "level1": "配置",
@@ -897,8 +897,8 @@
       "title": "示例设置文件",
       "original_url": "https://code.claude.com/docs/zh-CN/settings-example",
       "original_md_url": "https://code.claude.com/docs/zh-CN/settings-example.md",
-      "hash": "59c7f769f87a34e2b2adba0e200f1a711c4c5ee1380ac4c6fb626f1db66251c3",
-      "last_updated": "2026-11-01T04:58:49.271568"
+      "hash": "e41b2dab4a258b3c50f5c6982113943912bef19d116197f3bb59bd9e83bc52ad",
+      "last_updated": "2026-11-24T16:27:03.976269"
     },
     "配置/权限和沙箱隔离/权限.md": {
       "level1": "配置",
@@ -906,8 +906,8 @@
       "title": "权限",
       "original_url": "https://code.claude.com/docs/zh-CN/permissions",
       "original_md_url": "https://code.claude.com/docs/zh-CN/permissions.md",
-      "hash": "a9f1e86c5d1f8cdabb43580e0a467750ce01b8c5cddbf718646f1ad895df3ee9",
-      "last_updated": "2026-11-01T04:58:49.803055"
+      "hash": "dffbedc573c36a24180d48590f6bfe99a1896c92e6cd2b66028e87ed87889cda",
+      "last_updated": "2026-11-24T16:27:04.548951"
     },
     "配置/权限和沙箱隔离/权限模式.md": {
       "level1": "配置",
@@ -915,8 +915,8 @@
       "title": "权限模式",
       "original_url": "https://code.claude.com/docs/zh-CN/permission-modes",
       "original_md_url": "https://code.claude.com/docs/zh-CN/permission-modes.md",
-      "hash": "e598e1530b78fbe80367359346479dcf9230404e2458190bc8acc8d7297305b1",
-      "last_updated": "2026-11-01T04:58:50.343474"
+      "hash": "655172e4c5582601dd6d59e35d63f52a663fe1061a0caf656966a877e74f882b",
+      "last_updated": "2026-11-24T16:27:05.129451"
     },
     "配置/权限和沙箱隔离/分类器请求费用.md": {
       "level1": "配置",
@@ -924,8 +924,8 @@
       "title": "分类器请求费用",
       "original_url": "https://code.claude.com/docs/zh-CN/auto-mode-classifier-billing",
       "original_md_url": "https://code.claude.com/docs/zh-CN/auto-mode-classifier-billing.md",
-      "hash": "94ea64200c4d7f0674bea3b6330886d7991d0878e056aecf7e757a31039e239e",
-      "last_updated": "2026-11-01T04:58:50.870490"
+      "hash": "153754610ebea09c7abc99f2fff5807d347213a3e8dda0452078faac382ed84d",
+      "last_updated": "2026-11-24T16:27:05.695198"
     },
     "配置/权限和沙箱隔离/Bash_沙箱.md": {
       "level1": "配置",
@@ -933,8 +933,8 @@
       "title": "Bash 沙箱",
       "original_url": "https://code.claude.com/docs/zh-CN/sandboxing",
       "original_md_url": "https://code.claude.com/docs/zh-CN/sandboxing.md",
-      "hash": "23e878d933640972a95f8947fd79ee98b1f00d36a6e84e44f9fb8df4f71e698e",
-      "last_updated": "2026-11-01T04:58:51.405515"
+      "hash": "66ace18bb5fe96e283157ffb6a1343f1ffebc7887b28dc8aa5a885bb30a7127e",
+      "last_updated": "2026-11-24T16:27:06.262783"
     },
     "配置/权限和沙箱隔离/沙箱环境.md": {
       "level1": "配置",
@@ -942,8 +942,8 @@
       "title": "沙箱环境",
       "original_url": "https://code.claude.com/docs/zh-CN/sandbox-environments",
       "original_md_url": "https://code.claude.com/docs/zh-CN/sandbox-environments.md",
-      "hash": "af67f32e966138592f6712eebad4168fcca82e46d1efde8d2d4f16e6fd15cde1",
-      "last_updated": "2026-11-01T04:58:51.932214"
+      "hash": "ff23f614f9a67b4e8fc26c5b69488cca4ced20e4c63e793c34f65f2e218df8c8",
+      "last_updated": "2026-11-24T16:27:06.854330"
     },
     "配置/环境/云环境.md": {
       "level1": "配置",
@@ -951,8 +951,8 @@
       "title": "云环境",
       "original_url": "https://code.claude.com/docs/zh-CN/cloud-environments",
       "original_md_url": "https://code.claude.com/docs/zh-CN/cloud-environments.md",
-      "hash": "1a69067bbf6947c91514cb96da382202f0d9faf261cb803a7bb6de3ee4b67b30",
-      "last_updated": "2026-11-01T04:58:52.463265"
+      "hash": "35c67d8263b0482cafeb7986aee1c1073f6f827278db6ed823570ae5d8b74103",
+      "last_updated": "2026-11-24T16:27:07.406415"
     },
     "配置/模型与回复/模型配置.md": {
       "level1": "配置",
@@ -960,8 +960,8 @@
       "title": "模型配置",
       "original_url": "https://code.claude.com/docs/zh-CN/model-config",
       "original_md_url": "https://code.claude.com/docs/zh-CN/model-config.md",
-      "hash": "469d0f5e1834fea8b9ebc18eefee50a895f8a636fda3b86a09a98b91d9e1db98",
-      "last_updated": "2026-11-01T04:58:53.006059"
+      "hash": "13bdd17b3fd5e03fe2a2e33b29aa7dea4a6751eea0666db1d459c07d4bbff665",
+      "last_updated": "2026-11-24T16:27:07.965908"
     },
     "配置/模型与回复/使用快速模式加快响应速度.md": {
       "level1": "配置",
@@ -969,8 +969,8 @@
       "title": "使用快速模式加快响应速度",
       "original_url": "https://code.claude.com/docs/zh-CN/fast-mode",
       "original_md_url": "https://code.claude.com/docs/zh-CN/fast-mode.md",
-      "hash": "d0e4ef4bb076ffe1cf7c883096cf18a19d449ce018677fe14372b1ad20e79787",
-      "last_updated": "2026-11-01T04:58:53.531622"
+      "hash": "f3a43e17b9dce3be3778fe657cd3e70471f46c76e0eb1ff221d0ed34ded2dcbb",
+      "last_updated": "2026-11-24T16:27:08.523447"
     },
     "配置/模型与回复/使用顾问工具升级困难决策.md": {
       "level1": "配置",
@@ -978,8 +978,17 @@
       "title": "使用顾问工具升级困难决策",
       "original_url": "https://code.claude.com/docs/zh-CN/advisor",
       "original_md_url": "https://code.claude.com/docs/zh-CN/advisor.md",
-      "hash": "17ed0fa128fd2ffb310b895e967afafc6d9380a8cc614d2718ac40a88cead1d3",
-      "last_updated": "2026-10-24T05:33:23.350174"
+      "hash": "055a732c8c573127d089742f9e7d3147c4affc576df50258a2f5fea55978654c",
+      "last_updated": "2026-11-24T16:27:09.075020"
+    },
+    "配置/模型与回复/Code_Mode.md": {
+      "level1": "配置",
+      "level2": "模型与回复",
+      "title": "Code Mode",
+      "original_url": "https://code.claude.com/docs/zh-CN/code-mode",
+      "original_md_url": "https://code.claude.com/docs/zh-CN/code-mode.md",
+      "hash": "e12a7b35be114bc5a303076d8ee501fb33aaf8e778e6aa57e9bfba6497578cde",
+      "last_updated": "2026-11-24T16:27:09.629320"
     },
     "配置/模型与回复/输出样式.md": {
       "level1": "配置",
@@ -987,17 +996,17 @@
       "title": "输出样式",
       "original_url": "https://code.claude.com/docs/zh-CN/output-styles",
       "original_md_url": "https://code.claude.com/docs/zh-CN/output-styles.md",
-      "hash": "a43bf8e8bf060925469427606f9d98fd26fad8edf835224bb1cd48e9eb45356c",
-      "last_updated": "2026-11-01T04:58:54.581536"
+      "hash": "c284c529b35b8ce7ce7b1f867cd34808834e1d12086b0414d55a1945a97df9ed",
+      "last_updated": "2026-11-24T16:27:10.181065"
     },
-    "配置/界面/Terminal_configuration.md": {
+    "配置/界面/终端配置.md": {
       "level1": "配置",
       "level2": "界面",
-      "title": "Terminal configuration",
+      "title": "终端配置",
       "original_url": "https://code.claude.com/docs/zh-CN/terminal-config",
       "original_md_url": "https://code.claude.com/docs/zh-CN/terminal-config.md",
-      "hash": "9bd00cbe2cd7bb8c74124ffc66b371142d7e706b34c2914ae88b570a0292af63",
-      "last_updated": "2026-11-01T04:58:55.107935"
+      "hash": "880f7178a74116d49ebfe3f6d7ca8d0132ced3855782ee9cdec9cbeb69ab6463",
+      "last_updated": "2026-11-24T16:27:10.731692"
     },
     "配置/界面/全屏渲染.md": {
       "level1": "配置",
@@ -1005,8 +1014,8 @@
       "title": "全屏渲染",
       "original_url": "https://code.claude.com/docs/zh-CN/fullscreen",
       "original_md_url": "https://code.claude.com/docs/zh-CN/fullscreen.md",
-      "hash": "c3bdfa23df95c373a9c5d3d3f8a2dee0d47500fabf6d1a078f52f3b4fc388ad7",
-      "last_updated": "2026-10-24T05:33:25.394308"
+      "hash": "d652bd52904236d0b4a3ba3cbec1b549162b2b5df57c9966c4ec02c36d86553a",
+      "last_updated": "2026-11-24T16:27:11.295903"
     },
     "配置/界面/屏幕阅读器模式.md": {
       "level1": "配置",
@@ -1023,8 +1032,8 @@
       "title": "语音听写",
       "original_url": "https://code.claude.com/docs/zh-CN/voice-dictation",
       "original_md_url": "https://code.claude.com/docs/zh-CN/voice-dictation.md",
-      "hash": "ec52e46ebf695517084d93c2ddc936d51bbb92c528125e1eed157a31ea65a6a9",
-      "last_updated": "2026-11-01T04:58:56.688584"
+      "hash": "bce4a1a5c8de88ec011427b49dfa07f87c70a3e8b60db24f2e0a9db1d59006ab",
+      "last_updated": "2026-11-24T16:27:12.402499"
     },
     "配置/界面/自定义状态行.md": {
       "level1": "配置",
@@ -1032,8 +1041,8 @@
       "title": "自定义状态行",
       "original_url": "https://code.claude.com/docs/zh-CN/statusline",
       "original_md_url": "https://code.claude.com/docs/zh-CN/statusline.md",
-      "hash": "376892676a7e6ae74ae810ce37a0c1913fc4b25cb4fca0e86dfbb92a8139e17b",
-      "last_updated": "2026-11-01T04:58:57.219735"
+      "hash": "63d0c4c2ff3f9f0468a6b0227427934c6e42fce29c8dde2c1a0d374a12176f6f",
+      "last_updated": "2026-11-24T16:27:12.965586"
     },
     "配置/界面/自定义快捷键.md": {
       "level1": "配置",
@@ -1041,8 +1050,8 @@
       "title": "自定义快捷键",
       "original_url": "https://code.claude.com/docs/zh-CN/keybindings",
       "original_md_url": "https://code.claude.com/docs/zh-CN/keybindings.md",
-      "hash": "0dbec8a1ae8ec091114bbe70e2f0a3f51eb01ff06ffd713929ec7be664df39c2",
-      "last_updated": "2026-11-01T04:58:57.746013"
+      "hash": "0c22779c9d9db8059666a00cf3e3510052b242e5698d6e3b0d483702582b71dd",
+      "last_updated": "2026-11-24T16:27:13.521128"
     },
     "参考/参考/CLI_参考.md": {
       "level1": "参考",
@@ -1050,17 +1059,17 @@
       "title": "CLI 参考",
       "original_url": "https://code.claude.com/docs/zh-CN/cli-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/cli-reference.md",
-      "hash": "3854742dfbaa7cd89f29646acff0f6410a3db4574accb55c768ffadc625f86a0",
-      "last_updated": "2026-10-24T05:33:29.169375"
+      "hash": "daa7ce840a97d4e40d1ed41a7bbff195fb9ea56ea6f299b04856457ba7aa55b8",
+      "last_updated": "2026-11-24T16:27:14.086468"
     },
-    "参考/参考/Commands.md": {
+    "参考/参考/命令.md": {
       "level1": "参考",
       "level2": "参考",
-      "title": "Commands",
+      "title": "命令",
       "original_url": "https://code.claude.com/docs/zh-CN/commands",
       "original_md_url": "https://code.claude.com/docs/zh-CN/commands.md",
-      "hash": "37f5679e017ce5cb14ca273dc42a847ecb91d00d22d210d37b023013c0445c3a",
-      "last_updated": "2026-11-01T04:58:58.803415"
+      "hash": "cac595fbb582eab21f7ced1d61a8e91f647d2216456aa9f0e49f6e9c41fa9b77",
+      "last_updated": "2026-11-24T16:27:14.647934"
     },
     "参考/参考/环境变量.md": {
       "level1": "参考",
@@ -1068,8 +1077,8 @@
       "title": "环境变量",
       "original_url": "https://code.claude.com/docs/zh-CN/env-vars",
       "original_md_url": "https://code.claude.com/docs/zh-CN/env-vars.md",
-      "hash": "631f2c280842bfe34fd83c13c40d36914210130da10cbbe1ebd78994988fef6f",
-      "last_updated": "2026-11-01T04:58:59.345561"
+      "hash": "f71025400dfda2c81b19ea0b612d238d7ab5b4e99ce76be5dc845b19b6df1839",
+      "last_updated": "2026-11-24T16:27:15.251450"
     },
     "参考/参考/工具参考.md": {
       "level1": "参考",
@@ -1077,8 +1086,8 @@
       "title": "工具参考",
       "original_url": "https://code.claude.com/docs/zh-CN/tools-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/tools-reference.md",
-      "hash": "92d61c192301f2d2e9e4a64945378fa6272e644aca3f24b2f86344d70045fc64",
-      "last_updated": "2026-11-01T04:58:59.878024"
+      "hash": "2bafb02e9d058ebd919f275dd3a56df57987e553a9d304b522e0e8b51c9d7b62",
+      "last_updated": "2026-11-24T16:27:15.824274"
     },
     "参考/参考/交互模式.md": {
       "level1": "参考",
@@ -1086,8 +1095,8 @@
       "title": "交互模式",
       "original_url": "https://code.claude.com/docs/zh-CN/interactive-mode",
       "original_md_url": "https://code.claude.com/docs/zh-CN/interactive-mode.md",
-      "hash": "0ab3e0e0fef08b8391d083a1bc801726ebe8db11097558de1ea0ed62f55520d1",
-      "last_updated": "2026-11-01T04:59:00.413257"
+      "hash": "d5154fb023b4570a8b59de56ec8961a2e2482d791017f5857941d1c11551a1c1",
+      "last_updated": "2026-11-24T16:27:16.417850"
     },
     "参考/参考/Checkpointing.md": {
       "level1": "参考",
@@ -1095,8 +1104,8 @@
       "title": "Checkpointing",
       "original_url": "https://code.claude.com/docs/zh-CN/checkpointing",
       "original_md_url": "https://code.claude.com/docs/zh-CN/checkpointing.md",
-      "hash": "5440881a2cb89c038462888bcddbf3baddb3221ef59c9db35ad9c1904d72d3d8",
-      "last_updated": "2026-11-01T04:59:00.944981"
+      "hash": "99b0bb145dc1ee89adfeee39589b3710cb635b8ef35d3b890a539145189fd029",
+      "last_updated": "2026-11-24T16:27:16.975359"
     },
     "参考/参考/Hooks_参考.md": {
       "level1": "参考",
@@ -1104,8 +1113,8 @@
       "title": "Hooks 参考",
       "original_url": "https://code.claude.com/docs/zh-CN/hooks",
       "original_md_url": "https://code.claude.com/docs/zh-CN/hooks.md",
-      "hash": "afa447418b662497e4bb67945ea156d39c58c626b7da91f4e4dc33ebf802b99e",
-      "last_updated": "2026-11-01T04:59:01.499322"
+      "hash": "86b7bc657cbff6172c7d05f87126947371b1a9d36f9d2023af640130f0f5296a",
+      "last_updated": "2026-11-24T16:27:17.562503"
     },
     "参考/参考/Channels_参考.md": {
       "level1": "参考",
@@ -1113,8 +1122,8 @@
       "title": "Channels 参考",
       "original_url": "https://code.claude.com/docs/zh-CN/channels-reference",
       "original_md_url": "https://code.claude.com/docs/zh-CN/channels-reference.md",
-      "hash": "426aaca807c8cbe772cafe097fb1706a6cca25d5c04d6ecd01f36bd9a3bb3ffa",
-      "last_updated": "2026-11-01T04:59:02.033613"
+      "hash": "189e177396aab29c0b7b43f69fb143dd6186a7f5cd946a7beb96b3e4bf8c1eb0",
+      "last_updated": "2026-11-24T16:27:18.117699"
     },
     "参考/术语表/术语表.md": {
       "level1": "参考",
@@ -1122,8 +1131,8 @@
       "title": "术语表",
       "original_url": "https://code.claude.com/docs/zh-CN/glossary",
       "original_md_url": "https://code.claude.com/docs/zh-CN/glossary.md",
-      "hash": "0830e853768194c3e8bda1adb6b7ee35f2772c97096a274c2e36158c4e9d99d7",
-      "last_updated": "2026-11-01T04:59:02.561140"
+      "hash": "32b679b6f2839f3c5f2706f4e6987ca5fc64d91587031b37065e4f70864e0206",
+      "last_updated": "2026-11-24T16:27:18.687794"
     },
     "Agent_SDK/Agent_SDK/概览.md": {
       "level1": "Agent SDK",
@@ -1140,8 +1149,8 @@
       "title": "快速开始",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/quickstart",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/quickstart.md",
-      "hash": "2cd68fb48031fc975535973379eaf570d55e2b4e588f43aaa20cef24c44e66c9",
-      "last_updated": "2026-11-01T04:59:03.637977"
+      "hash": "9989c2c37edc998bbbe30759563f7d53f61b69ae4dd9175431ac49b3611c6efc",
+      "last_updated": "2026-11-24T16:27:21.060458"
     },
     "Agent_SDK/Agent_SDK/迁移指南.md": {
       "level1": "Agent SDK",
@@ -1158,8 +1167,8 @@
       "title": "故障排除",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/troubleshooting",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/troubleshooting.md",
-      "hash": "6d783de947173b372aed40bab4f79d72f1471e0f613231ed8da21c12ef37160b",
-      "last_updated": "2026-10-24T05:33:37.471145"
+      "hash": "7a00386b5f49c53fd096c4a0640e6ad594c401090a116c382b929d570dbba903",
+      "last_updated": "2026-11-24T16:27:22.658300"
     },
     "Agent_SDK/构建_Agent/配置你的代理.md": {
       "level1": "Agent SDK",
@@ -1167,8 +1176,8 @@
       "title": "配置你的代理",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/configuration",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/configuration.md",
-      "hash": "d390e5299a468e0c118e67d053978483b46015fb196db4a2f4a2ac7a96622ae2",
-      "last_updated": "2026-11-01T04:59:05.220394"
+      "hash": "5a205ec6f8031ffcf9ad659b156fa7893287cc9e24cc898b44977e71e21c2253",
+      "last_updated": "2026-11-24T16:27:23.766764"
     },
     "Agent_SDK/构建_Agent/示例.md": {
       "level1": "Agent SDK",
@@ -1185,8 +1194,8 @@
       "title": "代理循环如何工作",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop.md",
-      "hash": "b77f1d2c43b96b892f5986264322e69f6bde79c872074589fd7f054eb55bec6c",
-      "last_updated": "2026-11-01T04:59:06.273314"
+      "hash": "1dba56632c8f697b6b40284ff961f4d71b1757095c52903c95243809aacc44ea",
+      "last_updated": "2026-11-24T16:27:25.104062"
     },
     "Agent_SDK/核心概念/使用_Claude_Code_功能.md": {
       "level1": "Agent SDK",
@@ -1194,8 +1203,8 @@
       "title": "使用 Claude Code 功能",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/claude-code-features",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/claude-code-features.md",
-      "hash": "4f8ed91d76f3b7fa969c4644e4403b3cd9d61fada55cef7633235c4b535d8181",
-      "last_updated": "2026-11-01T04:59:06.796240"
+      "hash": "8889df45c7558e18c6a4789d7cc4f863e25af00f885fd209bc562bd649ea5bef",
+      "last_updated": "2026-11-24T16:27:26.254851"
     },
     "Agent_SDK/核心概念/使用会话.md": {
       "level1": "Agent SDK",
@@ -1212,17 +1221,17 @@
       "title": "将会话持久化到外部存储",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/session-storage",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/session-storage.md",
-      "hash": "5f4a9e37a035a06f994abbae6c937ad85db0bc3b05e2143a067d14d95c8650a3",
-      "last_updated": "2026-11-01T04:59:07.855285"
+      "hash": "f2aa1a108f173c3878afcd381a4d1aacdc94188988c8202951c425191365a40f",
+      "last_updated": "2026-11-24T16:27:27.859877"
     },
-    "Agent_SDK/输入和输出/流式输入.md": {
+    "Agent_SDK/输入和输出/向正在运行的_Agent_发送消息.md": {
       "level1": "Agent SDK",
       "level2": "输入和输出",
-      "title": "流式输入",
+      "title": "向正在运行的 Agent 发送消息",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md",
-      "hash": "0873d37cd8883b7dbdbb0d87b12f193c713d09d39a711988babcf76dd21f38e9",
-      "last_updated": "2026-10-24T05:33:42.565961"
+      "hash": "32f173a9e566bf39ae0bf86e4ef59139cf720046a3b3b32cfef07c0a263f9825",
+      "last_updated": "2026-11-24T16:27:28.804363"
     },
     "Agent_SDK/输入和输出/处理批准和用户输入.md": {
       "level1": "Agent SDK",
@@ -1230,8 +1239,8 @@
       "title": "处理批准和用户输入",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/user-input",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/user-input.md",
-      "hash": "3fc56f2e0f1ba01534d235e74f35cc19c46c386c84bec396342a1a76c69d5290",
-      "last_updated": "2026-11-01T04:59:08.927908"
+      "hash": "e4f72aad71e2514f1154e39a9ac0ea4b026bc408c6f5f7f331ec095d627bd858",
+      "last_updated": "2026-11-24T16:27:29.540589"
     },
     "Agent_SDK/输入和输出/实时流式传输响应.md": {
       "level1": "Agent SDK",
@@ -1239,8 +1248,8 @@
       "title": "实时流式传输响应",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/streaming-output",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/streaming-output.md",
-      "hash": "c7b47cd86a7c2b99df5dfff756b721ad053f45bef5ff633d487579738ffed57d",
-      "last_updated": "2026-11-01T04:59:09.452533"
+      "hash": "35b2bfed6d72ffe3c7abb1b39509bb0b671b51a913cbf26fc3e5d2af7473ff7e",
+      "last_updated": "2026-11-24T16:27:30.277818"
     },
     "Agent_SDK/输入和输出/从代理获取结构化输出.md": {
       "level1": "Agent SDK",
@@ -1248,8 +1257,8 @@
       "title": "从代理获取结构化输出",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/structured-outputs",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/structured-outputs.md",
-      "hash": "36df278e843a55ff212e77db5da69861c5ff4cc3670eb35eb2b4818551383955",
-      "last_updated": "2026-11-01T04:59:09.977600"
+      "hash": "f070e6f95b0e9c2eb8aa672f1b43e82b30a8d0db1aef67e7d8060c0e88dcd299",
+      "last_updated": "2026-11-24T16:27:31.082056"
     },
     "Agent_SDK/使用工具扩展/为_Claude_提供自定义工具.md": {
       "level1": "Agent SDK",
@@ -1257,8 +1266,8 @@
       "title": "为 Claude 提供自定义工具",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/custom-tools",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/custom-tools.md",
-      "hash": "72177f8312ed7b4c9af051965d139adf3e4de96188cd24264ec3cf09145a9524",
-      "last_updated": "2026-11-01T04:59:10.505376"
+      "hash": "4d7a2fc7051308c1005c6fb87ecdb2ba968b0d2a7c1ade294769451d01263c6a",
+      "last_updated": "2026-11-24T16:27:31.832749"
     },
     "Agent_SDK/使用工具扩展/使用_MCP_连接外部工具.md": {
       "level1": "Agent SDK",
@@ -1266,8 +1275,8 @@
       "title": "使用 MCP 连接外部工具",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/mcp",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/mcp.md",
-      "hash": "6a005c39814a5d9c919e3d3fc046694b674a0a62a267f6127500d5b197294053",
-      "last_updated": "2026-11-01T04:59:11.034705"
+      "hash": "5c909ffa7ba7aecfa87a0242a3c57c56f5094b8b8d0bb583fb395d1b5ec1746a",
+      "last_updated": "2026-11-24T16:27:32.456808"
     },
     "Agent_SDK/使用工具扩展/使用工具搜索扩展到多个工具.md": {
       "level1": "Agent SDK",
@@ -1284,8 +1293,8 @@
       "title": "SDK 中的子代理",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/subagents",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/subagents.md",
-      "hash": "a29a491fdbcbf730e2fb09d61f0b1f3475c19805d5e7d54360a477acd96d101e",
-      "last_updated": "2026-10-24T05:33:47.481651"
+      "hash": "0a979dd7ea9ab155cbabc50b23fcc8988301d7211708236e19d43bf6d06ff937",
+      "last_updated": "2026-11-24T16:27:34.001070"
     },
     "Agent_SDK/自定义行为/修改系统提示词.md": {
       "level1": "Agent SDK",
@@ -1293,8 +1302,8 @@
       "title": "修改系统提示词",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md",
-      "hash": "d7eba91767547f474ab2d3b8fd4ddfcfde05928353a20574ec06e3db0887baf5",
-      "last_updated": "2026-11-01T04:59:12.625407"
+      "hash": "3b6abcba51af4c1670dc5b0db275241f2dea8f1f9eebe420202aa573de5cde70",
+      "last_updated": "2026-11-24T16:27:34.741079"
     },
     "Agent_SDK/自定义行为/使用_skills_扩展_agents.md": {
       "level1": "Agent SDK",
@@ -1302,8 +1311,8 @@
       "title": "使用 skills 扩展 agents",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/skills",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/skills.md",
-      "hash": "26b2a629204576de316df90b3e5d85ae1e9ae8686a3290a501d19ccd2d6acb74",
-      "last_updated": "2026-11-01T04:59:13.156505"
+      "hash": "2debc9080082e1036d78c1da562ae2a7f1f8c66ccf14a8aa3e888dc496a0b209",
+      "last_updated": "2026-11-24T16:27:35.384889"
     },
     "Agent_SDK/自定义行为/SDK_中的_Plugins.md": {
       "level1": "Agent SDK",
@@ -1311,8 +1320,8 @@
       "title": "SDK 中的 Plugins",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/plugins",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/plugins.md",
-      "hash": "6c352f12ec0da8d9152b9a6da72a3f615472f3d30d40e9fe63dab07fea859ac0",
-      "last_updated": "2026-11-01T04:59:13.685091"
+      "hash": "79bf19110273c9fa8a2642b7220ace69a16f2b7f0a663dcf1edfd245dadd72d6",
+      "last_updated": "2026-11-24T16:27:36.130834"
     },
     "Agent_SDK/控制与可观测性/配置权限.md": {
       "level1": "Agent SDK",
@@ -1320,8 +1329,8 @@
       "title": "配置权限",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/permissions",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md",
-      "hash": "a6161153dcb8e3881f9ce40632ec931add34c5cd0fe9f7cdbcf71788061d4104",
-      "last_updated": "2026-11-01T04:59:14.221735"
+      "hash": "d996c4acae7697fadf74b56b623b207046a9ff30f4345cce94202d171fdf4981",
+      "last_updated": "2026-11-24T16:27:36.945188"
     },
     "Agent_SDK/控制与可观测性/使用_hooks_拦截和控制代理行为.md": {
       "level1": "Agent SDK",
@@ -1329,8 +1338,8 @@
       "title": "使用 hooks 拦截和控制代理行为",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/hooks",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/hooks.md",
-      "hash": "c1d3302835ed67447998078e8f8622668b28548e9c175dd74ea47150297403c7",
-      "last_updated": "2026-11-01T04:59:14.749555"
+      "hash": "c350c15596374fa4b55c3b9c9cc0d89ca3eae0c6b85d5bf3958408fe9e3992e6",
+      "last_updated": "2026-11-24T16:27:37.697578"
     },
     "Agent_SDK/控制与可观测性/使用checkpointing回滚文件更改.md": {
       "level1": "Agent SDK",
@@ -1338,8 +1347,8 @@
       "title": "使用checkpointing回滚文件更改",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/file-checkpointing",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/file-checkpointing.md",
-      "hash": "6bdd4ad8256008f45127ae755727e88b13c1f8783a8e109697dc4ea61363b0ca",
-      "last_updated": "2026-11-01T04:59:15.276336"
+      "hash": "a67af4ff22e7d3e9778d190f48a26b04a51beb4952fb5166c294dffe208fe979",
+      "last_updated": "2026-11-24T16:27:38.475847"
     },
     "Agent_SDK/控制与可观测性/追踪成本和使用情况.md": {
       "level1": "Agent SDK",
@@ -1347,8 +1356,8 @@
       "title": "追踪成本和使用情况",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/cost-tracking",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/cost-tracking.md",
-      "hash": "bcfeaf6c2e2eaaa8f4e4a118dcbebcd542e7cad163e9226a438e2e33715446b3",
-      "last_updated": "2026-10-24T05:33:52.656751"
+      "hash": "4ede48d5e19a9192394c614f1c217c319c3f130c7d3130fc7a34422ce0738fb0",
+      "last_updated": "2026-11-24T16:27:39.248252"
     },
     "Agent_SDK/控制与可观测性/使用_OpenTelemetry_进行可观测性.md": {
       "level1": "Agent SDK",
@@ -1356,8 +1365,8 @@
       "title": "使用 OpenTelemetry 进行可观测性",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/observability",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/observability.md",
-      "hash": "0b1c54a87666d4b93d61d040b6cfbecbba912fd90d73fa320af3786e5a6575ba",
-      "last_updated": "2026-10-24T05:33:53.360148"
+      "hash": "f06df72b5c87bbd9068e66bf1c3594ba9654a826e7587a0cf3cf01dd92e5e011",
+      "last_updated": "2026-11-24T16:27:39.991189"
     },
     "Agent_SDK/控制与可观测性/跟踪待办事项.md": {
       "level1": "Agent SDK",
@@ -1365,8 +1374,8 @@
       "title": "跟踪待办事项",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/todo-tracking",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/todo-tracking.md",
-      "hash": "3fb63657567b202ec60db66119e926fa7e15af18ded768689c6fb10fcb07104d",
-      "last_updated": "2026-10-24T05:33:54.035435"
+      "hash": "5b20ed1c036926417c79e02092b6f562253895736df08d2f8709e312d7e835e9",
+      "last_updated": "2026-11-24T16:27:40.736325"
     },
     "Agent_SDK/部署/托管_Agent_SDK.md": {
       "level1": "Agent SDK",
@@ -1374,8 +1383,8 @@
       "title": "托管 Agent SDK",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/hosting",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/hosting.md",
-      "hash": "2faa70be383fbcde4a999e9dd20ed84c667f86a039d4bc5a781e96d48289c3cc",
-      "last_updated": "2026-11-01T04:59:17.404359"
+      "hash": "06f29dbce6126abddafdc571bf86ce9791b21406f16d6866fd842a4a3ea689f1",
+      "last_updated": "2026-11-24T16:27:41.467494"
     },
     "Agent_SDK/部署/安全部署_AI_代理.md": {
       "level1": "Agent SDK",
@@ -1383,8 +1392,8 @@
       "title": "安全部署 AI 代理",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md",
-      "hash": "7a52d1be20e280d512f2694afc3029256daa22fc1342fbb520e9f946000eb01b",
-      "last_updated": "2026-10-24T05:33:55.393076"
+      "hash": "9009739d443c92e2851e1fbfb477d4024db84133d083985224827420eb68c32b",
+      "last_updated": "2026-11-24T16:27:42.205939"
     },
     "Agent_SDK/SDK_参考/TypeScript_SDK.md": {
       "level1": "Agent SDK",
@@ -1392,8 +1401,8 @@
       "title": "TypeScript SDK",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/typescript",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md",
-      "hash": "b4a63f9d7584be44fb2ea14fd72f2b7778c12e49f327e521ff1cdc1915434e0f",
-      "last_updated": "2026-11-01T04:59:18.481406"
+      "hash": "d773b5d77723334a28d6941af0a17139aaa3935598249e2011a6c8d4e5b250b0",
+      "last_updated": "2026-11-24T16:27:43.344421"
     },
     "Agent_SDK/SDK_参考/TypeScript_V2（已移除）.md": {
       "level1": "Agent SDK",
@@ -1410,233 +1419,8 @@
       "title": "Python SDK",
       "original_url": "https://code.claude.com/docs/zh-CN/agent-sdk/python",
       "original_md_url": "https://code.claude.com/docs/zh-CN/agent-sdk/python.md",
-      "hash": "becfb8f3450f0f6545971ee3e4264e86cf5b2b06501200109eabd4892f4526f8",
-      "last_updated": "2026-11-01T04:59:19.549611"
-    },
-    "新功能/最新动态/最新动态.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "最新动态",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new.md",
-      "hash": "48ce6f16af2f1ca4fd573e429a7ce83270f0eb76f83a7f1e54fc10e384600125",
-      "last_updated": "2026-10-24T05:33:58.157142"
-    },
-    "新功能/最新动态/第37周_·_9月7日–11日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第37周 · 9月7日–11日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w37",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w37.md",
-      "hash": "fb4f21f16c07ea6f814ad6e691c2cadc78c9a48473c80b8c32c33964a931cd48",
-      "last_updated": "2026-10-24T05:33:58.862123"
-    },
-    "新功能/最新动态/第_36_周_·_8_月_31_日_–_9_月_4_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 36 周 · 8 月 31 日 – 9 月 4 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w36",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w36.md",
-      "hash": "030e5d62b741dc68336ec435c466bd7f9203a508f6ab256695d74ed9e6190210",
-      "last_updated": "2026-10-24T05:33:59.548333"
-    },
-    "新功能/最新动态/第_35_周_·_8_月_24–28_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 35 周 · 8 月 24–28 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w35",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w35.md",
-      "hash": "2ad31ff20d9483cb23735238dd400c8c244d78b9ec6ebe459b6968402ed41e87",
-      "last_updated": "2026-10-24T05:34:00.321088"
-    },
-    "新功能/最新动态/第_34_周_·_8_月_17–21.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 34 周 · 8 月 17–21",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w34",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w34.md",
-      "hash": "dbcfe232b41ccf3fa596a15875631bef93a1eff4ce142852b40ef3289afd14aa",
-      "last_updated": "2026-10-24T05:34:01.024886"
-    },
-    "新功能/最新动态/第_33_周_·_8_月_10–14.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 33 周 · 8 月 10–14",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w33",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w33.md",
-      "hash": "1b23b2754671bc58193f4300fbdec6edffe739ca384d6845604801dc5fc57377",
-      "last_updated": "2026-10-24T05:34:01.749832"
-    },
-    "新功能/最新动态/第_32_周_·_8_月_3–7.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 32 周 · 8 月 3–7",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w32",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w32.md",
-      "hash": "9600d31e9e156e8cd2d3a8af67e0f5f2072a5470ac29d3b6115e55ee8f14423d",
-      "last_updated": "2026-10-24T05:34:02.428229"
-    },
-    "新功能/最新动态/第_30_周_·_7_月_20–24_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 30 周 · 7 月 20–24 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w30",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w30.md",
-      "hash": "6283d0efb62d57e245be5bcfe68122f8c1d305602e81e47938738f3a04d7ab6d",
-      "last_updated": "2026-10-24T05:34:03.077318"
-    },
-    "新功能/最新动态/第29周_·_7月13–17.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第29周 · 7月13–17",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w29",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w29.md",
-      "hash": "aff1e1b5f1d6cefc0cfef20c2ffafc640790403cf8ce3658ab9bc265d8acecf3",
-      "last_updated": "2026-10-24T05:34:03.723458"
-    },
-    "新功能/最新动态/第_28_周_·_7_月_6–10_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 28 周 · 7 月 6–10 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w28",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w28.md",
-      "hash": "f5e78ae82124df9dafe4b5598c6007c5ce65bd46bf4df0b75bf1e490ad262e71",
-      "last_updated": "2026-10-24T05:34:04.383763"
-    },
-    "新功能/最新动态/第_27_周_·_6_月_29_日_–_7_月_3_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 27 周 · 6 月 29 日 – 7 月 3 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w27",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w27.md",
-      "hash": "5a565187a6165610c345ba3f09b25804ff317c3e3192ef3717c574a0236bc55f",
-      "last_updated": "2026-10-24T05:34:05.103264"
-    },
-    "新功能/最新动态/第_26_周_·_6_月_22–26_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 26 周 · 6 月 22–26 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w26",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w26.md",
-      "hash": "32734d3e74cde7f4b22f962f82878ac74667ea48631cd123d1c749bb14103920",
-      "last_updated": "2026-10-24T05:34:05.749237"
-    },
-    "新功能/最新动态/第_25_周_·_6_月_15–19_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 25 周 · 6 月 15–19 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w25",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w25.md",
-      "hash": "fdad09743067c233a3959c8c9e1f10b0a944ec5e6a1a9a657866a5488d7a7067",
-      "last_updated": "2026-10-24T05:34:06.472909"
-    },
-    "新功能/最新动态/第24周_·_6月8日–12日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第24周 · 6月8日–12日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w24",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w24.md",
-      "hash": "a5f7a4e417298e973c759d6a55f1994769e255a19cd0bfd4550b1441e2d417ee",
-      "last_updated": "2026-10-24T05:34:07.152923"
-    },
-    "新功能/最新动态/第_23_周_·_6_月_1–5_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 23 周 · 6 月 1–5 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w23",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w23.md",
-      "hash": "cc8271ff4f4b83c22f225a11995c493f903b670530bcf8a41b9662ac3eae3eb7",
-      "last_updated": "2026-10-24T05:34:07.840491"
-    },
-    "新功能/最新动态/第_22_周_·_5_月_25–29.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 22 周 · 5 月 25–29",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w22",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w22.md",
-      "hash": "01b0cdfae0a8db491f3edc77dca426c307363d2d9010d23d3bb77d6979aabe34",
-      "last_updated": "2026-10-24T05:34:08.530237"
-    },
-    "新功能/最新动态/第_21_周_·_5_月_18–22.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 21 周 · 5 月 18–22",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w21",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w21.md",
-      "hash": "8c90e4cd5b7225642090727b2854e1cbb47f1fb51f8826d0ad0201e3689c3093",
-      "last_updated": "2026-10-24T05:34:09.208839"
-    },
-    "新功能/最新动态/第_20_周_·_5_月_11–15.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 20 周 · 5 月 11–15",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w20",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w20.md",
-      "hash": "574596a566c118c1169788ed8972266b742b6d0dfcb0c22010b3b5e25417b87a",
-      "last_updated": "2026-10-24T05:34:09.897602"
-    },
-    "新功能/最新动态/第19周_·_5月4–8日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第19周 · 5月4–8日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w19",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w19.md",
-      "hash": "e7e54386b89264d6e7dd309b117fdeab3599a6c39066d18330e9fcaf012f3364",
-      "last_updated": "2026-10-24T05:34:10.635714"
-    },
-    "新功能/最新动态/第_18_周_·_4_月_27_日_–_5_月_1_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 18 周 · 4 月 27 日 – 5 月 1 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w18",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w18.md",
-      "hash": "c852e2435f644673090bfb40b5c5c1472066dba82fc6947f914e29c3473eacdf",
-      "last_updated": "2026-10-24T05:34:11.319083"
-    },
-    "新功能/最新动态/第17周_·_4月20–24日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第17周 · 4月20–24日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w17",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w17.md",
-      "hash": "fada8c339ac9c820677f92584938dae5b96cec34ed2c5abb937b2c8d9fe38289",
-      "last_updated": "2026-10-24T05:34:12.001312"
-    },
-    "新功能/最新动态/第_16_周_·_4_月_13–17_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 16 周 · 4 月 13–17 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w16",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w16.md",
-      "hash": "cb806b9768ab380c9293a8aec26efc12a565189266f85708918250d5ad727f6d",
-      "last_updated": "2026-10-24T05:34:12.778353"
-    },
-    "新功能/最新动态/第15周_·_4月6–10日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第15周 · 4月6–10日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w15",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w15.md",
-      "hash": "910a761b3bc2af5353ff9c1d902f1408c0f3a497f9956dd225d6cf2d113af09c",
-      "last_updated": "2026-10-24T05:34:13.470001"
-    },
-    "新功能/最新动态/第_14_周_·_3_月_30_日_–_4_月_3_日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第 14 周 · 3 月 30 日 – 4 月 3 日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w14",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w14.md",
-      "hash": "faccda543c2db9e46372f88300e17e926115a97c84eb07df3580456d62d3c2f9",
-      "last_updated": "2026-10-24T05:34:14.126682"
-    },
-    "新功能/最新动态/第13周_·_3月23–27日.md": {
-      "level1": "新功能",
-      "level2": "最新动态",
-      "title": "第13周 · 3月23–27日",
-      "original_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w13",
-      "original_md_url": "https://code.claude.com/docs/zh-CN/whats-new/2026-w13.md",
-      "hash": "2dacfd511cd1d88eb82e002edb37ca939c3b70dbd6783b49787bb7a0e069c8ee",
-      "last_updated": "2026-10-24T05:34:14.812453"
+      "hash": "3af86c5a32a371029165aa2c2dc5d9a254546191700686bf459f0810bd2931fb",
+      "last_updated": "2026-11-24T16:27:44.975288"
     },
     "资源/资源/法律和合规.md": {
       "level1": "资源",
@@ -1653,24 +1437,24 @@
       "title": "更新日志",
       "original_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "original_raw_url": "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md",
-      "hash": "7243089188665d39b05272616a62c1792baf32c13687cbd1d7a8b334d34b9148",
-      "last_updated": "2026-11-01T04:59:33.375850",
+      "hash": "035e53be6e3ab96ee2322ff7b2c7c293daa3f204d48cbf090888c193ea5fc324",
+      "last_updated": "2026-11-24T16:27:46.323793",
       "source": "claude-code-repository"
     }
   },
   "fetch_metadata": {
-    "last_fetch_completed": "2026-11-01T04:59:33.376211",
-    "fetch_duration_seconds": 106.645493,
-    "total_pages_discovered": 183,
-    "pages_fetched_successfully": 184,
+    "last_fetch_completed": "2026-11-24T16:27:46.332130",
+    "fetch_duration_seconds": 109.343614,
+    "total_pages_discovered": 159,
+    "pages_fetched_successfully": 160,
     "pages_failed": 0,
     "failed_pages": [],
     "base_url": "https://code.claude.com",
-    "total_files": 184,
+    "total_files": 160,
     "fetch_tool_version": "4.0-hierarchical",
     "structure": "level1(nav-tabs) / level2(sidebar-group-header) / page.md"
   },
-  "last_updated": "2026-11-01T04:59:33.376228",
+  "last_updated": "2026-11-24T16:27:46.332144",
   "base_url": "https://raw.githubusercontent.com/muxuezzz/claude-code-docs-zh-tmp/main/docs/",
   "github_repository": "muxuezzz/claude-code-docs-zh-tmp",
   "github_ref": "main",

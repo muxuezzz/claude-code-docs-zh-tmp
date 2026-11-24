@@ -205,7 +205,7 @@ MCP 工具的命名格式为 `mcp__<server-name>__<tool-name>`，其中 `<server
 
 ### 使用 allowedTools 自动批准
 
-使用 `allowedTools` 自动批准特定的 MCP 工具，这样 Claude 就可以在没有权限提示的情况下使用它们：
+使用 `allowedTools` 自动批准特定的 MCP 工具：
 
 ```typescript TypeScript hidelines={1,-1} theme={null}
 const _ = {
@@ -809,7 +809,7 @@ async def main():
 asyncio.run(main())
 ```
 
-远程服务器的状态在报告 `"connected"` 后也可能会改变。当连接在会话中途断开时，Claude Code 会在 [重新连接](https://code.claude.com/docs/zh-CN/mcp.md#automatic-reconnection) 时将服务器移回 `"pending"`。之后在 TypeScript 中调用 `mcpServerStatus()`，或在 Python 中调用 [`ClaudeSDKClient.get_mcp_status()`](https://code.claude.com/docs/zh-CN/agent-sdk/python#methods)，可能会为您之前看到已连接的服务器报告 `"pending"`，而您这一方没有进行任何配置更改。
+远程服务器的状态在报告 `"connected"` 后也可能会改变。Claude Code 在[重新连接](https://code.claude.com/docs/zh-CN/mcp.md#automatic-reconnection)期间会将服务器移回 `"pending"`。之后在 TypeScript 中调用 `mcpServerStatus()`，或在 Python 中调用 [`ClaudeSDKClient.get_mcp_status()`](https://code.claude.com/docs/zh-CN/agent-sdk/python#methods)，可能会为您之前看到已连接的服务器报告 `"pending"`，而您这一方没有进行任何配置更改。
 
 在五次重新连接尝试失败后，服务器报告 `"failed"`，或在需要再次授权时报告 `"needs-auth"`。处于 `"failed"` 状态的 HTTP 或 SSE 服务器仍可能在您无需调用任何方法的情况下恢复为 `"connected"`，因为 Claude Code 在发生暂时性错误后会持续[在后台重试](https://code.claude.com/docs/zh-CN/mcp.md#mid-session-drops-of-a-remote-server)。要手动重试，请在 TypeScript 中调用 [`reconnectMcpServer()`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#methods) 或在 Python 中调用 [`ClaudeSDKClient.reconnect_mcp_server()`](https://code.claude.com/docs/zh-CN/agent-sdk/python#methods)。
 

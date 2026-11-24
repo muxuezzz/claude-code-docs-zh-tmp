@@ -52,7 +52,7 @@ Claude Code 结合了一个能够推理代码的模型和[内置工具](https://
 
 ### 随时间推移构建您的设置
 
-您不需要提前配置所有内容。每个功能都有一个可识别的触发器，大多数团队大致按以下顺序添加它们：
+每个功能都有一个可识别的触发器，大多数团队大致按以下顺序添加它们：
 
 | 触发器 | 添加 |
 | :- | :- |
@@ -188,7 +188,7 @@ Claude Code 结合了一个能够推理代码的模型和[内置工具](https://
 >
 > **将护栏放在 hooks 中。** CLAUDE.md 或 skill 中的"永远不要编辑 `.env`"之类的说明是请求，而不是保证。阻止编辑的 `PreToolUse` hook 是强制执行。如果规则必须每次都成立，将其作为 hook 而不是提示说明。
 >
-> **Hook 输出进入上下文。** 运行您的 linter 的 `PostToolUse` hook 将结果作为 Claude 读取的文本反馈；`/fix-lint` skill 告诉 Claude 如何解决它们。
+> **将 hook 与 skill 搭配使用。** 使用 `PostToolUse` hook 运行您的 linter 并[将错误发送给 Claude](https://code.claude.com/docs/zh-CN/hooks.md#exit-code-2-behavior-per-event)。要为 Claude 提供您自己的错误修复规则，请编写一个 skill，例如 `/fix-lint`。
 
 ### 了解功能如何分层
 

@@ -15,11 +15,11 @@ Claude Code 在任何地方运行相同的底层引擎，但每个界面都针�
 | 平台 | 最适合 | 您获得的功能 |
 | :- | :- | :- |
 | [CLI](https://code.claude.com/docs/zh-CN/quickstart.md) | 终端工作流、脚本编写、远程服务器 | 完整功能集、[Agent SDK](https://code.claude.com/docs/zh-CN/headless.md)、[计算机使用](https://code.claude.com/docs/zh-CN/computer-use.md)在 macOS 上（Pro、Max 和 Ultra）、第三方提供商 |
-| [Desktop](https://code.claude.com/docs/zh-CN/desktop.md) | 视觉审查、并行会话、托管设置 | Diff 查看器、应用预览、Pro、Max 和 Ultra 上的[计算机使用](https://code.claude.com/docs/zh-CN/desktop.md#let-claude-use-your-computer)和 [Dispatch](https://code.claude.com/docs/zh-CN/desktop.md#sessions-from-dispatch) |
+| [Desktop](https://code.claude.com/docs/zh-CN/desktop.md) | 视觉审查、并行会话、托管设置 | Diff 查看器、应用预览、Pro、Max 和 Ultra 上的[计算机使用](https://code.claude.com/docs/zh-CN/desktop.md#let-claude-use-your-computer) |
 | [VS Code](https://code.claude.com/docs/zh-CN/vs-code.md) | 在 VS Code 内工作而无需切换到终端 | 内联 diff、集成终端、文件上下文 |
 | [JetBrains](https://code.claude.com/docs/zh-CN/jetbrains.md) | 在 IntelliJ、PyCharm、WebStorm 或其他 JetBrains IDE 内工作 | Diff 查看器、选择共享、终端会话 |
 | [Web](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md) | 不需要太多操作的长时间运行任务，或应该在您离线时继续的工作 | 云、Anthropic 托管（默认）；断开连接后继续运行 |
-| [Mobile](https://code.claude.com/docs/zh-CN/mobile.md) | 在远离计算机时启动和监控任务 | 来自 iOS 和 Android 版 Claude 应用的云端会话、用于本地会话的 [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md)、Pro、Max 和 Ultra 上的 [Dispatch](https://code.claude.com/docs/zh-CN/desktop.md#sessions-from-dispatch) 到 Desktop |
+| [Mobile](https://code.claude.com/docs/zh-CN/mobile.md) | 在远离计算机时启动和监控任务 | 来自 iOS 和 Android 版 Claude 应用的云端会话、用于本地会话的 [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md) |
 
 CLI 是终端原生工作的最完整界面：脚本编写和 Agent SDK 仅限 CLI。第三方提供商也可在 [VS Code](https://code.claude.com/docs/zh-CN/vs-code.md#use-third-party-providers) 和 [JetBrains](https://code.claude.com/docs/zh-CN/feature-availability.md#features-available-on-every-provider) 中使用，后者在您的 IDE 终端中运行 CLI。企业 [Desktop](https://code.claude.com/docs/zh-CN/desktop.md) 部署支持 Google Cloud 的 Agent Platform，Desktop 支持[网关提供商](https://code.claude.com/docs/zh-CN/llm-gateway-connect.md#desktop-app)；对于 Amazon Bedrock 或 Microsoft Foundry，请使用 CLI 或 IDE 扩展，或 [Claude Desktop on 3P](https://claude.com/docs/third-party/claude-desktop/overview)，它在这些提供商上运行 Code 选项卡。Desktop 和 IDE 扩展为了视觉审查和更紧密的编辑器集成而放弃了一些仅限 CLI 的功能。Web 在云中运行，因此任务在您断开连接后继续进行。Mobile 是这些相同云会话的瘦客户端，或通过 Remote Control 进入本地会话，并可以使用 Dispatch 向 Desktop 发送任务。
 
@@ -42,7 +42,7 @@ CLI 是终端原生工作的最完整界面：脚本编写和 Agent SDK 仅限 C
 
 ## 远离终端时工作
 
-Claude Code 提供了多种方式在您不在终端时进行工作。它们在触发工作的方式、Claude 运行的位置以及所需的设置量方面有所不同。
+Claude Code 提供了多种方式在您不在终端时进行工作。它们在触发工作的方式、Claude 运行的位置以及所需的设置量方面有所不同。[Dispatch](https://code.claude.com/docs/zh-CN/desktop.md#sessions-from-dispatch) 不向新用户开放。
 
 | | 触发方式 | Claude 运行位置 | 设置 | 最适合 |
 | :- | :- | :- | :- | :- |

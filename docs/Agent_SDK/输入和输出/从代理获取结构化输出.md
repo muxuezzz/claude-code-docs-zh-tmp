@@ -59,7 +59,7 @@
 ```typescript TypeScript theme={null}
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
-// 定义你想要返回的数据形状
+// 定义您想要返回的数据形状
 const schema = {
   type: "object",
   properties: {
@@ -81,7 +81,7 @@ try {
     }
   })) {
     // 结果消息包含带有验证数据的 structured_output
-    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+    if (message.type === "result" && message.subtype === "success" && !message.is_error && message.structured_output) {
       console.log(message.structured_output);
       // { company_name: "Anthropic", founded_year: 2021, headquarters: "San Francisco, CA" }
     }
@@ -97,7 +97,7 @@ try {
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
-# 定义你想要返回的数据形状
+# 定义您想要返回的数据形状
 schema = {
     "type": "object",
     "properties": {
@@ -118,7 +118,11 @@ async def main():
             ),
         ):
             # 结果消息包含带有验证数据的 structured_output
-            if isinstance(message, ResultMessage) and message.structured_output:
+            if (
+                isinstance(message, ResultMessage)
+                and not message.is_error
+                and message.structured_output
+            ):
                 print(message.structured_output)
                 # {'company_name': 'Anthropic', 'founded_year': 2021, 'headquarters': 'San Francisco, CA'}
     except Exception as error:
@@ -173,7 +177,7 @@ try {
       }
     }
   })) {
-    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+    if (message.type === "result" && message.subtype === "success" && !message.is_error && message.structured_output) {
       // 验证并获取完全类型化的结果
       const parsed = FeaturePlan.safeParse(message.structured_output);
       if (parsed.success) {
@@ -223,7 +227,11 @@ async def main():
                 }
             ),
         ):
-            if isinstance(message, ResultMessage) and message.structured_output:
+            if (
+                isinstance(message, ResultMessage)
+                and not message.is_error
+                and message.structured_output
+            ):
                 # 验证并获取完全类型化的结果
                 plan = FeaturePlan.model_validate(message.structured_output)
                 print(f"Feature: {plan.feature_name}")
@@ -286,7 +294,7 @@ const todoSchema = {
   required: ["todos", "total_count"]
 };
 
-// 代理使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
+// Agent 使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
 try {
   for await (const message of query({
     prompt: "Find all TODO comments in this codebase and identify who added them",
@@ -297,7 +305,7 @@ try {
       }
     }
   })) {
-    if (message.type === "result" && message.subtype === "success" && message.structured_output) {
+    if (message.type === "result" && message.subtype === "success" && !message.is_error && message.structured_output) {
       const data = message.structured_output as { total_count: number; todos: Array<{ file: string; line: number; text: string; author?: string; date?: string }> };
       console.log(`Found ${data.total_count} TODOs`);
       data.todos.forEach((todo) => {
@@ -344,7 +352,7 @@ todo_schema = {
 
 
 async def main():
-    # 代理使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
+    # Agent 使用 Grep 查找 TODO，使用 Bash 获取 git blame 信息
     try:
         async for message in query(
             prompt="Find all TODO comments in this codebase and identify who added them",
@@ -352,7 +360,11 @@ async def main():
                 output_format={"type": "json_schema", "schema": todo_schema}
             ),
         ):
-            if isinstance(message, ResultMessage) and message.structured_output:
+            if (
+                isinstance(message, ResultMessage)
+                and not message.is_error
+                and message.structured_output
+            ):
                 data = message.structured_output
                 print(f"Found {data['total_count']} TODOs")
                 for todo in data["todos"]:
@@ -383,14 +395,19 @@ asyncio.run(main())
 
 结构化输出生成可能会失败，当 Agent 无法生成与您的 schema 匹配的有效 JSON 时。这通常发生在 schema 对于任务来说太复杂、任务本身不明确或 Agent 在尝试修复验证错误时达到重试限制时。它也可能在没有任何验证失败的情况下发生：[模型回退](https://code.claude.com/docs/zh-CN/model-config.md#automatic-model-fallback)可以在流中途收回已完成的输出，如果没有重试替换它，运行将以相同的错误结束。在调试您的 schema 之前，检查错误结果消息上的 `errors` 列表以区分这两个原因。
 
-发生错误时，结果消息有一个 `subtype` 指示出了什么问题：
+检查结果消息的 `subtype`：
 
 | Subtype | 含义 |
 | - | - |
-| `success` | 输出已成功生成并验证 |
+| `success` | 运行结束时没有错误 subtype |
 | `error_max_structured_output_retries` | 多次尝试后没有有效输出存活（验证失败，或模型回退收回且没有成功重试） |
 
-结果也可以以 `success` 的 subtype 结束，但没有 `structured_output` 值，例如当运行完成而代理没有生成结构化输出时。将该情况也视为失败。故障排除条目[structured\_output 为 None 但结果显示 success](https://code.claude.com/docs/zh-CN/agent-sdk/troubleshooting.md#structured_output-is-none-but-the-result-says-success)涵盖了这种情况。下面的示例仅当 `subtype` 为 `success` 且 `structured_output` 存在时才将结果视为成功，并将所有其他结果作为失败处理：
+`success` subtype 本身并不意味着运行生成了答案。当结果的 `is_error` 为 `true` 或 `structured_output` 不存在时，应将该结果视为失败：
+
+* **结果上的 `is_error` 为 `true`**：例如，最后一次模型请求以 API 错误或拒绝结束。不要使用此类结果上的 `structured_output` 值。
+* **`structured_output` 不存在**：要查找原因，请参阅[structured\_output 为 None 但结果显示 success](https://code.claude.com/docs/zh-CN/agent-sdk/troubleshooting.md#structured_output-is-none-but-the-result-says-success)
+
+下面的示例应用了这些检查：
 
 ```typescript TypeScript theme={null}
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -415,13 +432,13 @@ try {
     }
   })) {
     if (msg.type === "result") {
-      if (msg.subtype === "success" && msg.structured_output) {
+      if (msg.subtype === "success" && !msg.is_error && msg.structured_output) {
         // 使用验证的输出
         console.log(msg.structured_output);
       } else if (msg.subtype === "error_max_structured_output_retries") {
         console.error("Could not produce valid output");
       } else {
-        console.error("Run ended without a structured output");
+        console.error("Run ended with an error or without a structured output");
       }
     }
   }
@@ -455,13 +472,17 @@ async def main():
             ),
         ):
             if isinstance(message, ResultMessage):
-                if message.subtype == "success" and message.structured_output:
+                if (
+                    message.subtype == "success"
+                    and not message.is_error
+                    and message.structured_output
+                ):
                     # 使用验证的输出
                     print(message.structured_output)
                 elif message.subtype == "error_max_structured_output_retries":
                     print("Could not produce valid output")
                 else:
-                    print("Run ended without a structured output")
+                    print("Run ended with an error or without a structured output")
     except Exception as error:
         # 单次 query() 在产生错误结果后抛出。如果失败是错误结果，
         # 上面的错误 subtype 分支已经运行；连接或进程失败不会产生结果消息。

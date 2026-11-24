@@ -67,7 +67,7 @@ Claude 根据您的提示和沿途学到的内容选择使用哪些工具。当�
 * **您的终端。** 您可以运行的任何命令：构建工具、git、包管理器、系统实用程序、脚本。如果您可以从命令行做到，Claude 也可以。
 * **您的 git 状态。** 当前分支、未提交的更改和最近的提交历史。
 * **您的 [CLAUDE.md](https://code.claude.com/docs/zh-CN/memory.md)。** 一个 markdown 文件，您可以在其中存储项目特定的说明、约定和 Claude 应该在每个会话中了解的上下文。如果您的仓库有用于其他编码 Agent 的 AGENTS.md，Claude [可以读取它](https://code.claude.com/docs/zh-CN/memory.md#agents-md)来代替 CLAUDE.md。
-* **[自动内存](https://code.claude.com/docs/zh-CN/memory.md#auto-memory)。** Claude 在您工作时自动保存的学习内容，如您的偏好。MEMORY.md 的前 200 行或 25KB（以先到者为准）在每个会话开始时加载。
+* **[自动记忆](https://code.claude.com/docs/zh-CN/memory.md#auto-memory)。** Claude 在您工作时自动保存的学习内容，如您的偏好。在自动记忆开启时，MEMORY.md 的前 200 行或 25KB（以先到者为准）会在会话开始时加载。
 * **您配置的扩展。** 用于外部服务的 [MCP servers](https://code.claude.com/docs/zh-CN/mcp.md)、用于工作流的 [skills](https://code.claude.com/docs/zh-CN/skills.md)、用于委派工作的 [subagents](https://code.claude.com/docs/zh-CN/sub-agents.md) 和用于浏览器交互的 [Claude in Chrome](https://code.claude.com/docs/zh-CN/chrome.md)。
 
 因为 Claude 看到您的整个项目，它可以跨越它工作。当您要求 Claude"修复身份验证错误"时，它搜索相关文件、读取多个文件以理解上下文、跨它们进行协调编辑、运行测试以验证修复，并在您要求时提交更改。这与只看到当前文件的内联代码助手不同。
@@ -100,7 +100,7 @@ Claude Code 在您工作时将您的对话保存在本地。每条消息、工�
 
 每个 Claude Code 对话都是一个与您当前目录相关的会话。`/resume` 选择器默认显示来自当前 worktree 的会话，带有键盘快捷键以扩展列表到其他 worktrees 或项目。有关选择器快捷键的完整列表以及名称解析如何工作，请参阅[管理会话](https://code.claude.com/docs/zh-CN/sessions.md#use-the-session-picker)。
 
-Claude 看到您当前分支的文件。当您切换分支时，Claude 看到新分支的文件，但您的对话历史保持不变。Claude 记得您讨论过的内容，即使在切换后也是如此。
+Claude 看到您当前分支的文件。当您切换分支时，Claude 看到新分支的文件，但您的对话历史保持不变。
 
 由于会话与目录相关，您可以通过使用 [git worktrees](https://code.claude.com/docs/zh-CN/worktrees.md) 运行并行 Claude 会话，这为各个分支创建单独的目录。
 
@@ -124,7 +124,7 @@ Claude 的上下文窗口保存您的对话历史、文件内容、命令输出�
 
 * 您的 CLAUDE.md 文件
 * 您的[输出样式](https://code.claude.com/docs/zh-CN/output-styles.md)的说明
-* 当 Claude 之前读取的文件在磁盘上更改时的注记
+* 一条注记，说明 Claude 之前编辑过的文件此后已在磁盘上发生更改
 * 提交和拉取请求的归属行
 
 要更改或删除归属行，请设置 [`attribution`](https://code.claude.com/docs/zh-CN/settings-reference#attribution)。要删除 Claude Code 的内置提交和拉取请求说明，请将 [`includeGitInstructions`](https://code.claude.com/docs/zh-CN/settings-reference#includegitinstructions) 设置为 `false`。有关其他开关，请参阅[关闭您的代理替换的上下文](https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md#turn-off-the-context-your-agent-replaces)。
@@ -187,7 +187,7 @@ Claude Code 可以教您如何使用它。提出问题，如"我如何设置 hoo
 
 ### 这是一个对话
 
-Claude Code 是对话式的。您不需要完美的提示。从您想要的开始，然后细化：
+Claude Code 是对话式的，因此从您想要的开始，然后细化：
 
 ```text theme={null}
 修复登录错误

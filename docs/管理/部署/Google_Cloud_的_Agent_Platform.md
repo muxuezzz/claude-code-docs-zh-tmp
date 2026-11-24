@@ -11,6 +11,10 @@
 View plans
 Contact sales
 
+> [!NOTE]
+>
+> 本页介绍通过您的 Google Cloud 项目使用 Claude 的两种方式之一：Google Cloud 的 Agent Platform（原 Vertex AI），由 Google 管理。如果您使用的是 Claude Models on Google Cloud（由 Anthropic 管理），请改为按照[其 Claude Code 设置页面](https://code.claude.com/docs/zh-CN/claude-models-on-google-cloud-anthropic-managed.md)进行操作。要了解您使用的是哪一种，请参阅[您使用的是哪种产品？](https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/overview#which-offering-are-you-using)
+
 ## 前置条件
 
 在使用 Google Cloud 的 Agent Platform（原 Vertex AI）配置 Claude Code 之前，请确保您拥有：
@@ -110,17 +114,17 @@ Claude Code 向您显示命令的输出，但无法向命令发送交互式输�
 设置以下环境变量：
 
 ```bash theme={null}
-# 启用 Agent Platform 集成
+# Enable Agent Platform integration
 export CLAUDE_CODE_USE_VERTEX=1
 export CLOUD_ML_REGION=global
 export ANTHROPIC_VERTEX_PROJECT_ID=YOUR-PROJECT-ID
 
-# 可选：为自定义端点或网关覆盖 Agent Platform 端点 URL
+# Optional: Override the Agent Platform endpoint URL for custom endpoints or gateways
 # export ANTHROPIC_VERTEX_BASE_URL=https://aiplatform.googleapis.com
 
-# 当 CLOUD_ML_REGION=global 时，为不支持全局端点的模型覆盖区域
-export VERTEX_REGION_CLAUDE_HAIKU_4_5=us-east5
-export VERTEX_REGION_CLAUDE_4_6_SONNET=europe-west1
+# When CLOUD_ML_REGION=global, override region for models that don't support global endpoints
+# export VERTEX_REGION_CLAUDE_HAIKU_4_5=us-east5
+# export VERTEX_REGION_CLAUDE_4_6_SONNET=europe-west1
 ```
 
 大多数模型版本都有对应的 `VERTEX_REGION_CLAUDE_*` 变量。有关完整列表，请参阅[环境变量参考](https://code.claude.com/docs/zh-CN/env-vars.md#variables)。检查 [Google Cloud 的 Agent Platform Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 以确定哪些模型支持全局端点与仅区域端点。
@@ -134,12 +138,12 @@ export VERTEX_REGION_CLAUDE_4_6_SONNET=europe-west1
 
 要提高您的速率限制，请联系 Google Cloud 支持。使用 Google Cloud 的 Agent Platform 时，`/logout` 命令不可用，因为身份验证通过 Google Cloud 凭证处理。
 
-Claude Code 在 [MCP tool search](https://code.claude.com/docs/zh-CN/mcp.md#scale-with-mcp-tool-search) 和预先加载之间进行决策，具体取决于模型生成：
+Claude Code 根据模型代际在 [MCP 工具搜索](https://code.claude.com/docs/zh-CN/mcp.md#scale-with-mcp-tool-search)和预先加载之间进行选择：
 
 * **Claude Opus 4.5、Sonnet 4.5、Haiku 4.5 及更高版本**：Claude Code 默认启用工具搜索。
 * **早期模型**：Claude Code 预先加载 MCP 工具定义，因为它们的 Agent Platform 服务堆栈拒绝所需的 beta 标头。设置 `ENABLE_TOOL_SEARCH=true` 不会覆盖此行为。
 
-设置 `ENABLE_TOOL_SEARCH=false` 以在每个模型上禁用工具搜索。在 v2.1.221 之前，Claude Code 在 Google Cloud 的 Agent Platform 上为所有模型禁用工具搜索，除非您设置 `ENABLE_TOOL_SEARCH=true`。
+设置 `ENABLE_TOOL_SEARCH=false` 以在每个模型上禁用工具搜索。
 
 ### 固定模型版本
 
@@ -192,15 +196,24 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 
 当 Claude Code 启动并配置了 Google Cloud 的 Agent Platform 时，它会验证它打算使用的模型在您的项目中是否可访问。
 
-如果您固定了一个比当前 Claude Code 默认值更旧的模型版本，并且您的项目可以调用较新版本，Claude Code 会提示您更新固定。接受会将新的模型 ID 写入您的[用户设置文件](https://code.claude.com/docs/zh-CN/settings.md)并重启 Claude Code。拒绝会被记住，直到下一个默认版本更改。
+您可能固定了一个比当前 Claude Code 默认值更旧的模型版本。如果您的项目可以调用较新版本，Claude Code 会提示您更新固定：
+
+* **如果您接受**：Claude Code 会将新的模型 ID 写入您的[用户设置文件](https://code.claude.com/docs/zh-CN/settings.md)并重启
+* **如果您拒绝**：Claude Code 会记住您的选择，直到下一次默认版本更改
+
+对于[托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md)的 `env` 块中的固定，Claude Code 不会运行检查，也不会显示提示。如果针对此固定仍然出现更新提示，请将 Claude Code 更新到 v2.1.314 或更高版本。在 v2.1.314 之前，您接受后托管固定仍然有效，因此下次启动时提示会再次出现。
 
 如果您没有固定模型，并且当前默认值在您的项目中不可用，Claude Code 会在当前会话中回退并显示通知。它首先尝试默认模型的早期版本，当默认值是 Opus 模型且没有可用的 Opus 版本时，会回退到默认 Sonnet 模型。回退不会被持久化。在 [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 中启用较新的模型或[固定一个版本](#5-pin-model-versions)以使选择永久化。
 
+### 在特定模型上启动会话
+
 当您在特定的 Sonnet 或 Opus 版本上启动会话时，例如使用 `--model`、`ANTHROPIC_MODEL` 或 [`model` 设置](https://code.claude.com/docs/zh-CN/settings-reference#model)，该版本充当会话的固定默认值，用于匹配的 `sonnet` 或 `opus` 别名。Claude Code 跳过对您的模型替换的内置默认值的可用性检查，并在您配置的模型上启动，没有回退通知。
 
-模型别名（如 `opus`）不充当固定值，Claude Code 不识别的模型 ID 也不充当固定值。
+当您在模型别名（如 `opus`）或 Claude Code 不识别的模型 ID 上启动会话时，该值不充当固定值。
 
-当这些检查发现您的项目无法调用的模型时，Claude Code 会在这台机器上记住该拒绝长达一天，并在此期间启动时跳过记住的模型，而不再询问 Agent Platform。Claude Code 会在距离上次检查已过十分钟后，再次检查当前默认模型的记住拒绝，因此管理员重新启用的默认值会恢复。要关闭此内存，请设置 [`CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY=1`](https://code.claude.com/docs/zh-CN/env-vars)。
+### 记住的模型拒绝
+
+当启动模型检查发现您的项目无法调用的模型时，Claude Code 可以在这台机器上记住该拒绝长达一天。距离上次检查已过十分钟后，Claude Code 会在启动时再次检查当前默认模型的记住拒绝。这样，管理员重新启用的默认值就会恢复。要关闭此记忆，请设置 [`CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY=1`](https://code.claude.com/docs/zh-CN/env-vars)。
 
 ### 当您的组织强制执行模型允许列表时
 
@@ -219,11 +232,16 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL='claude-haiku-4-5@20251001'
 
 ### 当模型在会话中途被禁用时
 
-如果您的项目失去对会话正在运行的模型的访问权限，例如因为管理员在 [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 中禁用了它，Claude Code 会将会话切换到另一个模型，而不是让每个请求都失败，并显示 `Switched to <fallback> because <model> is not available`。它尝试与启动回退相同的模型：首先尝试同一层级的早期版本，对于没有可用 Opus 版本的 Opus 会话，则使用默认 Sonnet 模型。
+当 Agent Platform 以会话模型在您的项目或区域中不可用为由拒绝该模型时，Claude Code 会将您的会话切换到另一个模型，您可以继续工作。您会看到一条以 `Switched to <fallback> because <model> is not available` 开头的消息。例如，当管理员在 [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) 中禁用该模型，或者该模型在您的区域中不提供服务时，就会发生这种情况。
 
-切换仅适用于您未固定的层级，这与启动回退的条件相同。在您选择的特定版本上的会话保持其模型，没有回退模型链，请求会失败。在 [auto mode](https://code.claude.com/docs/zh-CN/permission-modes.md#enable-auto-mode-on-bedrock-agent-platform-or-foundry) 中，Claude Code 仅切换到 auto mode 在 Agent Platform 上支持的模型。如果这些模型都不可用，请求会失败。
+如果您配置了[备用模型链](https://code.claude.com/docs/zh-CN/model-config.md#fallback-model-chains)，Claude Code 会改为切换到您配置的备用模型。如果没有配置模型链，请求会在以下情况下失败：
 
-您配置的[回退模型链](https://code.claude.com/docs/zh-CN/model-config.md#fallback-model-chains)会替换层级切换：在这些拒绝上，Claude Code 会切换到您配置的回退。要使被拒绝的请求失败而不是切换，请设置 [`CLAUDE_CODE_DISABLE_MODEL_ACCESS_FALLBACK=1`](https://code.claude.com/docs/zh-CN/env-vars)。您配置的回退链仍会在这些拒绝上切换；如果您希望每个被拒绝的请求都失败，也要移除该链。
+* 您的会话使用的是固定模型或您选择的特定版本
+* [Claude Code 尝试的模型](#startup-model-checks)均不可用。在[自动模式](https://code.claude.com/docs/zh-CN/permission-modes.md#enable-auto-mode-on-bedrock-agent-platform-or-foundry)下，Claude Code 仅切换到自动模式在 Agent Platform 上支持的模型。
+
+要继续工作，请在会话中运行 `/model`，并在您的项目和区域中可用的模型上按 `s`，这样不会更改您的默认模型。
+
+要让被拒绝的请求失败而不是切换，请设置 [`CLAUDE_CODE_DISABLE_MODEL_ACCESS_FALLBACK=1`](https://code.claude.com/docs/zh-CN/env-vars)。如果您配置了备用模型链，也请将其移除，因为 Claude Code 仍会切换到该备用模型。
 
 ## IAM 配置
 

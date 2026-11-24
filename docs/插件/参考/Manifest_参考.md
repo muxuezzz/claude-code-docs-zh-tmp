@@ -2,9 +2,9 @@
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Plugin manifest 参考
+# 插件 manifest 参考
 
-> plugin.json 的完整参考：每个字段的类型和默认值、接受的路径形式，以及 userConfig 和环境变量模式。
+> plugin.json 参考：各字段的类型和默认值、接受的路径形式，以及 userConfig 和环境变量的 schema。
 
 Plugin manifest 是 plugin 的 `.claude-plugin/` 目录中的 `plugin.json` 文件。它包含 plugin 的元数据和 Claude Code 提示用户输入的 [`userConfig`](#user-configuration) 值。它还声明任何在其[默认位置](#standard-layout)之外定义内联或保留的组件。
 
@@ -117,7 +117,7 @@ claude plugin validate ./my-plugin
 
 ## 字段
 
-该表列出了 `plugin.json` 中的顶级键。`name` 是唯一必需的键。如果字段名称是链接，链接的部分有其完整规则。
+下表列出了 `plugin.json` 中的顶级键。`name` 是唯一必需的键。如果字段名称是链接，则链接的部分包含其完整规则。
 
 对于组件键（如 `commands` 和 `hooks`），[组件路径形式](#component-path-forms)显示每个接受的形式及示例，每个路径遵循 `./` 前缀、扩展名和包含的[路径规则](#path-rules)。
 
@@ -129,7 +129,7 @@ claude plugin validate ./my-plugin
 | [`version`](#version) | String | 版本字符串。设置它会将用户保持在该版本，直到您更改它 |
 | `description` | String | plugin 提供的内容的简短说明 |
 | `author` | Object | `name`（必需），加上可选的 `email` 和 `url` |
-| `homepage` | String | 文档 URL。必须解析为 URL，否则 plugin 加载失败 |
+| `homepage` | String | 文档 URL。必须能解析为 URL |
 | `repository` | String | 源代码库 URL。未验证 |
 | `license` | String | SPDX 标识符，如 `MIT` 或 `Apache-2.0` |
 | `keywords` | Array of strings | 发现标签 |
@@ -139,9 +139,10 @@ claude plugin validate ./my-plugin
 | [`supportUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的支持链接。Claude Code 不读取它 |
 | [`privacyPolicyUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的隐私政策链接。Claude Code 不读取它 |
 | [`termsOfServiceUrl`](#directory-listing-fields) | String | 插件在 Anthropic 目录中的列表所用的服务条款链接。Claude Code 不读取它 |
-| [`defaultEnabled`](#defaultenabled) | Boolean | 当用户未设置时 plugin 是否在启用时启动。默认为 `true` |
+| [`defaultEnabled`](#defaultenabled) | Boolean | 当用户未设置时 plugin 一开始是否处于启用状态。默认为 `true` |
+| `engines` | Object | 插件适用的 Claude Code 版本，以 `claude-code` 键下的 [semver 范围](https://github.com/npm/node-semver#ranges)表示，例如 `"engines": { "claude-code": ">=2.1.400" }`。需要 Claude Code v2.1.323 或更高版本。若要让插件在 v2.0.15 至 v2.1.75 上正常工作，请省略 `engines`。这些版本在 manifest 包含该字段时会以 `Unrecognized key` 错误拒绝该 manifest |
 | [`dependencies`](#dependencies) | Array of strings or objects | 必须为此 plugin 启用的 plugin |
-| [`settings`](#settings) | Object | Claude Code 在 plugin 启用时应用的设置。仅 `agent` 和 `subagentStatusLine` 生效 |
+| `network` | Object | 您的插件所访问的主机，例如 `"network": { "hosts": ["api.example.com"] }`，采用 [`sandbox.network.allowedDomains`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-network-alloweddomains) 语法。`claude plugin validate` 会列出这些主机。该字段不会允许或阻止任何主机。需要 Claude Code v2.1.328 或更高版本 |
 | [`userConfig`](#user-configuration) | Object | Claude Code 在 plugin 启用时提示用户输入的值 |
 | `types` | Path | 声明 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/reference.md#files) 的 `$.state` 值和 `$` 名词的 `.d.ts` 文件 |
 | [`channels`](#channels) | Array of objects | plugin 提供的消息频道，每个绑定到其 MCP 服务器之一 |
@@ -166,7 +167,7 @@ plugin 标识符。它必须非空，没有空格、`@`、`:`、路径分隔符�
 
 Claude Code 在其下命名空间每个组件，因此 plugin `deploy-tools` 中的 agent `reviewer` 显示为 `deploy-tools:reviewer`。
 
-`claude plugin validate` 还检查该名称是否通过作为 Anthropic 自己的 plugin 之一。检查忽略大小写并将任何分隔符的运行视为一个：
+`claude plugin validate` 还会检查名称不会被误认为是 Anthropic 自己的插件之一。该检查不区分大小写，并将任何连续的分隔符视为一个：
 
 | 名称 | 结果 |
 | :- | :- |
@@ -189,7 +190,7 @@ Claude Code 在其下命名空间每个组件，因此 plugin `deploy-tools` 中
 
 ### `metadata`
 
-用于您自己数据的自由形式对象，例如目录或权利字段。Claude Code 不读取它。需要 Claude Code v2.1.222 或更高版本。
+用于您自己数据的自由形式对象，例如目录或权利字段。Claude Code 不读取它。
 
 ### 目录列表字段
 
@@ -203,17 +204,13 @@ Claude Code 在其下命名空间每个组件，因此 plugin `deploy-tools` 中
 
 ### `defaultEnabled`
 
-当用户未在 [`enabledPlugins`](https://code.claude.com/docs/zh-CN/settings-reference#enabledplugins) 中设置时，plugin 是否在启用时启动。默认为 `true`。启用的 plugin 依赖的 plugin 无论如何都会启用启动。marketplace 条目中的相同字段覆盖此字段。
+当用户未在 [`enabledPlugins`](https://code.claude.com/docs/zh-CN/settings-reference#enabledplugins) 中设置时，plugin 一开始是否处于启用状态。默认为 `true`。启用的 plugin 所依赖的 plugin 无论如何一开始都会处于启用状态。marketplace 条目中的相同字段覆盖此字段。
 
 一旦用户的 `enabledPlugins` 条目被写入，它在 plugin 更新中持续存在，因此在后续版本中更改 `defaultEnabled` 不会更改现有用户的设置。
 
 ### `dependencies`
 
 必须为此 plugin 启用的 plugin。每个条目是 `"name"`、`"name@marketplace"` 或 `{ "name": "...", "marketplace": "...", "version": "..." }`。裸名称针对此 plugin 自己的 marketplace 解析。参见[依赖约束](https://code.claude.com/docs/zh-CN/plugins/dependencies.md)。
-
-### `settings`
-
-Claude Code 在 plugin 启用时应用的设置。仅 `agent` 和 `subagentStatusLine` 生效；其他键在加载时被删除。plugin 根目录处的 `settings.json` 优先于此键。参见[默认设置](https://code.claude.com/docs/zh-CN/plugins/components.md#default-settings)。
 
 ## 组件路径形式
 
@@ -311,8 +308,8 @@ Claude Code 首先加载 plugin 根目录处的 `.mcp.json`，然后按顺序加
 | 形式 | 示例值 | Claude Code 的作用 |
 | :- | :- | :- |
 | `.json` 文件路径 | `"./mcp/servers.json"` | 将文件读取为 `mcpServers` 映射 |
-| MCP 包路径 | `"./bundle.mcpb"` | 将 `.mcpb` 或 `.dxt` 包提取到 plugin 根目录下的 `.mcpb-cache/` 并读取其服务器配置 |
-| MCP 包 URL | `"https://example.com/server.mcpb"` | 将包下载到 `.mcpb-cache/`，然后读取它 |
+| MCP 包路径 | `"./bundle.mcpb"` | 将 `.mcpb` 或 `.dxt` 包提取到[插件存放根目录](https://code.claude.com/docs/zh-CN/plugins/loading.md#find-plugins-on-disk)下的 `mcpb/` 中，并读取其服务器配置 |
+| MCP 包 URL | `"https://example.com/server.mcpb"` | 下载包，然后以相同方式提取并读取它 |
 | 内联映射 | `{ "deploy-api": { "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/server.js"] } }` | 使用映射作为以名称为键的服务器配置 |
 
 包路径或 URL 必须以 `.mcpb` 或 `.dxt` 结尾。任何其他扩展名验证失败。
@@ -394,7 +391,7 @@ monitor `command` 不能引用 `${user_config.*}`。参见[通过 shell 运行�
 
 manifest 中的每个组件路径相对于 plugin 根目录，必须以 `./` 开头。路径如 `commands/foo.md` 验证失败。`skills` 和 `mcpServers` 各接受该规则之外的一种形式：
 
-* **`skills`**：也接受 `"."`。`"."` 和 `"./"` 都表示 plugin 根目录。在 v2.1.221 之前，`"."` 验证失败，因此当 plugin 必须在较早版本上加载时使用 `"./"`
+* **`skills`**：也接受 `"."`。`"."` 和 `"./"` 都表示插件根目录
 * **`mcpServers`**：也接受 `https://` 包 URL
 
 `experimental.evals` 不是组件路径，因此本节中的规则不适用于它，而是由 `claude plugin eval` 在运行时检查该值。它指定插件根目录下的一个目录，例如 `"quality/evals"`，可以带或不带 `./` 前缀。如果是数组，则仅使用第一个条目。有关该值接受的内容以及值不可用时会发生什么，请参阅[使用不同的 eval 目录](https://code.claude.com/docs/zh-CN/plugin-evals.md#use-a-different-eval-directory)。
@@ -403,7 +400,7 @@ manifest 中的每个组件路径相对于 plugin 根目录，必须以 `./` 开
 
 每个组件路径必须在 plugin 根目录内解析并且必须存在。`claude plugin validate` 检查每个组件键下的路径：
 
-* **包含**：在 plugin 根目录外解析的路径不加载，`/plugin` **Errors** 选项卡显示 `<component> path escapes plugin directory: <path>`。包含 `..` 的路径是常见情况，`claude plugin validate` 将其报告为 `Path contains ".." which could be a path traversal attempt`
+* **包含**：在插件根目录外解析的路径不加载，`/plugin` **Errors** 选项卡显示 `<component> path escapes plugin directory: <path>`。包含 `..` 的路径是常见情况，`claude plugin validate` 报告错误 `Path contains ".." which could be a path traversal attempt`。对于 `mcpServers` 或 `lspServers` 文件，[`path not read`](https://code.claude.com/docs/zh-CN/errors#server-file-path-not-read) 消息表示该路径是绝对路径或包含 `..`
 * **存在**：不存在的路径不加载，`/plugin` **Errors** 选项卡显示 `<component> path not found: <path>`。`claude plugin validate` 将其报告为 `Path not found`
 
 对于 `outputStyles`、`lspServers`、`monitors` 和 `themes` 路径，`claude plugin validate` 检查需要 Claude Code v2.1.283 或更高版本。
@@ -571,7 +568,7 @@ Claude Code 为 plugin 组件提供三个路径变量。在[每个变量解析�
 | :- | :- | :- |
 | Hook 命令 | 在 `command` 和 `args` 中的任何地方 | `CLAUDE_PLUGIN_ROOT`、`CLAUDE_PLUGIN_DATA`、`CLAUDE_PROJECT_DIR` 和 `CLAUDE_PLUGIN_OPTION_<KEY>` |
 | Monitor 命令 | 在 `command` 中的任何地方 | 未导出 |
-| MCP `stdio` 服务器 | `command`、`args`、`env` | `CLAUDE_PLUGIN_ROOT`、`CLAUDE_PLUGIN_DATA` |
+| MCP `stdio` 服务器 | `command`、`args`、`env` | `CLAUDE_PLUGIN_ROOT`、`CLAUDE_PLUGIN_DATA`、`CLAUDE_PROJECT_DIR` |
 | MCP `http`、`sse`、`ws` 服务器 | `url`、`headers`、`headersHelper` | 不适用 |
 | LSP 服务器 | `command`、`args`、`env`、`workspaceFolder` | `CLAUDE_PLUGIN_ROOT`、`CLAUDE_PLUGIN_DATA`、`CLAUDE_PROJECT_DIR` |
 | Skill、command 和 agent 内容 | Markdown 体中的任何地方 | 不适用 |
@@ -626,9 +623,8 @@ Claude Code 为 plugin 组件提供三个路径变量。在[每个变量解析�
 | 主题 | `themes/` | 主题 JSON 文件 |
 | Monitors | `monitors/monitors.json` | monitors 数组 |
 | 可执行文件 | `bin/` | 此处的文件在 plugin 启用时位于 Bash 工具的 `PATH` 上，因此 Claude 将它们作为裸命令运行。claude.ai 和 Cowork 不安装具有此目录的 plugin，包括您[通过 claude.ai 组织设置分发](https://claude.com/docs/plugins/org-sync#keep-executables-out-of-the-top-level-bin-directory)的 plugin |
-| 设置 | `settings.json` | 在 plugin 启用时应用的 `agent` 和 `subagentStatusLine` 默认值 |
 
-使用每个默认位置的 plugin，加上其 hooks 调用的 `scripts/` 文件夹，布局如下：
+使用默认位置的插件，加上其 hook 调用的 `scripts/` 文件夹，布局如下：
 
 ```text theme={null}
 deploy-tools/
@@ -655,7 +651,6 @@ deploy-tools/
 │   └── deploy-tool
 ├── scripts/
 │   └── format.sh
-├── settings.json
 ├── .mcp.json
 └── .lsp.json
 ```

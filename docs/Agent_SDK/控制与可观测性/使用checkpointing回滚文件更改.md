@@ -14,7 +14,7 @@ File checkpointing跟踪在agent会话期间通过[Write](https://code.claude.co
 
 ## Checkpointing 如何工作
 
-启用文件 checkpointing 时，SDK 会在通过 Write、Edit 或 NotebookEdit 工具修改文件之前创建文件备份。响应流中的用户消息包含一个 checkpoint UUID，您可以将其用作恢复点。
+启用文件检查点功能时，SDK 会在通过 Write、Edit 或 NotebookEdit 工具修改文件之前创建文件备份。每个开启一个轮次的提示词都是一个检查点，其用户消息的 UUID 即为恢复点。
 
 > [!NOTE]
 >
@@ -147,7 +147,7 @@ main();
 
 **2. 捕获checkpoint UUID和会话ID**
 
-设置`replay-user-messages`选项后，响应流中的每个用户消息都有一个UUID，用作checkpoint。
+设置`replay-user-messages`选项后，每个开启一个轮次的提示词所对应的用户消息都有一个 UUID，用作检查点。携带工具结果的用户消息也有 UUID，但它不是检查点。
 
 对于大多数用例，捕获第一个用户消息UUID（`message.uuid`）；回滚到它会将已跟踪文件恢复到原始状态。要存储多个checkpoint并回滚到中间状态，请参阅[多个恢复点](#multiple-restore-points)。
 
@@ -171,7 +171,7 @@ CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING=true claude -p --resume <session-id> -
 
 ### 在危险操作之前创建checkpoint
 
-此模式仅保留最新的checkpoint UUID，在每个agent轮次之前更新它。如果处理过程中出现问题，您可以立即回滚到最后的安全状态并跳出循环。
+此模式仅保留最新的检查点 UUID，在每个开启一个轮次的提示词处更新它。如果处理过程中出现问题，您可以立即回滚到最后的安全状态并跳出循环。
 
 运行此示例之前，请将`your_revert_condition`（Python）或`yourRevertCondition`（TypeScript）替换为您自己的检查，例如错误检测或验证失败；该占位符在示例中未定义。
 
@@ -193,9 +193,14 @@ async def main():
         await client.query("Refactor the authentication module")
 
         async for message in client.receive_response():
-            # Update checkpoint before each agent turn starts
+            # Update checkpoint at each prompt you send; a tool result isn't one
             # This overwrites the previous checkpoint. Only keep the latest
-            if isinstance(message, UserMessage) and message.uuid:
+            if (
+                isinstance(message, UserMessage)
+                and message.uuid
+                and message.tool_use_result is None
+                and message.parent_tool_use_id is None
+            ):
                 safe_checkpoint = message.uuid
 
             # Decide when to revert based on your own logic
@@ -225,9 +230,9 @@ async function main() {
   let safeCheckpoint: string | undefined;
 
   for await (const message of response) {
-    // Update checkpoint before each agent turn starts
+    // Update checkpoint at each prompt you send; a tool result isn't one
     // This overwrites the previous checkpoint. Only keep the latest
-    if (message.type === "user" && message.uuid) {
+    if (message.type === "user" && "isReplay" in message && message.isReplay && message.uuid) {
       safeCheckpoint = message.uuid;
     }
 
@@ -246,9 +251,9 @@ main();
 
 ### 多个恢复点
 
-如果Claude在多个轮次中进行更改，您可能想回滚到特定点而不是一直回滚。例如，如果Claude在第一轮重构文件，在第二轮添加测试，您可能想保留重构但撤销测试。
+如果 Claude 在多个提示词中进行了更改，您可能想回滚到特定点而不是一直回滚到最初。例如，如果您的第一个提示词重构了一个文件，第二个提示词添加了测试，则可以回滚到第二个提示词的检查点，以保留重构并撤销测试。
 
-此模式将所有checkpoint UUID存储在带有元数据的数组中。会话完成后，您可以回滚到任何之前的checkpoint：
+此模式将每个检查点 UUID 存储在带有元数据的数组中。会话完成后，您可以回滚到任何之前的检查点：
 
 ```python Python theme={null}
 import asyncio
@@ -284,7 +289,12 @@ async def main():
         await client.query("Refactor the authentication module")
 
         async for message in client.receive_response():
-            if isinstance(message, UserMessage) and message.uuid:
+            if (
+                isinstance(message, UserMessage)
+                and message.uuid
+                and message.tool_use_result is None
+                and message.parent_tool_use_id is None
+            ):
                 checkpoints.append(
                     Checkpoint(
                         id=message.uuid,
@@ -338,7 +348,7 @@ async function main() {
 
   try {
     for await (const message of response) {
-      if (message.type === "user" && message.uuid) {
+      if (message.type === "user" && "isReplay" in message && message.isReplay && message.uuid) {
         checkpoints.push({
           id: message.uuid,
           description: `After turn ${checkpoints.length + 1}`,
@@ -638,6 +648,7 @@ main();
 
 * 文件checkpointing在原始会话上未启用（`enable_file_checkpointing`或`enableFileCheckpointing`未设置为`true`）
 * 会话在尝试恢复和回滚之前未正确完成
+* 该UUID来自携带工具结果的用户消息，而此类消息不是检查点
 
 **解决方案**：确保在原始会话上设置了`enable_file_checkpointing=True`（Python）或`enableFileCheckpointing: true`（TypeScript），然后使用示例中显示的模式：捕获第一个用户消息UUID，完全完成会话，然后使用空提示恢复并调用`rewindFiles()`一次。
 

@@ -8,9 +8,12 @@
 
 默认情况下，Agent SDK 在 Claude 完成生成每个非空内容块（例如文本块或工具调用）后会产生完整的 `AssistantMessage`。要在文本和工具调用生成时接收增量更新，请启用部分消息流式传输。
 
-> [!TIP]
+> [!NOTE]
 >
-> 本页面涵盖输出流式传输（实时接收令牌）。有关输入模式（如何发送消息），请参阅[向代理发送消息](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)。您也可以[通过 CLI 使用 Agent SDK 流式传输响应](https://code.claude.com/docs/zh-CN/headless.md)。
+> 以下情况在其他页面中介绍：
+>
+> * **向正在运行的会话发送消息**：请参阅[向正在运行的 Agent 发送消息](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)
+> * **从 CLI 流式传输响应**：请参阅[通过 CLI 使用 Agent SDK 流式传输响应](https://code.claude.com/docs/zh-CN/headless.md)
 
 ## 启用流式输出
 
@@ -327,6 +330,6 @@ for await (const message of query({
 
 现在您可以实时流式传输文本和工具调用，请探索这些相关主题：
 
-* [交互式与一次性查询](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)：为您的用例选择输入模式
+* [向正在运行的 Agent 发送消息](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)：中断 Claude 的回复或在消息中附加图片
 * [结构化输出](https://code.claude.com/docs/zh-CN/agent-sdk/structured-outputs.md)：从代理获取类型化的 JSON 响应
 * [权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md)：控制代理可以使用哪些工具

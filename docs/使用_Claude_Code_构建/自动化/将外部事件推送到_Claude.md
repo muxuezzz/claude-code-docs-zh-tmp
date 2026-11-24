@@ -104,6 +104,7 @@ Channel 是一个 MCP 服务器，它将事件推送到您运行中的 Claude Co
 > * 查看频道
 > * 发送消息
 > * 在线程中发送消息
+> * 创建公共线程
 > * 读取消息历史记录
 > * 附加文件
 > * 添加反应
@@ -277,7 +278,7 @@ what's in my working directory?
 
 ## 安全性
 
-每个批准的 channel 插件都维护一个发送者允许列表：只有您添加的 ID 可以推送消息，其他所有人都会被静默丢弃。
+Telegram、Discord 和 iMessage 频道插件会根据发送者允许列表检查私信。只有在您将其他人添加到该列表后，他们的私信才会到达您的会话。
 
 Telegram 和 Discord 通过配对来引导列表：
 
@@ -354,7 +355,7 @@ Channels 是一个研究预览功能。可用性正在逐步推出，`--channels
 | 功能 | 它做什么 | 适合 |
 | - | - | - |
 | [云端会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md) | 在新的云沙箱中运行任务，从 GitHub 克隆 | 委派您稍后检查的自包含异步工作 |
-| [Slack 中的 Claude](https://code.claude.com/docs/zh-CN/slack.md) | 从频道或线程中的 `@Claude` 提及生成云端会话 | 直接从团队对话上下文启动任务 |
+| [Slack 中的 Claude](https://code.claude.com/docs/zh-CN/slack.md) | 从频道或线程中的 `@Claude` 提及生成云端会话 | 直接从团队对话中启动任务 |
 | 标准 [MCP 服务器](https://code.claude.com/docs/zh-CN/mcp.md) | Claude 在任务期间查询它；没有任何内容被推送到会话 | 给 Claude 按需访问以读取或查询系统 |
 | [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md) | 您从 claude.ai 或 Claude 移动应用程序驱动您的本地会话 | 在离开您的办公桌时指导进行中的会话 |
 

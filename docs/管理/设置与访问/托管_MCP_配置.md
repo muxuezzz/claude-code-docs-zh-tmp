@@ -30,7 +30,7 @@ Claude Code 支持一系列限制级别。每个模式使用以下一个或多�
 | 模式 | 功能 | 配置 |
 | :- | :- | :- |
 | **禁用 MCP** | 不加载任何服务器，除了[在独占控制下加载](#exclusive-control-with-managed-mcp-json)的少数几个 | 使用空服务器映射的 `managed-mcp.json` |
-| **固定部署** | 每个用户获得相同的服务器，无法添加其他服务器 | 包含你想要的服务器的 `managed-mcp.json` |
+| **固定部署** | 每个用户获得您列出的服务器，用户自己配置的服务器不会加载 | 包含您想要的服务器的 `managed-mcp.json` |
 | **提供的服务器** | 每个用户获得你列出的远程服务器，并保留他们自己的服务器 | 托管设置中的 `managedMcpServers` |
 | **批准的目录** | 发布批准的服务器列表；用户添加他们想要的服务器，其他任何内容都被阻止 | `allowedMcpServers` + `allowManagedMcpServersOnly: true` |
 | **仅插件服务器** | 用户无法通过 `~/.claude.json` 或 `.mcp.json` 添加服务器；[技能目录插件](https://code.claude.com/docs/zh-CN/plugins/loading.md#skills-directory-plugins-blocked-by-managed-settings)不再作为插件加载，来自其他插件的服务器仍然加载 | [`strictPluginOnlyCustomization`](https://code.claude.com/docs/zh-CN/settings-reference#strictpluginonlycustomization) 列表中包含 `mcp` |
@@ -49,6 +49,7 @@ Claude Code 支持一系列限制级别。每个模式使用以下一个或多�
 * 该文件定义的服务器
 * 你[通过 `managedMcpServers` 提供的服务器](#provide-servers-through-managed-settings)
 * 启动会话的应用程序注册的进程内服务器，例如 VS Code 扩展自己的服务器或[桌面应用程序提供的连接器](https://code.claude.com/docs/zh-CN/mcp.md#how-connectors-reach-claude-code)
+* 当 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md) [添加工具](https://code.claude.com/docs/zh-CN/plugins/mods/api.md#add-a-tool)时 Claude Code 创建的服务器。要阻止用户的 mod 添加的工具，请[阻止用户安装的 mod 加载](https://code.claude.com/docs/zh-CN/plugins/mods/admin.md#stop-user-installed-mods-from-loading)。
 * 内置的[Chrome 中的 Claude](https://code.claude.com/docs/zh-CN/chrome.md) 服务器，如果你[允许它与托管集合一起使用](#allow-claude-in-chrome-alongside-the-managed-set)
 
 用户无法添加、修改或使用任何其他 MCP 服务器，包括插件提供的服务器和通过 [`--mcp-config` CLI 标志](https://code.claude.com/docs/zh-CN/cli-reference#cli-flags)传递的服务器。该文件还会禁止 Claude Code 自身获取的 claude.ai 连接器，除非你[允许它们与托管集合一起使用](#allow-claude-ai-connectors-alongside-the-managed-set)。
@@ -122,9 +123,9 @@ Claude Code 支持一系列限制级别。每个模式使用以下一个或多�
 
 要确认文件生效，请在托管机器上运行两项检查：
 
-1. `claude mcp list` 仅显示 `managed-mcp.json` 中的服务器，加上你通过 `managedMcpServers` 提供的任何服务器。另外两个结果意味着出现了问题：
+1. `claude mcp list` 仅显示 `managed-mcp.json` 中的服务器，加上您通过 `managedMcpServers` 提供的任何服务器。另外两个结果意味着出现了问题：
    * 如果用户自己的服务器仍然出现，Claude Code 没有读取该文件，因此请检查其路径和父目录的权限。
-   * 如果文件的服务器没有出现，且 `MCP config diagnostics` 部分将企业配置标记为解析失败，Claude Code 无法读取或解析该文件。修复该部分命名的错误，然后让用户重新启动 Claude Code。
+   * 如果文件的服务器没有出现，且 `MCP config diagnostics` 部分列出了企业配置的错误，请修复这些错误，然后让用户重新启动 Claude Code。
 2. `claude mcp add --transport http test https://example.com/mcp` 失败，显示 `Cannot add MCP server: enterprise MCP configuration is active and has exclusive control over MCP servers`。URL 不需要是真实服务器，因为策略检查在联系任何内容之前拒绝该命令。
 
 ### 完全禁用 MCP
@@ -137,7 +138,7 @@ Claude Code 支持一系列限制级别。每个模式使用以下一个或多�
 }
 ```
 
-`claude mcp add` 失败，显示上述企业策略错误。用户之前配置的服务器在下次启动会话时停止加载，没有警告说明策略是原因。你通过 `managedMcpServers` 提供的服务器以及你允许与托管集合一起使用的任何其他内容仍然在空映射下加载，因此保持这些键未设置以完全关闭 MCP。
+`claude mcp add` 失败，显示上述企业策略错误。用户之前配置的服务器会在每个用户的下一次会话中停止加载。您通过 `managedMcpServers` 提供的服务器以及您允许与托管集合一起使用的任何其他内容在空映射下[仍然会加载](#exclusive-control-with-managed-mcp-json)，因此请保持这些键未设置。
 
 ### 允许 claude.ai 连接器与托管集合一起使用
 
@@ -157,9 +158,9 @@ Claude Code 仅从管理员控制的策略层读取 `allowAllClaudeAiMcps`：服
 
 ## 通过托管设置提供服务器
 
-要为每个用户提供一组远程 MCP 服务器而不独占 MCP 的控制权，请在[托管设置源](https://code.claude.com/docs/zh-CN/admin-setup.md#decide-how-settings-reach-devices)中的 `managedMcpServers` 下列出它们：服务器托管设置、[Claude 应用网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#what-goes-in-cli)策略、MDM 配置文件或注册表策略，或 `managed-settings.json`。用户保留他们自己添加的服务器，并额外接收您的服务器。需要 Claude Code v2.1.259 或更高版本。早期客户端会忽略此密钥。
+若要为每位用户提供一组远程 MCP 服务器，同时又不独占对 MCP 的控制，请在[托管设置来源](https://code.claude.com/docs/zh-CN/admin-setup.md#decide-how-settings-reach-devices)中将它们列在 `managedMcpServers` 下：服务器托管设置、[Claude apps 网关](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#what-goes-in-cli)策略、MDM 配置文件或注册表策略，或 `managed-settings.json`。用户会保留自己添加的服务器，并额外获得您提供的服务器。需要 Claude Code v2.1.259 或更高版本。较早的客户端会忽略此键。
 
-该值是一个以服务器名称为键的对象。每个条目的形状与项目 [`.mcp.json`](https://code.claude.com/docs/zh-CN/mcp#project-scope) 文件中的 HTTP 或 SSE 服务器相同，包括[使用远程 MCP 服务器进行身份验证](https://code.claude.com/docs/zh-CN/mcp.md#authenticate-with-remote-mcp-servers)中描述的可选 `headers` 和 `oauth` 成员。此示例提供了一个搜索服务器，每个用户使用 OAuth 登录，以及一个记录服务器，它发送您的组织颁发的标头：
+该值是一个以服务器名称为键的对象。每个条目的结构与项目 [`.mcp.json`](https://code.claude.com/docs/zh-CN/mcp#project-scope) 文件中的 HTTP 或 SSE 服务器相同，包括[向远程 MCP 服务器进行身份验证](https://code.claude.com/docs/zh-CN/mcp.md#authenticate-with-remote-mcp-servers)中所述的可选 `headers` 和 `oauth` 成员。以下示例提供了一个每位用户通过 OAuth 登录的搜索服务器，以及一个发送由您的组织签发的标头的记录服务器：
 
 ```json theme={null}
 {
@@ -179,68 +180,68 @@ Claude Code 仅从管理员控制的策略层读取 `allowAllClaudeAiMcps`：服
 }
 ```
 
-任何能够读取机器上托管设置的人（包括用户）都可以读取您在此处设置的标头值。使用为整个受众颁发的凭证，或省略 `headers` 并让每个用户使用 OAuth 登录。
+任何能够读取某台机器上托管设置的人（包括该用户）都可以读取您在此处设置的标头值。请使用为该全体受众签发的凭据，或省略 `headers`，让每位用户通过 OAuth 登录。
 
 ### 条目可以包含的内容
 
-Claude Code 仅在通过以下每项检查时才加载条目。它会丢弃失败的条目，记录您可以使用 `/status` 读取的通知，并仍然加载其他条目：
+只有当条目通过以下所有检查时，Claude Code 才会加载该条目。对于未通过某项检查的条目，Claude Code 会将其丢弃，记录一条可通过 `/status` 查看的通知，并仍然加载其他条目：
 
-* `type` 是 `http` 或 `sse`。与 `.mcp.json` 中一样，`streamable-http` 被接受为 `http` 的别名。
-* `url` 是 `https://` URL。Claude Code 拒绝纯 `http://` URL，包括指向 `localhost` 的 URL。
-* 该条目没有 `command`、`args`、`env` 或 `headersHelper` 成员，因此托管设置文档永远不会命名要在用户机器上运行的程序。
-* 没有值包含 `${VAR}` 引用。Claude Code 不会在这些条目中展开环境变量，因此请写入字面值。
-* 服务器名称仅包含字母、数字、连字符和下划线，没有键或值包含控制或不可见的格式字符。
+* `type` 为 `http` 或 `sse`。与 `.mcp.json` 中一样，`streamable-http` 被接受为 `http` 的别名。
+* `url` 是 `https://` URL。Claude Code 会拒绝普通的 `http://` URL，包括指向 `localhost` 的 URL。
+* 条目不包含 `command`、`args`、`env` 或 `headersHelper` 成员。
+* 任何值都不包含 `${VAR}` 引用。Claude Code 不会在这些条目中展开环境变量，因此请填写字面值。
+* 服务器名称仅包含字母、数字、连字符和下划线，且任何键或值都不包含控制字符或不可见的格式字符。
 
-Claude Desktop 有一个同名的托管设置，其值是不同条目形状的数组，因此不要将一个复制到另一个。Claude Code 不接受数组形式，而是记录通知而不是加载它。
+Claude Desktop 有一个同名的托管设置，其值是一个条目结构不同的数组，因此请勿将其中一个复制到另一个中。Claude Code 不接受数组形式，会记录一条通知而不是加载它。
 
-Claude 应用网关在启动时运行相同的检查；请参阅[策略中的 MCP 服务器](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#mcp-servers-in-a-policy)。
+Claude apps 网关在启动时会执行相同的检查；请参阅[策略中的 MCP 服务器](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#mcp-servers-in-a-policy)。
 
-### 提供的服务器如何加载
+### 所提供服务器的加载方式
 
-这些规则决定当提供的服务器与另一个服务器定义或此页面上的另一个设置重叠时会加载什么：
+当所提供的服务器与其他服务器定义或本页上的其他设置重叠时，以下规则决定加载哪些内容：
 
-* 提供的服务器优先于本地、项目或用户范围内同名的服务器，以及指向相同 URL 的插件服务器或 claude.ai 连接器。
-* 如果您还部署 `managed-mcp.json`，Claude Code 会加载其服务器和提供的服务器，当两者都定义一个名称时，该文件的条目优先。
-* 当 [`strictPluginOnlyCustomization`](https://code.claude.com/docs/zh-CN/settings-reference#strictpluginonlycustomization) 锁定 `mcp` 表面时，提供的服务器继续加载。
-* `deniedMcpServers` 适用于提供的服务器，包括来自用户自己设置的条目，因此用户可以为自己阻止一个。提供的服务器不需要 `allowedMcpServers` 条目。
+* 所提供的服务器优先于本地、项目或用户作用域中的同名服务器，也优先于指向相同 URL 的插件服务器或 claude.ai 连接器。
+* 如果您同时部署了 `managed-mcp.json`，Claude Code 会同时加载其中的服务器和所提供的服务器；当两者定义了相同名称时，以该文件中的条目为准。
+* 当 [`strictPluginOnlyCustomization`](https://code.claude.com/docs/zh-CN/settings-reference#strictpluginonlycustomization) 锁定 `mcp` 使用入口时，所提供的服务器仍会继续加载。
+* `deniedMcpServers` 适用于所提供的服务器，包括来自用户自身设置的条目，因此用户可以为自己屏蔽某个服务器。所提供的服务器无需 `allowedMcpServers` 条目。
 
-当您还没有部署 `managed-mcp.json` 时，每次运行的标志保持其含义：
+当您未同时部署 `managed-mcp.json` 时，单次运行的标志保持其原有含义：
 
-* 用户使用同一名称下的 `--mcp-config` 传递的服务器替换该运行的提供的服务器，并针对 `allowedMcpServers` 进行检查。
-* `--strict-mcp-config` 将提供的服务器与所有其他配置的服务器一起排除。
+* 用户通过 `--mcp-config` 传入的同名服务器会在该次运行中替换所提供的服务器，并会根据 `allowedMcpServers` 进行检查。
+* `--strict-mcp-config` 会将所提供的服务器与所有其他已配置的服务器一并排除。
 
-部署 `managed-mcp.json` 后，两个标志的行为如[使用 managed-mcp.json 的独占控制](#exclusive-control-with-managed-mcp-json)所述。
+部署了 `managed-mcp.json` 时，这两个标志的行为如[使用 managed-mcp.json 进行独占控制](#exclusive-control-with-managed-mcp-json)中所述。
 
-### 用户可以看到和更改的内容
+### 用户可以查看和更改的内容
 
-用户无法编辑或删除提供的服务器：
+用户无法编辑或删除所提供的服务器：
 
-* `claude mcp remove` 报告服务器由组织提供。
-* 当您还没有部署 `managed-mcp.json` 时，用户在同一名称下添加的条目会被保存但在您的条目存在时不会被使用。
-* 用户仍然可以在 [`/mcp`](https://code.claude.com/docs/zh-CN/mcp#disable-a-server-without-removing-it) 中为自己关闭提供的服务器，该服务器在**托管 MCPs** 下列出提供的服务器。
+* `claude mcp remove` 会报告该服务器由组织提供。
+* 当您未同时部署 `managed-mcp.json` 时，用户以相同名称添加的条目会被保存，但在您的条目存在期间不会被使用。
+* 用户仍可以在 [`/mcp`](https://code.claude.com/docs/zh-CN/mcp#disable-a-server-without-removing-it) 中为自己关闭所提供的服务器，该处会将所提供的服务器列在 **Managed MCPs** 下。
 
-`claude mcp get` 和 `/mcp` 将提供的服务器的 URL 仅显示为其主机，例如 `https://mcp.example.com/…`，`claude mcp get` 显示其标头名称而不显示其值。
+`claude mcp get` 和 `/mcp` 仅显示所提供服务器 URL 的主机部分，例如 `https://mcp.example.com/…`，并且 `claude mcp get` 会显示其标头名称而不显示其值。
 
-### `managedMcpServers` 适用的位置
+### `managedMcpServers` 的适用范围
 
-Claude Code 从它在[Claude Code 如何组合托管源](https://code.claude.com/docs/zh-CN/managed-settings.md#how-claude-code-combines-managed-sources)下选择的托管源读取 `managedMcpServers`。当该源将 [`managedSourcesBehavior`](https://code.claude.com/docs/zh-CN/settings-reference#managedsourcesbehavior) 设置为 `"merge"` 时，Claude Code 改为提供来自每个管理员源的服务器，当两个源定义相同的名称时，排名较高的源的条目整体适用。它永远不会从用户可写的 HKCU 注册表、从[嵌入主机提供的父设置](https://code.claude.com/docs/zh-CN/managed-settings.md#parent-settings-from-embedding-hosts)或从用户、项目或本地设置文件中读取密钥，它会在那里使用警告丢弃密钥。
+Claude Code 从其根据 [Claude Code 如何组合托管来源](https://code.claude.com/docs/zh-CN/managed-settings.md#how-claude-code-combines-managed-sources)所选定的托管来源中读取 `managedMcpServers`。当该来源将 [`managedSourcesBehavior`](https://code.claude.com/docs/zh-CN/settings-reference#managedsourcesbehavior) 设置为 `"merge"` 时，Claude Code 会改为提供来自每个管理员来源的服务器；当两个来源定义了相同名称时，以排名较高的来源的条目整体为准。Claude Code 从不从用户可写的 HKCU 注册表、[嵌入宿主提供的父级设置](https://code.claude.com/docs/zh-CN/managed-settings.md#parent-settings-from-embedding-hosts)，或用户、项目、本地设置文件中读取此键；在这些位置，它会丢弃该键并发出警告。
 
-Claude Code 不会在第三方部署中的 Claude Desktop 应用的 Code 选项卡中或在应用的 Cowork 会话中读取密钥，因为 Claude Desktop 自己提供并锁定这些会话的 MCP 服务器。当您的托管设置在那里携带密钥时，`/status` 和 `claude doctor` 会说明这一点。
+在第三方部署上的 Claude Desktop 应用的 Code 标签页中，或在该应用的 Cowork 会话中，Claude Code 不会读取此键，因为 Claude Desktop 会自行提供并锁定这些会话的 MCP 服务器。当您的托管设置在这些场景中包含此键时，`/status` 和 `claude doctor` 会予以说明。
 
-### 提供的服务器何时连接
+### 所提供服务器的连接时机
 
-当 `managedMcpServers` 通过服务器托管设置到达时，其时序遵循[获取和缓存行为](https://code.claude.com/docs/zh-CN/server-managed-settings.md#fetch-and-caching-behavior)：
+当 `managedMcpServers` 通过服务器托管设置下发时，其时机遵循[获取和缓存行为](https://code.claude.com/docs/zh-CN/server-managed-settings.md#fetch-and-caching-behavior)：
 
-* 在具有缓存设置的机器上，Claude Code 会保留此密钥的缓存副本，直到服务器确认会话的设置，并等待该确认后再加载 MCP 服务器。如果确认失败，会话将继续而不使用提供的服务器，`/status` 会说它们被保留。
-* 在机器的首次启动时，还没有缓存任何内容，在设置到达之前启动的交互式会话会在它们到达时立即连接提供的服务器，而已经启动的 `claude -p` 运行可以在没有它们的情况下完成。
+* 在已有缓存设置的机器上，Claude Code 会暂不应用此键的缓存副本，直到服务器确认该会话的设置为止，并在加载 MCP 服务器之前等待该确认。如果确认失败，会话将在没有所提供服务器的情况下继续，`/status` 会说明这些服务器已被暂扣、未予加载。
+* 在机器首次启动、尚无任何缓存时，在设置到达之前启动的交互式会话会在设置到达后立即连接所提供的服务器，而已经开始的 `claude -p` 运行可能会在没有这些服务器的情况下完成。
 
-使用[网关登录](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#precedence-with-other-managed-sources)，Claude Code 在会话启动前加载策略，因此两种情况都不会延迟或跳过提供的服务器。
+使用[网关登录](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#precedence-with-other-managed-sources)时，Claude Code 会在会话开始之前加载策略，因此以上两种情况都不会延迟或跳过所提供的服务器。
 
-已在运行的交互式会话应用您对密钥的编辑：
+已在运行的交互式会话会应用您对此键所做的修改：
 
-* **添加服务器**：Claude Code 在更新的设置到达时连接它，无需重启。
-* **更改服务器的条目**：这些会话使用新定义重新连接到它。
-* **删除服务器**：运行中的交互式会话在读取更改的设置后断开连接。非交互式（`-p`）运行会保留它直到结束。
+* **添加服务器**：更新后的设置到达时，Claude Code 会连接该服务器，无需重启。
+* **更改服务器的条目**：这些会话会使用新的定义重新连接到该服务器。
+* **删除服务器**：正在运行的交互式会话在读取到更改后的设置后会断开该服务器。非交互式（`-p`）运行会保留该服务器，直到运行结束。
 
 ## 使用允许列表和拒绝列表进行基于策略的控制
 
@@ -368,14 +369,14 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 除了跳过[全部三个检查](#how-a-server-is-evaluated)的进程内 `type: "sdk"` 服务器之外，还有三组服务器跳过允许列表检查：
 
 * 组织自己的服务器：每个 `managedMcpServers` 条目，以及任何其值在 `env` 之外不使用 `${VAR}` 展开的 `managed-mcp.json` 条目。
-* 内置服务器，例如 Chrome 中的 Claude、Claude Code 在运行的 VS Code 或 JetBrains IDE 中连接的 `ide` 服务器，以及 CLI 本身配置的服务器。
+* 某些内置服务器，例如 Claude Code 在运行的 VS Code 或 JetBrains IDE 中连接的 `ide` 服务器，以及终端会话中的 Chrome 中的 Claude。
 * [Claude Tag](https://code.claude.com/docs/zh-CN/claude-tag.md) 会话的 Slack 工具：它用来读取线程和发布回复的服务器无需允许列表条目即可加载。
 
 在其命令、参数、URL 或标头中使用 `${VAR}` 展开的 `managed-mcp.json` 服务器仍会被检查。Claude Code 还会检查用户、插件或 claude.ai 添加的每个服务器，以及用户通过 `--mcp-config` 传递的每个服务器。有关哪些版本改变了 `managed-mcp.json` 服务器的检查范围，以及如何阻止某个服务器加载，请参阅[允许列表和拒绝列表如何应用于托管集](#how-allowlists-and-denylists-apply-to-the-managed-set)。
 
 ### 示例配置
 
-下面的配置设置了一个硬允许列表和一个拒绝列表。突出显示的行改变了列表其余部分的评估方式，块后的标注解释了每一行：
+下面的配置设置了一个允许列表和一个拒绝列表。突出显示的行改变了列表其余部分的评估方式，块后的标注解释了每一行：
 
 ```json {3,5,11} theme={null}
 {
@@ -522,6 +523,7 @@ URL 支持 `*` 通配符，包括以 `*` 作为整个方案。主机名匹配不
 | 服务器不在允许列表中，且用户运行 `claude mcp add` | `Cannot add MCP server "<name>": not allowed by enterprise policy` |
 | [`strictPluginOnlyCustomization`](https://code.claude.com/docs/zh-CN/settings-reference#strictpluginonlycustomization) 为 `true` 或包含 `mcp`，且用户运行 `claude mcp add` | [`Cannot add MCP server: your organization's managed settings allow only MCP servers that plugins provide`](https://code.claude.com/docs/zh-CN/errors#cannot-add-mcp-server-when-managed-settings-allow-only-plugin-servers) |
 | 用户对来自 `managedMcpServers` 的服务器运行 `claude mcp remove` | `MCP server "<name>" is provided by your organization (managed settings) and cannot be removed locally.` |
+| `managed-mcp.json` 在终端会话打开期间生效 | 一条以 `Your organization now manages MCP servers on this computer` 开头的通知 |
 | 先前已配置的服务器现在被策略阻止 | 该服务器从 `/mcp` 和 `claude mcp list` 中消失 |
 | 服务器在会话运行期间被阻止，且用户在 `/mcp` 中选择 **Reconnect** 或将其重新启用 | [`MCP server <name> is blocked by enterprise managed policy`](https://code.claude.com/docs/zh-CN/errors#mcp-server-is-blocked-by-enterprise-managed-policy) |
 

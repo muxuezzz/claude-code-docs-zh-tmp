@@ -84,7 +84,7 @@ claude plugin validate ./my-marketplace
 claude plugin marketplace add ./my-marketplace
 ```
 
-该命令打印 `✔ Successfully added marketplace: my-marketplace (declared in user settings)`，这意味着 marketplace 已记录在你的用户设置文件中。
+在终端中，该命令会打印 `✔ Added marketplace: my-marketplace (declared in user settings)`，这表示该市场已记录在您的用户设置文件中。
 
 安装 plugin。安装 id 是条目的 `name`、一个 `@` 和 marketplace 的 `name`。
 
@@ -92,7 +92,7 @@ claude plugin marketplace add ./my-marketplace
 claude plugin install my-first-plugin@my-marketplace
 ```
 
-该命令打印 `✔ Successfully installed plugin: my-first-plugin@my-marketplace (scope: user)`。
+在终端中，该命令会打印 `✔ Installed plugin: my-first-plugin@my-marketplace (scope: user)`。
 
 在会话内，`/plugin marketplace add ./my-marketplace` 以相同的方式注册 marketplace。`/plugin install my-first-plugin@my-marketplace` 在 `/plugin` 面板中打开 plugin 的详细信息，你可以在其中安装它。有关该流程，请参阅[安装和管理 plugins](https://code.claude.com/docs/zh-CN/plugins/install.md)。
 

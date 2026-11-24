@@ -218,7 +218,7 @@ for await (const message of query({
 
 > [!NOTE]
 >
-> 此示例使用流式传输来实时显示进度。如果你不需要实时输出（例如，对于后台作业或 CI 管道），你可以一次性收集所有消息。有关详细信息，请参阅[流式传输与单轮模式](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)。
+> 此示例会在循环接收到 Claude 的文本和工具调用时将其打印出来。如果您不需要实时输出，可以在循环中收集消息，并在循环结束后读取它们。要在单次 `query()` 和流式输入之间进行选择，请参阅[选择单次输入或流式输入](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md#choose-single-shot-or-streaming-input)。
 
 ### 运行你的代理
 
@@ -339,6 +339,8 @@ const _ = {
 | `Read`、`Glob`、`Grep` | 只读分析 |
 | `Read`、`Edit`、`Glob` | 分析和修改代码 |
 | `Read`、`Edit`、`Bash`、`Glob`、`Grep` | 完全自动化 |
+
+要将 Agent 的内置工具限制为其中一组，请将该组作为 `tools` 传入。如果您改为在 `allowedTools` 中列出一组工具，则是[预先批准这些工具](https://code.claude.com/docs/zh-CN/agent-sdk/custom-tools.md#configure-allowed-tools)，Agent 仍可调用其他工具，但须遵循您的权限模式。
 
 **权限模式**控制你想要多少人工监督。SDK 按照固定的顺序评估活跃模式以及你的允许和拒绝规则，详见[权限如何被评估](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)。有关完整的模式列表、它们的行为以及何时使用每种模式，请参阅[代理循环工作原理中的权限模式](https://code.claude.com/docs/zh-CN/agent-sdk/agent-loop.md#permission-mode)。
 

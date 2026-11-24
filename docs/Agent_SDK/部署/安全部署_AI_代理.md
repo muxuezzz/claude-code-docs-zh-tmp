@@ -22,8 +22,8 @@ Claude Code 和 Agent SDK 可以代表您执行代码、访问文件并与外部
 
 Claude Code 包含多个安全功能来解决常见问题。有关完整详情，请参阅[安全文档](https://code.claude.com/docs/zh-CN/security.md)。
 
-* **权限系统**：每个工具和 bash 命令都可以配置为允许、阻止或提示用户批准。使用 glob 模式创建规则，如"允许所有 npm 命令"或"阻止任何带有 sudo 的命令"。组织可以设置适用于所有用户的策略。请参阅[权限](https://code.claude.com/docs/zh-CN/permissions.md)。
-* **权限的命令解析**：在执行 bash 命令之前，Claude Code 将其解析为 AST 并将结果与您的权限规则进行匹配。无法干净解析或不符合允许规则的命令需要明确批准。一小组构造（如 `eval`）无论允许规则如何都始终需要批准。这是一个权限门，而不是沙箱；除了内置的安全检查（如对 `rm` 和 `rmdir` 的[关键路径检查](https://code.claude.com/docs/zh-CN/permission-modes.md#critical-paths)和[受保护路径](https://code.claude.com/docs/zh-CN/permission-modes.md#protected-paths)列表）外，它不会根据其目标路径或效果推断命令是否危险。
+* **权限系统**：权限规则决定工具调用是直接运行、被阻止，还是先请求批准。有关 Bash 规则无法匹配的形式以及规则如何与权限模式结合，请参阅 [Bash 规则无法匹配的内容](https://code.claude.com/docs/zh-CN/permissions.md#bash-rule-limits)和[配置权限](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md)。管理员还可以在[托管设置](https://code.claude.com/docs/zh-CN/permissions.md#managed-settings)中设置规则。
+* **关键路径删除**：当权限模式设置为 `default` 时，被识别为删除您的工作目录或其他[关键路径](https://code.claude.com/docs/zh-CN/permission-modes.md#critical-paths)的 `rm` 或 `rmdir` 命令需要批准。匹配的允许规则不会跳过该批准。这是一个权限门，而不是沙箱。要控制 Agent 可以写入的内容，请使用[文件系统控制](#filesystem-configuration)。
 * **Web 搜索摘要**：搜索结果被摘要化，而不是将原始内容直接传递到上下文中，从而降低了来自恶意网络内容的提示注入风险。
 * **Sandbox 模式**：Bash 命令可以在限制文件系统和网络访问的沙箱环境中运行。有关详情，请参阅[沙箱文档](https://code.claude.com/docs/zh-CN/sandboxing.md)。
 
@@ -83,22 +83,20 @@ Claude Code 包含多个安全功能来解决常见问题。有关完整详情�
 **工作原理：**
 
 * **文件系统**：使用操作系统原语（Linux 上的 `bubblewrap`、macOS 上的 `sandbox-exec`）来限制对配置路径的读/写访问
-* **网络**：删除网络命名空间（Linux）或使用 Seatbelt 配置文件（macOS）通过内置代理路由网络流量
+* **网络**：在独立的网络命名空间（Linux）中或在 Seatbelt 配置文件（macOS）下运行命令，并通过允许已配置域的内置代理路由其流量。绕过代理连接外部主机的尝试会失败。
 * **配置**：域和文件系统路径的基于 JSON 的允许列表
 
 **设置：**
 
-```bash theme={null}
-npm install @anthropic-ai/sandbox-runtime
-```
-
-然后创建一个配置文件，指定允许的路径和域。
+有关安装、配置和启动步骤，请参阅[设置并启动运行时](https://code.claude.com/docs/zh-CN/sandbox-environments.md#set-up-and-launch-the-runtime)。
 
 **安全考虑：**
 
 1. **同主机内核**：与 VM 不同，沙箱进程共享主机内核。理论上，内核漏洞可能导致逃逸。对于某些威胁模型，这是可以接受的，但如果您需要内核级隔离，请使用 gVisor 或单独的 VM。
 
-2. **无 TLS 检查**：代理基于客户端提供的主机名将域列入允许列表，不会终止或检查加密流量。在沙箱内运行的代码可能会使用[域前置](https://en.wikipedia.org/wiki/Domain_fronting)或类似技术来访问允许列表外的主机。如果您的威胁模型需要更强的保证，请配置[TLS 终止代理](#traffic-forwarding)。有关更多详情，请参阅[沙箱安全限制](https://code.claude.com/docs/zh-CN/sandboxing.md#security-limitations)。另外，如果代理对允许的域具有宽松凭证，请确保它无法使用该域来触发其他网络请求或泄露数据。
+2. **无 TLS 检查**：默认情况下，代理根据客户端提供的主机名执行允许列表，不会终止或检查加密流量。在沙箱内运行的代码可能会使用[域前置](https://en.wikipedia.org/wiki/Domain_fronting)或类似技术来访问允许列表外的主机。如果您的威胁模型需要更强的保证，请使用可检查流量的 TLS 终止代理，如[流量转发](#traffic-forwarding)所述。有关更多信息，请参阅[沙箱隔离安全限制](https://code.claude.com/docs/zh-CN/sandboxing.md#security-limitations)。
+
+3. **允许域的凭据**：如果 Agent 对允许的域具有宽松凭据，请确保它无法使用该域来触发其他网络请求或泄露数据。
 
 对于许多单开发人员和 CI/CD 用例，sandbox-runtime 以最少的设置显著提高了标准。下面的部分涵盖了需要更强隔离的部署的容器和 VM。
 
@@ -119,7 +117,7 @@ docker run \
   --network none \
   --memory 2g \
   --cpus 2 \
-  --pids-limit 100 \
+  --pids-limit 600 \
   --user 1000:1000 \
   -v /path/to/code:/workspace:ro \
   -v /var/run/proxy.sock:/var/run/proxy.sock:ro \
@@ -135,18 +133,22 @@ docker run \
 | `--security-opt seccomp=...` | 限制可用的系统调用；Docker 的默认值阻止约 44 个，自定义配置文件可以阻止更多 |
 | `--read-only` | 使容器的根文件系统不可变，防止代理持久化更改 |
 | `--tmpfs /tmp:...` | 提供一个可写的临时目录，在容器停止时清除 |
-| `--network none` | 删除所有网络接口；代理通过下面挂载的 Unix 套接字进行通信 |
+| `--network none` | 切断容器与外部网络的连接 |
 | `--memory 2g` | 将内存使用限制为 2GB 以防止资源耗尽 |
-| `--pids-limit 100` | 限制进程数以防止 fork 炸弹 |
+| `--pids-limit 600` | 限制进程和线程数以防止 fork 炸弹 |
 | `--user 1000:1000` | 以非 root 用户身份运行 |
 | `-v ...:/workspace:ro` | 以只读方式挂载代码，以便代理可以分析但不能修改。**避免挂载敏感的主机目录，如 `~/.ssh`、`~/.aws` 或 `~/.config`** |
 | `-v .../proxy.sock:...` | 挂载连接到在容器外运行的代理的 Unix 套接字（见下文） |
 
 **Unix 套接字架构：**
 
-使用 `--network none`，容器根本没有网络接口。代理到达外部世界的唯一方式是通过挂载的 Unix 套接字，该套接字连接到在主机上运行的代理。此代理可以强制执行域允许列表、注入凭证并记录所有流量。
+使用 `--network none` 时，容器内的 DNS 查询或与其他主机的直接连接都会失败。要让容器中的代码访问其他主机，请在主机上运行代理，并将其 Unix 套接字挂载到容器中。如果您将 `ANTHROPIC_BASE_URL` 或 `HTTP_PROXY` 指向 `localhost` 上的某个端口（如[配置 Claude Code 使用代理](#configuring-claude-code-to-use-a-proxy)所示），请在容器内将该端口中继到该套接字。
 
-这与 [sandbox-runtime](https://github.com/anthropics/sandbox-runtime) 使用的架构相同。即使 Agent 通过提示词注入被破坏，它也无法将数据泄露到任意服务器。它只能通过代理进行通信，代理控制哪些域可以访问。有关更多详情，请参阅 [Claude Code 沙箱隔离博客文章](https://www.anthropic.com/engineering/claude-code-sandboxing)。
+您可以设置此代理来强制执行域允许列表、注入凭据并记录所有流量。
+
+> [!WARNING]
+>
+> 在代理的允许列表范围内，Agent 可以向任何允许的域发送数据。请仅允许 Agent 所需的域。
 
 **额外加固选项：**
 

@@ -89,7 +89,7 @@ Anthropic 的官方市场 `claude-plugins-official` 当 `enabledPlugins` 将其�
 * **交互式会话**：Claude Code 仅在贡献者接受该文件夹的[工作区信任对话](https://code.claude.com/docs/zh-CN/permissions.md#what-runs-before-you-trust-a-folder)后注册市场。
 * **[非交互式 `-p` 运行](https://code.claude.com/docs/zh-CN/headless)** ：条目仅在贡献者已交互式接受其信任的文件夹中应用，或您在 `~/.claude.json` 中设置其 `hasTrustDialogAccepted` 标志的文件夹中应用。
 
-市场按相对路径列出的插件在存储库的 `extraKnownMarketplaces` 条目应用后从市场副本加载。市场条目指向外部源（例如插件自己的 GitHub 存储库）的插件不会仅从存储库的设置安装。每个贡献者看到 `Plugin "<name>" is enabled in project settings but isn't installed`，直到他们运行 `claude plugin install <name>@<marketplace> --scope project`，如[安装插件](https://code.claude.com/docs/zh-CN/plugins/install.md)所述。
+在仓库中设置 `enabledPlugins` 不会安装插件。市场注册后，请让每位贡献者运行 `claude plugin install <name>@<marketplace> --scope project`。在他们运行之前，`/plugin` 的 **Errors** 选项卡可能会显示一行以 [`isn't installed here`](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#plugin-is-enabled-in-project-settings-but-isnt-installed-here) 结尾的信息。当本地 `directory` 或 `file` 市场使用[相对路径 `source`](https://code.claude.com/docs/zh-CN/plugins/marketplace-reference#plugin-sources) 列出该插件时，贡献者无需执行安装。
 
 如果您使用带有相对路径的本地 `directory` 或 `file` 源，路径相对于您的存储库的主检出解析。当您从 git worktree 运行 Claude Code 时，路径仍指向主检出，因此所有 worktree 共享相同的市场位置。
 
@@ -103,7 +103,7 @@ Anthropic 的官方市场 `claude-plugins-official` 当 `enabledPlugins` 将其�
 | :- | :- | :- |
 | 终端，交互式 | 在接收设置的每台机器上的会话开始时应用 | `extraKnownMarketplaces` 在信任后应用；`enabledPlugins` 在会话开始时应用 |
 | `-p` 和 CI | 在会话开始时应用，安装在后台运行 | 仅在受信任的文件夹中的 `extraKnownMarketplaces`；`enabledPlugins` 应用 |
-| 云会话 | 在 Anthropic 托管的环境中，仅服务器托管设置到达会话，它在安装插件之前等待它们。MDM 策略和托管设置文件保留在用户的机器上。对于自托管环境，请参阅[策略应用的位置和时间](https://code.claude.com/docs/zh-CN/managed-settings.md#where-and-when-a-policy-applies) | 请参阅[安装插件](https://code.claude.com/docs/zh-CN/plugins/install.md#install-a-plugin)下的**云会话**选项卡 |
+| 云端会话 | 在 Anthropic 托管的环境中，只有服务器托管设置会到达会话，会话在安装插件之前会等待这些设置。MDM 策略和托管设置文件保留在用户的机器上。对于自托管环境，请参阅[策略应用的位置和时间](https://code.claude.com/docs/zh-CN/managed-settings.md#where-and-when-a-policy-applies) | 请参阅[从您的设置中沿用的内容](https://code.claude.com/docs/zh-CN/cloud-environments.md#what-carries-over-from-your-setup) |
 
 在 `-p` 或 CI 运行中，市场和插件在后台安装，因此插件可能在第一轮中丢失。设置 `CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1` 使运行在其第一个查询之前等待安装。
 
@@ -148,7 +148,8 @@ CLAUDE_CODE_PLUGIN_CACHE_DIR=/opt/claude-seed claude plugin install code-formatt
 播种市场遵循这些规则：
 
 * **只读**：Claude Code 从不写入播种并为播种市场强制 `autoUpdate` 关闭。
-* **播种条目优先**：在每次启动时，播种中声明的市场覆盖用户的同名条目。用户使用 `claude plugin disable` 选择退出播种插件，而不是通过删除市场。
+* **从声明的源构建**：如果用户设置或托管设置在 `extraKnownMarketplaces` 中声明了某个播种市场的名称，请从该源和 `ref` 构建播种。
+* **选择退出**：当仓库的设置启用了某个播种插件时，用户使用 `claude plugin disable` 选择退出，而不是通过删除市场。
 * **更新和删除失败**：`claude plugin marketplace update <name>` 和在播种市场上不带 `--scope` 的 `remove` 失败，并显示命名播种目录的消息。
 * **策略仍然适用**：[允许列表和阻止列表](#restrict-what-users-can-install)也检查播种市场的记录源。允许您构建播种的源。
 
@@ -167,7 +168,9 @@ CLAUDE_CODE_PLUGIN_CACHE_DIR=/opt/claude-seed claude plugin install code-formatt
 
 两个列表的执行位置取决于您在哪里设置它们：
 
-* **claude.ai 管理控制台**：Claude Code 在[读取服务器托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md#where-and-when-a-policy-applies)的会话中执行两个列表。claude.ai 也在您组织中的任何人从 git 存储库在 claude.ai 上添加新市场，或从 Claude Desktop 应用中 Code 选项卡之外的**自定义**添加新市场时检查它们。这涵盖成员为自己的账户添加的市场和在[**组织设置 > 插件**](https://claude.ai/admin-settings/plugins)下为整个组织添加的市场。claude.ai 拒绝允许列表不允许或阻止列表命名的存储库。它不重新检查在您设置列表之前在任一位置添加的市场，也不检查上传的插件。
+* **claude.ai 管理控制台**：Claude Code 在[读取服务器托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md#where-and-when-a-policy-applies)的会话中执行两个列表。当您组织中的任何人在 claude.ai 上从 git 仓库添加市场，或从 Desktop 应用中 Code 选项卡之外的 **Customize** 添加市场时，claude.ai 也会检查它们。
+
+  这涵盖成员为自己的账户添加的市场，以及在[**Organization settings > Plugins & skills**](https://claude.ai/admin-settings/skills?tab=marketplaces)下为整个组织添加的市场。claude.ai 拒绝允许列表不接纳或阻止列表指名的仓库。它不会重新检查在您设置列表之前在任一位置添加的市场，也不检查上传的插件。
 * **托管设置文件、OS 级策略或其他托管源**：Claude Code 在读取该源的地方执行两个列表。claude.ai 不读取它。
 
 虽然设置了任何允许列表，或阻止列表命名除[`skills-dir`](#blocklist-with-blockedmarketplaces)之外的任何源，Claude Code 找不到的市场的插件不加载。`/plugin` 为其显示策略错误而不是未找到错误。常见情况是市场的陈旧 `enabledPlugins` 条目，没有人注册。
@@ -185,7 +188,7 @@ CLAUDE_CODE_PLUGIN_CACHE_DIR=/opt/claude-seed claude plugin install code-formatt
 | `disableSideloadFlags` | 在启动时拒绝 `--plugin-dir`、`--plugin-url`、`--agents`、Agent SDK `plugins` 选项以及 [`CLAUDE_CODE_PLUGIN_DIRS`](https://code.claude.com/docs/zh-CN/env-vars#variables) 变量中命名的文件夹，并且也拒绝 `--mcp-config`，除非其中的每个服务器都是进程内 `type: "sdk"` 条目。拒绝 Agent SDK 应用程序在会话中途通过 [`addPlugins`](https://code.claude.com/docs/zh-CN/agent-sdk/typescript#load-more-plugin-folders-with-addplugins) 添加的插件文件夹 | 不限制 `.mcp.json`、`claude mcp add` 或 SDK 提供的服务器。将其与[`allowedMcpServers`](https://code.claude.com/docs/zh-CN/managed-mcp)配对 |
 | `disableCommandPluginSources` | 阻止具有 `command` 源的插件安装、更新或加载。`command` 源是其插件目录通过在机器上运行命令产生的源。未设置时，它采用 `allowManagedHooksOnly` 的值 | 不影响其他源类型 |
 | `allowManagedHooksOnly` | 限制哪些 hooks 运行。请参阅[`allowManagedHooksOnly`](https://code.claude.com/docs/zh-CN/settings-reference#allowmanagedhooksonly) | 不信任用户自己启用的插件中的 hooks |
-| `strictPluginOnlyCustomization` | 阻止不来自插件、托管设置或 Claude Code 内置的 skill、Agent、hook 和 MCP 服务器。它还会阻止 [skill 目录插件](#keep-skills-directory-plugins-loading)加载。设置 `true` 以覆盖所有四种类型，或 `skills`、`agents`、`hooks` 和 `mcp` 值的数组（例如 `["skills", "hooks"]`）以覆盖某些 | 不限制用户安装哪些插件。将其与 `strictKnownMarketplaces` 配对 |
+| `strictPluginOnlyCustomization` | 阻止来自用户和项目源的 skill、Agent、hook 和 MCP 服务器。它还会阻止 [skill 目录插件](#keep-skills-directory-plugins-loading)加载。设置 `true` 以覆盖所有四种类型，或设置 `skills`、`agents`、`hooks` 和 `mcp` 值的数组（例如 `["skills", "hooks"]`）以覆盖其中部分类型 | 不限制用户安装哪些插件，也不拒绝旁加载插件、Agent 和 MCP 服务器的 CLI 标志。将其与 `strictKnownMarketplaces` 和 `disableSideloadFlags` 配对 |
 | `pluginSuggestionMarketplaces` | 其插件可能在终端中显示为安装建议的市场。请参阅[推荐插件](#recommend-plugins) | 不影响内置提示 |
 | `pluginTrustMessage` | 将您的文本附加到 `/plugin` 在插件安装之前显示的信任警告 | 不改变警告自己的文本 |
 | `allowedChannelPlugins` | 替换允许推送频道消息的默认插件列表。需要 `channelsEnabled: true` | 请参阅[限制哪些频道插件可以运行](https://code.claude.com/docs/zh-CN/channels.md#restrict-which-channel-plugins-can-run) |
@@ -336,12 +339,13 @@ skill 目录插件是用户在 `~/.claude/skills/` 或项目的 `.claude/skills/
 
 ### 为用户组分配发布频道
 
-要运行稳定和早期访问频道，托管两个指向相同插件的不同 ref 的市场。然后通过单独的端点托管设置或网关策略为每个用户组提供自己的市场。来自管理控制台的服务器托管设置[应用于组织中的每个用户](https://code.claude.com/docs/zh-CN/server-managed-settings.md#current-limitations)，因此它们无法为不同的组分配不同的设置。
+要运行稳定和早期访问频道，托管两个指向相同插件的不同 ref 的市场。然后通过单独的端点托管设置或网关策略为每个用户组提供自己的市场。在 Enterprise 计划中，您还可以使用来自管理控制台的服务器托管设置。
 
 * 将单独的[端点托管设置](https://code.claude.com/docs/zh-CN/managed-settings.md#delivery-mechanisms)（例如托管设置文件或 MDM 配置文件）部署到每个组的设备。要检查按组文件或配置文件是否在也有组织范围源的设备上应用，请参阅[Claude Code 如何组合托管源](https://code.claude.com/docs/zh-CN/managed-settings.md#precedence-within-the-managed-tier)。
-* 为每个组定义一个[Claude 应用网关策略](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#managed)。网关应用第一个匹配规则适合用户的策略，因此订购策略以便每个用户到达其组的策略。该策略的 `extraKnownMarketplaces` 映射不与任何其他策略的合并，因此在其中列出组需要的每个市场，而不仅仅是其频道市场。
+* 为每个组定义一个[Claude 应用网关策略](https://code.claude.com/docs/zh-CN/claude-apps-gateway-config.md#managed)。默认情况下，网关应用第一个匹配规则适合用户的策略，因此请对策略进行排序，使每个用户都能到达其所在组的策略。该策略的 `extraKnownMarketplaces` 映射不与任何其他策略的合并，因此在其中列出组需要的每个市场，而不仅仅是其频道市场。
+* 在 Enterprise 计划中，在管理控制台中[为每个组提供其自己的配置](https://code.claude.com/docs/zh-CN/server-managed-settings.md#give-groups-different-settings)。组的配置不会与组织范围的配置合并，因此请将该组需要的每个设置都放在该组自己的配置中，包括每个市场。
 
-使用任一机制，稳定组接收此配置：
+使用上述任一机制，稳定组接收此设置：
 
 ```json theme={null}
 {
@@ -363,7 +367,7 @@ skill 目录插件是用户在 `~/.claude/skills/` 或项目的 `.claude/skills/
 
 > [!NOTE]
 >
-> 在云端会话的对话中，无论您是否设置了 `pluginSuggestionMarketplaces`，Claude 都可以建议插件。要关闭这些建议，请参阅[关闭插件建议](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#turn-off-plugin-suggestions)。
+> 在云端会话的对话中或桌面应用的 Code 标签页中，无论您是否设置了 `pluginSuggestionMarketplaces`，Claude 都可以建议插件。要关闭这些建议，请参阅[关闭插件建议](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#turn-off-plugin-suggestions)。
 
 ## 审计和审查
 
@@ -383,7 +387,7 @@ OpenTelemetry 事件和 Analytics API 告诉您您的车队安装和运行什么
 
 这些来自安全审查的请求在当前设置架构中没有专用键。最接近的现有控制是：
 
-* **按用户或按组目标**：每个插件键应用于接收设置的每个用户。服务器托管设置为每个组织交付一个配置。对于按组策略，使用单独的端点托管设置或网关策略，如[为用户组分配发布频道](#assign-release-channels-to-user-groups)下所述。
+* **按用户或按组目标**：每个插件键应用于接收设置的每个用户。对于按组策略，请为每个组交付其各自的设置，如[为用户组分配发布频道](#assign-release-channels-to-user-groups)下所述。
 * **限制允许市场内的条目**：允许列表匹配市场源。要从允许的市场阻止一个插件，在托管 `enabledPlugins` 中将其设置为 `false`。
 * **隐藏 `/plugin`**：没有键禁用命令。最接近的等效项结合仅命名您的市场的允许列表、您提供的插件的托管 `enabledPlugins` 条目和 `disableSideloadFlags`。
 * **通过允许列表门控 `--plugin-dir`**：允许列表不覆盖 `--plugin-dir`。`disableSideloadFlags` 覆盖。

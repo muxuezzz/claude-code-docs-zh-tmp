@@ -18,7 +18,7 @@ Agent SDK 生成并监督一个 `claude` CLI 子进程，该子进程拥有一�
 
 ![请求流：从客户端到您的应用，应用在容器内通过 stdio 生成 claude CLI 子进程；子进程写入本地磁盘并通过 HTTPS 调用 api.anthropic.com](https://mintcdn.com/claude-code/ikqp3_70mqIahteV/images/agent-sdk/hosting-subprocess.svg?fit=max\&auto=format\&n=ikqp3_70mqIahteV\&q=85\&s=9dac857ca9d3b1410c3734900c386004)
 
-一个代理会话映射到一个子进程。运行 N 个并发会话意味着 N 个子进程，每个都有自己的进程树和记录文件。默认情况下，它们都继承您应用程序的工作目录。当会话需要单独的文件系统时，在每个会话的 `query()` 调用选项中传递不同的 `cwd`：
+一个 Agent 会话映射到一个子进程。运行 N 个并发会话意味着 N 个子进程，每个都有自己的进程树和会话记录文件。默认情况下，它们都继承您应用程序的工作目录。当会话需要单独的工作目录时，在每个会话的 `query()` 调用选项中传递不同的 `cwd`：
 
 ```typescript TypeScript theme={null}
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -273,7 +273,7 @@ Anthropic 令牌成本通常比容器基础设施成本高一个数量级或更�
 
 * 在 TypeScript 中传递 `settingSources: []` 或在 Python 中传递 `setting_sources=[]` 以跳过用户、项目和本地设置。
 * 在 `env` 中设置 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`。[自动内存](https://code.claude.com/docs/zh-CN/memory.md#auto-memory)在 `~/.claude/projects/<project>/memory/` 加载到系统提示中，无论 `settingSources` 如何。查看[settingSources 不控制的内容](https://code.claude.com/docs/zh-CN/agent-sdk/claude-code-features.md#what-settingsources-does-not-control)了解无条件加载的其他输入。
-* 将 `CLAUDE_CONFIG_DIR` 指向每个租户目录，以便租户不共享 `~/.claude.json` 全局配置。当每个配置目录服务一个工作目录，并且您不在租户之间共享 [`SessionStore`](https://code.claude.com/docs/zh-CN/agent-sdk/session-storage) 时，您也可以在 `env` 中设置 [`CLAUDE_CODE_PROJECT_DIR_NAME`](https://code.claude.com/docs/zh-CN/sessions#name-the-project-directory-yourself) 以保持其下的记录路径简短。需要 TypeScript Agent SDK v0.3.234 或更高版本，或 Python Agent SDK v0.2.140 或更高版本。
+* 将 `CLAUDE_CONFIG_DIR` 指向每个租户目录，以便租户不共享 `~/.claude.json` 全局配置。当每个配置目录服务一个工作目录，并且您没有传递 [`SessionStore`](https://code.claude.com/docs/zh-CN/agent-sdk/session-storage) 时，您也可以在 `env` 中设置 [`CLAUDE_CODE_PROJECT_DIR_NAME`](https://code.claude.com/docs/zh-CN/sessions#name-the-project-directory-yourself) 以保持其下的会话记录路径简短。需要 TypeScript Agent SDK v0.3.234 或更高版本，或 Python Agent SDK v0.2.140 或更高版本。
 * 使用每个租户工作目录。在每个 `query()` 调用上显式传递 `cwd`。
 * 在您的代理处应用每个租户出站规则，例如不同的出站 IP、凭证或域名白名单，以便受损的租户无法通过另一个租户的出站策略泄露数据。
 

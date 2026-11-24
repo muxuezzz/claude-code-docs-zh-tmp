@@ -371,5 +371,5 @@ asyncio.run(main())
 
 * [Agent SDK 参考 - TypeScript](https://code.claude.com/docs/zh-CN/agent-sdk/typescript.md)：TypeScript SDK 的选项、类型和工具架构，包括 Task 工具输入和输出类型
 * [Agent SDK 参考 - Python](https://code.claude.com/docs/zh-CN/agent-sdk/python.md)：Python SDK 的选项、类型和工具文档
-* [流式输入](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)：两种输入模式，以及何时使用流式输入而不是这些示例使用的单次调用
+* [向正在运行的 Agent 发送消息](https://code.claude.com/docs/zh-CN/agent-sdk/streaming-vs-single-mode.md)：使用流式输入代替这些示例所使用的单次调用
 * [为 Claude 提供自定义工具](https://code.claude.com/docs/zh-CN/agent-sdk/custom-tools.md)：使用 SDK 的进程内 MCP 服务器定义您自己的工具

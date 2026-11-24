@@ -32,9 +32,7 @@
 
 要固定 GitHub 或 git-URL marketplace 的分支或标签，告诉用户追加 `#<ref>`，如 `your-org/your-marketplace#stable`。[插件命令参考](https://code.claude.com/docs/zh-CN/plugins/cli-reference.md#plugin-marketplace-add) 列出了命令接受的每种形式。
 
-成功添加会打印 `Successfully added marketplace: your-marketplace`。Claude Code 从你的 `marketplace.json` 中的 `name` 字段获取该名称，而不是从仓库名称。
-
-用户随后通过其条目的 `name` 和 marketplace 的 `name` 安装插件，如 `/plugin install code-formatter@your-marketplace`。
+用户通过条目的 `name` 和您的 `marketplace.json` 中的顶层 `name` 安装插件，如 `/plugin install code-formatter@your-marketplace`。
 
 ### 为仓库中的每个人注册 marketplace
 
@@ -42,7 +40,7 @@
 
 ### 避免在 URL 托管的 marketplace 中使用相对路径条目
 
-当用户将你的 marketplace 添加为裸 `marketplace.json` URL 时，Claude Code 仅下载该文件。你的 `plugins` 数组中的条目，其 `source` 是相对路径（如 `./plugins/formatter`），则在安装时会失败，出现 [`其 marketplace 条目路径不会停留在 marketplace 目录内`](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#plugins-with-relative-paths-fail-in-url-based-marketplaces)。给每个条目一个可以独立获取的源，如 `github` 仓库或 `archive` URL，或在 git 仓库中托管 marketplace，以便 Claude Code 克隆整个树。
+当用户将你的 marketplace 添加为裸 `marketplace.json` URL 时，Claude Code 仅下载该文件。你的 `plugins` 数组中的条目，其 `source` 是相对路径（如 `./plugins/formatter`），则在安装时会失败，出现 [`its marketplace entry path does not stay inside the marketplace directory`](https://code.claude.com/docs/zh-CN/plugins/troubleshooting#plugins-with-relative-paths-fail-in-url-based-marketplaces)。给每个条目一个可以独立获取的源，如 `github` 仓库或 `archive` URL，或在 git 仓库中托管 marketplace，以便 Claude Code 克隆整个树。
 
 ### 保持托管文件的下载限制内
 
@@ -123,7 +121,7 @@ ln -s ../../shared-plugin/skills/foo ./skills/foo
 
 这些条目源不需要 git 账户：
 
-* **`archive`**：通过 HTTPS 下载的 zip。用户既不需要 `git` 也不需要账户，只需要对 URL 的网络访问。需要 Claude Code v2.1.224 或更高版本。用 `sha256` 固定每个存档，以便 Claude Code 拒绝更改的下载。要随下载发送凭证，请参阅 [认证存档下载](#authenticate-archive-downloads)。
+* **`archive`**：通过 HTTPS 下载的 zip。用户既不需要 `git` 也不需要账户，只需能够通过网络访问该 URL。请使用 `sha256` 固定每个存档，以便 Claude Code 拒绝被更改的下载内容。要在下载时发送凭据，请参阅[对存档下载进行身份验证](#authenticate-archive-downloads)。
 * **公共 git 仓库**：当条目给出 `https://` URL 时，Claude Code 会通过 HTTPS 克隆公共 `url` 或 `git-subdir` 源，无需凭据。对于 `github` 源，或写成 `owner/repo` 形式的 `git-subdir` 源，请告知没有 GitHub SSH 密钥的用户设置 `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`。
 
 即使在没有 SSH 密钥的机器上从 shell 运行 `claude plugin install` 不设置该变量也能成功，也请在您的说明中保留 `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`。对于 `github` 源，该命令可能会自行回退到 HTTPS，并输出 `SSH not configured, cloning via HTTPS`。在会话内通过 `/plugin` 进行的安装以及插件更新不会回退，因此如果不设置该变量，没有 GitHub SSH 密钥的用户会遇到失败。
@@ -176,7 +174,7 @@ ln -s ../../shared-plugin/skills/foo ./skills/foo
 
 后台自动更新默认对你的 marketplace 关闭，`marketplace.json` 没有字段来打开它。用户或管理员打开它：
 
-* **告诉用户打开它**：每个用户进入 `/plugin` 中的 **Marketplaces**，选择你的 marketplace，并选择 **启用自动更新**。
+* **告诉用户打开它**：每个用户进入 `/plugin` 中的 **Marketplaces**，选择您的市场，并打开自动更新。
 * **要求管理员设置它**：如果管理员在托管设置中的你的 marketplace 的 `extraKnownMarketplaces` 条目上设置 `"autoUpdate": true`，它对接收这些设置的每个人都打开。请参阅 [设置更新策略](https://code.claude.com/docs/zh-CN/plugins/org.md#set-update-policy)。
 
 没有自动更新，用户在会话中运行 `/plugin marketplace update <name>` 或在 shell 中运行 `claude plugin update <plugin>@<name>` 时接收你的更改。
@@ -198,7 +196,7 @@ ln -s ../../shared-plugin/skills/foo ./skills/foo
 
 ### 将用户保持在一个版本上
 
-一个 marketplace 一次为每个插件提供一个版本，所以你通过选择每个条目指向什么来将用户保持在一个版本上：
+要将用户保持在某一版本，请选择他们获取的 ref、提交或标签：
 
 * **插件条目上的 `ref` 和 `sha`**：`ref` 命名分支或标签，`sha` 为 `github`、`url` 或 `git-subdir` 源命名提交。请参阅 [插件源](https://code.claude.com/docs/zh-CN/plugins/marketplace-reference.md#plugin-sources)。
 * **添加命令上的 `#<ref>`**：添加 `your-org/your-marketplace#stable` 的用户获得该目录的分支或标签。对于两条发布线同时进行，请参阅 [运行发布渠道](#run-release-channels)。
@@ -219,7 +217,7 @@ ln -s ../../shared-plugin/skills/foo ./skills/foo
 
 ## 运行发布渠道
 
-要提供稳定和早期访问轨道，托管两个 marketplace，其条目指向同一插件的不同 ref，并让每个用户添加他们想要的。Claude Code 没有发布渠道概念，一个 marketplace 一次为每个插件提供一个版本。
+要提供稳定和早期访问轨道，请托管两个市场，其条目指向同一插件的不同 ref，并让每个用户添加他们想要的那个。
 
 给两个 `marketplace.json` 文件不同的 `name` 值。Claude Code 通过其 `name` 识别 marketplace，所以用户一次不能有两个具有相同名称的 marketplace 注册。
 
@@ -293,7 +291,7 @@ ln -s ../../shared-plugin/skills/foo ./skills/foo
 
 1. 比较用户从你的 marketplace 安装的内容与条目和 `renames` 映射，并将既不列出也不重命名的任何插件视为已删除。
 2. 从用户、项目和本地范围卸载每个已删除的插件。仅托管设置安装的插件保持原位。
-3. 在 `/plugin` 中的 **Flagged** 标题下列出每个已删除的插件，状态为 `Removed from marketplace`。
+3. 在 `/plugin` 的 **Installed** 标签页中的 **Needs attention** 下列出每个已卸载的插件。
 
 ## 认证存档下载
 

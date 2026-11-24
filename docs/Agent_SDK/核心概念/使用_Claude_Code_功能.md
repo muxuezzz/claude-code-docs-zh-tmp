@@ -125,7 +125,7 @@ for await (const message of query({
 
 Skills 是 markdown 文件，为您的代理提供专业知识和可调用的工作流。与 `CLAUDE.md`（每个会话都加载）不同，skills 按需加载。代理在启动时接收 skill 描述，并在相关时加载完整内容。
 
-Skills 通过 `settingSources` 从文件系统中发现。当 `query()` 上的 `skills` 选项被省略时，发现的用户和项目 skills 会被启用，Skill 工具可用，与 CLI 行为相匹配。要控制启用哪些 skills，请将 `skills` 作为 `"all"`、skill 名称列表或 `[]` 传递以禁用所有。当设置 `skills` 时，SDK 会自动将 Skill 工具添加到 `allowedTools`。如果您还传递了显式的 `tools` 列表，请在该列表中包含 `"Skill"`，以便 Claude 可以调用 skills。
+skill 通过 `settingSources` 从文件系统中发现。当 `query()` 上的 `skills` 选项被省略时，发现的用户和项目 skill 会被启用，Skill 工具可用，与 CLI 行为相匹配。要控制主 Agent 可以调用哪些 skill，请将 `skills` 传递为 `"all"`、skill 名称列表，或传递 `[]` 以禁用所有 skill。如果您还传递了 `tools` 列表，请在其中包含 `"Skill"`，以便 Claude 可以调用 skill。
 
 ```python Python theme={null}
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
@@ -180,7 +180,7 @@ SDK 支持两种定义 hooks 的方式，它们并行运行：
 * **文件系统 hooks：** 在 `settings.json` 中定义的 shell 命令，当 `settingSources` 包含相关源时加载。这些与您为 [交互式 Claude Code 会话](https://code.claude.com/docs/zh-CN/hooks-guide.md) 配置的 hooks 相同。
 * **编程 hooks：** 直接传递给 `query()` 的回调函数。这些在您的应用程序进程中运行，可以返回结构化决策。请参阅 [使用 hooks 控制执行](https://code.claude.com/docs/zh-CN/agent-sdk/hooks.md)。
 
-Hook 回调接收工具输入并返回决策字典。返回 `{}` 意味着允许工具继续。要阻止执行，返回一个 `hookSpecificOutput` 对象，其中包含 `permissionDecision: "deny"` 和 `permissionDecisionReason`。原因会作为工具结果发送给 Claude。请参阅 [hooks 指南](https://code.claude.com/docs/zh-CN/agent-sdk/hooks.md) 了解完整的回调签名和返回类型。
+Hook 回调接收工具输入并返回决策字典。对于 `PreToolUse`，返回 `{}` 表示不做任何决策，此时将应用正常的 [权限流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)。要阻止执行，返回一个 `hookSpecificOutput` 对象，其中包含 `permissionDecision: "deny"` 和 `permissionDecisionReason`。原因会作为工具结果发送给 Claude。请参阅 [hook 指南](https://code.claude.com/docs/zh-CN/agent-sdk/hooks.md) 了解完整的回调签名和返回类型。
 
 ```python Python theme={null}
 from claude_agent_sdk import query, ClaudeAgentOptions, HookMatcher, ResultMessage
@@ -201,7 +201,7 @@ async def audit_bash(input_data, tool_use_id, context):
                 "permissionDecisionReason": "Destructive command blocked",
             }
         }
-    return {}  # Empty dict: allow the tool to proceed
+    return {}  # Empty dict: no decision, normal permissions apply
 
 
 # Filesystem hooks from .claude/settings.json run automatically
@@ -243,7 +243,7 @@ const auditBash = async (input: HookInput): Promise<HookJSONOutput> => {
       },
     };
   }
-  return {}; // Empty object: allow the tool to proceed
+  return {}; // Empty object: no decision, normal permissions apply
 };
 
 // Filesystem hooks from .claude/settings.json run automatically

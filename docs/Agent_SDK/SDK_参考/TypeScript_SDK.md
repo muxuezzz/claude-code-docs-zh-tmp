@@ -52,7 +52,10 @@ for await (const message of query({
 
 如果您的应用程序将 Agent SDK 与其自己的依赖项一起捆绑，请从 `@anthropic-ai/claude-agent-sdk/core` 而不是包根目录导入。`/core` 入口需要 TypeScript Agent SDK v0.3.282 或更高版本，其类型需要 TypeScript 5.0 或更高版本。
 
-`/core` 入口导出与根入口相同的 `query()`、`startup()`、`tool()`、`createSdkMcpServer()` 和 `resolveSettings()`，以及重命名、标记和删除会话的函数、`AbortError`、运行时常量和每种类型。它不添加自己的名称。为了保持应用程序加载的代码较小，`/core` 省略了一些根导出，包括 `prewarm()`、`InMemorySessionStore` 类以及列出、读取、分叉、导入和总结会话的辅助函数。如果您需要其中之一，请改用根入口。
+为了保持应用程序加载的代码较小，`/core` 入口省略了一些根导出：
+
+* **导出**：与根入口相同的 `query()`、`startup()`、[`prewarm()`](#prewarm)、`tool()`、`createSdkMcpServer()` 和 `resolveSettings()`，以及重命名、标记和删除会话的函数、`AbortError`、运行时常量和每种类型。从 `/core` 导入 alpha 版 `prewarm()` 需要 Agent SDK v0.3.314 或更高版本。
+* **省略**：包括 `InMemorySessionStore` 类以及列出、读取、分叉、导入和总结会话的辅助函数在内的根导出。如果您需要其中之一，请改用根入口。
 
 根入口内联了自己的 `zod` 和 `@modelcontextprotocol/sdk` 副本。`/core` 入口从您的 `node_modules` 按照 Agent SDK 的 `peerDependencies` 声明的范围导入它们，因此已经包含它们的捆绑包不会携带第二个副本。在给定的进程中从根或 `/core` 导入，而不是两者：它们是单独的捆绑包，加载两者会给您两个 Agent SDK 类和状态的副本。
 
@@ -101,6 +104,13 @@ function startup(params?: {
 | `options` | [`Options`](#options) | 可选的配置对象。与 `query()` 的 `options` 参数相同 |
 | `initializeTimeoutMs` | `number` | 等待子进程初始化的最长时间（毫秒）。默认为 `60000`。如果初始化未能在此时间内完成，promise 将以超时错误被拒绝 |
 
+仅当未设置 `initializeTimeoutMs` 时，运行缓慢的 [SessionStart](https://code.claude.com/docs/zh-CN/hooks.md#sessionstart) 和 [Setup](https://code.claude.com/docs/zh-CN/hooks.md#setup) [命令 hook](https://code.claude.com/docs/zh-CN/hooks.md#command-hook-fields) 才会获得额外时间：
+
+* **如果您不设置该值：** 这些 hook 运行所花费的时间不计入 60 秒的默认值，总计最多 10 分钟，因此初始化最多可能需要 11 分钟。
+* **如果您设置了某个值（包括 `60000`）：** 该值即为上限，即使 hook 正在运行也是如此。
+
+额外时间需要 TypeScript Agent SDK v0.3.304 或更高版本。
+
 #### 返回值
 
 返回一个 `Promise<`[`WarmQuery`](#warmquery)`>`，在子进程启动并完成初始化握手后解析。
@@ -125,9 +135,9 @@ for await (const message of warm.query("What files are here?")) {
 
 ### `prewarm()`
 
-*Alpha。* 在您知道某个 Claude Code 进程将服务于哪个会话之前，先将其作为备用进程启动，以便稍后通过 [`claim()`](#spareprocess) 将其绑定到会话。适用于在用户选择文件夹之前就已启动的应用程序。需要 TypeScript Agent SDK v0.3.282 或更高版本。
+*Alpha。* 在您知道某个 Claude Code 进程将服务于哪个会话之前，先将其作为备用进程启动，以便稍后通过 [`claim()`](#spareprocess) 将其绑定到会话。需要 TypeScript Agent SDK v0.3.282 或更高版本。
 
-`prewarm()` 完成与 [`startup()`](#startup) 相同的初始化握手；如果您设置了 `options.cwd`，进程将在该目录中等待，否则将在您的 Claude Code 配置目录下的一个私有临时目录中等待。会话的工作目录、其 `SessionStart` hook、其 stdio MCP 服务器以及其 CLAUDE.md 和 git 上下文都要等到认领时才会确定。备用进程在等待期间大约占用 230 到 260 MB 内存。如果您的 [`spawnClaudeCodeProcess`](#options) 在另一台机器或容器中运行 Claude Code，请将 `options.cwd` 设置为该环境中存在的目录，供备用进程在其中等待。
+当您的应用程序在用户选择文件夹之前就已启动时，请使用 `prewarm()`。
 
 ```typescript theme={null}
 function prewarm(params?: {
@@ -136,7 +146,31 @@ function prewarm(params?: {
 }): Promise<SpareProcess>;
 ```
 
-`options` 和 `initializeTimeoutMs` 的含义与 `startup()` 中相同，只是 `options.cwd` 仅设置备用进程等待所在的目录。进程完成初始化握手后，promise 将解析为一个 [`SpareProcess`](#spareprocess)。如果 `options` 设置了 `resume`、`continue` 或 `forkSession`，`prewarm()` 会抛出错误，因为备用进程尚无会话。认领时无法设置的所有内容，例如 `mcpServers`、`hooks`、`canUseTool`、`settingSources`、`systemPrompt` 和 `plugins`，在备用进程的整个生命周期内都是固定的，因此请为每组不同的此类选项保留一个备用进程，并在这些选项发生变化时重新预热。
+#### 参数
+
+| 参数 | 类型 | 描述 |
+| :- | :- | :- |
+| `options` | [`Options`](#options) | 可选的配置对象，与 `startup()` 接受的类型相同 |
+| `initializeTimeoutMs` | `number` | 等待备用进程初始化的最长时间（毫秒）。默认为 `60000`。如果初始化未能在此时间内完成，promise 将以超时错误被拒绝 |
+
+#### 返回值
+
+返回一个 `Promise<`[`SpareProcess`](#spareprocess)`>`，在备用进程可供认领时解析。
+
+如果您在 `options` 中请求 `resume`、`continue` 或 `forkSession`，该 promise 将被拒绝，因为备用进程尚无会话。
+
+#### 备用进程的工作方式
+
+* **备用进程在何处等待：** 在您的 Claude Code 配置目录下的一个私有临时目录中；如果您在 `prewarm()` 中设置了 `options.cwd`，则在该目录中等待。
+* **如果您的 [`spawnClaudeCodeProcess`](#options) 在另一台机器或容器中运行 Claude Code：** 请向 `prewarm()` 传入在该环境中存在的 `options.cwd`，因为默认的临时目录是在您的机器上创建的。
+* **内存：** 每个备用进程在等待期间大约占用 230 到 260 MB 内存。
+* **在您调用 `claim()` 之前不会发生的操作：**
+  * 切换到您传给 `claim()` 的工作目录
+  * 运行 SessionStart hook
+  * 启动 stdio MCP 服务器
+  * 加载 CLAUDE.md 和 git 上下文
+* **认领时无法更改的内容：** `mcpServers`、`hooks`、`canUseTool`、`settingSources` 和 `plugins` 等选项会保留其在 `prewarm()` 中的值。[`SpareProcess`](#spareprocess) 列出了认领时可以设置的内容。
+* **如果不同会话需要为这些选项使用不同的值：** 请为每组值分别保留一个备用进程。
 
 #### 示例
 
@@ -488,6 +522,17 @@ console.log(`Cleanup period: ${effective.cleanupPeriodDays} days`);
 console.log(`Set by: ${provenance.cleanupPeriodDays?.source}`);
 ```
 
+### `matchDeniedModels()`
+
+报告 `models` 中哪些模型会被 [`deniedModels`](https://code.claude.com/docs/zh-CN/settings-reference#deniedmodels) 列表阻止。`denied` 为每个模型保存一个布尔值，当某个条目阻止该模型时为 `true`。`warnings` 会标记被忽略的输入，以及实际阻止范围比表面看起来更多或更少的条目。`false` 并不意味着该模型被允许，因为 Claude Code 还会检查别名和模型覆盖。此函数处于 alpha 阶段，需要 Agent SDK v0.3.323 或更高版本。
+
+```typescript theme={null}
+function matchDeniedModels(
+  models: readonly string[],
+  deniedModels: readonly string[] | undefined
+): Promise<{ denied: boolean[]; warnings: string[] }>;
+```
+
 ## 类型
 
 ### `Options`
@@ -550,10 +595,10 @@ console.log(`Set by: ${provenance.cleanupPeriodDays?.source}`);
 | `sessionStoreFlush` | `'batched' \| 'eager'` | `'batched'` | *Alpha。* `sessionStore` 的刷新模式。未设置 `sessionStore` 时忽略 |
 | `settings` | `string \| Settings` | `undefined` | 内联[设置](https://code.claude.com/docs/zh-CN/settings.md)对象、设置文件路径或内联 JSON 字符串。填充[优先级顺序](https://code.claude.com/docs/zh-CN/settings.md#settings-precedence)中的标志设置层。可在运行时通过 [`applyFlagSettings()`](#applyflagsettings) 更改 |
 | `settingSources` | [`SettingSource`](#settingsource)`[]` | CLI 默认值（所有来源） | 控制要加载哪些文件系统设置。传递 `[]` 可禁用用户、项目和本地设置。[端点托管策略](https://code.claude.com/docs/zh-CN/managed-settings.md#delivery-mechanisms)无论如何都会加载；当会话在[符合条件的配置](https://code.claude.com/docs/zh-CN/server-managed-settings.md#platform-availability)上使用组织凭据进行身份验证时，会获取服务器托管设置。请参阅[使用 Claude Code 功能](https://code.claude.com/docs/zh-CN/agent-sdk/claude-code-features.md#what-settingsources-does-not-control) |
-| `skills` | `string[] \| 'all'` | `undefined` | 会话可用的 skill。传递 `'all'` 以启用所有发现的 skill，或传递 skill 名称列表。仅传递精确名称。在 Agent SDK v0.3.221 或更高版本中，SDK 会在启动 Claude Code 进程之前以错误拒绝格式错误和通配符形式的名称。设置后，SDK 会自动将 Skill 工具添加到 `allowedTools`。如果您同时传递了 `tools`，请在该列表中包含 `'Skill'`。请参阅 [Skills](https://code.claude.com/docs/zh-CN/agent-sdk/skills.md) |
+| `skills` | `string[] \| 'all'` | `undefined` | 限制主 Agent 的 skill。传递 `'all'` 可启用所有已发现的 skill，或传递 skill 名称列表。仅传递确切名称。在 Agent SDK v0.3.221 或更高版本中，SDK 会在启动 Claude Code 进程之前以错误拒绝格式错误和通配符形式的名称。如果您同时传递了 `tools`，请在该列表中包含 `'Skill'`。请参阅 [Skills](https://code.claude.com/docs/zh-CN/agent-sdk/skills.md) |
 | `spawnClaudeCodeProcess` | `(options: SpawnOptions) => SpawnedProcess` | `undefined` | 用于生成 Claude Code 进程的自定义函数。用于在虚拟机、容器或远程环境中运行 Claude Code |
 | `stderr` | `(data: string) => void` | `undefined` | stderr 输出的回调 |
-| `strictMcpConfig` | `boolean` | `false` | 仅使用通过 `mcpServers` 传递的服务器，忽略项目 `.mcp.json`、用户设置、插件提供的 MCP 服务器以及 [claude.ai 连接器](https://code.claude.com/docs/zh-CN/mcp.md#use-mcp-servers-from-claude-ai) |
+| `strictMcpConfig` | `boolean` | `false` | 使用 `mcpServers` 中传递的服务器，并忽略项目 `.mcp.json`、用户设置、插件提供的 MCP 服务器以及 [claude.ai 连接器](https://code.claude.com/docs/zh-CN/mcp.md#use-mcp-servers-from-claude-ai) |
 | `systemPrompt` | `string \| string[] \| { type: 'custom'; prompt: string \| string[]; snapshot?: boolean } \| { type: 'preset'; preset: 'claude_code'; append?: string; excludeDynamicSections?: boolean; snapshot?: boolean }` | `undefined`（最简提示词） | 系统提示词配置。传递字符串以使用自定义提示词，或传递 `{ type: 'preset', preset: 'claude_code' }` 以使用 Claude Code 的系统提示词。传递字符串数组，并在静态部分与每请求部分之间放置导出的 `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` 常量，即可[缓存自定义提示词的静态部分](https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md#cache-the-static-part-of-a-custom-prompt)。使用预设对象形式时，添加 `append` 以附加额外指令进行扩展，并设置 `excludeDynamicSections: true` 将每会话上下文移到第一条用户消息中，以[在不同机器间更好地复用提示缓存](https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md#improve-prompt-caching-across-users-and-machines)。设置 `snapshot: false` 可在每次请求时重新构建提示词，而不是[复用会话在首次请求时记录的提示词](https://code.claude.com/docs/zh-CN/agent-sdk/modifying-system-prompts.md#change-the-prompt-of-an-existing-session)。要在自定义提示词上设置 `snapshot`，请使用 `{ type: 'custom', prompt }` 形式。`{ type: 'custom' }` 形式和 `snapshot` 字段需要 TypeScript Agent SDK v0.3.257 或更高版本 |
 | `taskBudget` | `{ total: number }` | `undefined` | *Alpha。* API 端的任务预算（以 token 计）。设置后，模型会被告知其剩余的 token 预算，以便控制工具使用节奏并在达到限制前收尾 |
 | `thinking` | [`ThinkingConfig`](#thinkingconfig) | 对支持的模型为 `{ type: 'adaptive' }` | 控制 Claude 的思考/推理行为。有关选项，请参阅 [`ThinkingConfig`](#thinkingconfig) |
@@ -661,7 +706,7 @@ interface Query extends AsyncGenerator<SDKMessage, void> {
 | `rewindFiles(userMessageId, options?)` | 将文件恢复到指定用户消息时的状态。传递 `{ dryRun: true }` 可预览更改。需要 `enableFileCheckpointing: true`。请参阅[文件检查点功能](https://code.claude.com/docs/zh-CN/agent-sdk/file-checkpointing.md) |
 | `setPermissionMode()` | 更改权限模式（仅在流式输入模式下可用） |
 | `setModel()` | 更改模型（仅在流式输入模式下可用）。传递 `undefined` 或字符串 `"default"` 会重置为 [Claude Code 的默认模型](https://code.claude.com/docs/zh-CN/model-config.md)。如果新模型不支持自动模式，处于 `auto` 模式的会话会[切换到 `default` 模式](https://code.claude.com/docs/zh-CN/agent-sdk/permissions#auto-mode-auto) |
-| `setMaxThinkingTokens()` | *已弃用：* 请改用 `thinking` 选项。更改最大思考 token 数。传递 `null` 会将思考重置为会话默认值：会话中途的覆盖会被清除，对于禁用了思考的会话，思考保持关闭 |
+| `setMaxThinkingTokens()` | *已弃用：* 请改用 `thinking` 选项。更改最大思考 token 数。传递 `null` 可撤销之前的调用，并恢复会话启动时使用的 `thinking` 或 `maxThinkingTokens` 选项 |
 | `applyFlagSettings(settings)` | 在运行时将设置合并到会话的标志设置层（仅在流式输入模式下可用）。请参阅 [`applyFlagSettings()`](#applyflagsettings) |
 | `updateSettings(source, settings)` | 将一个允许列表中的键写入项目的本地设置文件或您的用户设置文件，使该值在之后的会话中保持有效。请参阅 [`updateSettings()`](#updatesettings)。需要 TypeScript SDK v0.3.257 或更高版本，其捆绑了 Claude Code v2.1.257 |
 | `initializationResult()` | 返回完整的初始化结果，包括支持的命令、模型、账户信息和输出样式配置 |
@@ -1249,12 +1294,12 @@ type AgentDefinition = {
 | `tools` | 否 | 允许的工具名称数组。如果省略，则继承所有[子代理可用的工具](https://code.claude.com/docs/zh-CN/sub-agents.md#available-tools)。要将 Skills 预加载到 Agent 的上下文中，请使用 `skills` 字段，而不是在此处列出 `'Skill'` |
 | `disallowedTools` | 否 | 要为此 Agent 明确禁止的工具名称数组。也接受 MCP 服务器级别的模式：`mcp__server` 或 `mcp__server__*` 会移除该服务器的所有工具，`mcp__*` 会移除任何服务器的所有 MCP 工具 |
 | `prompt` | 是 | Agent 的系统提示词 |
-| `model` | 否 | 此 Agent 的模型覆盖。接受 `'fable'`、`'opus'`、`'sonnet'`、`'haiku'`、`'inherit'` 等别名，或完整的模型 ID。`'inherit'` 使用主模型。省略时，Claude Code 会按照[子代理模型顺序](https://code.claude.com/docs/zh-CN/sub-agents.md#choose-a-model)选择模型 |
-| `mcpServers` | 否 | 此 Agent 的 MCP 服务器规范 |
+| `model` | 否 | 此 Agent 的模型覆盖。接受别名（例如 `'fable'`、`'opus'`、`'sonnet'`、`'haiku'`、`'inherit'`）或完整的模型 ID。`'inherit'` 使用生成此 Agent 的 Agent 所用的模型。当您省略 `model` 时，Claude Code 会按照[子代理模型顺序](https://code.claude.com/docs/zh-CN/sub-agents.md#choose-a-model)选择模型 |
+| `mcpServers` | 否 | 此 Agent 的 MCP 服务器规范。请将 [`createSdkMcpServer()`](#createsdkmcpserver) 服务器放在 [`Options`](#options) 的 `mcpServers` 字段中。如果您改为在此字段中传递服务器对象，TypeScript Agent SDK v0.3.327 或更高版本会忽略它并发出 `CLAUDE_SDK_AGENT_IN_PROCESS_SERVER` 警告 |
 | `skills` | 否 | 要预加载到 Agent 上下文中的 skill 名称数组 |
 | `initialPrompt` | 否 | 当此 Agent 作为主线程 Agent 运行时，作为第一轮用户输入自动提交 |
 | `maxTurns` | 否 | 停止前的最大 agentic 轮次数（API 往返次数） |
-| `autoCompactWindow` | 否 | 当此 Agent 作为子代理运行时，将其[自动压缩窗口](https://code.claude.com/docs/zh-CN/sub-agents.md#subagent-auto-compact-window)降低到 `100000` 至 `1000000` 之间的 token 数。需要 TypeScript Agent SDK v0.3.296 或更高版本 |
+| `autoCompactWindow` | 否 | 当此 Agent 作为子代理运行时，将其[自动压缩窗口](https://code.claude.com/docs/zh-CN/sub-agents.md#subagent-auto-compact-window)降低到 `100000` 或更多的 token 数。需要 TypeScript Agent SDK v0.3.296 或更高版本 |
 | `background` | 否 | 被调用时将此 Agent 作为非阻塞的后台任务运行 |
 | `omitClaudeMd` | 否 | 不将用户、项目和本地 CLAUDE.md 文件纳入此 Agent 的初始上下文；托管策略文件仍会加载。适用于从 Agent 工具提示词中获取所需全部信息的 Agent。当此 Agent 作为主线程 Agent 运行时忽略。需要 TypeScript Agent SDK v0.3.271 或更高版本 |
 | `memory` | 否 | 此 Agent 的记忆来源：`'user'`、`'project'` 或 `'local'` |
@@ -1328,7 +1373,7 @@ const result = query({
 2. 项目设置（`.claude/settings.json`）
 3. 用户设置（`~/.claude/settings.json`）
 
-`agents`、`allowedTools` 和 `settings` 等编程选项会覆盖用户、项目和本地文件系统设置。如果托管策略设置和编程选项设置了相同的键，则以托管值为准，但存在例外，例如传给 [`applyFlagSettings()`](#applyflagsettings) 的 `effortLevel`。
+您在 `allowedTools` 或 `settings` 中传入的权限规则会[添加到](https://code.claude.com/docs/zh-CN/settings.md#lists-merge-instead-of-overriding)这些文件的规则中。对于大多数单值设置，Claude Code 会优先采用 `settings` 中的值而非这些文件中的值。如果托管策略设置和编程选项设置了同一个键，则以托管值为准，但也有例外，例如传给 [`applyFlagSettings()`](#applyflagsettings) 的 `effortLevel`。
 
 ### `PermissionMode`
 
@@ -1337,8 +1382,8 @@ type PermissionMode =
   | "default" // Standard permission behavior
   | "acceptEdits" // Auto-accept file edits
   | "bypassPermissions" // Bypass permission checks; explicit ask rules still prompt
-  | "plan" // Planning mode - explore without editing
-  | "dontAsk" // Don't prompt for permissions, deny if not pre-approved
+  | "plan" // Planning mode - Claude explores and plans
+  | "dontAsk" // Deny calls that would otherwise prompt
   | "auto"; // A model classifier reviews actions such as shell commands and network requests
 ```
 
@@ -1346,7 +1391,12 @@ type PermissionMode =
 
 用于控制工具使用的自定义权限函数类型。
 
-该函数是 SDK 中交互式权限提示的替代方案：仅当[权限评估流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)的结果为提示时才会调用它。已被 `allowedTools` 条目、设置中的允许规则或权限模式（例如 `acceptEdits` 或 `bypassPermissions`）批准的工具调用永远不会调用它。要对每个工具调用进行把关，请改用 [`PreToolUse` hook](https://code.claude.com/docs/zh-CN/agent-sdk/hooks)。
+该函数取代交互式权限提示。当[权限评估流程](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)最终需要提示时，SDK 会调用 `canUseTool`。通过以下任一方式批准的调用会直接运行，而不会调用 `canUseTool`：
+
+* 由 `allowedTools` 条目或设置中的 allow 规则批准的调用
+* 由权限模式批准的调用，例如 `acceptEdits` 模式下的文件编辑
+
+要检查这些调用，请使用 [`PreToolUse` hook](https://code.claude.com/docs/zh-CN/agent-sdk/hooks)，它也会针对这些调用运行。
 
 允许规则不会预先批准[任何模式都不会自动批准的操作](https://code.claude.com/docs/zh-CN/permission-modes.md#actions-no-mode-auto-approves)；有关其中哪些操作会到达回调，以及在 `dontAsk` 和 `auto` 模式下会发生什么，请参阅[权限的评估方式](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)。
 
@@ -1372,7 +1422,7 @@ type CanUseTool = (
 | 选项 | 类型 | 描述 |
 | :- | :- | :- |
 | `signal` | `AbortSignal` | 当操作应被中止时发出信号 |
-| `suggestions` | [`PermissionUpdate`](#permissionupdate)`[]` | 建议的权限更新，使用户不会因此工具再次收到提示。Bash 提示包含一个[目标](#permissionupdatedestination)为 `localSettings` 的建议，因此在 `updatedPermissions` 中返回它会将规则写入 `.claude/settings.local.json`，并在会话之间持久保留。 |
+| `suggestions` | [`PermissionUpdate`](#permissionupdate)`[]` | 建议的权限更新，使用户不会再次被询问此工具的权限。Bash 提示可以包含一个 [destination](#permissionupdatedestination) 为 `localSettings` 的建议，因此在 `updatedPermissions` 中返回它会将规则写入 `.claude/settings.local.json`，并在各会话之间保留。 |
 | `blockedPath` | `string` | 触发权限请求的文件路径（如适用） |
 | `mcpServer` | `{ name: string; source: string }` | 对于 `mcp__*` 工具，表示提供该工具的 MCP 服务器以及该服务器定义的来源，字段与 [`McpServerProvenance`](#mcpserverprovenance) 相同。其他工具不包含此项。需要 Agent SDK v0.3.274 或更高版本 |
 | `decisionReason` | `string` | 说明触发此权限请求的原因 |
@@ -1555,7 +1605,7 @@ type McpServerToolPolicy = {
 选择 `always_ask` 以亲自批准每个调用，或选择 `always_deny` 以直接阻止该工具：
 
 * **`always_ask`**：对该工具的每个调用都[需要批准](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)，即使有 `allowedTools` 条目或 allow 规则覆盖它。该调用会转到您的 `canUseTool` 回调或 [`permissionPromptToolName`](#options) 工具，除非它已先被处理。您加载的插件中的 [mod](https://code.claude.com/docs/zh-CN/plugins/mods/overview.md) [可以先批准它](https://code.claude.com/docs/zh-CN/permissions.md#precedence-among-rules-hooks-and-mods)。否则，在 `dontAsk` 模式下它会被拒绝，而在 [`auto`、`plan` 和 `bypassPermissions` 模式](#permission-modes-that-can-approve-an-always_ask-call)下，它可能在到达您的回调之前就被批准
-* **`always_deny`**：在所有权限模式下（包括 `bypassPermissions`），对该工具的调用都[会被拒绝](https://code.claude.com/docs/zh-CN/agent-sdk/permissions.md#how-permissions-are-evaluated)，但您加载的插件中的 mod [仍然可以批准它](https://code.claude.com/docs/zh-CN/permissions.md#precedence-among-rules-hooks-and-mods)
+* **`always_deny`**：在所有权限模式（包括 `bypassPermissions`）下，Claude Code 都会从 Claude 的上下文中移除该工具。移除功能需要 Claude Code v2.1.324 或更高版本
 
 如果您既未传入 `canUseTool` 也未传入 `permissionPromptToolName`，或将 [`permissionPrompts`](#options) 设为 `'none'`，则未被先行处理的 `always_ask` 调用会被拒绝，除非 [`PermissionRequest` hook](https://code.claude.com/docs/zh-CN/hooks#permissionrequest) 允许它。
 
@@ -1683,6 +1733,7 @@ type SDKAssistantMessage = {
   user_message_uuid?: string;
   user_message_uuids?: string[];
   resume_reason?: string;
+  supersedes?: UUID[];
 };
 ```
 
@@ -1691,11 +1742,13 @@ type SDKAssistantMessage = {
 `SDKAssistantMessageError` 是以下之一：`'authentication_failed'`、`'oauth_org_not_allowed'`、`'account_on_hold'`、`'billing_error'`、`'rate_limit'`、`'overloaded'`、`'invalid_request'`、`'model_not_found'`、`'server_error'`、`'max_output_tokens'`、`'cloud_credential_error'` 或 `'unknown'`。其中四个值的含义超出了它们的名称：
 
 * `'model_not_found'`：选定的模型不存在或对您的账户或部署不可用
-* `'overloaded'`：API 返回 529，因为服务器处于容量限制，与 `'rate_limit'` 不同，后者是针对您配额的 429
+* `'overloaded'`：当 API 因服务器满载而返回 529 时，出现在 [`api_retry` 事件](https://code.claude.com/docs/zh-CN/headless#handle-api-retries)上。当 HTTP 529 结束了该轮次时，助手消息携带 `'server_error'`。针对您配额的 429 对应 `'rate_limit'`
 * `'account_on_hold'`：[您的账户被冻结](https://code.claude.com/docs/zh-CN/errors.md#your-account-is-on-hold)
 * `'cloud_credential_error'`：Claude Code 无法在其运行的机器上获取可用的 AWS 或 Google Cloud 凭据，因此没有请求到达云提供商。通常原因是云登录已过期或从未在该机器上完成，但暂时无法访问的凭据服务会报告相同的值。请参阅[无法加载 AWS 或 Google Cloud 凭据](https://code.claude.com/docs/zh-CN/errors.md#could-not-load-aws-or-google-cloud-credentials)。需要 TypeScript Agent SDK v0.3.267 或更高版本，其中包含 Claude Code v2.1.267
 
 当中断或中止在流完成前截断助手消息时，`aborted` 为 `true`：消息没有 `stop_reason`，内容可能在单词中间结束。该字段在正常完成的消息上不存在。它需要 Agent SDK v0.3.214 或更高版本。
+
+`supersedes` 列出此消息所替换的先前消息的 UUID。当此消息到达时，请从显示中移除那些消息。
 
 `agent_id` 标识产生该消息的子代理，在主线程消息上不存在。其值等于该子代理的 [`task_started`](#sdktaskstartedmessage) 及其他任务事件上的 `task_id`，并且在子代理被[恢复](https://code.claude.com/docs/zh-CN/agent-sdk/subagents.md#resume-subagents)时保持不变。对于来自[嵌套子代理](https://code.claude.com/docs/zh-CN/sub-agents.md#let-subagents-spawn-their-own-subagents)的消息，它指向该嵌套子代理，而不是生成它的子代理。该字段需要 Agent SDK v0.3.292 或更高版本。
 
@@ -1750,7 +1803,7 @@ type SDKUserMessage = {
 设置 `shouldQuery`、`client_composed` 或 `priority` 可以改变 Claude Code 处理您所发送消息的方式：
 
 * `shouldQuery`：设置为 `false` 以将消息附加到会话记录中而不触发助手轮。消息被保留并合并到下一条触发轮的用户消息中。使用此方法注入上下文，例如您在带外运行的命令的输出，而无需在模型调用上花费。
-* `client_composed`：设置为 `true` 以让 Claude Code 按原样传递消息文本。Claude Code 然后不展开 `@path` 或 [`@server:resource`](https://code.claude.com/docs/zh-CN/mcp#use-mcp-resources) 提及，也不运行以 `/` 开头的文本作为命令。当 [`verbatimPrompts`](#options) 选项打开时，SDK 在每条消息上设置该字段。需要 TypeScript Agent SDK v0.3.280 或更高版本和 Claude Code v2.1.248 或更高版本。
+* `client_composed`：将其设置为 `true`，可让 Claude Code 按原样传递消息文本。此时 Claude Code 不会展开 `@path` 提及，也不会将以 `/` 开头的文本作为命令运行。当 [`verbatimPrompts`](#options) 选项开启时，SDK 会在每条消息上设置该字段。需要 TypeScript Agent SDK v0.3.280 或更高版本以及 Claude Code v2.1.248 或更高版本。
 * `priority`：控制您在轮次运行期间发送的消息何时到达 Claude：
   * `'next'` 或未设置 `priority` 字段：Claude 会在同一轮次中读取该消息，时机是其正在运行的工具调用一完成之时。如果轮次先结束，该消息将开启下一轮次。
   * `'later'`：Claude Code 会暂存该消息直到轮次结束，然后将其作为新轮次发送。
@@ -1847,6 +1900,7 @@ type SDKResultMessage =
       deferred_tool_use?: { id: string; name: string; input: Record<string, unknown> };
       terminal_reason?: TerminalReason;
       result_index?: number;
+      credential_expires_at?: string;
       fast_mode_state?: FastModeState;
       fast_mode_disabled_reason?: FastModeDisabledReason;
       origin?: SDKMessageOrigin;
@@ -1877,6 +1931,7 @@ type SDKResultMessage =
       resume_reason?: string;
       terminal_reason?: TerminalReason;
       result_index?: number;
+      credential_expires_at?: string;
       fast_mode_state?: FastModeState;
       fast_mode_disabled_reason?: FastModeDisabledReason;
       origin?: SDKMessageOrigin;
@@ -1901,6 +1956,7 @@ type SDKResultMessage =
 * `total_cost_usd`：累积估计成本（美元），涵盖与 `modelUsage` 相同的调用并在相同点重置。恢复会话的调用也计算[从会话早期调用恢复的总计](https://code.claude.com/docs/zh-CN/agent-sdk/cost-tracking.md#accumulate-costs-across-multiple-calls)。这是一个估计值，不是账单声明。请参阅[跟踪成本和使用情况](https://code.claude.com/docs/zh-CN/agent-sdk/cost-tracking.md)了解准确性注意事项。
 * `queued_turn_count`：您发送的带有 `origin: { kind: "human" }` 的消息数，在 Claude Code 产生结果时仍在等待。请参阅 [`queued_turn_count`](#queued_turn_count) 了解 `0` 和缺失字段告诉您什么。
 * `result_index`：此结果在运行的传递顺序中的位置，从 0 开始计算，跨越进程写入的每个结果。在两个分支上存在。写入失败的结果仍然消耗其编号，因此序列中的间隙意味着结果丢失。需要 Agent SDK v0.3.268 或更高版本。
+* `credential_expires_at`：已存储的 claude.ai 登录预计最晚结束时间，为 ISO 8601 时间戳。该登录最多可能提前三天结束。对于其他凭据或日期未知时不存在。需要 Agent SDK v0.3.318 或更高版本。
 * `startup_failure_reason`：Claude Code 拒绝启动的原因，在它在已知启动失败时退出前写入的 `error_during_execution` 结果上。请参阅 [`startup_failure_reason`](#startup_failure_reason) 了解值以及哪些失败携带它。需要 Agent SDK v0.3.274 或更高版本。
 * `terminal_reason`：循环结束的原因。`"completed"`、`"max_turns"`、`"tool_deferred"`、`"aborted_streaming"`、`"aborted_tools"`、`"hook_stopped"`、`"stop_hook_prevented"`、`"background_requested"`、`"blocking_limit"`、`"rapid_refill_breaker"`、`"prompt_too_long"`、`"image_error"`、`"model_error"`、`"api_error"`、`"malformed_tool_use_exhausted"`、`"budget_exhausted"`、`"structured_output_retry_exhausted"`、`"tool_deferred_unavailable"` 或 `"turn_setup_failed"` 之一。
 * `fast_mode_state`：`"on"`、`"off"` 或 `"cooldown"` 之一。
@@ -1915,15 +1971,15 @@ type SDKResultMessage =
 | `extra_usage_disabled` | 账户的使用额度已关闭 |
 | `network_error` | [可用性检查](https://code.claude.com/docs/zh-CN/fast-mode.md#use-fast-mode-behind-proxies-and-llm-gateways)无法到达 `api.anthropic.com` |
 | `unknown` | Claude Code 无法确定可用性 |
-| `not_first_party` | 会话使用 Anthropic API 以外的提供商 |
-| `disabled_by_env` | [`CLAUDE_CODE_DISABLE_FAST_MODE`](https://code.claude.com/docs/zh-CN/env-vars) 已设置 |
-| `model_not_allowed` | 快速模式 Opus 模型不在组织的 [`availableModels`](https://code.claude.com/docs/zh-CN/model-config#restrict-model-selection) 允许列表中 |
+| `not_first_party` | 会话使用的提供商不提供快速模式 |
+| `disabled_by_env` | 已设置 [`CLAUDE_CODE_DISABLE_FAST_MODE`](https://code.claude.com/docs/zh-CN/env-vars)，或模型在 [Google Cloud 的 Agent Platform](https://code.claude.com/docs/zh-CN/fast-mode.md#use-fast-mode-on-agent-platform) 上所在的区域不提供快速模式 |
+| `model_not_allowed` | 快速模式模型不在组织的 [`availableModels`](https://code.claude.com/docs/zh-CN/model-config#restrict-model-selection) 允许列表中，或提供商拒绝为会话的模型启用快速模式 |
 | `sdk_opt_in_required` | 会话未选择加入快速模式：在 [`settings`](#options) 选项中或通过 [`applyFlagSettings()`](#applyflagsettings) 传递 `fastMode: true` |
 | `pending` | 可用性检查尚未完成 |
 
 相同的字段对出现在 [`SDKSystemMessage`](#sdksystemmessage) 和 [`SDKControlInitializeResponse`](#sdkcontrolinitializeresponse) 上，因此您可以在第一轮之前读取快速模式状态。
 
-`origin` 字段转发触发此结果的用户消息的 [`SDKMessageOrigin`](#sdkmessageorigin)。携带 `origin: { kind: "task-notification" }` 的结果包括：
+`origin` 字段包含 Claude Code 为触发此结果的用户消息分配的 [`SDKMessageOrigin`](#sdkmessageorigin)，而不是您所发送 `origin` 的副本。携带 `origin: { kind: "task-notification" }` 的结果包括：
 
 * **合成的后续轮次**：当 SDK 注入一个合成的后续轮次时（例如针对已完成的后台任务），所产生的 `SDKResultMessage` 会携带此 kind
 * **已触发的定时任务以及来自其他会话的消息**：触发器已触发的云端定时任务，以及来自您其他会话且经服务器验证的消息，也会以此 kind 到达，各自带有[任务通知 subkind](#task-notification-subkinds) 中所述的 `subkind`
@@ -1932,7 +1988,10 @@ type SDKResultMessage =
 
 当多个后台任务完成一起排队时，Claude Code 可以在一轮中回答它们，而不是每个一轮。每个完成仍然产生自己的结果与此来源。Claude Code 一起回答的完成中除最后一个外的所有完成产生空结果，其中 `num_turns: 0`，按顺序，最后一个的结果携带回答它们全部的轮。
 
-该字段在任何用户轮之前发出的结果上不存在，例如启动错误。
+当 Claude Code 未分配 origin 时，`origin` 不存在，例如：
+
+* 在您以既无 `origin` 也无 [`isSynthetic`](#sdkusermessage) 的消息开启的轮次上
+* 在任何用户轮次之前发出的结果上，例如启动错误
 
 当 `PreToolUse` hook 返回 `permissionDecision: "defer"` 时，结果具有 `stop_reason: "tool_deferred"` 和 `deferred_tool_use` 携带待处理工具的 `id`、`name` 和 `input`。读取此字段以在您自己的 UI 中显示请求，然后使用相同的 `session_id` 恢复以继续。请参阅[延迟工具调用以供稍后使用](https://code.claude.com/docs/zh-CN/hooks.md#defer-a-tool-call-for-later)了解完整往返。
 
@@ -1996,12 +2055,16 @@ Claude Code 在两种帧上设置该字段：
 
 #### `startup_failure_reason`
 
-Claude Code 拒绝启动的原因，以便您的应用程序可以提供修复而不是重试。Claude Code 在它在已知启动失败时退出前写入的 `error_during_execution` 结果上设置它。该结果携带零化总计，其 `errors` 数组携带与 stderr 相同的文本。该字段在所有其他结果上不存在。需要 Agent SDK v0.3.274 或更高版本。
+Claude Code 拒绝启动的原因，以便您的应用提供修复方法而不是重试。Claude Code 在因已知启动失败而退出之前写入的 `error_during_execution` 结果上设置该字段。该结果携带归零的汇总，其 `errors` 数组携带失败消息。在其他所有结果上该字段都不存在。需要 Agent SDK v0.3.274 或更高版本。
 
 在 [`env`](#options) 中设置 `CLAUDE_CODE_STARTUP_FAILURE_RESULTS` 为 `1` 以接收每个 `SDKStartupFailureReason` 值的此结果。没有该变量，Claude Code 仅为这些失败写入结果，其余的以 stderr 输出、非零退出和无结果消息结束：
 
 * Claude Code 停止的恢复，因为它[无法将会话返回到其 worktree](https://code.claude.com/docs/zh-CN/worktrees.md#the-session-resumes-outside-its-worktree)，带有 `worktree_unverified` 或 `worktree_resume_refused`。该部分说明哪个错误携带哪个值。
 * 拒绝后台会话持有的对话的 [`continue`](#options)，带有 `session_held_by_background`。对于这样的对话的拒绝 [`resume`](#options)，Claude Code 仅在设置了变量时写入结果。
+* 由于 [`failIfUnavailable`](#sandboxsettings) 开启且沙箱无法启动而被 Claude Code 拒绝的启动，值为 `sandbox_required_unavailable`。
+* 因 `~/.claude.json` 不是有效 JSON 而被 Claude Code 拒绝的启动，带有 `config_file_invalid`。
+
+`SDKStartupFailureReason` 类型列出了 `startup_failure_reason` 可以取的值：
 
 ```typescript theme={null}
 type SDKStartupFailureReason =
@@ -2023,7 +2086,9 @@ type SDKStartupFailureReason =
   | "cli_version_too_old"
   | "bypass_root"
   | "org_config_required_unavailable"
-  | "org_config_refused";
+  | "org_config_refused"
+  | "sandbox_required_unavailable"
+  | "config_file_invalid";
 ```
 
 每个值命名一个拒绝：
@@ -2049,6 +2114,8 @@ type SDKStartupFailureReason =
 | `bypass_root` | 在以 root 身份运行时请求了绕过权限模式 |
 | `org_config_required_unavailable` | 会话在启动前需要组织的策略和托管设置，但无法加载它们，例如由于网络故障或 Anthropic 服务器错误。需要 Agent SDK v0.3.293 或更高版本 |
 | `org_config_refused` | Anthropic 拒绝为此次登录提供组织的策略和托管设置，例如因为登录已过期或被吊销，或组织不允许此账户使用 Claude Code。需要 Agent SDK v0.3.293 或更高版本 |
+| `sandbox_required_unavailable` | [`failIfUnavailable`](#sandboxsettings) 已开启且沙箱无法启动。`errors` 中的文本以 `Set sandbox.failIfUnavailable=false to allow unsandboxed execution.` 结尾。需要 Agent SDK v0.3.314 或更高版本 |
+| `config_file_invalid` | `~/.claude.json` 不是有效的 JSON。Claude Code 不会更改该文件，因此在有人修复它之前，重试会以同样的方式失败。`errors` 会指出该文件并说明如何恢复或修复它。请参阅 [\~/.claude.json 中的配置错误](https://code.claude.com/docs/zh-CN/errors.md#configuration-error-in-claude-json)。需要 TypeScript Agent SDK v0.3.318 或更高版本以及 Claude Code v2.1.318 或更高版本 |
 
 ### `SDKSystemMessage`
 
@@ -2175,10 +2242,13 @@ type SDKInformationalMessage = {
   level: "info" | "notice" | "suggestion" | "warning";
   tool_use_id?: string;
   prevent_continuation?: boolean;
+  tag?: string;
   uuid: UUID;
   session_id: string;
 };
 ```
+
+`tag` 为 `settings_not_in_effect` 的警告表示来自您的应用程序，或来自用户、项目或本地文件的某些设置未加载或被跳过。请按照 `content` 中的步骤操作。并非每个无效值都会产生此警告。需要 TypeScript Agent SDK v0.3.330 或更高版本。
 
 ### `SDKWorkerShuttingDownMessage`
 
@@ -2418,7 +2488,7 @@ Claude Code 根据 token 数在本地计算 `session.total_cost_usd`，因此它
 
 ### `SDKMessageOrigin`
 
-用户角色消息的来源。这在 [`SDKUserMessage`](#sdkusermessage) 上显示为 `origin`，并转发到相应的 [`SDKResultMessage`](#sdkresultmessage)，以便您可以告诉什么触发了给定的轮。
+用户角色消息的来源。它作为 `origin` 出现在 [`SDKUserMessage`](#sdkusermessage) 上。某一轮次的 [`SDKResultMessage`](#sdkresultmessage) 会携带 Claude Code 分配的 `origin`，因此您可以判断是什么触发了该轮次。
 
 ```typescript theme={null}
 type SDKMessageOrigin =
@@ -2436,7 +2506,7 @@ type SDKMessageOrigin =
     }
   | {
       kind: "task-notification";
-      subkind?: "scheduled-trigger" | "peer-send-message";
+      subkind?: "scheduled-trigger" | "peer-send-message" | "external-event";
       fireReason?: string;
       runId?: string;
     }
@@ -2445,24 +2515,34 @@ type SDKMessageOrigin =
   | { kind: "unclassified" };
 ```
 
+您的应用程序可以在其发送的消息上设置以下类型的 `origin`：
+
+* `{ kind: "human" }`：用户输入的内容
+* `{ kind: "task-notification", subkind: "scheduled-trigger" }`：[您声明的定时运行](#declare-a-scheduled-run)
+
+其他类型请留给 Claude Code 和 Anthropic 服务器设置。如果您设置了其中某种类型，Claude 默认会将该消息视为用户的消息。
+
+要发送并非用户编写的文本（例如抓取的页面或另一个 Agent 的输出），请将其作为单独的消息发送，将 [`isSynthetic`](#sdkusermessage) 设置为 `true` 并且不设置 `origin`。同时将 [`client_composed`](#sdkusermessage) 设置为 `true`，以免以 `/` 开头的文本作为命令运行。
+
 | `kind` | 含义 |
 | - | - |
-| `human` | 来自最终用户的直接输入。如果您的应用程序将用户输入的内容转发为用户消息，显式将其 `origin` 设置为 `{ kind: "human" }`：Claude Code 将没有 `origin` 的用户消息视为未归因，并且需要人类输入的提示词的检查（例如 [`ultracode` 工作流关键字](https://code.claude.com/docs/zh-CN/workflows#ask-for-a-workflow-in-your-prompt)）不接受它。在 v2.1.210 之前，Claude Code 将用户消息上缺失的 `origin` 视为人类输入。 |
+| `human` | 来自最终用户的直接输入。如果您的应用程序将用户输入的内容作为用户消息转发，请将其 `origin` 设置为 `{ kind: "human" }`。如果没有该 `origin`，Claude 仍会将该消息视为用户的消息，但要求人工输入提示词的检查（例如 [`ultracode` 工作流关键字](https://code.claude.com/docs/zh-CN/workflows#ask-for-a-workflow-in-your-prompt)）不会接受该消息。 |
 | `channel` | 在[频道](https://code.claude.com/docs/zh-CN/channels.md)上到达的消息。`server` 是源 MCP 服务器名称。 |
-| `peer` | 来自另一个 Agent 的消息：进程内[队友](https://code.claude.com/docs/zh-CN/agent-teams.md)或[跨会话对等体](https://code.claude.com/docs/zh-CN/cross-session-messaging.md)，您的另一个 Claude Code 会话。请参阅[对等体来源字段](#peer-origin-fields)了解每个字段的语义和信任模型。 |
+| `peer` | 来自另一个 Claude Code Agent 的消息：进程内的[队友](https://code.claude.com/docs/zh-CN/agent-teams.md)，或[跨会话对等方](https://code.claude.com/docs/zh-CN/cross-session-messaging.md)（即您的另一个 Claude Code 会话）。在您的各会话之间中继此类消息的[桌面应用](https://code.claude.com/docs/zh-CN/desktop.md#work-across-sessions)会使用 [`fromMode`](#peer-origin-fields) 声明此类型。若要从您自己的应用程序中继另一个 Agent 的输出，请改为设置 `isSynthetic` 和 `client_composed`。有关各字段的语义和信任模型，请参阅[对等方来源字段](#peer-origin-fields)。 |
 | `task-notification` | 为没有新鲜用户提示词的传递注入的合成轮，例如完成的后台任务；请参阅 [`SDKTaskNotificationMessage`](#sdktasknotificationmessage) 了解该分支。您的应用程序[声明为定时运行](#declare-a-scheduled-run)的提示词也携带此类型。可选的 `subkind` 标记引发通知的原因。请参阅[任务通知子类型](#task-notification-subkinds)。 |
 | `coordinator` | 来自 [agent team](https://code.claude.com/docs/zh-CN/agent-teams.md) 中的团队协调员的消息。 |
 | `auto-continuation` | 当会话在没有新鲜用户输入的情况下继续时注入的合成轮，例如触发后续提示词的命令结果。 |
-| `unclassified` | 无法确定来源的注入轮。需要 Claude Code v2.1.223 或更高版本。当 Claude Code 接收带有 `isSynthetic: true` 的 [`SDKUserMessage`](#sdkusermessage) 并无法将其分类为任何其他 `kind` 时，它在消息到达时设置此类型，并将轮作为非用户来源呈现给模型，而不是将其视为人类输入。您的应用程序不应设置此值。 |
+| `unclassified` | 被标记为并非来自用户的消息，例如您以 `isSynthetic: true` 发送的 [`SDKUserMessage`](#sdkusermessage)。需要 Claude Code v2.1.223 或更高版本。 |
 
 ### 任务通知子类型
 
-当 Claude Code 将任务通知传递到会话中时，如果 Anthropic 服务器验证了该通知的来源，它会在通知的 `origin` 上设置 `subkind`。当您的应用程序[自己声明消息为定时运行](#declare-a-scheduled-run)时，它也设置 `subkind`，这需要 TypeScript Agent SDK v0.3.280 或更高版本。`subkind` 需要 Claude Code v2.1.213 或更高版本，它采用两个值之一：
+当 Claude Code 向会话投递任务通知时，如果 Anthropic 服务器验证了该通知的来源，它会在通知的 `origin` 上设置 `subkind`。当您的应用程序自行[将消息声明为定时运行](#declare-a-scheduled-run)时，它也会设置 `subkind`，这需要 TypeScript Agent SDK v0.3.280 或更高版本。`subkind` 需要 Claude Code v2.1.213 或更高版本。取值包括：
 
 * `scheduled-trigger`：该通知是某个[云端定时任务](https://code.claude.com/docs/zh-CN/routines.md)存储的提示词，因该任务的某个触发器被触发而投递：其计划、其 [API 触发器](https://code.claude.com/docs/zh-CN/routines.md#add-an-api-trigger)、其 [GitHub 触发器](https://code.claude.com/docs/zh-CN/routines.md#add-a-github-trigger)或 **Run now**。您的应用程序[声明为定时运行](#declare-a-scheduled-run)的提示词也带有此值。Claude Code 会将这些通知作为会话被分配的任务呈现给模型，所附的说明与[其他任务通知所附的说明](#sdktasknotificationmessage)不同。
 * `peer-send-message`：该通知是您的另一个会话通过服务器端 `send_message` 工具发送的消息（[云端会话](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md)之间使用该工具互相发送消息），而不是[跨会话 `SendMessage` 工具](https://code.claude.com/docs/zh-CN/cross-session-messaging)，并且 Anthropic 服务器已验证两个会话属于同一个私有会话组。需要 Claude Code v2.1.224 或更高版本。服务器未以此方式验证的 `send_message` 投递不会获得子类型。
+* `external-event`：该通知报告会话之外的事件，并可能引用第三方的内容。[PR 活动](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#how-claude-responds-to-pr-activity)到达时可能带有此值，也可能不带 `subkind`。需要 Claude Code v2.1.330 或更高版本。
 
-每个其他任务通知都没有 `subkind`。这包括[PR 活动](https://code.claude.com/docs/zh-CN/claude-code-on-the-web.md#how-claude-responds-to-pr-activity)传递到会话和后台事件，例如完成的任务。来自[跨会话 `SendMessage` 工具](https://code.claude.com/docs/zh-CN/cross-session-messaging)的消息根本不是任务通知：无论它们来自同一机器上的会话还是通过 Anthropic 服务器来自另一台机器，Claude Code 都给它们 `kind: "peer"` 和[对等体来源字段](#peer-origin-fields)。
+已完成的任务等后台事件没有 `subkind`。来自[跨会话 `SendMessage` 工具](https://code.claude.com/docs/zh-CN/cross-session-messaging)的消息不是任务通知，它们携带 `kind: "peer"` 以及 [peer origin 字段](#peer-origin-fields)。
 
 `fireReason` 说明 `scheduled-trigger` 通知被触发的原因，以简短的小写标记表示，例如 `scheduled`、`manual`、`retry`、`catch_up` 或 `api`。Anthropic 服务器会在[云端定时任务](https://code.claude.com/docs/zh-CN/routines.md)的投递上设置该字段，您的应用程序在声明定时运行时也会设置它。当两者都未发送时，该字段不存在。需要 TypeScript Agent SDK v0.3.280 或更高版本。
 
@@ -2477,7 +2557,7 @@ type SDKMessageOrigin =
 `peer` 来源标识发送消息的 Agent：使用 `SendMessage` 向 `main` 发送消息的进程内[队友](https://code.claude.com/docs/zh-CN/agent-teams.md)，或[跨会话对等方](https://code.claude.com/docs/zh-CN/cross-session-messaging.md)（即您的另一个 Claude Code 会话）。在 macOS 和 Linux 上，跨会话对等方需要 Claude Code v2.1.224 或更高版本；有关原生 Windows 的要求，请参阅[跨会话消息的可用性](https://code.claude.com/docs/zh-CN/cross-session-messaging.md#availability)。跨会话对等方可以在同一台机器上运行，也可以在[您的另一台机器](https://code.claude.com/docs/zh-CN/cross-session-messaging.md#message-sessions-on-other-machines)上运行，此时其消息通过 [Remote Control](https://code.claude.com/docs/zh-CN/remote-control.md) 到达。
 
 * `from`：队友的名称，或跨会话对等体的发送者地址。对于[单向跨机器消息](https://code.claude.com/docs/zh-CN/cross-session-messaging.md#message-sessions-on-other-machines)，发送者没有回复地址，`from` 是 `"unknown"`。该值由发送者创作；`verifiedPeerPid` 是验证的身份。
-* `fromMode`：发送会话的权限类，`bypass` 或 `prompting`，由在您的会话之间中继对等消息的主机声明，例如[桌面应用](https://code.claude.com/docs/zh-CN/desktop.md#work-across-sessions)。Claude Code 在接收会话中应用[入站控制](https://code.claude.com/docs/zh-CN/cross-session-messaging.md#control-inbound-messages)时读取它。需要 Agent SDK v0.3.234 或更高版本。
+* `fromMode`：发送方会话的权限类别，`bypass` 或 `prompting`。Claude Code 在接收方会话中应用[入站控制](https://code.claude.com/docs/zh-CN/cross-session-messaging.md#control-inbound-messages)时会读取它。需要 Agent SDK v0.3.234 或更高版本。
 * `senderTaskId`：队友的任务 ID。对于跨会话对等体不存在。
 * `name`：发送者的显示名称，由 Claude Code 规范化：它删除 Unicode 控制、格式、代理项和行或段落分隔符代码点，然后修剪结果并将其限制为 64 个代码点，带有省略号。需要 Claude Code v2.1.205 或更高版本。
 * `body`：去除对等方信封后的已解码消息正文，与模型所见内容逐字节一致。对于单条队友消息，该字段存在；当多条消息被合并时，该字段不存在；对于跨会话对等方，仅当该轮次恰好是由 Claude Code 构成的一个对等方信封时才存在。请渲染 `name` 和 `body`，而不要重新解析消息文本。在 v2.1.299 之前，合并的消息会保留第一条消息的 `body`。需要 Claude Code v2.1.205 或更高版本。
@@ -2550,8 +2630,11 @@ interface HookCallbackMatcher {
   matcher?: string;
   hooks: HookCallback[];
   timeout?: number; // 此匹配器中所有 hooks 的超时时间（秒）
+  onFailure?: "continue" | "block"; // "block" 在回调失败时阻止该操作
 }
 ```
+
+要确定 `onFailure` 涵盖哪些情况，请参阅[在回调失败时阻止操作](https://code.claude.com/docs/zh-CN/agent-sdk/hooks.md#block-the-action-when-a-callback-fails)。
 
 ### `HookInput`
 
@@ -3355,11 +3438,13 @@ type MonitorInput = {
 
 运行后台源并将每个事件传递给 Claude，以便它可以做出反应而无需轮询：`command` 运行脚本并为每个 stdout 行发出一个事件，`ws` 打开 WebSocket 并为每个文本帧发出一个事件。恰好提供 `command` 或 `ws` 之一。`ws` 源需要 Claude Code v2.1.195 或更高版本。
 
-`timeout_ms` 是监视的截止时间（以毫秒为单位）。它默认为 300000，接受最高 3600000 的值。有效截止时间最多为 1800000，即 30 分钟，因此更大的接受值会被缩短到该值。在截止时间，监视结束，Claude 收到一个通知，以便在仍需要时可以启动新的监视。
+`timeout_ms` 是监视的截止时间（以毫秒为单位）：
 
-导出的类型将 `timeout_ms` 标记为必需，因为 schema 填充了默认值；省略它的调用会验证通过。
+* **默认值和限制**：它默认为 300000，接受最高 3600000 的值。有效截止时间最多为 1800000，即 30 分钟，因此更大的接受值会被缩短到该值
+* **到达截止时间时**：监视结束，Claude 收到一个通知，以便在仍需要时可以启动新的监视
+* **在类型中为必需**：导出的类型将 `timeout_ms` 标记为必需，因为 schema 填充了默认值；省略它的调用会验证通过
 
-当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则；WebSocket 监视会单独提示批准。请参阅 [Monitor 工具参考](https://code.claude.com/docs/zh-CN/tools-reference.md#monitor-tool)了解行为和提供商可用性。
+当 Monitor 运行命令时，它遵循与 Bash 相同的权限规则。请参阅 [Monitor 工具参考](https://code.claude.com/docs/zh-CN/tools-reference.md#monitor-tool)了解 WebSocket 权限、行为和提供商可用性。
 
 ### TaskOutput
 
@@ -3722,7 +3807,7 @@ type CronCreateInput = {
 };
 ```
 
-按本地时间的 5 字段 cron 计划安排提示词运行。将 `recurring` 设置为 `false` 以在下一个匹配时仅触发一次。作业默认限定于会话，使用 `--resume` 或 `--continue` 恢复时会还原尚未过期的作业。请参阅[限定于会话的定时任务](https://code.claude.com/docs/zh-CN/scheduled-tasks.md)。
+按本地时间的 5 字段 cron 计划安排提示词运行。将 `recurring` 设置为 `false` 以在下一个匹配时仅触发一次。作业默认限定于会话。请参阅[限定于会话的定时任务](https://code.claude.com/docs/zh-CN/scheduled-tasks.md)。
 
 将 `durable` 设置为 `true` 请求持久化到 `.claude/scheduled_tasks.json`，以便作业在重启后继续存在。持久化调度并非在每个会话中都可用：当不可用时，Claude Code 接受 `durable: true` 但创建仅会话的作业。读取输出的 `durable` 字段以查看作业是否已持久化。
 
@@ -4181,6 +4266,7 @@ type MonitorOutput = {
   taskId: string;
   timeoutMs: number;
   persistent?: boolean;
+  keptInSandboxByCheck?: boolean;
 };
 ```
 
@@ -4366,12 +4452,13 @@ type GrepOutput = {
   totalLines?: number;
   appliedLimit?: number;
   appliedOffset?: number;
+  timedOut?: boolean;
 };
 ```
 
 返回搜索结果。形状因 `mode` 而异：文件列表、带匹配的内容或匹配计数。在 `count` 模式下，`numFiles` 和 `numMatches` 是完整结果集上的总计，不是分页切片。在 v2.1.208 之前，截断列出条目的 `head_limit` 或 `offset` 也会截断这些总计。
 
-`totalFiles` 需要 Claude Code v2.1.208 或更高版本，并在 `files_with_matches` 模式下报告 `head_limit` 和 `offset` 分页前的总结果数。`totalLines` 需要 Claude Code v2.1.210 或更高版本，并在 `content` 模式下报告分页前的总行数。
+`totalFiles` 需要 Claude Code v2.1.208 或更高版本，并在 `files_with_matches` 模式下报告 `head_limit` 和 `offset` 分页前的总结果数。`totalLines` 需要 Claude Code v2.1.210 或更高版本，并在 `content` 模式下报告分页前的总行数。`timedOut` 需要 Claude Code v2.1.317 或更高版本，当搜索超时时为 `true`，因此结果可能不完整。
 
 ### TaskStop
 
@@ -4706,10 +4793,11 @@ type CronCreateOutput = {
   recurring: boolean;
   durable?: boolean; // true when persisted to .claude/scheduled_tasks.json; false when session-only
   nextFireAt?: number;
+  maxAgeMs?: number; // age at which a recurring job ends; requires Claude Code v2.1.330 or later
 };
 ```
 
-返回作业 ID、计划的人类可读描述以及下次运行时间。`nextFireAt` 以纪元毫秒给出该时间，且已应用[抖动](https://code.claude.com/docs/zh-CN/scheduled-tasks.md#jitter)，因此它就是作业被设定的运行时间。该字段需要 TypeScript Agent SDK v0.3.299 或更高版本以及 Claude Code v2.1.299 或更高版本。
+返回作业 ID、计划的人类可读描述以及下次运行时间。`nextFireAt` 以纪元毫秒给出该时间，且已应用[抖动](https://code.claude.com/docs/zh-CN/scheduled-tasks.md#jitter)，因此它就是作业被设定的运行时间。`nextFireAt` 需要 TypeScript Agent SDK v0.3.299 或更高版本以及 Claude Code v2.1.299 或更高版本。
 
 ### CronDelete
 
@@ -5396,10 +5484,12 @@ type ThinkingDisplay = "summarized" | "omitted";
 type ThinkingConfig =
   | { type: "adaptive"; display?: ThinkingDisplay } // The model determines when and how much to reason (Opus 4.6+)
   | { type: "enabled"; budgetTokens?: number; display?: ThinkingDisplay } // Fixed thinking token budget
-  | { type: "disabled" }; // No extended thinking
+  | { type: "disabled" }; // Turn thinking off where the model and provider allow it
 ```
 
-可选的 `display` 字段控制思考文本以 `"summarized"` 还是 `"omitted"` 方式返回。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此请设置 `"summarized"` 以在 `thinking` 块中接收思考内容。Claude Code 不会将您的 `display` 值传递给某些提供商，例如 Amazon Bedrock 和 Google Cloud 的 Agent Platform。在这些提供商上，即使您将 `display` 设置为 `"summarized"`，Opus 4.7 及更高版本也会返回空的 `thinking` 块。
+关于 `disabled`，请参阅[无法关闭思考的情况](https://code.claude.com/docs/zh-CN/model-config.md#where-you-cant-turn-thinking-off)。
+
+可选的 `display` 字段控制思考文本以 `"summarized"` 还是 `"omitted"` 方式返回。在 Claude Opus 4.7 及更高版本上，API 默认值为 `"omitted"`，因此请设置 `"summarized"` 以在 `thinking` 块中接收思考内容。在 Amazon Bedrock 和 Google Cloud 的 Agent Platform 等提供商上，对于 Claude Code 能识别的较早模型，Claude Code 不会传递 `display`。这些模型是 Opus 4.6、Sonnet 4.6、Haiku 4.5 及更早的模型，它们使用各自的默认值。
 
 ### `SpawnedProcess`
 
@@ -5650,6 +5740,8 @@ type SDKToolProgressMessage = {
 
 当工具调用在主对话中运行时，Claude Code 每 30 秒发出一条带有 `heartbeat: true` 的 `tool_progress` 消息。每个心跳都携带工具名称和已用秒数，因此您可以区分长时间运行的调用和停滞的会话。Claude Code 不会为子代理内部的工具调用发出心跳。`heartbeat` 字段需要 Agent SDK v0.3.214 或更高版本。在 v2.1.257 之前，Claude Code 也不会为前台的 Agent 工具调用发出心跳。
 
+在 Agent SDK v0.3.323 或更高版本中，`tool_use_id` 以 `hook-` 开头的心跳来自长时间运行的 hook，而不是工具调用。其 `tool_name` 为 hook 事件名称，例如 `PreToolUse`。
+
 在 Agent 工具的非心跳 `tool_progress` 消息上，`subagent_type` 指明正在运行的子代理类型，例如 `general-purpose`。当该子代理因 API 错误（例如速率限制或过载）而等待退避时，会出现 `subagent_retry`，每次重试尝试对应一条消息。这两个字段都需要 Agent SDK v0.3.214 或更高版本。
 
 要根据 `subagent_retry` 渲染重试指示器：
@@ -5675,7 +5767,7 @@ type SDKAuthStatusMessage = {
 
 ### `SDKTaskStartedMessage`
 
-在任务开始时发出。对于 Bash 命令和 [Monitor](#monitor) 监视，`task_type` 字段为 `"local_bash"`；对于子代理为 `"local_agent"`；否则为 `"remote_agent"`。
+在任务开始时发出。`task_type` 指明任务的类型，例如 Bash 命令和 [Monitor](#monitor) 监视为 `"local_bash"`，子代理为 `"local_agent"`，[后台 MCP 工具调用](https://code.claude.com/docs/zh-CN/mcp.md#automatic-backgrounding-of-long-tool-calls)为 `"mcp_task"`，或者为 `"remote_agent"`。
 
 ```typescript theme={null}
 type SDKTaskStartedMessage = {
@@ -5884,6 +5976,7 @@ type SDKRateLimitEvent = {
     errorCode?: "credits_required";
     canUserPurchaseCredits?: boolean;
     hasChargeableSavedPaymentMethod?: boolean;
+    overageEnabled?: boolean;
   };
   uuid: UUID;
   session_id: string;
@@ -5891,6 +5984,8 @@ type SDKRateLimitEvent = {
 ```
 
 当 `errorCode` 为 `"credits_required"` 时，表示拒绝来自已用尽所含用量的 claude.ai 订阅，在用户购买使用额度之前，会话无法继续。`canUserPurchaseCredits` 表示已通过身份验证的用户是否可以为该账户购买额度，`hasChargeableSavedPaymentMethod` 表示是否存有已保存的付款方式。在不属于 credits-required 拒绝的速率限制事件上，这三个字段都不存在。需要 Claude Code v2.1.181 或更高版本。
+
+在关于套餐用量限制的警告上（即 `status` 为 `"allowed_warning"` 时），`overageEnabled` 报告该账户是否已启用[使用额度](https://code.claude.com/docs/zh-CN/costs.md#add-usage-credits-to-your-subscription)。需要 Claude Code v2.1.295 或更高版本。
 
 ### `SDKLocalCommandOutputMessage`
 
@@ -6015,12 +6110,12 @@ type SandboxSettings = {
 | :- | :- | :- | :- |
 | `enabled` | `boolean` | `false` | 为命令执行启用沙箱模式 |
 | `failIfUnavailable` | `boolean` | `true` | 如果 `enabled` 为 `true` 但沙箱无法启动，则在启动时停止。设置为 `false` 可回退到非沙箱执行，并在 stderr 上输出警告 |
-| `autoAllowBashIfSandboxed` | `boolean` | `true` | 启用沙箱时自动批准 Bash 命令 |
+| [`autoAllowBashIfSandboxed`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-autoallowbashifsandboxed) | `boolean` | `false` | 启用沙箱时自动批准 Bash 命令。`false` 默认值需要 Agent SDK v0.3.324 或更高版本 |
 | `excludedCommands` | `string[]` | `[]` | 绕过沙箱限制的命令，例如 `['docker *']`。这些命令会自动在沙箱外运行，无需模型参与；有关条目何时适用，请参阅 [`sandbox.excludedCommands`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-excludedcommands) |
 | `allowUnsandboxedCommands` | `boolean` | `true` | 允许模型请求在沙箱外运行命令。为 `true` 时，模型可以在工具输入中设置 `dangerouslyDisableSandbox`，此时将回退到[权限系统](#permissions-fallback-for-unsandboxed-commands) |
 | `network` | [`SandboxNetworkConfig`](#sandboxnetworkconfig) | `undefined` | 网络相关的沙箱配置 |
 | `filesystem` | [`SandboxFilesystemConfig`](#sandboxfilesystemconfig) | `undefined` | 用于读/写限制的文件系统相关沙箱配置 |
-| `ignoreViolations` | `Record<string, string[]>` | `undefined` | 从命令子字符串（或表示所有命令的 `*`）到要忽略的违规文本子字符串的映射，例如 `{ "*": ['/etc/hosts'] }`；请参阅 [`sandbox.ignoreViolations`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-ignoreviolations) |
+| `ignoreViolations` | `Record<string, string[]>` | `undefined` | 要从沙箱违规报告中排除的违规。每个键匹配命令的一部分（或使用 `*` 表示所有命令），每个值列出要在违规行中匹配的文本：`{ "*": ['/etc/hosts'] }` 会隐藏提及 `/etc/hosts` 的违规。请参阅 [`sandbox.ignoreViolations`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-ignoreviolations) |
 | `enableWeakerNestedSandbox` | `boolean` | `false` | 为兼容性启用较弱的嵌套沙箱 |
 | `allowNestedUserNamespaces` | `boolean` | `false` | 允许 Linux 和 WSL2 上在沙箱中运行的命令创建用户命名空间。在将其设置为 `true` 之前，请阅读 [`sandbox.allowNestedUserNamespaces`](https://code.claude.com/docs/zh-CN/settings-reference#sandbox-allownestedusernamespaces)，其中介绍了需要此设置的工具以及您将关闭的安全边界。需要 Claude Code v2.1.305 或更高版本 |
 | `ripgrep` | `{ command: string; args?: string[] }` | `undefined` | 用于沙箱环境的自定义 ripgrep 二进制文件配置 |
@@ -6094,7 +6189,7 @@ type SandboxNetworkConfig = {
 
 > [!NOTE]
 >
-> 内置沙箱代理根据请求的主机名强制执行 `allowedDomains`，不会终止或检查 TLS 流量，因此[域前置](https://en.wikipedia.org/wiki/Domain_fronting)等技术可能会绕过它。有关详细信息，请参阅[沙箱隔离的安全限制](https://code.claude.com/docs/zh-CN/sandboxing.md#security-limitations)；有关配置 TLS 终止代理，请参阅[安全部署](https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md#traffic-forwarding)。
+> 内置沙箱代理根据请求的主机名强制执行 `allowedDomains`。默认情况下，该代理不会终止或检查 TLS 流量，因此[域前置](https://en.wikipedia.org/wiki/Domain_fronting)等技术可能会绕过 `allowedDomains`。有关详细信息，请参阅[沙箱隔离的安全限制](https://code.claude.com/docs/zh-CN/sandboxing.md#security-limitations)；有关配置 TLS 终止代理，请参阅[安全部署](https://code.claude.com/docs/zh-CN/agent-sdk/secure-deployment.md#traffic-forwarding)。
 
 ### `SandboxFilesystemConfig`
 

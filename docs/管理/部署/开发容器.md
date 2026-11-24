@@ -71,7 +71,7 @@ Claude Code 功能在基础镜像未提供 Node.js 时会自行安装。如果�
 您在身份验证提示处看到的内容取决于您的提供商：
 
 * **Anthropic**：通过浏览器使用您的 Claude 或 Anthropic Console 账户登录
-* **[Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry](https://code.claude.com/docs/zh-CN/third-party-integrations.md)**：Claude Code 使用您的云提供商凭证，无需浏览器提示
+* **[Amazon Bedrock、Google Cloud 的 Agent Platform 或 Microsoft Foundry](https://code.claude.com/docs/zh-CN/third-party-integrations.md)**：Claude Code 使用您的云提供商凭据
 
 对于云提供商，通过 `containerEnv`、Codespaces 密钥或您的云的工作负载身份将凭证传递到容器中，而不是从主机挂载凭证文件。有关凭证链的详细信息，请参阅 [Amazon Bedrock](https://code.claude.com/docs/zh-CN/amazon-bedrock.md)、[Google Cloud 的 Agent Platform](https://code.claude.com/docs/zh-CN/google-vertex-ai.md) 或 [Microsoft Foundry](https://code.claude.com/docs/zh-CN/microsoft-foundry.md)，Claude Code 会读取这些信息。
 
@@ -112,7 +112,7 @@ Claude Code 功能在基础镜像未提供 Node.js 时会自行安装。如果�
 
 开发容器是应用组织策略的便利场所，因为相同的镜像和配置在每个工程师的机器上运行。
 
-Claude Code 在 Linux 上读取 `/etc/claude-code/managed-settings.json` 并在[设置层次结构](https://code.claude.com/docs/zh-CN/settings.md#settings-precedence)中以最高优先级应用它，因此那里的值会覆盖工程师在 `~/.claude` 或项目的 `.claude/` 目录中设置的任何内容。从您的 Dockerfile 复制文件到位：
+Claude Code 在 Linux 上读取 `/etc/claude-code/managed-settings.json` 并在[设置层次结构](https://code.claude.com/docs/zh-CN/settings.md#settings-precedence)中以最高优先级应用它。从您的 Dockerfile 复制文件到位：
 
 ```dockerfile Dockerfile theme={null}
 RUN mkdir -p /etc/claude-code

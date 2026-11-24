@@ -92,7 +92,7 @@ Claude Code 不会向其作者报告插件的使用情况。使用情况记录�
 
 ### `/plugin` 中最近未使用
 
-在 `/plugin` 的**Installed**选项卡上，用户从市场安装的插件在至少 14 天和 10 个会话未使用后，会移到**Not used recently**标题下。插件的详细信息也显示一个 `Last used:` 行。有关用户对该标题和行的处理，请参阅[查找你不再使用的插件](https://code.claude.com/docs/zh-CN/plugins/install.md#find-plugins-you-no-longer-use)。
+在 `/plugin` 的 **Installed** 选项卡上，用户安装的已启用市场插件在至少 14 天且 10 个会话未使用后，会移到 **Not used recently** 标题下。插件的详细信息中也会显示上次使用时间。
 
 **Not used recently**标题永远不会出现在：
 
@@ -102,7 +102,7 @@ Claude Code 不会向其作者报告插件的使用情况。使用情况记录�
 
 插件的[语言服务器](https://code.claude.com/docs/zh-CN/plugins/components.md#lsp-servers)在传递诊断或回答代码导航请求时计为已使用，所以一个 LSP 插件，其服务器在你的会话中处于活动状态，不会被列为未使用。
 
-当用户的组织设置[`strictKnownMarketplaces`](https://code.claude.com/docs/zh-CN/plugins/org#restrict-what-users-can-install)时，标题和 `Last used:` 行都不会出现。
+当用户的组织设置了 [`strictKnownMarketplaces`](https://code.claude.com/docs/zh-CN/plugins/org#restrict-what-users-can-install) 时，该标题和上次使用时间都不会出现。
 
 ### 查找永远不运行的 skills
 
